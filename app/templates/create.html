@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Tạo video bài giảng — LearnFlow AI{% endblock %}
+
+{% block content %}
+<div class="form-wrapper">
+  <div class="form-header">
+    <h1 class="page-title">Tạo video bài giảng mới</h1>
+    <p class="page-desc">Nhập chủ đề bạn muốn học hoặc giảng dạy, chọn đối tượng và thời lượng mong muốn.</p>
+  </div>
+
+  <div id="error-alert" class="alert alert-error" style="display: none;" role="alert"></div>
+
+  <form id="create-job-form" class="job-form">
+    <div class="form-group">
+      <label for="topic" class="form-label">
+        Chủ đề hoặc câu hỏi học tập <span class="required">*</span>
+      </label>
+      <textarea
+        id="topic"
+        name="topic"
+        class="form-control"
+        rows="4"
+        minlength="3"
+        maxlength="500"
+        placeholder="Ví dụ: How does the TCP three-way handshake work? hoặc Giải thích hiện tượng quang hợp..."
+        required
+      >{{ prefill_topic }}</textarea>
+      <small class="form-hint">Tối thiểu 3 ký tự, tối đa 500 ký tự. Có thể viết bằng tiếng Việt hoặc tiếng Anh.</small>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group col-4">
+        <label for="audience" class="form-label">Đối tượng người học</label>
+        <select id="audience" name="audience" class="form-control">
+          <option value="Beginner" selected>Người mới bắt đầu (Beginner)</option>
+          <option value="Student">Học sinh / Sinh viên (Student)</option>
+          <option value="Developer">Lập trình viên (Developer)</option>
+          <option value="Professional">Chuyên gia / Đi làm (Professional)</option>
+        </select>
+      </div>
+
+      <div class="form-group col-4">
+        <label for="language" class="form-label">Ngôn ngữ bài giảng</label>
+        <select id="language" name="language" class="form-control">
+          <option value="vi" selected>Tiếng Việt (vi)</option>
+          <option value="en">English (en)</option>
+        </select>
+      </div>
+
+      <div class="form-group col-4">
+        <label for="target_duration_seconds" class="form-label">Thời lượng mục tiêu</label>
+        <select id="target_duration_seconds" name="target_duration_seconds" class="form-control">
+          <option value="60">60 giây (Ngắn gọn, súc tích)</option>
+          <option value="90" selected>90 giây (Cân bằng, tiêu chuẩn)</option>
+          <option value="120">120 giây (Chi tiết, mở rộng)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary btn-lg" id="btn-submit-create">
+        <span class="btn-text">Bắt đầu tạo video</span>
+        <span class="btn-spinner" style="display: none;">Đang khởi tạo...</span>
+      </button>
+      <a href="/" class="btn btn-secondary btn-lg" id="btn-cancel">Hủy bỏ</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

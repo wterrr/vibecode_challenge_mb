@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}LearnFlow AI — AI Learning Video Studio{% endblock %}</title>
+  <meta name="description" content="Biến bất kỳ chủ đề nào thành video học ngắn, có cấu trúc và dễ hiểu." />
+  <link rel="stylesheet" href="/static/css/app.css" />
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="navbar" id="main-header">
+    <div class="nav-container">
+      <a href="/" class="nav-brand" id="brand-link">
+        <span class="brand-accent">LearnFlow</span> AI
+      </a>
+      <nav class="nav-links" id="main-nav">
+        <a href="/" class="nav-link" id="nav-home">Trang chủ</a>
+        <a href="/create" class="nav-link nav-btn-primary" id="nav-create">Tạo video</a>
+        <a href="/library" class="nav-link" id="nav-library">Thư viện</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content" id="main-content">
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <footer class="footer" id="main-footer">
+    <div class="container footer-content">
+      <p><strong>LearnFlow AI</strong> — AI Learning Video Studio</p>
+      <p class="footer-sub">VibeCode Challenge Submission</p>
+    </div>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

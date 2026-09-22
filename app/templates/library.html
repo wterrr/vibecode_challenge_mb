@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Thư viện bài giảng — LearnFlow AI{% endblock %}
+
+{% block content %}
+<div class="library-header">
+  <div>
+    <h1 class="page-title">Thư viện bài giảng</h1>
+    <p class="page-desc">Danh sách tất cả các bài giảng video đã tạo và đang xử lý.</p>
+  </div>
+  <a href="/create" class="btn btn-primary" id="btn-create-new">Tạo video mới</a>
+</div>
+
+<div class="filter-bar" id="library-filters">
+  <span class="filter-label">Lọc theo trạng thái:</span>
+  <a href="/library" class="filter-btn {% if current_filter == 'all' %}active{% endif %}">Tất cả</a>
+  <a href="/library?status=succeeded" class="filter-btn {% if current_filter == 'succeeded' %}active{% endif %}">Thành công</a>
+  <a href="/library?status=running" class="filter-btn {% if current_filter == 'running' %}active{% endif %}">Đang xử lý</a>
+  <a href="/library?status=queued" class="filter-btn {% if current_filter == 'queued' %}active{% endif %}">Trong hàng đợi</a>
+  <a href="/library?status=failed" class="filter-btn {% if current_filter == 'failed' %}active{% endif %}">Thất bại</a>
+</div>
+
+{% if jobs %}
+<div class="jobs-list" id="jobs-container">
+  {% for job in jobs %}
+  <div class="job-list-item" id="job-row-{{ job.id }}">
+    <div class="job-item-main">
+      <div class="job-item-status">
+        <span class="badge badge-{{ job.status.value }}">{{ job.status.value }}</span>
+        <span class="job-item-time">{{ job.created_at.strftime('%H:%M %d/%m/%Y') }}</span>
+      </div>
+      <h3 class="job-item-title">
+        <a href="/jobs/{{ job.id }}">{{ job.display_title or job.topic }}</a>
+      </h3>
+      {% if job.display_title and job.display_title != job.topic %}
+      <p class="job-item-topic">{{ job.topic }}</p>
+      {% endif %}
+      {% if job.note %}
+      <p class="job-item-note"><em>Ghi chú:</em> {{ job.note }}</p>
+      {% endif %}
+      <div class="job-item-meta">
+        <span>Đối tượng: <strong>{{ job.audience }}</strong></span>
+        <span>Ngôn ngữ: <strong>{{ job.language }}</strong></span>
+        <span>Thời lượng: <strong>{{ job.target_duration_seconds }}s</strong></span>
+        {% if job.status.value == 'running' %}
+        <span>Tiến độ: <strong>{{ job.progress_percent }}%</strong> ({{ job.stage.value if job.stage else '' }})</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="job-item-actions">
+      <a href="/jobs/{{ job.id }}" class="btn btn-sm btn-outline" id="btn-open-{{ job.id }}">Xem chi tiết</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state" id="empty-library">
+  <div class="empty-icon">📂</div>
+  <h2>Bạn chưa tạo video nào.</h2>
+  <p>Hãy bắt đầu bằng cách nhập một chủ đề bất kỳ mà bạn muốn chuyển thành video bài giảng.</p>
+  <a href="/create" class="btn btn-primary btn-lg" id="btn-create-first">Tạo video đầu tiên</a>
+</div>
+{% endif %}
+{% endblock %}

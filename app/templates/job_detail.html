@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}{{ job.display_title or job.topic }} — LearnFlow AI{% endblock %}
+
+{% block content %}
+<div class="detail-container" id="job-detail-root" data-job-id="{{ job.id }}" data-status="{{ job.status.value }}">
+  <!-- Header Bar -->
+  <div class="detail-header">
+    <div class="header-left">
+      <a href="/library" class="back-link">&larr; Quay lại thư viện</a>
+      <h1 class="job-display-title" id="job-title-display">{{ job.display_title or job.topic }}</h1>
+      {% if job.display_title and job.display_title != job.topic %}
+      <p class="job-original-topic" id="job-topic-display"><strong>Chủ đề:</strong> {{ job.topic }}</p>
+      {% endif %}
+    </div>
+    <div class="header-right">
+      <span class="badge badge-{{ job.status.value }} badge-lg" id="job-status-badge">{{ job.status.value }}</span>
+    </div>
+  </div>
+
+  <!-- Progress Section -->
+  <div class="card progress-card" id="progress-card">
+    <div class="progress-info">
+      <span class="progress-label" id="progress-label">
+        {% if job.status.value == 'queued' %}Đang chờ trong hàng đợi...
+        {% elif job.status.value == 'running' %}Đang xử lý: Giai đoạn <strong id="stage-name">{{ job.stage.value if job.stage else 'Khởi động' }}</strong>
+        {% elif job.status.value == 'succeeded' %}Hoàn thành
+        {% elif job.status.value == 'failed' %}Xử lý thất bại
+        {% endif %}
+      </span>
+      <span class="progress-percentage" id="progress-text">{{ job.progress_percent }}%</span>
+    </div>
+    <div class="progress-bar-track">
+      <div
+        class="progress-bar-fill {% if job.status.value == 'failed' %}fill-error{% elif job.status.value == 'succeeded' %}fill-success{% endif %}"
+        id="progress-bar-fill"
+        style="width: {{ job.progress_percent }}%;"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Status-specific Panels -->
+  {% if job.status.value == 'failed' %}
+  <div class="card error-card" id="error-panel">
+    <div class="error-header">
+      <span class="error-icon">⚠️</span>
+      <h3 class="error-title">Rất tiếc, đã xảy ra lỗi trong quá trình tạo video</h3>
+    </div>
+    <div class="error-body">
+      {% if job.error %}
+      <p><strong>Giai đoạn lỗi:</strong> <span id="error-stage">{{ job.error.stage.value if job.error.stage else 'Không xác định' }}</span></p>
+      <p><strong>Mã lỗi:</strong> <code>{{ job.error.code }}</code></p>
+      <p><strong>Chi tiết:</strong> <span id="error-message">{{ job.error.message }}</span></p>
+      {% else %}
+      <p>Không thể hoàn thành xử lý bài giảng. Vui lòng thử lại.</p>
+      {% endif %}
+    </div>
+    <div class="error-actions">
+      <a href="/create" class="btn btn-primary">Tạo video khác</a>
+      <a href="/library" class="btn btn-secondary">Về thư viện</a>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- CP2 Simulation Notice / Video Ready Card -->
+  <div
+    class="card simulation-card"
+    id="simulation-panel"
+    style="display: {% if job.status.value == 'succeeded' %}block{% else %}none{% endif %};"
+  >
+    <div class="simulation-content">
+      <div class="simulation-icon">⏱️</div>
+      <div class="simulation-text">
+        <h3>Workflow simulation completed.</h3>
+        <p>
+          Quy trình xử lý giả lập CP2 đã hoàn tất thành công tất cả các giai đoạn (Lập kế hoạch &rarr; Soạn lời thoại &rarr; Dựng hình &rarr; Kiểm định). 
+          Trong phiên bản CP2, file video thực tế chưa được sinh ra.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <!-- Left Column: Metadata & Notes -->
+    <div class="col-main">
+      <div class="card">
+        <h3 class="card-section-title">Thông tin bài giảng</h3>
+        <dl class="meta-dl">
+          <dt>Mã công việc (Job ID)</dt>
+          <dd><code id="meta-id">{{ job.id }}</code></dd>
+
+          <dt>Đối tượng người học</dt>
+          <dd id="meta-audience">{{ job.audience }}</dd>
+
+          <dt>Ngôn ngữ</dt>
+          <dd id="meta-language">{{ job.language }}</dd>
+
+          <dt>Thời lượng dự kiến</dt>
+          <dd id="meta-duration">{{ job.target_duration_seconds }} giây</dd>
+
+          <dt>Số lần thử (Attempt count)</dt>
+          <dd id="meta-attempts">{{ job.attempt_count }}</dd>
+
+          <dt>Thời gian tạo</dt>
+          <dd id="meta-created">{{ job.created_at.strftime('%H:%M:%S %d/%m/%Y') }}</dd>
+
+          <dt>Cập nhật lần cuối</dt>
+          <dd id="meta-updated">{{ job.updated_at.strftime('%H:%M:%S %d/%m/%Y') }}</dd>
+        </dl>
+      </div>
+
+      <!-- Edit Title & Note Card -->
+      <div class="card" id="edit-metadata-card">
+        <h3 class="card-section-title">Chỉnh sửa thông tin bổ sung</h3>
+        <div id="edit-feedback" class="alert alert-success" style="display: none;" role="alert"></div>
+        <form id="edit-job-form">
+          <div class="form-group">
+            <label for="display_title_input" class="form-label">Tiêu đề hiển thị tùy chỉnh</label>
+            <input
+              type="text"
+              id="display_title_input"
+              name="display_title"
+              class="form-control"
+              maxlength="200"
+              value="{{ job.display_title or '' }}"
+              placeholder="Để trống nếu muốn dùng chủ đề mặc định"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="note_input" class="form-label">Ghi chú cá nhân</label>
+            <textarea
+              id="note_input"
+              name="note"
+              class="form-control"
+              rows="3"
+              maxlength="1000"
+              placeholder="Nhập ghi chú hoặc nhắc nhở cho bài giảng này..."
+            >{{ job.note or '' }}</textarea>
+          </div>
+
+          <button type="submit" class="btn btn-secondary" id="btn-save-metadata">Lưu thông tin</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right Column: Actions -->
+    <div class="col-side">
+      <div class="card actions-card">
+        <h3 class="card-section-title">Hành động</h3>
+        <div class="actions-list">
+          <a href="/create" class="btn btn-primary btn-block">Tạo video mới</a>
+          <a href="/library" class="btn btn-secondary btn-block">Xem thư viện</a>
+
+          <div class="delete-wrapper" id="delete-section">
+            <hr class="divider" />
+            <button
+              type="button"
+              class="btn btn-danger btn-block"
+              id="btn-delete-job"
+              {% if job.status.value in ['queued', 'running'] %}disabled title="Không thể xóa khi công việc đang chạy"{% endif %}
+            >
+              Xóa bài giảng
+            </button>
+            <small class="action-hint" id="delete-hint">
+              {% if job.status.value in ['queued', 'running'] %}
+              (Chỉ có thể xóa sau khi công việc hoàn thành hoặc thất bại)
+              {% else %}
+              Xóa hoàn toàn công việc và các tệp liên quan.
+              {% endif %}
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/job_detail.js"></script>
+{% endblock %}

@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+
+*.db
+learnflow.db
+*.db-wal
+*.db-shm
+
+artifacts/*
+!artifacts/.gitkeep
+
+.DS_Store
+
+# Container dev harness / node files
+node_modules/
+dist/
+*.lock
+package-lock.json
