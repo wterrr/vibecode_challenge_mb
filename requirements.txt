@@ -10,3 +10,4 @@ pillow
 httpx
 pytest
 pytest-asyncio
+kiwisolver==1.5.1

@@ -1,5 +1,7 @@
 """API route handlers for job CRUD and video streaming."""
 
+import re
+import unicodedata
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.responses import FileResponse
 
@@ -10,6 +12,36 @@ from app.services.job_service import DeleteStatus, JobService
 from app.storage.base import ArtifactStore
 
 router = APIRouter(prefix="/api/jobs", tags=["jobs"])
+
+
+def sanitize_download_filename(raw_title: str | None, max_length: int = 80) -> str:
+    """Derive an aggressive, safe download filename without traversal, control chars, or quotes."""
+    if not raw_title or not raw_title.strip():
+        return "learnflow-video.mp4"
+
+    raw_text = raw_title.strip()
+    if raw_text.lower().endswith(".mp4"):
+        raw_text = raw_text[:-4].rstrip(". ")
+
+    cleaned = unicodedata.normalize("NFKC", raw_text)
+    # Strip control characters, CR, LF, tabs
+    cleaned = "".join(ch if ch.isprintable() and ch not in "\r\n\t" else " " for ch in cleaned)
+    # Remove traversal and illegal file characters
+    cleaned = re.sub(r'[/\\:\*\?"<>\|]+', "-", cleaned)
+    cleaned = cleaned.replace("..", "-")
+    # Collapse multiple spaces or hyphens
+    cleaned = re.sub(r"[\s_-]+", "-", cleaned).strip(".-")
+
+    if not cleaned:
+        return "learnflow-video.mp4"
+
+    if len(cleaned) > max_length:
+        cleaned = cleaned[:max_length].rstrip(".-")
+
+    if not cleaned:
+        return "learnflow-video.mp4"
+
+    return f"{cleaned}.mp4"
 
 
 def get_job_service(request: Request) -> JobService:
@@ -145,7 +177,7 @@ def delete_job(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.get("/{job_id}/video")
+@router.api_route("/{job_id}/video", methods=["GET", "HEAD"])
 def get_job_video(
     job_id: str,
     job_service: JobService = Depends(get_job_service),
@@ -173,14 +205,23 @@ def get_job_video(
 
     # Job is SUCCEEDED: must verify published final.mp4
     final_path = artifact_store.get_final_path(job_id)
-    if final_path is None:
+    if final_path is None or not final_path.exists():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Video artifact not found for succeeded job",
         )
 
+    # Derive safe, human-readable download filename
+    title_source = job.display_title
+    if not title_source and job.lesson_plan_json:
+        title_source = job.lesson_plan_json.get("title")
+    if not title_source:
+        title_source = job.topic
+
+    safe_filename = sanitize_download_filename(title_source)
+
     return FileResponse(
         path=final_path,
         media_type="video/mp4",
-        filename=f"learnflow_{job_id}.mp4",
+        filename=safe_filename,
     )

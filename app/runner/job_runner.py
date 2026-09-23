@@ -6,6 +6,7 @@ from app.domain.enums import JobStage, JobStatus
 from app.domain.errors import JobError, PipelineExecutionError
 from app.pipeline.base import LearningVideoPipeline
 from app.repositories.base import JobRepository
+from app.storage.base import ArtifactStore
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +18,11 @@ class JobRunner:
         self,
         repository: JobRepository,
         pipeline: LearningVideoPipeline,
+        artifact_store: ArtifactStore | None = None,
     ):
         self.repository = repository
         self.pipeline = pipeline
+        self.artifact_store = artifact_store
         self.queue: asyncio.Queue[str] = asyncio.Queue()
         self._worker_task: asyncio.Task | None = None
 
@@ -103,6 +106,40 @@ class JobRunner:
 
         try:
             await self.pipeline.process(job, on_stage)
+
+            # CP8 Invariant: Real video pipelines require a published, non-empty final artifact
+            if getattr(self.pipeline, "requires_published_artifact", False):
+                has_valid_final = False
+                if self.artifact_store is not None:
+                    final_path = self.artifact_store.get_final_path(job_id)
+                    if (
+                        final_path is not None
+                        and final_path.exists()
+                        and final_path.is_file()
+                        and final_path.stat().st_size > 0
+                    ):
+                        has_valid_final = True
+
+                if not has_valid_final:
+                    logger.error(
+                        "Job %s pipeline finished but final artifact is missing or unpublished",
+                        job_id,
+                    )
+                    job_error = JobError(
+                        code="missing_published_artifact",
+                        stage=JobStage.VALIDATING_OUTPUT,
+                        message="The final video artifact was not published.",
+                        retryable=False,
+                    )
+                    self.repository.update_state(
+                        job_id,
+                        status=JobStatus.FAILED,
+                        stage=JobStage.VALIDATING_OUTPUT,
+                        progress_percent=current_progress,
+                        error=job_error,
+                    )
+                    return
+
             # Pipeline completed successfully
             self.repository.update_state(
                 job_id,

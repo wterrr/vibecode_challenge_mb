@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0",
+  "title": "Quá trình quang hợp ở thực vật",
+  "topic": "Explain photosynthesis to a middle-school student.",
+  "audience": "Student",
+  "language": "vi",
+  "learning_objective": "Hiểu cách cây xanh chuyển hóa năng lượng mặt trời thành năng lượng hóa học.",
+  "summary": "Cây xanh hấp thụ nước và khí carbon dioxide dưới ánh sáng mặt trời để tạo ra glucose và oxy.",
+  "scenes": [
+    {
+      "scene_id": "s01_concept",
+      "title": "Quang hợp là gì?",
+      "concept": "Quang hợp là quá trình thực vật tự tổng hợp thức ăn từ ánh sáng mặt trời.",
+      "narration": "Quang hợp là quá trình kì diệu giúp cây xanh chuyển hóa năng lượng ánh sáng thành chất hữu cơ.",
+      "key_points": [
+        "Diễn ra tại lục lạp của lá cây",
+        "Sử dụng sắc tố diệp lục",
+        "Nuôi sống sinh quyển Trái Đất"
+      ],
+      "visual_intent": "concept_card",
+      "visual_spec": {
+        "type": "concept_card",
+        "heading": "Bản chất của Quang Hợp",
+        "points": [
+          "Nguyên liệu đầu vào: Nước, khí CO2 và ánh sáng",
+          "Nơi diễn ra: Bào quan lục lạp chứa chất diệp lục",
+          "Sản phẩm tạo thành: Đường Glucose và khí Oxy"
+        ],
+        "emphasis": [
+          "Lục lạp",
+          "Ánh sáng",
+          "Nuôi dưỡng Trái Đất"
+        ]
+      }
+    },
+    {
+      "scene_id": "s02_steps",
+      "title": "Các giai đoạn quang hợp",
+      "concept": "Hai pha chính: Pha sáng và Pha tối diễn ra tuần tự.",
+      "narration": "Pha sáng hấp thụ năng lượng mặt trời để phân tách nước, sau đó pha tối sử dụng năng lượng này để cố định carbon dioxide.",
+      "key_points": [
+        "Pha sáng: Hấp thụ photon và giải phóng oxy",
+        "Pha tối: Cố định khí carbon thành đường"
+      ],
+      "visual_intent": "process_diagram",
+      "visual_spec": {
+        "type": "process_diagram",
+        "title": "Chu trình chuyển hóa năng lượng",
+        "actors": [
+          {
+            "id": "sun",
+            "label": "Ánh sáng Mặt Trời"
+          },
+          {
+            "id": "chloroplast",
+            "label": "Lục lạp (Pha Sáng)"
+          },
+          {
+            "id": "calvin",
+            "label": "Chu trình Calvin (Pha Tối)"
+          }
+        ],
+        "steps": [
+          {
+            "order": 1,
+            "from_actor": "sun",
+            "to_actor": "chloroplast",
+            "label": "Hấp thụ ánh sáng",
+            "description": "Năng lượng photon kích hoạt diệp lục phân tách phân tử nước."
+          },
+          {
+            "order": 2,
+            "from_actor": "chloroplast",
+            "to_actor": "calvin",
+            "label": "Truyền ATP & NADPH",
+            "description": "Năng lượng hóa học từ pha sáng được nạp vào chu trình pha tối."
+          },
+          {
+            "order": 3,
+            "from_actor": "calvin",
+            "to_actor": "calvin",
+            "label": "Tạo đường Glucose",
+            "description": "Cố định CO2 thành phân tử đường nuôi dưỡng toàn bộ cây."
+          }
+        ]
+      }
+    },
+    {
+      "scene_id": "s03_comparison",
+      "title": "So sánh Quang hợp và Hô hấp",
+      "concept": "Mối liên hệ bổ trợ giữa hai quá trình trao đổi chất của sinh vật.",
+      "narration": "Nếu quang hợp tích lũy năng lượng và thải ra oxy thì hô hấp phân giải năng lượng và giải phóng khí carbon dioxide.",
+      "key_points": [
+        "Quang hợp tích lũy năng lượng",
+        "Hô hấp giải phóng năng lượng"
+      ],
+      "visual_intent": "comparison",
+      "visual_spec": {
+        "type": "comparison",
+        "title": "Quang hợp vs Hô hấp tế bào",
+        "columns": [
+          {
+            "title": "Quang hợp",
+            "subtitle": "Tích lũy năng lượng",
+            "points": [
+              "Chỉ xảy ra khi có ánh sáng",
+              "Hấp thụ CO2, giải phóng O2",
+              "Tổng hợp chất hữu cơ (Glucose)"
+            ]
+          },
+          {
+            "title": "Hô hấp tế bào",
+            "subtitle": "Giải phóng năng lượng",
+            "points": [
+              "Diễn ra liên tục ngày và đêm",
+              "Hấp thụ O2, giải phóng CO2",
+              "Phân giải chất hữu cơ để lấy ATP"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

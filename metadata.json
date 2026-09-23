@@ -1,6 +1,0 @@
-{
-  "name": "LearnFlow AI",
-  "description": "AI Learning Video Studio — turns learning topics into structured narrated videos.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

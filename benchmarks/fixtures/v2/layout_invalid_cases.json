@@ -1,0 +1,146 @@
+[
+  {
+    "case_id": "unsat_single_item_wider_than_content",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "expected_error": "LAYOUT_UNSATISFIABLE",
+    "reason": "min_width exceeds content zone width (2000 > 1152)",
+    "items": [
+      {
+        "node_id": "huge_node",
+        "role": "content",
+        "min_width": 2000.0,
+        "min_height": 100.0
+      }
+    ]
+  },
+  {
+    "case_id": "unsat_single_item_taller_than_content",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "expected_error": "LAYOUT_UNSATISFIABLE",
+    "reason": "min_height exceeds content zone height (1000 > 453.6)",
+    "items": [
+      {
+        "node_id": "tall_node",
+        "role": "content",
+        "min_width": 300.0,
+        "min_height": 1000.0
+      }
+    ]
+  },
+  {
+    "case_id": "unsat_comparison_two_widths_exceed_content",
+    "strategy": "COMPARISON",
+    "profile": "16:9",
+    "expected_error": "LAYOUT_UNSATISFIABLE",
+    "reason": "left.min_width + right.min_width + gutter > content.width (600 + 600 + 32 > 1152)",
+    "items": [
+      {
+        "node_id": "c1",
+        "role": "left",
+        "min_width": 600.0,
+        "min_height": 150.0
+      },
+      {
+        "node_id": "c2",
+        "role": "right",
+        "min_width": 600.0,
+        "min_height": 150.0
+      }
+    ]
+  },
+  {
+    "case_id": "unsat_comparison_portrait_widths_exceed_safe_w",
+    "strategy": "COMPARISON",
+    "profile": "9:16",
+    "expected_error": "LAYOUT_UNSATISFIABLE",
+    "reason": "left and right in portrait exceed safe width (350 + 350 + 20 > 648)",
+    "items": [
+      {
+        "node_id": "c1",
+        "role": "left",
+        "min_width": 350.0,
+        "min_height": 100.0
+      },
+      {
+        "node_id": "c2",
+        "role": "right",
+        "min_width": 350.0,
+        "min_height": 100.0
+      }
+    ]
+  },
+  {
+    "case_id": "unsat_portrait_stacked_heights_exceed_content",
+    "strategy": "IMAGE_TEXT",
+    "profile": "9:16",
+    "expected_error": "LAYOUT_UNSATISFIABLE",
+    "reason": "image height + text height + gutter > content zone height (500 + 500 + 20 > 832)",
+    "items": [
+      {
+        "node_id": "img",
+        "role": "image",
+        "min_width": 250.0,
+        "min_height": 500.0
+      },
+      {
+        "node_id": "txt",
+        "role": "text",
+        "min_width": 250.0,
+        "min_height": 500.0
+      }
+    ]
+  },
+  {
+    "case_id": "unsat_portrait_item_wider_than_frame",
+    "strategy": "CONCEPT_CARD",
+    "profile": "9:16",
+    "expected_error": "LAYOUT_UNSATISFIABLE",
+    "reason": "item wider than entire portrait frame (800 > 720)",
+    "items": [
+      {
+        "node_id": "w_over",
+        "role": "content",
+        "min_width": 800.0,
+        "min_height": 100.0
+      }
+    ]
+  },
+  {
+    "case_id": "unsat_title_taller_than_title_zone",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "expected_error": "LAYOUT_UNSATISFIABLE",
+    "reason": "title height exceeds title zone height (200 > 97.2)",
+    "items": [
+      {
+        "node_id": "big_title",
+        "role": "title",
+        "min_width": 200.0,
+        "min_height": 200.0
+      },
+      {
+        "node_id": "ok_content",
+        "role": "content",
+        "min_width": 200.0,
+        "min_height": 100.0
+      }
+    ]
+  },
+  {
+    "case_id": "unsat_quote_exceeds_max_bounded_width",
+    "strategy": "QUOTE",
+    "profile": "16:9",
+    "expected_error": "LAYOUT_UNSATISFIABLE",
+    "reason": "quote min width exceeds 90% content zone width (1100 > 1036.8)",
+    "items": [
+      {
+        "node_id": "wide_quote",
+        "role": "quote",
+        "min_width": 1100.0,
+        "min_height": 60.0
+      }
+    ]
+  }
+]

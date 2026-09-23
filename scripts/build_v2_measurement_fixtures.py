@@ -1,0 +1,252 @@
+"""Generate deterministic measurement fixture corpus for LearnFlow V2.1 layout measurement."""
+
+import json
+from pathlib import Path
+
+FIXTURE_PATH = Path("benchmarks/fixtures/v2/measurement_cases.json")
+
+CASES = [
+    # 1-5: Short English
+    {"id": "en_short_01", "type": "text", "input": "Loss", "category": "short_english"},
+    {"id": "en_short_02", "type": "text", "input": "Model", "category": "short_english"},
+    {"id": "en_short_03", "type": "text", "input": "Gradient", "category": "short_english"},
+    {"id": "en_short_04", "type": "text", "input": "Batch Size", "category": "short_english"},
+    {"id": "en_short_05", "type": "text", "input": "Epoch", "category": "short_english"},
+
+    # 6-10: Long English
+    {
+        "id": "en_long_01",
+        "type": "text",
+        "input": "Backpropagation updates every parameter in the neural network.",
+        "category": "long_english",
+    },
+    {
+        "id": "en_long_02",
+        "type": "text",
+        "input": "Convolutional neural networks extract hierarchical spatial features from input imagery.",
+        "category": "long_english",
+    },
+    {
+        "id": "en_long_03",
+        "type": "text",
+        "input": "Transformer architectures utilize multi-head self-attention mechanisms to capture dependencies.",
+        "category": "long_english",
+    },
+    {
+        "id": "en_long_04",
+        "type": "text",
+        "input": "Stochastic gradient descent approximates true gradients using mini-batch sampling.",
+        "category": "long_english",
+    },
+    {
+        "id": "en_long_05",
+        "type": "text",
+        "input": "Regularization techniques such as dropout and weight decay mitigate overfitting during training.",
+        "category": "long_english",
+    },
+
+    # 11-15: Short Vietnamese
+    {"id": "vi_short_01", "type": "text", "input": "Học sâu", "category": "short_vietnamese"},
+    {"id": "vi_short_02", "type": "text", "input": "Hàm mất mát", "category": "short_vietnamese"},
+    {"id": "vi_short_03", "type": "text", "input": "Hạ độ dốc", "category": "short_vietnamese"},
+    {"id": "vi_short_04", "type": "text", "input": "Độ chính xác", "category": "short_vietnamese"},
+    {"id": "vi_short_05", "type": "text", "input": "Trọng số", "category": "short_vietnamese"},
+
+    # 16-20: Long Vietnamese
+    {
+        "id": "vi_long_01",
+        "type": "text",
+        "input": "Giải thích quá trình quang hợp trong lục lạp của tế bào thực vật.",
+        "category": "long_vietnamese",
+    },
+    {
+        "id": "vi_long_02",
+        "type": "text",
+        "input": "Mạng nơ-ron tích chập xử lý dữ liệu hình ảnh đa chiều thông qua các bộ lọc tích chập cục bộ.",
+        "category": "long_vietnamese",
+    },
+    {
+        "id": "vi_long_03",
+        "type": "text",
+        "input": "Cơ chế chú ý giúp mô hình tập trung vào các từ ngữ mang ý nghĩa quan trọng nhất trong câu.",
+        "category": "long_vietnamese",
+    },
+    {
+        "id": "vi_long_04",
+        "type": "text",
+        "input": "Bộ nhớ RAM lưu trữ tạm thời các lệnh và dữ liệu cần xử lý với tốc độ truy xuất cực nhanh.",
+        "category": "long_vietnamese",
+    },
+    {
+        "id": "vi_long_05",
+        "type": "text",
+        "input": "Học máy có giám sát yêu cầu tập dữ liệu huấn luyện đã được gán nhãn chính xác từ trước.",
+        "category": "long_vietnamese",
+    },
+
+    # 21-25: Mixed Vietnamese + English technical terms
+    {
+        "id": "vi_en_mixed_01",
+        "type": "text",
+        "input": "Mô hình Transformer huấn luyện với Attention Mechanism và Positional Encoding.",
+        "category": "mixed_technical",
+    },
+    {
+        "id": "vi_en_mixed_02",
+        "type": "text",
+        "input": "Độ phức tạp tính toán O(n log n) của thuật toán QuickSort so với O(n^2) của BubbleSort.",
+        "category": "mixed_technical",
+    },
+    {
+        "id": "vi_en_mixed_03",
+        "type": "text",
+        "input": "Sử dụng Adam optimizer để tối ưu hóa hàm cross-entropy loss trong deep learning.",
+        "category": "mixed_technical",
+    },
+    {
+        "id": "vi_en_mixed_04",
+        "type": "text",
+        "input": "Pipeline CI/CD tự động kiểm thử và deploy các microservices lên cụm Kubernetes.",
+        "category": "mixed_technical",
+    },
+    {
+        "id": "vi_en_mixed_05",
+        "type": "text",
+        "input": "Kiến trúc client-server trao đổi dữ liệu qua giao thức WebSocket và REST API.",
+        "category": "mixed_technical",
+    },
+
+    # 26-30: Punctuation & Numbers
+    {
+        "id": "num_punct_01",
+        "type": "text",
+        "input": "Version 2.1 (released 2026-09-23): 100% test coverage!",
+        "category": "numbers_punctuation",
+    },
+    {
+        "id": "num_punct_02",
+        "type": "text",
+        "input": "Accuracy: 98.75% ± 0.12% [epoch 42/100, lr = 0.001]",
+        "category": "numbers_punctuation",
+    },
+    {
+        "id": "num_punct_03",
+        "type": "text",
+        "input": "Input (3x224x224) -> Conv2D(64) -> MaxPool -> Dense(1000)",
+        "category": "numbers_punctuation",
+    },
+    {
+        "id": "num_punct_04",
+        "type": "text",
+        "input": "Cost: $0.10/M input, $0.50/M output; cache: ~$0.01/M",
+        "category": "numbers_punctuation",
+    },
+    {
+        "id": "num_punct_05",
+        "type": "text",
+        "input": "¿Cómo estás? «LearnFlow V2.1» — tested & approved.",
+        "category": "numbers_punctuation",
+    },
+
+    # 31-35: Pathological / Long Tokens
+    {
+        "id": "long_token_01",
+        "type": "text",
+        "input": "supercalifragilisticexpialidocious",
+        "category": "pathological_tokens",
+    },
+    {
+        "id": "long_token_02",
+        "type": "text",
+        "input": "https://learnflow.ai/v2/specifications/layout/measurement/schema",
+        "category": "pathological_tokens",
+    },
+    {
+        "id": "long_token_03",
+        "type": "text",
+        "input": "SCENEGRAPH_INCOMPLETE_SEMANTIC_IDENTITY_EXCEPTION_HANDLER",
+        "category": "pathological_tokens",
+    },
+    {
+        "id": "long_token_04",
+        "type": "text",
+        "input": "Token with averyveryveryveryverylongtechnicalidentifierinside sentence",
+        "category": "pathological_tokens",
+    },
+    {
+        "id": "long_token_05",
+        "type": "text",
+        "input": "a" * 80,
+        "category": "pathological_tokens",
+    },
+
+    # 36-40: Multi-line text
+    {
+        "id": "multiline_01",
+        "type": "text",
+        "input": "Dòng một của văn bản\nDòng hai tiếp theo với độ dài lớn hơn\nDòng ba kết thúc",
+        "category": "multiline",
+    },
+    {
+        "id": "multiline_02",
+        "type": "text",
+        "input": "Step 1: Forward Pass\nStep 2: Compute Loss\nStep 3: Backward Pass\nStep 4: Update Weights",
+        "category": "multiline",
+    },
+    {
+        "id": "multiline_03",
+        "type": "text",
+        "input": "Header Line\n\nBlank line separating paragraphs\nFooter Line",
+        "category": "multiline",
+    },
+    {
+        "id": "multiline_04",
+        "type": "text",
+        "input": "RAM: Volatile Memory\nSSD: Non-Volatile Flash",
+        "category": "multiline",
+    },
+    {
+        "id": "multiline_05",
+        "type": "text",
+        "input": "A\nB\nC\nD\nE",
+        "category": "multiline",
+    },
+
+    # 41-45: Simple Educational Equations
+    {"id": "math_01", "type": "math", "input": "y = mx + b", "category": "simple_math"},
+    {"id": "math_02", "type": "math", "input": "E = mc²", "category": "simple_math"},
+    {"id": "math_03", "type": "math", "input": "∂L/∂w", "category": "simple_math"},
+    {"id": "math_04", "type": "math", "input": "a/b", "category": "simple_math"},
+    {"id": "math_05", "type": "math", "input": "F = ma", "category": "simple_math"},
+
+    # 46-50: Structural Math & Unicode
+    {"id": "math_06", "type": "math", "input": "x^2 + y^2", "category": "structural_math"},
+    {"id": "math_07", "type": "math", "input": "e^{-x}", "category": "structural_math"},
+    {"id": "math_08", "type": "math", "input": "x_1 + x_2", "category": "structural_math"},
+    {"id": "math_09", "type": "math", "input": "α + β = θ", "category": "structural_math"},
+    {"id": "math_10", "type": "math", "input": "σ(z) = 1 / (1 + e^{-z})", "category": "structural_math"},
+
+    # 51-55: Icons
+    {"id": "icon_01", "type": "icon", "input": "sparkles", "category": "icon"},
+    {"id": "icon_02", "type": "icon", "input": "lightbulb", "category": "icon"},
+    {"id": "icon_03", "type": "icon", "input": "cpu", "category": "icon"},
+    {"id": "icon_04", "type": "icon", "input": "database", "category": "icon"},
+    {"id": "icon_05", "type": "icon", "input": "arrow_right", "category": "icon"},
+]
+
+
+def main():
+    FIXTURE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "version": "2.1",
+        "description": "Deterministic intrinsic measurement test corpus (V2-02)",
+        "total_cases": len(CASES),
+        "cases": CASES,
+    }
+    with open(FIXTURE_PATH, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+    print(f"Generated {len(CASES)} measurement fixture cases into {FIXTURE_PATH}")
+
+
+if __name__ == "__main__":
+    main()

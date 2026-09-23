@@ -1,69 +1,90 @@
 {% extends "base.html" %}
 
-{% block title %}Tạo video bài giảng — LearnFlow AI{% endblock %}
+{% block title %}Tạo bài học mới — LearnFlow{% endblock %}
 
 {% block content %}
-<div class="form-wrapper">
-  <div class="form-header">
-    <h1 class="page-title">Tạo video bài giảng mới</h1>
-    <p class="page-desc">Nhập chủ đề bạn muốn học hoặc giảng dạy, chọn đối tượng và thời lượng mong muốn.</p>
+<div class="form-container">
+  <div class="page-header">
+    <h1 class="page-title">Tạo một bài học mới</h1>
+    <p class="page-subtitle">Tạo video bài giảng mới: nhập câu hỏi hoặc chủ đề bạn muốn chuyển thành video ngắn.</p>
   </div>
 
-  <div id="error-alert" class="alert alert-error" style="display: none;" role="alert"></div>
+  {% if pipeline_mode == "demo" %}
+  <div class="notice-box notice-demo" id="demo-mode-notice">
+    <div class="notice-badge">Chế độ demo</div>
+    <p class="notice-text">
+      Bản demo hiện hỗ trợ một số chủ đề mẫu và vẫn tạo video thật từ đầu đến cuối.
+    </p>
+    <div class="demo-topics-list">
+      <span class="demo-hint">Chọn nhanh chủ đề mẫu:</span>
+      <button type="button" class="demo-chip-btn" data-topic="How does the TCP three-way handshake work?">
+        TCP three-way handshake
+      </button>
+      <button type="button" class="demo-chip-btn" data-topic="Explain photosynthesis to a middle-school student.">
+        Quá trình quang hợp
+      </button>
+      <button type="button" class="demo-chip-btn" data-topic="RAM vs SSD for a beginner.">
+        RAM vs SSD
+      </button>
+    </div>
+  </div>
+  {% endif %}
 
-  <form id="create-job-form" class="job-form">
+  <div id="error-alert" class="alert-box alert-danger" style="display: none;" role="alert"></div>
+
+  <form id="create-job-form" class="lesson-form" novalidate>
     <div class="form-group">
       <label for="topic" class="form-label">
-        Chủ đề hoặc câu hỏi học tập <span class="required">*</span>
+        Bạn muốn hiểu điều gì?
       </label>
       <textarea
         id="topic"
         name="topic"
-        class="form-control"
+        class="form-control form-textarea"
         rows="4"
         minlength="3"
         maxlength="500"
-        placeholder="Ví dụ: How does the TCP three-way handshake work? hoặc Giải thích hiện tượng quang hợp..."
+        placeholder="Ví dụ: Giải thích TCP three-way handshake hoạt động như thế nào..."
         required
       >{{ prefill_topic }}</textarea>
-      <small class="form-hint">Tối thiểu 3 ký tự, tối đa 500 ký tự. Có thể viết bằng tiếng Việt hoặc tiếng Anh.</small>
+      <div class="form-hint">Tối thiểu 3 ký tự. Bạn có thể diễn đạt bằng tiếng Việt hoặc tiếng Anh.</div>
     </div>
 
-    <div class="form-row">
-      <div class="form-group col-4">
+    <div class="form-row secondary-settings">
+      <div class="form-col">
         <label for="audience" class="form-label">Đối tượng người học</label>
-        <select id="audience" name="audience" class="form-control">
-          <option value="Beginner" selected>Người mới bắt đầu (Beginner)</option>
-          <option value="Student">Học sinh / Sinh viên (Student)</option>
-          <option value="Developer">Lập trình viên (Developer)</option>
-          <option value="Professional">Chuyên gia / Đi làm (Professional)</option>
+        <select id="audience" name="audience" class="form-control form-select">
+          <option value="Beginner" selected>Người mới bắt đầu</option>
+          <option value="Student">Học sinh / Sinh viên</option>
+          <option value="Developer">Lập trình viên</option>
+          <option value="Professional">Chuyên gia / Đi làm</option>
         </select>
       </div>
 
-      <div class="form-group col-4">
+      <div class="form-col">
         <label for="language" class="form-label">Ngôn ngữ bài giảng</label>
-        <select id="language" name="language" class="form-control">
-          <option value="vi" selected>Tiếng Việt (vi)</option>
-          <option value="en">English (en)</option>
+        <select id="language" name="language" class="form-control form-select">
+          <option value="vi" selected>Tiếng Việt</option>
+          <option value="en">English</option>
         </select>
       </div>
 
-      <div class="form-group col-4">
-        <label for="target_duration_seconds" class="form-label">Thời lượng mục tiêu</label>
-        <select id="target_duration_seconds" name="target_duration_seconds" class="form-control">
-          <option value="60">60 giây (Ngắn gọn, súc tích)</option>
-          <option value="90" selected>90 giây (Cân bằng, tiêu chuẩn)</option>
-          <option value="120">120 giây (Chi tiết, mở rộng)</option>
+      <div class="form-col">
+        <label for="target_duration_seconds" class="form-label">Thời lượng dự kiến</label>
+        <select id="target_duration_seconds" name="target_duration_seconds" class="form-control form-select">
+          <option value="60">60 giây</option>
+          <option value="90" selected>90 giây</option>
+          <option value="120">120 giây</option>
         </select>
       </div>
     </div>
 
     <div class="form-actions">
       <button type="submit" class="btn btn-primary btn-lg" id="btn-submit-create">
-        <span class="btn-text">Bắt đầu tạo video</span>
-        <span class="btn-spinner" style="display: none;">Đang khởi tạo...</span>
+        <span class="btn-text">Tạo bài học</span>
+        <span class="btn-loading" style="display: none;">Đang bắt đầu…</span>
       </button>
-      <a href="/" class="btn btn-secondary btn-lg" id="btn-cancel">Hủy bỏ</a>
+      <a href="/" class="btn btn-secondary btn-lg" id="btn-cancel">Hủy</a>
     </div>
   </form>
 </div>

@@ -1,0 +1,389 @@
+[
+  {
+    "case_id": "duplicate_node_id",
+    "description": "Two nodes in the same scene share the identical node ID",
+    "expected_error_code": "SCENEGRAPH_DUPLICATE_NODE_ID",
+    "target_type": "scenegraph",
+    "payload": {
+      "scene_id": "invalid_dup_node",
+      "nodes": [
+        {
+          "id": "node_x",
+          "kind": "CONCEPT",
+          "label": "Node 1"
+        },
+        {
+          "id": "node_x",
+          "kind": "TEXT",
+          "label": "Node 2"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "duplicate_relation_id",
+    "description": "Two relations in the same scene share the identical relation ID",
+    "expected_error_code": "SCENEGRAPH_DUPLICATE_RELATION_ID",
+    "target_type": "scenegraph",
+    "payload": {
+      "scene_id": "invalid_dup_rel",
+      "nodes": [
+        {
+          "id": "node_a",
+          "kind": "CONCEPT",
+          "label": "Node A"
+        },
+        {
+          "id": "node_b",
+          "kind": "TEXT",
+          "label": "Node B"
+        }
+      ],
+      "relations": [
+        {
+          "id": "rel_1",
+          "source": "node_a",
+          "target": "node_b",
+          "kind": "FLOW"
+        },
+        {
+          "id": "rel_1",
+          "source": "node_b",
+          "target": "node_a",
+          "kind": "FLOW"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "duplicate_group_id",
+    "description": "Two groups in the same scene share the identical group ID",
+    "expected_error_code": "SCENEGRAPH_DUPLICATE_GROUP_ID",
+    "target_type": "scenegraph",
+    "payload": {
+      "scene_id": "invalid_dup_grp",
+      "nodes": [
+        {
+          "id": "node_a",
+          "kind": "CONCEPT"
+        },
+        {
+          "id": "node_b",
+          "kind": "TEXT"
+        }
+      ],
+      "groups": [
+        {
+          "id": "grp_1",
+          "member_ids": [
+            "node_a"
+          ]
+        },
+        {
+          "id": "grp_1",
+          "member_ids": [
+            "node_b"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "unknown_relation_source",
+    "description": "Relation references a source node ID that does not exist",
+    "expected_error_code": "SCENEGRAPH_INVALID_RELATION_REF",
+    "target_type": "scenegraph",
+    "payload": {
+      "scene_id": "invalid_rel_source",
+      "nodes": [
+        {
+          "id": "node_b",
+          "kind": "TEXT"
+        }
+      ],
+      "relations": [
+        {
+          "id": "rel_1",
+          "source": "ghost_node",
+          "target": "node_b",
+          "kind": "FLOW"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "unknown_relation_target",
+    "description": "Relation references a target node ID that does not exist",
+    "expected_error_code": "SCENEGRAPH_INVALID_RELATION_REF",
+    "target_type": "scenegraph",
+    "payload": {
+      "scene_id": "invalid_rel_target",
+      "nodes": [
+        {
+          "id": "node_a",
+          "kind": "CONCEPT"
+        }
+      ],
+      "relations": [
+        {
+          "id": "rel_1",
+          "source": "node_a",
+          "target": "ghost_node",
+          "kind": "FLOW"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "unknown_group_member",
+    "description": "Group member_ids includes a node ID that does not exist",
+    "expected_error_code": "SCENEGRAPH_INVALID_GROUP_REF",
+    "target_type": "scenegraph",
+    "payload": {
+      "scene_id": "invalid_grp_member",
+      "nodes": [
+        {
+          "id": "node_a",
+          "kind": "CONCEPT"
+        }
+      ],
+      "groups": [
+        {
+          "id": "grp_1",
+          "member_ids": [
+            "node_a",
+            "ghost_node"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "duplicate_group_member",
+    "description": "Group member_ids contains the same node ID twice",
+    "expected_error_code": "SCENEGRAPH_INVALID_GROUP_REF",
+    "target_type": "scenegraph",
+    "payload": {
+      "scene_id": "invalid_dup_member",
+      "nodes": [
+        {
+          "id": "node_a",
+          "kind": "CONCEPT"
+        }
+      ],
+      "groups": [
+        {
+          "id": "grp_1",
+          "member_ids": [
+            "node_a",
+            "node_a"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "unknown_layout_hint_ref",
+    "description": "LayoutHint keep_near references a node ID that does not exist",
+    "expected_error_code": "SCENEGRAPH_INVALID_LAYOUT_REF",
+    "target_type": "scenegraph",
+    "payload": {
+      "scene_id": "invalid_layout_ref",
+      "nodes": [
+        {
+          "id": "node_a",
+          "kind": "CONCEPT",
+          "layout_hint": {
+            "keep_near": [
+              "missing_node"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "unknown_concept_ref",
+    "description": "SceneNode concept_ref does not exist in ConceptRegistry",
+    "expected_error_code": "SCENEGRAPH_UNKNOWN_CONCEPT_REF",
+    "target_type": "registry_validation",
+    "payload": {
+      "scene_id": "unknown_cref",
+      "nodes": [
+        {
+          "id": "node_a",
+          "kind": "CONCEPT",
+          "concept_ref": "c_non_existent",
+          "semantic_key": "concept:non_existent"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "semantic_key_mismatch",
+    "description": "SceneNode semantic_key conflicts with canonical_key in ConceptRegistry",
+    "expected_error_code": "SCENEGRAPH_SEMANTIC_KEY_MISMATCH",
+    "target_type": "registry_validation",
+    "payload": {
+      "scene_id": "mismatch_key",
+      "nodes": [
+        {
+          "id": "node_a",
+          "kind": "CONCEPT",
+          "concept_ref": "c_loss_test",
+          "semantic_key": "concept:wrong_key"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "importance_out_of_bounds",
+    "description": "LayoutHint importance > 1.0 rejected by Pydantic bounds",
+    "expected_error_code": "VALIDATION_ERROR",
+    "target_type": "scenegraph",
+    "payload": {
+      "scene_id": "invalid_importance",
+      "nodes": [
+        {
+          "id": "node_a",
+          "kind": "CONCEPT",
+          "layout_hint": {
+            "importance": 1.5
+          }
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "forbidden_geometry_x",
+    "description": "Forbidden pixel coordinate x rejected by extra='forbid'",
+    "expected_error_code": "VALIDATION_ERROR",
+    "target_type": "scenegraph",
+    "payload": {
+      "scene_id": "invalid_geometry_x",
+      "nodes": [
+        {
+          "id": "node_a",
+          "kind": "CONCEPT",
+          "x": 472
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "forbidden_geometry_pixel_width",
+    "description": "Forbidden pixel_width rejected by extra='forbid'",
+    "expected_error_code": "VALIDATION_ERROR",
+    "target_type": "scenegraph",
+    "payload": {
+      "scene_id": "invalid_pixel_width",
+      "nodes": [
+        {
+          "id": "node_a",
+          "kind": "CONCEPT",
+          "pixel_width": 300
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "registry_canonical_key_collision",
+    "description": "Registering two distinct concepts with the same canonical key",
+    "expected_error_code": "CONCEPT_REGISTRY_COLLISION",
+    "target_type": "registry",
+    "payload": {
+      "concept_1": {
+        "concept_id": "c_1",
+        "canonical_key": "concept:loss",
+        "label": "Loss A"
+      },
+      "concept_2": {
+        "concept_id": "c_2",
+        "canonical_key": "concept:loss",
+        "label": "Loss B"
+      }
+    }
+  },
+  {
+    "case_id": "registry_ambiguous_alias_collision",
+    "description": "Registering two distinct concepts claiming the same alias",
+    "expected_error_code": "CONCEPT_REGISTRY_COLLISION",
+    "target_type": "registry",
+    "payload": {
+      "concept_1": {
+        "concept_id": "c_1",
+        "canonical_key": "concept:loss",
+        "label": "Loss",
+        "aliases": [
+          "cost function"
+        ]
+      },
+      "concept_2": {
+        "concept_id": "c_2",
+        "canonical_key": "concept:cost",
+        "label": "Cost",
+        "aliases": [
+          "cost function"
+        ]
+      }
+    }
+  },
+  {
+    "case_id": "semantic_key_without_concept_ref",
+    "description": "SceneNode specifies semantic_key without required concept_ref",
+    "expected_error_code": "SCENEGRAPH_INCOMPLETE_SEMANTIC_IDENTITY",
+    "target_type": "scenegraph",
+    "payload": {
+      "scene_id": "invalid_sem_key_only",
+      "nodes": [
+        {
+          "id": "node_a",
+          "kind": "CONCEPT",
+          "semantic_key": "concept:orphan"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "concept_ref_without_semantic_key",
+    "description": "SceneNode specifies concept_ref without required semantic_key",
+    "expected_error_code": "SCENEGRAPH_INCOMPLETE_SEMANTIC_IDENTITY",
+    "target_type": "scenegraph",
+    "payload": {
+      "scene_id": "invalid_cref_only",
+      "nodes": [
+        {
+          "id": "node_a",
+          "kind": "CONCEPT",
+          "concept_ref": "c_loss_test"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "unsupported_scenegraph_schema_version",
+    "description": "SceneGraph schema_version is unsupported (e.g. 999)",
+    "expected_error_code": "VALIDATION_ERROR",
+    "target_type": "scenegraph",
+    "payload": {
+      "schema_version": "999",
+      "scene_id": "invalid_version_sg",
+      "nodes": [
+        {
+          "id": "node_a",
+          "kind": "CONCEPT"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "unsupported_registry_schema_version",
+    "description": "ConceptRegistrySchema schema_version is unsupported (e.g. 999)",
+    "expected_error_code": "VALIDATION_ERROR",
+    "target_type": "registry_schema",
+    "payload": {
+      "schema_version": "999",
+      "concepts": []
+    }
+  }
+]

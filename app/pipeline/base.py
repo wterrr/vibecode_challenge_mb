@@ -12,6 +12,8 @@ StageCallback = Callable[[JobStage, int], Awaitable[None]]
 class LearningVideoPipeline(ABC):
     """Abstract interface for video generation pipelines."""
 
+    requires_published_artifact: bool = False
+
     @abstractmethod
     async def process(
         self,

@@ -1,0 +1,106 @@
+{
+  "baseline_version": "v1-cp10",
+  "tests_expected_min": 202,
+  "render_profile": "test",
+  "media_invariants": {
+    "video_codec": "h264",
+    "audio_codec": "aac",
+    "width": 640,
+    "height": 360,
+    "fps": 12,
+    "final_artifact_name": "final.mp4",
+    "quality_gate": "pass"
+  },
+  "lessons": {
+    "tcp_three_way_handshake": {
+      "fixture_file": "tcp_three_way_handshake.json",
+      "scene_count": 3,
+      "visual_intent_sequence": [
+        "concept_card",
+        "process_diagram",
+        "comparison"
+      ],
+      "language": "vi",
+      "target_duration_seconds": 90,
+      "expected_terminal_stages": [
+        "planning",
+        "validating_plan",
+        "audio",
+        "rendering",
+        "assembling",
+        "validating_output"
+      ],
+      "required_final_artifact": "final.mp4",
+      "expected_video_codec": "h264",
+      "expected_audio_codec": "aac",
+      "render_profile": "test",
+      "expected_width": 640,
+      "expected_height": 360,
+      "valid_duration_range": [
+        3.0,
+        60.0
+      ],
+      "quality_gate_expected": "pass"
+    },
+    "photosynthesis": {
+      "fixture_file": "photosynthesis.json",
+      "scene_count": 3,
+      "visual_intent_sequence": [
+        "concept_card",
+        "process_diagram",
+        "comparison"
+      ],
+      "language": "vi",
+      "target_duration_seconds": 90,
+      "expected_terminal_stages": [
+        "planning",
+        "validating_plan",
+        "audio",
+        "rendering",
+        "assembling",
+        "validating_output"
+      ],
+      "required_final_artifact": "final.mp4",
+      "expected_video_codec": "h264",
+      "expected_audio_codec": "aac",
+      "render_profile": "test",
+      "expected_width": 640,
+      "expected_height": 360,
+      "valid_duration_range": [
+        3.0,
+        60.0
+      ],
+      "quality_gate_expected": "pass"
+    },
+    "ram_vs_ssd": {
+      "fixture_file": "ram_vs_ssd.json",
+      "scene_count": 3,
+      "visual_intent_sequence": [
+        "concept_card",
+        "process_diagram",
+        "comparison"
+      ],
+      "language": "vi",
+      "target_duration_seconds": 60,
+      "expected_terminal_stages": [
+        "planning",
+        "validating_plan",
+        "audio",
+        "rendering",
+        "assembling",
+        "validating_output"
+      ],
+      "required_final_artifact": "final.mp4",
+      "expected_video_codec": "h264",
+      "expected_audio_codec": "aac",
+      "render_profile": "test",
+      "expected_width": 640,
+      "expected_height": 360,
+      "valid_duration_range": [
+        3.0,
+        60.0
+      ],
+      "quality_gate_expected": "pass"
+    }
+  }
+}

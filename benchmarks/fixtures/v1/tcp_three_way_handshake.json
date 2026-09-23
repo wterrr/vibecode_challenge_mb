@@ -1,0 +1,121 @@
+{
+  "schema_version": "1.0",
+  "title": "Cơ chế bắt tay 3 bước TCP",
+  "topic": "How does the TCP three-way handshake work?",
+  "audience": "Developer",
+  "language": "vi",
+  "learning_objective": "Hiểu quy trình SYN, SYN-ACK, ACK để thiết lập kết nối tin cậy.",
+  "summary": "TCP sử dụng quy trình bắt tay 3 bước nhằm đồng bộ số thứ tự và kiểm tra kết nối hai chiều.",
+  "scenes": [
+    {
+      "scene_id": "s01_intro",
+      "title": "Khái niệm kết nối TCP",
+      "concept": "TCP là giao thức hướng kết nối đảm bảo dữ liệu truyền tải tin cậy và tuần tự.",
+      "narration": "Trước khi truyền dữ liệu qua TCP, máy khách và máy chủ phải thiết lập kết nối tin cậy.",
+      "key_points": [
+        "Giao thức hướng kết nối",
+        "Đảm bảo truyền dữ liệu chính xác",
+        "Đồng bộ sequence number"
+      ],
+      "visual_intent": "concept_card",
+      "visual_spec": {
+        "type": "concept_card",
+        "heading": "TCP Handshake là gì?",
+        "points": [
+          "Giao thức tầng giao vận đảm bảo tin cậy tuyệt đối",
+          "Đồng bộ số thứ tự truyền nhận giữa hai đầu cuối",
+          "Khởi tạo trước khi truyền tải gói tin HTTP hoặc HTTPS"
+        ],
+        "emphasis": [
+          "Hướng kết nối",
+          "Tin cậy 100%",
+          "Đồng bộ"
+        ]
+      }
+    },
+    {
+      "scene_id": "s02_steps",
+      "title": "Quy trình bắt tay 3 bước",
+      "concept": "Ba gói tin trao đổi lần lượt giữa máy khách và máy chủ.",
+      "narration": "Máy khách gửi gói tin SYN. Máy chủ đáp lại bằng SYN-ACK. Cuối cùng máy khách gửi ACK xác nhận.",
+      "key_points": [
+        "Bước 1: Client gửi SYN",
+        "Bước 2: Server gửi SYN-ACK",
+        "Bước 3: Client gửi ACK"
+      ],
+      "visual_intent": "process_diagram",
+      "visual_spec": {
+        "type": "process_diagram",
+        "title": "Luồng trao đổi gói tin TCP",
+        "actors": [
+          {
+            "id": "client",
+            "label": "Client"
+          },
+          {
+            "id": "server",
+            "label": "Server"
+          }
+        ],
+        "steps": [
+          {
+            "order": 1,
+            "from_actor": "client",
+            "to_actor": "server",
+            "label": "SYN (seq=100)",
+            "description": "Client đề xuất mở kết nối với sequence khởi tạo 100."
+          },
+          {
+            "order": 2,
+            "from_actor": "server",
+            "to_actor": "client",
+            "label": "SYN-ACK (seq=300, ack=101)",
+            "description": "Server xác nhận và gửi sequence riêng của Server."
+          },
+          {
+            "order": 3,
+            "from_actor": "client",
+            "to_actor": "server",
+            "label": "ACK (ack=301)",
+            "description": "Client xác nhận. Kết nối chính thức sẵn sàng."
+          }
+        ]
+      }
+    },
+    {
+      "scene_id": "s03_comparison",
+      "title": "So sánh TCP và UDP",
+      "concept": "Sự đánh đổi giữa độ tin cậy và tốc độ truyền tải.",
+      "narration": "Khác với TCP cần bắt tay để đảm bảo tin cậy, giao thức UDP gửi dữ liệu trực tiếp giúp tối ưu tốc độ.",
+      "key_points": [
+        "TCP đảm bảo độ tin cậy cao",
+        "UDP tối ưu độ trễ thấp"
+      ],
+      "visual_intent": "comparison",
+      "visual_spec": {
+        "type": "comparison",
+        "title": "So sánh giao thức: TCP vs UDP",
+        "columns": [
+          {
+            "title": "TCP (Có bắt tay)",
+            "subtitle": "Độ tin cậy tuyệt đối",
+            "points": [
+              "Bắt buộc 3 bước bắt tay ban đầu",
+              "Tự động truyền lại gói tin bị mất",
+              "Phù hợp: Web, Tệp tin, Email"
+            ]
+          },
+          {
+            "title": "UDP (Không bắt tay)",
+            "subtitle": "Tốc độ tối đa",
+            "points": [
+              "Truyền dữ liệu ngay lập tức",
+              "Chấp nhận mất mát dữ liệu",
+              "Phù hợp: Live Stream, Game, Voice"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

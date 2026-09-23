@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.routes import router as api_router
 from app.config import Settings, get_settings
 from app.pipeline.base import LearningVideoPipeline
-from app.pipeline.fake import FakePipeline
+from app.pipeline.factory import create_pipeline
 from app.repositories.base import JobRepository
 from app.repositories.sqlite import SqliteJobRepository
 from app.runner.job_runner import JobRunner
@@ -41,8 +41,16 @@ def create_app(
     app_settings = settings or get_settings()
     app_repository = repository or SqliteJobRepository(app_settings.db_path)
     app_artifact_store = artifact_store or LocalArtifactStore(app_settings.artifacts_dir)
-    app_pipeline = pipeline or FakePipeline()
-    app_runner = JobRunner(repository=app_repository, pipeline=app_pipeline)
+    app_pipeline = pipeline or create_pipeline(
+        app_settings,
+        app_repository,
+        app_artifact_store,
+    )
+    app_runner = JobRunner(
+        repository=app_repository,
+        pipeline=app_pipeline,
+        artifact_store=app_artifact_store,
+    )
     app_job_service = JobService(
         repository=app_repository,
         artifact_store=app_artifact_store,

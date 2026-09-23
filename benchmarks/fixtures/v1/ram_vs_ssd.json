@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0",
+  "title": "So sánh RAM và SSD",
+  "topic": "RAM vs SSD for a beginner.",
+  "audience": "Beginner",
+  "language": "vi",
+  "learning_objective": "Phân biệt sự khác nhau giữa bộ nhớ tạm thời RAM và ổ lưu trữ bền vững SSD.",
+  "summary": "RAM lưu trữ dữ liệu tạm thời với tốc độ siêu cao, trong khi SSD lưu trữ dữ liệu lâu dài ngay cả khi tắt máy.",
+  "scenes": [
+    {
+      "scene_id": "s01_intro",
+      "title": "Khái niệm RAM và SSD",
+      "concept": "Hai loại bộ nhớ cốt lõi đóng vai trò khác biệt trong máy tính.",
+      "narration": "Để máy tính hoạt động trơn tru, máy tính cần cả bộ nhớ ngắn hạn tốc độ cao là RAM và kho chứa dữ liệu dài hạn là SSD.",
+      "key_points": [
+        "RAM là bộ nhớ truy xuất ngẫu nhiên",
+        "SSD là ổ đĩa thể rắn bền vững"
+      ],
+      "visual_intent": "concept_card",
+      "visual_spec": {
+        "type": "concept_card",
+        "heading": "Vai trò của RAM và SSD",
+        "points": [
+          "RAM: Bàn làm việc tạm thời lưu dữ liệu chương trình đang chạy",
+          "SSD: Tủ tài liệu lưu trữ toàn bộ hệ điều hành và tệp tin",
+          "Bộ đôi phối hợp tạo nên tốc độ xử lý của máy tính"
+        ],
+        "emphasis": [
+          "Bộ nhớ ngắn hạn",
+          "Bộ nhớ dài hạn",
+          "Tối ưu hiệu năng"
+        ]
+      }
+    },
+    {
+      "scene_id": "s02_flow",
+      "title": "Quy trình tải dữ liệu vào RAM",
+      "concept": "Dữ liệu di chuyển từ ổ SSD vào RAM để bộ xử lý CPU thao tác nhanh chóng.",
+      "narration": "Khi bạn mở một ứng dụng, máy tính sẽ nạp tệp từ ổ SSD sang RAM để bộ vi xử lý truy cập tức thời.",
+      "key_points": [
+        "Dữ liệu được đọc từ SSD",
+        "Chuyển vào bộ nhớ RAM",
+        "CPU xử lý trực tiếp trên RAM"
+      ],
+      "visual_intent": "process_diagram",
+      "visual_spec": {
+        "type": "process_diagram",
+        "title": "Luồng nạp dữ liệu từ SSD vào RAM",
+        "actors": [
+          {
+            "id": "ssd",
+            "label": "Ổ đĩa SSD (Lưu trữ)"
+          },
+          {
+            "id": "ram",
+            "label": "Bộ nhớ RAM (Tạm thời)"
+          },
+          {
+            "id": "cpu",
+            "label": "Bộ vi xử lý CPU"
+          }
+        ],
+        "steps": [
+          {
+            "order": 1,
+            "from_actor": "ssd",
+            "to_actor": "ram",
+            "label": "Khởi chạy ứng dụng",
+            "description": "Hệ điều hành đọc mã nguồn ứng dụng từ SSD và nạp vào RAM."
+          },
+          {
+            "order": 2,
+            "from_actor": "ram",
+            "to_actor": "cpu",
+            "label": "Truy xuất tốc độ cực cao",
+            "description": "CPU đọc dữ liệu trực tiếp từ RAM với độ trễ nano giây."
+          },
+          {
+            "order": 3,
+            "from_actor": "ram",
+            "to_actor": "ssd",
+            "label": "Lưu kết quả (Ctrl+S)",
+            "description": "Khi bạn nhấn lưu, dữ liệu được ghi bền vững trở lại SSD."
+          }
+        ]
+      }
+    },
+    {
+      "scene_id": "s03_comparison",
+      "title": "Bảng so sánh chi tiết: RAM vs SSD",
+      "concept": "Khác biệt cốt lõi về tốc độ, giá thành và khả năng giữ dữ liệu.",
+      "narration": "Tóm lại, RAM siêu nhanh nhưng mất dữ liệu khi mất điện, còn SSD lưu trữ vĩnh viễn với dung lượng lớn hơn nhiều.",
+      "key_points": [
+        "RAM: Tốc độ cao, dễ bay hơi",
+        "SSD: Bền vững, dung lượng lớn"
+      ],
+      "visual_intent": "comparison",
+      "visual_spec": {
+        "type": "comparison",
+        "title": "Đặc tính kỹ thuật: RAM vs SSD",
+        "columns": [
+          {
+            "title": "RAM (Bộ nhớ trong)",
+            "subtitle": "Tốc độ tức thời",
+            "points": [
+              "Tốc độ đọc ghi lên tới hàng chục GB/s",
+              "Mất dữ liệu khi ngắt nguồn điện",
+              "Dung lượng thông dụng: 8GB - 64GB"
+            ]
+          },
+          {
+            "title": "SSD (Ổ cứng thể rắn)",
+            "subtitle": "Lưu trữ dài hạn",
+            "points": [
+              "Tốc độ đọc ghi từ 500MB/s đến 7GB/s",
+              "Giữ nguyên dữ liệu khi ngắt điện",
+              "Dung lượng thông dụng: 256GB - 2TB"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

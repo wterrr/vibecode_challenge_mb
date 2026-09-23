@@ -1,13 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}{{ error_title or "Đã xảy ra lỗi" }} — LearnFlow AI{% endblock %}
+{% block title %}{{ error_title or "Không tìm thấy nội dung" }} — LearnFlow{% endblock %}
 
 {% block content %}
 <div class="empty-state error-page">
-  <div class="empty-icon">⚠️</div>
-  <h1>{{ error_code or 404 }} — {{ error_title or "Không tìm thấy trang" }}</h1>
-  <p class="error-page-desc">{{ error_message or "Trang bạn đang tìm kiếm không tồn tại hoặc đã bị xóa." }}</p>
-  <div class="hero-actions">
+  <h1 class="page-title">{{ error_title or "Không tìm thấy trang" }}</h1>
+  <p class="empty-desc">{{ error_message or "Nội dung bạn đang tìm kiếm không tồn tại hoặc đã được xóa." }}</p>
+  <div class="empty-actions">
     <a href="/library" class="btn btn-primary">Xem thư viện</a>
     <a href="/" class="btn btn-secondary">Về trang chủ</a>
   </div>

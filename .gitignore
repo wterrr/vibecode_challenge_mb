@@ -1,22 +1,32 @@
+# Python
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .venv/
 venv/
-.env
 
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# LearnFlow runtime database
 *.db
-learnflow.db
 *.db-wal
 *.db-shm
 
+# Runtime artifacts
 artifacts/*
 !artifacts/.gitkeep
 
-.DS_Store
+# Generated media
+*.mp4
+*.wav
+*.mp3
 
-# Container dev harness / node files
-node_modules/
-dist/
-*.lock
-package-lock.json
+# Generated temporary images where applicable
+*.tmp
+*.tmp_*
+
+# OS/editor
+.DS_Store

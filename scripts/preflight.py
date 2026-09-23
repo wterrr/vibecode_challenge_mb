@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preflight verification script for LearnFlow AI (CP0).
+"""Preflight verification script for LearnFlow AI (CP10 Production Readiness).
 
 Verifies:
 - Python version and core library imports
@@ -65,10 +65,18 @@ def check_imports() -> dict[str, tuple[bool, str]]:
     except Exception as e:
         results["edge-tts"] = (False, str(e))
 
+    # kiwisolver (V2 layout)
+    try:
+        import kiwisolver
+        results["kiwisolver"] = (True, f"v{kiwisolver.__version__}")
+    except Exception as e:
+        results["kiwisolver"] = (False, str(e))
+
     return results
 
 
 def check_artifacts_dir(artifacts_dir: str) -> tuple[bool, str]:
+    test_file = None
     try:
         target_dir = Path(artifacts_dir)
         target_dir.mkdir(parents=True, exist_ok=True)
@@ -77,18 +85,24 @@ def check_artifacts_dir(artifacts_dir: str) -> tuple[bool, str]:
 
         test_file.write_text(test_content, encoding="utf-8")
         read_back = test_file.read_text(encoding="utf-8")
-        test_file.unlink()
 
         if read_back == test_content:
             return True, f"writable ({target_dir.resolve()})"
         return False, "content mismatch on readback"
     except Exception as e:
         return False, f"write failed: {e}"
+    finally:
+        if test_file is not None and test_file.exists():
+            try:
+                test_file.unlink()
+            except Exception:
+                pass
 
 
 def check_sqlite_writable() -> tuple[bool, str]:
     temp_dir = tempfile.mkdtemp(prefix="learnflow_db_test_")
     db_path = Path(temp_dir) / "preflight_test.db"
+    conn = None
     try:
         conn = sqlite3.connect(str(db_path))
         cursor = conn.cursor()
@@ -97,7 +111,6 @@ def check_sqlite_writable() -> tuple[bool, str]:
         conn.commit()
         cursor.execute("SELECT COUNT(*) FROM test;")
         row = cursor.fetchone()
-        conn.close()
 
         if row and row[0] == 1:
             return True, "temporary SQLite write/read OK"
@@ -105,9 +118,17 @@ def check_sqlite_writable() -> tuple[bool, str]:
     except Exception as e:
         return False, f"SQLite error: {e}"
     finally:
+        if conn is not None:
+            try:
+                conn.close()
+            except Exception:
+                pass
         try:
-            if db_path.exists():
-                db_path.unlink()
+            for item in Path(temp_dir).glob("*"):
+                try:
+                    item.unlink()
+                except Exception:
+                    pass
             os.rmdir(temp_dir)
         except Exception:
             pass
@@ -223,7 +244,7 @@ def run_preflight(check_gemini: bool = False) -> bool:
 
     print("\n" + "=" * 64)
     if all_required_passed:
-        print("  RESULT: ALL REQUIRED CP0 CHECKS PASSED")
+        print("  RESULT: ALL REQUIRED PREFLIGHT CHECKS PASSED")
     else:
         print("  RESULT: ONE OR MORE REQUIRED CHECKS FAILED")
     print("=" * 64 + "\n")

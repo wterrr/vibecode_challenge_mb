@@ -4584,3 +4584,30 @@ These are extension paths, not hidden MVP requirements.
 # END OF PLAN
 
 When a coding agent begins work, it must start at CP0 and stop after CP0 verification.
+
+---
+
+## V1 Freeze
+
+LearnFlow V1 is frozen after CP10.
+
+Baseline:
+
+- CP0–CP10 approved
+- 202 tests passing
+- deterministic/network-free real-renderer regression passing
+- local real-media demo E2E passing
+- production PORT contract verified
+
+V1 is now the production/reference baseline.
+
+Do not modify V1 behavior for V2 development unless fixing a
+confirmed V1 defect.
+
+LearnFlow V2.1 is specified separately in:
+
+`PLAN_V2.md`
+
+Initial V2 implementation must remain isolated from the V1
+production path until the V2 Core Gate defined in PLAN_V2.md passes.
+

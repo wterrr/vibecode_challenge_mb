@@ -3,24 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}LearnFlow AI — AI Learning Video Studio{% endblock %}</title>
-  <meta name="description" content="Biến bất kỳ chủ đề nào thành video học ngắn, có cấu trúc và dễ hiểu." />
+  <title>{% block title %}LearnFlow — AI Learning Video Studio{% endblock %}</title>
+  <meta name="description" content="LearnFlow — AI Learning Video Studio. Biến bất kỳ chủ đề nào thành video bài học ngắn có lời thuyết minh và hình minh họa trực quan." />
+  <meta name="application-name" content="LearnFlow AI — AI Learning Video Studio" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/app.css" />
   {% block head %}{% endblock %}
 </head>
 <body>
-  <header class="navbar" id="main-header">
-    <div class="nav-container">
-      <a href="/" class="nav-brand" id="brand-link">
-        <span class="brand-accent">LearnFlow</span> AI
-      </a>
-      <nav class="nav-links" id="main-nav">
-        <a href="/" class="nav-link" id="nav-home">Trang chủ</a>
-        <a href="/create" class="nav-link nav-btn-primary" id="nav-create">Tạo video</a>
-        <a href="/library" class="nav-link" id="nav-library">Thư viện</a>
-      </nav>
-    </div>
-  </header>
+  {% include "partials/nav.html" %}
 
   <main class="main-content" id="main-content">
     <div class="container">
@@ -30,8 +23,7 @@
 
   <footer class="footer" id="main-footer">
     <div class="container footer-content">
-      <p><strong>LearnFlow AI</strong> — AI Learning Video Studio</p>
-      <p class="footer-sub">VibeCode Challenge Submission</p>
+      <p class="footer-brand"><strong>LearnFlow</strong> — Video bài học trực quan</p>
     </div>
   </footer>
 

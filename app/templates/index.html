@@ -1,75 +1,85 @@
 {% extends "base.html" %}
 
-{% block title %}LearnFlow AI — AI Learning Video Studio{% endblock %}
+{% block title %}LearnFlow — Video bài học trực quan{% endblock %}
 
 {% block content %}
 <section class="hero-section" id="hero-section">
-  <div class="hero-badge">AI Learning Video Studio</div>
-  <h1 class="hero-title">Biến bất kỳ chủ đề nào thành <span class="highlight">video học trực quan</span></h1>
-  <p class="hero-subtitle">
-    Nhập câu hỏi hoặc chủ đề bạn muốn học. Hệ thống sẽ xây dựng giáo trình ngắn gọn, tạo thuyết minh và dựng video bài giảng hoàn chỉnh.
-  </p>
-  <div class="hero-actions">
-    <a href="/create" class="btn btn-primary btn-lg" id="hero-cta-btn">Tạo video học ngay</a>
-    <a href="/library" class="btn btn-secondary btn-lg" id="hero-library-btn">Xem thư viện bài giảng</a>
+  <div class="hero-content">
+    <h1 class="hero-title">Bạn muốn hiểu điều gì hôm nay?</h1>
+    <p class="hero-desc">
+      Nhập một chủ đề bạn đang muốn hiểu. LearnFlow sẽ biến nó thành một bài học ngắn có lời thuyết minh và hình minh họa dễ theo dõi.
+    </p>
+
+    <form action="/create" method="GET" class="topic-entry-form" id="landing-topic-form">
+      <label for="landing-topic-input" class="visually-hidden">Chủ đề bạn muốn học</label>
+      <div class="topic-entry-box">
+        <input
+          type="text"
+          id="landing-topic-input"
+          name="topic"
+          class="topic-entry-input"
+          placeholder="Ví dụ: Giải thích TCP three-way handshake hoạt động như thế nào..."
+          required
+          minlength="3"
+          maxlength="500"
+          autocomplete="off"
+        />
+        <button type="submit" class="btn btn-primary btn-submit-topic" id="btn-landing-submit">
+          Tạo bài học &rarr;
+        </button>
+      </div>
+    </form>
+
+    <div class="sample-topics" id="sample-topics">
+      <span class="sample-label">Thử một chủ đề:</span>
+      <div class="sample-chips">
+        <a href="/create?topic=How%20does%20the%20TCP%20three-way%20handshake%20work%3F" class="sample-chip" id="chip-tcp">
+          TCP three-way handshake
+        </a>
+        <a href="/create?topic=Explain%20photosynthesis%20to%20a%20middle-school%20student." class="sample-chip" id="chip-photosynthesis">
+          Quá trình quang hợp
+        </a>
+        <a href="/create?topic=RAM%20vs%20SSD%20for%20a%20beginner." class="sample-chip" id="chip-ram-ssd">
+          RAM và SSD khác nhau thế nào?
+        </a>
+      </div>
+    </div>
   </div>
 </section>
 
-<section class="examples-section" id="examples-section">
-  <h2 class="section-title">Chủ đề mẫu gợi ý</h2>
-  <p class="section-desc">Bấm vào bất kỳ chủ đề nào dưới đây để bắt đầu ngay:</p>
-  <div class="chips-container" id="example-chips">
-    <a href="/create?topic=How%20does%20the%20TCP%20three-way%20handshake%20work%3F" class="chip" id="chip-tcp">
-      <span class="chip-icon">🌐</span>
-      <span class="chip-text">How does the TCP three-way handshake work?</span>
-    </a>
-    <a href="/create?topic=Explain%20photosynthesis%20to%20a%20middle-school%20student." class="chip" id="chip-photosynthesis">
-      <span class="chip-icon">🌿</span>
-      <span class="chip-text">Explain photosynthesis to a middle-school student.</span>
-    </a>
-    <a href="/create?topic=RAM%20vs%20SSD%20for%20a%20beginner." class="chip" id="chip-ram-ssd">
-      <span class="chip-icon">💻</span>
-      <span class="chip-text">RAM vs SSD for a beginner.</span>
-    </a>
-  </div>
-</section>
-
-<section class="recent-section" id="recent-jobs-section">
+{% if recent_jobs %}
+<section class="recent-section" id="recent-section">
   <div class="section-header">
-    <h2 class="section-title">Bài giảng gần đây</h2>
-    <a href="/library" class="link-more" id="view-all-link">Xem tất cả &rarr;</a>
+    <h2 class="section-title">Bài học gần đây</h2>
+    <a href="/library" class="section-link" id="view-all-link">Xem tất cả trong thư viện &rarr;</a>
   </div>
 
-  {% if recent_jobs %}
-  <div class="jobs-grid" id="recent-jobs-grid">
+  <div class="jobs-table" id="recent-jobs-list">
     {% for job in recent_jobs %}
-    <div class="job-card" id="job-card-{{ job.id }}">
-      <div class="card-header">
-        <span class="badge badge-{{ job.status.value }}">{{ job.status.value }}</span>
-        <span class="card-time">{{ job.created_at.strftime('%H:%M %d/%m/%Y') }}</span>
+    <div class="job-row" id="recent-job-{{ job.id }}">
+      <div class="job-main">
+        <a href="/jobs/{{ job.id }}" class="job-title-link">
+          {{ job.display_title or job.topic }}
+        </a>
+        <div class="job-submeta">
+          <span>{{ job.created_at.strftime('%H:%M %d/%m/%Y') }}</span>
+          <span class="meta-dot">·</span>
+          <span>Đối tượng: {{ job.audience }}</span>
+          <span class="meta-dot">·</span>
+          <span>Thời lượng: {{ job.target_duration_seconds }}s</span>
+        </div>
       </div>
-      <h3 class="card-title">
-        <a href="/jobs/{{ job.id }}">{{ job.display_title or job.topic }}</a>
-      </h3>
-      {% if job.display_title and job.display_title != job.topic %}
-      <p class="card-topic-sub">{{ job.topic }}</p>
-      {% endif %}
-      <div class="card-meta">
-        <span>Đối tượng: <strong>{{ job.audience }}</strong></span>
-        <span>Ngôn ngữ: <strong>{{ job.language }}</strong></span>
-        <span>Thời lượng: <strong>{{ job.target_duration_seconds }}s</strong></span>
-      </div>
-      <div class="card-footer">
-        <a href="/jobs/{{ job.id }}" class="btn btn-sm btn-outline" id="btn-view-{{ job.id }}">Chi tiết</a>
+      <div class="job-side">
+        <span class="status-pill status-{{ job.status.value }}">
+          {{ job.status.value | status_badge }}
+        </span>
+        <a href="/jobs/{{ job.id }}" class="btn btn-sm btn-secondary" id="btn-view-{{ job.id }}">
+          Xem
+        </a>
       </div>
     </div>
     {% endfor %}
   </div>
-  {% else %}
-  <div class="empty-state" id="empty-recent">
-    <p>Chưa có video nào được tạo gần đây.</p>
-    <a href="/create" class="btn btn-primary" id="btn-first-job">Tạo video đầu tiên</a>
-  </div>
-  {% endif %}
 </section>
+{% endif %}
 {% endblock %}
