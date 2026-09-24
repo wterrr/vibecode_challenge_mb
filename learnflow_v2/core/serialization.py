@@ -49,6 +49,12 @@ def _canonicalize_value(val: Any) -> Any:
                     [_canonicalize_value(item) for item in v],
                     key=lambda x: str(x.get("node_id", "")),
                 )
+            elif k == "candidates" and isinstance(v, list) and all(isinstance(x, dict) and "candidate_id" in x for x in v):
+                # Sort layout candidates deterministically by candidate_id
+                normalized[k] = sorted(
+                    [_canonicalize_value(item) for item in v],
+                    key=lambda x: str(x.get("candidate_id", "")),
+                )
             elif k in ("aliases", "style_refs", "member_ids", "keep_near", "keep_apart") and isinstance(v, list) and all(isinstance(x, str) for x in v):
                 # Sort set-like symbolic string collections
                 normalized[k] = sorted(v)

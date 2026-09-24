@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= typeof title !== 'undefined' ? title : 'LearnFlow — AI Learning Video Studio' %></title>
+  <meta name="description" content="LearnFlow — AI Learning Video Studio. Biến bất kỳ chủ đề nào thành video bài học ngắn có lời thuyết minh và hình minh họa trực quan." />
+  <meta name="application-name" content="LearnFlow AI — AI Learning Video Studio" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/app.css" />
+</head>
+<body>
+  <%- include('nav', { active_nav: typeof active_nav !== 'undefined' ? active_nav : '' }) %>
+
+  <main class="main-content" id="main-content">
+    <div class="container">

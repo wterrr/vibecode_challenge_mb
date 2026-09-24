@@ -48,6 +48,30 @@ from learnflow_v2.layout.schema import (
     Rect,
 )
 
+from learnflow_v2.layout.collision import (
+    CollisionPair,
+    SeparationAxis,
+    SeparationOrdering,
+    SeparationConstraint,
+    detect_box_collisions,
+    choose_separation_constraint,
+)
+from learnflow_v2.layout.score import (
+    LayoutFeasibilityReport,
+    SoftLayoutScore,
+    SoftScoreWeights,
+    evaluate_feasibility,
+    compute_soft_score,
+)
+from learnflow_v2.layout.optimization import (
+    MAX_LAYOUT_SOLVES,
+    LayoutCandidate,
+    LayoutOptimizationResult,
+    choose_best_candidate,
+    optimize_simple_layout,
+    evaluate_graph_candidate,
+)
+
 __all__ = [
     # Measurement
     "AssetMeasurement",
@@ -95,6 +119,26 @@ __all__ = [
     "RoutingStyle",
     "RoutedEdge",
     "Point",
+    # Collision (V2-05)
+    "CollisionPair",
+    "SeparationAxis",
+    "SeparationOrdering",
+    "SeparationConstraint",
+    "detect_box_collisions",
+    "choose_separation_constraint",
+    # Score & Feasibility (V2-05)
+    "LayoutFeasibilityReport",
+    "SoftLayoutScore",
+    "SoftScoreWeights",
+    "evaluate_feasibility",
+    "compute_soft_score",
+    # Optimization & Candidates (V2-05)
+    "MAX_LAYOUT_SOLVES",
+    "LayoutCandidate",
+    "LayoutOptimizationResult",
+    "choose_best_candidate",
+    "optimize_simple_layout",
+    "evaluate_graph_candidate",
 ]
 
 from learnflow_v2.layout.graph import GraphLayoutKind, LayoutDirection, layout_directed_graph, build_graph_layout_input

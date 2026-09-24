@@ -277,10 +277,10 @@ def test_malformed_backend_output_rejected():
         GraphvizBackend()._parse({"bb": "0,0,10,10", "objects": [], "edges": []}, GraphLayoutInput("s", [GraphNodeInput("a", 1, 1)], [], LayoutDirection.RIGHT, GraphLayoutKind.PROCESS))
 
 
-def test_no_v2_05_modules_present():
+def test_no_future_modules_present():
     import pathlib
     root = pathlib.Path("learnflow_v2/layout")
-    forbidden = ["collision.py", "score.py", "continuity.py", "motion", "render", "verification"]
+    forbidden = ["continuity.py", "motion", "render", "verification"]
     assert all(not (root / f).exists() for f in forbidden)
 
 

@@ -132,6 +132,8 @@ def solve_layout(
     profile: FrameProfile | str,
     items: list[LayoutItemInput],
     metadata: dict[str, Any] | None = None,
+    separation_constraints: list[Any] | None = None,
+    variant: str = "PRIMARY",
 ) -> LayoutGraph:
     """Compile items and profile into linear constraints and solve for LayoutGraph.
 
@@ -359,14 +361,48 @@ def solve_layout(
     gutter_h = max(16.0, frame_prof.grid.horizontal_gap)
     gutter_v = max(16.0, frame_prof.grid.vertical_gap)
 
+    norm_variant = str(variant).upper()
     if strat_enum == LayoutStrategy.CONCEPT_CARD:
+        if norm_variant != "PRIMARY":
+            raise LayoutInvalidInputError(f"CONCEPT_CARD only supports variant 'PRIMARY', got '{variant}'")
         _apply_concept_card_constraints(solver, items, content_zone, title_zone, caption_zone)
     elif strat_enum == LayoutStrategy.COMPARISON:
-        _apply_comparison_constraints(solver, items, content_zone, gutter_h)
+        if norm_variant in ("PRIMARY", "TWO_COLUMN"):
+            _apply_comparison_constraints(solver, items, content_zone, gutter_h)
+        elif norm_variant in ("STACKED", "TWO_ROW"):
+            _apply_comparison_stacked_constraints(solver, items, content_zone, gutter_v)
+        else:
+            raise LayoutInvalidInputError(f"Unsupported variant '{variant}' for COMPARISON strategy")
     elif strat_enum == LayoutStrategy.IMAGE_TEXT:
-        _apply_image_text_constraints(solver, items, content_zone, frame_prof.aspect_ratio, gutter_h, gutter_v)
+        if norm_variant == "PRIMARY":
+            _apply_image_text_constraints(solver, items, content_zone, frame_prof.aspect_ratio, gutter_h, gutter_v)
+        elif norm_variant == "STACKED":
+            _apply_image_text_constraints(solver, items, content_zone, "9:16", gutter_h, gutter_v)
+        else:
+            raise LayoutInvalidInputError(f"Unsupported variant '{variant}' for IMAGE_TEXT strategy")
     elif strat_enum == LayoutStrategy.QUOTE:
+        if norm_variant != "PRIMARY":
+            raise LayoutInvalidInputError(f"QUOTE only supports variant 'PRIMARY', got '{variant}'")
         _apply_quote_constraints(solver, items, content_zone, gutter_v)
+
+    # Apply explicit separation constraints (REQUIRED)
+    if separation_constraints:
+        for sc in separation_constraints:
+            b1 = solver.get_box(sc.first_node_id)
+            b2 = solver.get_box(sc.second_node_id)
+            gap = float(sc.minimum_gap)
+            axis_val = sc.axis.value if hasattr(sc.axis, "value") else str(sc.axis)
+            order_val = sc.ordering.value if hasattr(sc.ordering, "value") else str(sc.ordering)
+            if axis_val == "HORIZONTAL":
+                if order_val == "FIRST_BEFORE_SECOND":
+                    solver.add_constraint(b1.right + gap <= b2.left, STRENGTH_REQUIRED, stage="separation_constraint")
+                else:
+                    solver.add_constraint(b2.right + gap <= b1.left, STRENGTH_REQUIRED, stage="separation_constraint")
+            elif axis_val == "VERTICAL":
+                if order_val == "FIRST_BEFORE_SECOND":
+                    solver.add_constraint(b1.bottom + gap <= b2.top, STRENGTH_REQUIRED, stage="separation_constraint")
+                else:
+                    solver.add_constraint(b2.bottom + gap <= b1.top, STRENGTH_REQUIRED, stage="separation_constraint")
 
     # Solve linear constraints
     rects = solver.solve()
@@ -499,6 +535,70 @@ def _apply_comparison_constraints(
         b_left.height == b_right.height,
         STRENGTH_WEAK,
         stage="comparison_equal_heights",
+    )
+
+
+def _apply_comparison_stacked_constraints(
+    solver: KiwiLayoutSolver,
+    items: list[LayoutItemInput],
+    content_zone: Rect,
+    gutter_v: float,
+) -> None:
+    """Comparison stacked fallback: two rows (top & bottom) in CONTENT zone.
+
+    Hard invariants:
+    - top (left item) and bottom (right item) in CONTENT zone
+    - non-overlapping with positive vertical gutter: top.bottom + gutter_v <= bottom.top
+
+    Soft preferences:
+    - centered horizontally in content zone (STRONG)
+    - equal widths: top.width == bottom.width (STRONG)
+    - mirror symmetry around vertical content center (STRONG)
+    """
+    comp_items = _core_items(items)
+    if len(comp_items) != 2:
+        raise LayoutInvalidInputError(
+            "COMPARISON strategy requires exactly 2 comparison items",
+            details={"item_count": len(comp_items)},
+        )
+
+    left_item = next((it for it in comp_items if it.role == "left"), comp_items[0])
+    right_item = next((it for it in comp_items if it.role == "right" and it != left_item), comp_items[1])
+
+    b_top = solver.get_box(left_item.node_id)
+    b_bottom = solver.get_box(right_item.node_id)
+
+    # 1. Non-overlap with required vertical gutter (REQUIRED)
+    solver.add_constraint(
+        b_top.bottom + float(gutter_v) <= b_bottom.top,
+        STRENGTH_REQUIRED,
+        stage="comparison_stacked_vertical_sep",
+    )
+
+    # 2. Horizontal centering in content zone (STRONG)
+    solver.add_constraint(
+        b_top.center_x == content_zone.center_x,
+        STRENGTH_STRONG,
+        stage="comparison_stacked_top_center_x",
+    )
+    solver.add_constraint(
+        b_bottom.center_x == content_zone.center_x,
+        STRENGTH_STRONG,
+        stage="comparison_stacked_bottom_center_x",
+    )
+
+    # 3. Equal widths (STRONG)
+    solver.add_constraint(
+        b_top.width == b_bottom.width,
+        STRENGTH_STRONG,
+        stage="comparison_stacked_equal_widths",
+    )
+
+    # 4. Mirror vertical symmetry around content center (STRONG)
+    solver.add_constraint(
+        b_top.center_y + b_bottom.center_y == 2.0 * content_zone.center_y,
+        STRENGTH_STRONG,
+        stage="comparison_stacked_mirror_symmetry_y",
     )
 
 

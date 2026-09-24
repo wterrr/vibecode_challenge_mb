@@ -40,6 +40,7 @@ def validate_layout_graph(
     measurements: dict[str, tuple[float, float]] | None = None,
     expected_node_ids: list[str] | set[str] | None = None,
     tol: float = 1e-2,
+    raise_on_error: bool = True,
 ) -> PreflightReport:
     """Validate a solved LayoutGraph against physical, zone, and measurement constraints.
 
@@ -175,23 +176,33 @@ def validate_layout_graph(
         left_box = next((b for b in layout_graph.boxes if b.strategy_role == "left"), None)
         right_box = next((b for b in layout_graph.boxes if b.strategy_role == "right"), None)
         if left_box and right_box:
-            if left_box.rect.right > right_box.rect.left + tol:
-                msg = f"Comparison columns overlap: left right={left_box.rect.right} > right left={right_box.rect.left}"
-                violations.append(msg)
-                invalid_geometry += 1
+            var_name = layout_graph.metadata.get("variant", "PRIMARY")
+            is_stacked = var_name in ("STACKED", "TWO_ROW") or (left_box.rect.bottom <= right_box.rect.top + tol)
+            if is_stacked:
+                if left_box.rect.bottom > right_box.rect.top + tol:
+                    msg = f"Comparison rows overlap: left bottom={left_box.rect.bottom} > right top={right_box.rect.top}"
+                    violations.append(msg)
+                    invalid_geometry += 1
+            else:
+                if left_box.rect.right > right_box.rect.left + tol:
+                    msg = f"Comparison columns overlap: left right={left_box.rect.right} > right left={right_box.rect.left}"
+                    violations.append(msg)
+                    invalid_geometry += 1
 
     elif strategy == LayoutStrategy.IMAGE_TEXT:
         img_box = next((b for b in layout_graph.boxes if b.strategy_role == "image"), None)
         txt_box = next((b for b in layout_graph.boxes if b.strategy_role in ("text", "content")), None)
         if img_box and txt_box:
-            if frame_prof.aspect_ratio == "16:9":
-                if img_box.rect.right > txt_box.rect.left + tol:
-                    msg = f"Image and text overlap in 16:9: img right={img_box.rect.right} > txt left={txt_box.rect.left}"
+            var_name = layout_graph.metadata.get("variant", "PRIMARY")
+            is_stacked = frame_prof.aspect_ratio != "16:9" or var_name == "STACKED" or (img_box.rect.bottom <= txt_box.rect.top + tol)
+            if is_stacked:
+                if img_box.rect.bottom > txt_box.rect.top + tol:
+                    msg = f"Image and text overlap: img bottom={img_box.rect.bottom} > txt top={txt_box.rect.top}"
                     violations.append(msg)
                     invalid_geometry += 1
             else:
-                if img_box.rect.bottom > txt_box.rect.top + tol:
-                    msg = f"Image and text overlap in 9:16: img bottom={img_box.rect.bottom} > txt top={txt_box.rect.top}"
+                if img_box.rect.right > txt_box.rect.left + tol:
+                    msg = f"Image and text overlap in 16:9: img right={img_box.rect.right} > txt left={txt_box.rect.left}"
                     violations.append(msg)
                     invalid_geometry += 1
 
@@ -218,7 +229,7 @@ def validate_layout_graph(
             violations.append(msg)
             invalid_geometry += len(unexpected)
 
-    if violations:
+    if violations and raise_on_error:
         raise LayoutPreflightFailedError(
             f"Layout preflight validation failed with {len(violations)} violation(s): {'; '.join(violations[:3])}",
             details={
@@ -235,13 +246,13 @@ def validate_layout_graph(
         )
 
     return PreflightReport(
-        valid=True,
+        valid=not bool(violations),
         frame_overflow_count=frame_overflow,
         safe_zone_violation_count=safe_zone_violations,
         content_clipping_count=content_clipping,
         invalid_geometry_count=invalid_geometry,
         missing_node_count=missing_nodes,
-        violations=[],
+        violations=violations,
     )
 
 
@@ -263,6 +274,7 @@ def validate_graph_layout(
     layout_graph: LayoutGraph,
     profile: FrameProfile | str | None = None,
     tol: float = 1e-2,
+    raise_on_error: bool = True,
 ) -> GraphPreflightReport:
     """Validate routed-edge geometry for V2-04 graph LayoutGraphs."""
     if layout_graph.strategy != LayoutStrategy.DIRECTED_GRAPH:
@@ -318,6 +330,6 @@ def validate_graph_layout(
         total_edge_length=metrics.total_edge_length,
         violations=violations,
     )
-    if not valid:
+    if not valid and raise_on_error:
         raise LayoutPreflightFailedError("Graph layout preflight failed", report.__dict__)
     return report

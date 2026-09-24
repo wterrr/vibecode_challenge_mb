@@ -1,0 +1,6 @@
+{
+  "name": "LearnFlow AI",
+  "description": "AI Learning Video Studio - Biến bất kỳ chủ đề nào thành video bài học ngắn có lời thuyết minh và hình minh họa trực quan.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
