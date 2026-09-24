@@ -181,3 +181,21 @@ The following checklist must be validated on the deployed VibeHost instance post
 - [ ] `NOT VERIFIED`: background worker survives a full ~60-second lesson?
 - [ ] `NOT VERIFIED`: real final.mp4 plays/downloads?
 - [ ] `NOT VERIFIED`: mobile UI works on deployed URL?
+
+### V2-04 graph backend setup
+
+V2-04 directed graph layout uses local Node tooling for ELK and local Graphviz
+for the optional baseline adapter. Install the exact local JavaScript dependency
+before running V2 graph acceptance tests:
+
+```bash
+npm ci
+node -e "console.log(require('elkjs/package.json').version)"  # must print 0.12.0
+node -e "require('elkjs/lib/elk.bundled.js'); console.log('elkjs bridge import PASS')"
+python scripts/preflight_v2_graph.py
+```
+
+`python scripts/preflight_v2_graph.py` is the strict V2 graph capability check:
+Node, `elkjs` 0.12.0, Graphviz `dot`, and both smoke graphs must all PASS or
+the script exits non-zero. This does not make V1 startup depend on Node/ELK or
+Graphviz; `scripts/preflight.py` remains the V1 preflight.

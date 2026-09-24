@@ -1,0 +1,1254 @@
+{
+  "schema": "learnflow_v2_graph_layout_cases_v2_04",
+  "count": 36,
+  "cases": [
+    {
+      "id": "chain_00",
+      "kind": "PROCESS",
+      "aspect": "16:9",
+      "language": "vi",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        }
+      ]
+    },
+    {
+      "id": "branch_01",
+      "kind": "CAUSAL",
+      "aspect": "9:16",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "merge_02",
+      "kind": "HIERARCHY",
+      "aspect": "16:9",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "diamond_03",
+      "kind": "FLOW",
+      "aspect": "9:16",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e2",
+          "source": "b",
+          "target": "d",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e3",
+          "source": "c",
+          "target": "d",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "cycle_04",
+      "kind": "PROCESS",
+      "aspect": "16:9",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "CAUSES",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "CAUSES",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e2",
+          "source": "c",
+          "target": "a",
+          "kind": "CAUSES",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "tree_05",
+      "kind": "CAUSAL",
+      "aspect": "9:16",
+      "language": "vi",
+      "nodes": [
+        "child_a",
+        "child_b",
+        "child_c",
+        "root"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "root",
+          "target": "child_a",
+          "kind": "PART_OF",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "root",
+          "target": "child_b",
+          "kind": "PART_OF",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e2",
+          "source": "root",
+          "target": "child_c",
+          "kind": "PART_OF",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "chain_06",
+      "kind": "HIERARCHY",
+      "aspect": "16:9",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "branch_07",
+      "kind": "FLOW",
+      "aspect": "9:16",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        },
+        {
+          "id": "e1",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        }
+      ]
+    },
+    {
+      "id": "merge_08",
+      "kind": "PROCESS",
+      "aspect": "16:9",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "diamond_09",
+      "kind": "CAUSAL",
+      "aspect": "9:16",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e2",
+          "source": "b",
+          "target": "d",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e3",
+          "source": "c",
+          "target": "d",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "cycle_10",
+      "kind": "HIERARCHY",
+      "aspect": "16:9",
+      "language": "vi",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "CAUSES",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "CAUSES",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e2",
+          "source": "c",
+          "target": "a",
+          "kind": "CAUSES",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "tree_11",
+      "kind": "FLOW",
+      "aspect": "9:16",
+      "language": "en",
+      "nodes": [
+        "child_a",
+        "child_b",
+        "child_c",
+        "root"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "root",
+          "target": "child_a",
+          "kind": "PART_OF",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "root",
+          "target": "child_b",
+          "kind": "PART_OF",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e2",
+          "source": "root",
+          "target": "child_c",
+          "kind": "PART_OF",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "chain_12",
+      "kind": "PROCESS",
+      "aspect": "16:9",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "branch_13",
+      "kind": "CAUSAL",
+      "aspect": "9:16",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "merge_14",
+      "kind": "HIERARCHY",
+      "aspect": "16:9",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        }
+      ]
+    },
+    {
+      "id": "diamond_15",
+      "kind": "FLOW",
+      "aspect": "9:16",
+      "language": "vi",
+      "nodes": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e2",
+          "source": "b",
+          "target": "d",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e3",
+          "source": "c",
+          "target": "d",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "cycle_16",
+      "kind": "PROCESS",
+      "aspect": "16:9",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "CAUSES",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "CAUSES",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e2",
+          "source": "c",
+          "target": "a",
+          "kind": "CAUSES",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "tree_17",
+      "kind": "CAUSAL",
+      "aspect": "9:16",
+      "language": "en",
+      "nodes": [
+        "child_a",
+        "child_b",
+        "child_c",
+        "root"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "root",
+          "target": "child_a",
+          "kind": "PART_OF",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "root",
+          "target": "child_b",
+          "kind": "PART_OF",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e2",
+          "source": "root",
+          "target": "child_c",
+          "kind": "PART_OF",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "chain_18",
+      "kind": "HIERARCHY",
+      "aspect": "16:9",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "branch_19",
+      "kind": "FLOW",
+      "aspect": "9:16",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "merge_20",
+      "kind": "PROCESS",
+      "aspect": "16:9",
+      "language": "vi",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "diamond_21",
+      "kind": "CAUSAL",
+      "aspect": "9:16",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        },
+        {
+          "id": "e1",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        },
+        {
+          "id": "e2",
+          "source": "b",
+          "target": "d",
+          "kind": "FLOW",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        },
+        {
+          "id": "e3",
+          "source": "c",
+          "target": "d",
+          "kind": "FLOW",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        }
+      ]
+    },
+    {
+      "id": "cycle_22",
+      "kind": "HIERARCHY",
+      "aspect": "16:9",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "CAUSES",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "CAUSES",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e2",
+          "source": "c",
+          "target": "a",
+          "kind": "CAUSES",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "tree_23",
+      "kind": "FLOW",
+      "aspect": "9:16",
+      "language": "en",
+      "nodes": [
+        "child_a",
+        "child_b",
+        "child_c",
+        "root"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "root",
+          "target": "child_a",
+          "kind": "PART_OF",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "root",
+          "target": "child_b",
+          "kind": "PART_OF",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e2",
+          "source": "root",
+          "target": "child_c",
+          "kind": "PART_OF",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "chain_24",
+      "kind": "PROCESS",
+      "aspect": "16:9",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "branch_25",
+      "kind": "CAUSAL",
+      "aspect": "9:16",
+      "language": "vi",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "merge_26",
+      "kind": "HIERARCHY",
+      "aspect": "16:9",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "diamond_27",
+      "kind": "FLOW",
+      "aspect": "9:16",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e2",
+          "source": "b",
+          "target": "d",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e3",
+          "source": "c",
+          "target": "d",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "cycle_28",
+      "kind": "PROCESS",
+      "aspect": "16:9",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "CAUSES",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "CAUSES",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        },
+        {
+          "id": "e2",
+          "source": "c",
+          "target": "a",
+          "kind": "CAUSES",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        }
+      ]
+    },
+    {
+      "id": "tree_29",
+      "kind": "CAUSAL",
+      "aspect": "9:16",
+      "language": "en",
+      "nodes": [
+        "child_a",
+        "child_b",
+        "child_c",
+        "root"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "root",
+          "target": "child_a",
+          "kind": "PART_OF",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "root",
+          "target": "child_b",
+          "kind": "PART_OF",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e2",
+          "source": "root",
+          "target": "child_c",
+          "kind": "PART_OF",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "chain_30",
+      "kind": "HIERARCHY",
+      "aspect": "16:9",
+      "language": "vi",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "branch_31",
+      "kind": "FLOW",
+      "aspect": "9:16",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "merge_32",
+      "kind": "PROCESS",
+      "aspect": "16:9",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "diamond_33",
+      "kind": "CAUSAL",
+      "aspect": "9:16",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "a",
+          "target": "c",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e2",
+          "source": "b",
+          "target": "d",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e3",
+          "source": "c",
+          "target": "d",
+          "kind": "FLOW",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "cycle_34",
+      "kind": "HIERARCHY",
+      "aspect": "16:9",
+      "language": "en",
+      "nodes": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "a",
+          "target": "b",
+          "kind": "CAUSES",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e1",
+          "source": "b",
+          "target": "c",
+          "kind": "CAUSES",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        },
+        {
+          "id": "e2",
+          "source": "c",
+          "target": "a",
+          "kind": "CAUSES",
+          "source_port": "AUTO",
+          "target_port": "AUTO"
+        }
+      ]
+    },
+    {
+      "id": "tree_35",
+      "kind": "FLOW",
+      "aspect": "9:16",
+      "language": "vi",
+      "nodes": [
+        "child_a",
+        "child_b",
+        "child_c",
+        "root"
+      ],
+      "edges": [
+        {
+          "id": "e0",
+          "source": "root",
+          "target": "child_a",
+          "kind": "PART_OF",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        },
+        {
+          "id": "e1",
+          "source": "root",
+          "target": "child_b",
+          "kind": "PART_OF",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        },
+        {
+          "id": "e2",
+          "source": "root",
+          "target": "child_c",
+          "kind": "PART_OF",
+          "source_port": "RIGHT",
+          "target_port": "LEFT"
+        }
+      ]
+    }
+  ]
+}

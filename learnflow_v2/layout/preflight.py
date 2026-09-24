@@ -18,6 +18,7 @@ from typing import Any
 from learnflow_v2.core.errors import LayoutPreflightFailedError
 from learnflow_v2.layout.profiles import get_frame_profile
 from learnflow_v2.layout.schema import FrameProfile, LayoutGraph, LayoutStrategy
+from learnflow_v2.layout.semantics import role_zone_class, role_zone_details, zone_class
 
 
 @dataclass(frozen=True)
@@ -66,6 +67,17 @@ def validate_layout_graph(
     content_clipping = 0
     invalid_geometry = 0
     missing_nodes = 0
+
+    # LayoutGraph artifact dimensions must identify the same physical frame as the resolved profile.
+    if (
+        abs(layout_graph.frame_width - frame_prof.width) > tol
+        or abs(layout_graph.frame_height - frame_prof.height) > tol
+    ):
+        violations.append(
+            f"LayoutGraph frame dimensions {layout_graph.frame_width}x{layout_graph.frame_height} "
+            f"do not match profile '{frame_prof.id}' dimensions {frame_prof.width}x{frame_prof.height}"
+        )
+        frame_overflow += 1
 
     seen_ids: set[str] = set()
 
@@ -116,10 +128,20 @@ def validate_layout_graph(
             violations.append(msg)
             safe_zone_violations += 1
 
-        # 6. Inside assigned zone
+        # 6. Inside assigned zone and same role/zone semantic contract as the solver.
         if box.zone:
             try:
                 zone_rect = frame_prof.get_zone(box.zone)
+                expected_class = role_zone_class(box.strategy_role)
+                actual_class = zone_class(box.zone)
+                if actual_class is None or actual_class != expected_class:
+                    details = role_zone_details(box.node_id, box.strategy_role, box.zone)
+                    msg = (
+                        f"Box '{box.node_id}' strategy_role '{box.strategy_role}' cannot use zone '{box.zone}' "
+                        f"(expected_zone_class={details['expected_zone_class']}, actual_zone_class={details['actual_zone_class']})"
+                    )
+                    violations.append(msg)
+                    safe_zone_violations += 1
                 if not zone_rect.contains_rect(box.rect, tol=tol):
                     msg = (
                         f"Box '{box.node_id}' leaves assigned zone '{box.zone}' ({zone_rect.left}, {zone_rect.top}, "
@@ -186,10 +208,15 @@ def validate_layout_graph(
     if expected_node_ids is not None:
         expected_set = set(expected_node_ids)
         missing = expected_set - seen_ids
+        unexpected = seen_ids - expected_set
         if missing:
             msg = f"LayoutGraph is missing {len(missing)} expected node(s): {sorted(missing)}"
             violations.append(msg)
             missing_nodes += len(missing)
+        if unexpected:
+            msg = f"LayoutGraph contains {len(unexpected)} unexpected node(s): {sorted(unexpected)}"
+            violations.append(msg)
+            invalid_geometry += len(unexpected)
 
     if violations:
         raise LayoutPreflightFailedError(
@@ -209,10 +236,88 @@ def validate_layout_graph(
 
     return PreflightReport(
         valid=True,
-        frame_overflow_count=0,
-        safe_zone_violation_count=0,
-        content_clipping_count=0,
-        invalid_geometry_count=0,
-        missing_node_count=0,
+        frame_overflow_count=frame_overflow,
+        safe_zone_violation_count=safe_zone_violations,
+        content_clipping_count=content_clipping,
+        invalid_geometry_count=invalid_geometry,
+        missing_node_count=missing_nodes,
         violations=[],
     )
+
+
+@dataclass(frozen=True)
+class GraphPreflightReport:
+    """Diagnostic report for V2-04 routed graph geometry."""
+
+    valid: bool
+    endpoint_violation_count: int = 0
+    orthogonal_violation_count: int = 0
+    edge_node_intersection_count: int = 0
+    edge_crossing_count: int = 0
+    bend_count: int = 0
+    total_edge_length: float = 0.0
+    violations: list[str] = None
+
+
+def validate_graph_layout(
+    layout_graph: LayoutGraph,
+    profile: FrameProfile | str | None = None,
+    tol: float = 1e-2,
+) -> GraphPreflightReport:
+    """Validate routed-edge geometry for V2-04 graph LayoutGraphs."""
+    if layout_graph.strategy != LayoutStrategy.DIRECTED_GRAPH:
+        raise LayoutPreflightFailedError(
+            "Graph layout preflight requires DIRECTED_GRAPH strategy",
+            {
+                "strategy": layout_graph.strategy.value,
+                "expected_strategy": LayoutStrategy.DIRECTED_GRAPH.value,
+            },
+        )
+
+    if profile is None:
+        frame_prof = get_frame_profile(layout_graph.frame_profile_id)
+    else:
+        frame_prof = get_frame_profile(profile)
+    content = frame_prof.get_zone("CONTENT")
+    safe = frame_prof.safe_edge_rect
+    from learnflow_v2.layout.graph_metrics import (
+        compute_graph_metrics,
+        edge_is_orthogonal,
+        validate_routed_edge_endpoints,
+    )
+    from learnflow_v2.layout.schema import RoutingStyle
+
+    boxes = {b.node_id: b.rect for b in layout_graph.boxes}
+    violations: list[str] = []
+    endpoint_v = 0
+    ortho_v = 0
+    for edge in layout_graph.routed_edges:
+        if not validate_routed_edge_endpoints(edge, boxes, tol=2.0):
+            endpoint_v += 1
+            violations.append(f"Edge '{edge.edge_id}' endpoints are not on source/target boundaries")
+        if edge.routing_style == RoutingStyle.ORTHOGONAL and not edge_is_orthogonal(edge, tol=1e-2):
+            ortho_v += 1
+            violations.append(f"Edge '{edge.edge_id}' is declared ORTHOGONAL but has diagonal segments")
+        for pt in edge.points:
+            if not safe.contains_point(pt.x, pt.y):
+                violations.append(f"Edge '{edge.edge_id}' point leaves SAFE_EDGE")
+            if not content.contains_point(pt.x, pt.y):
+                violations.append(f"Edge '{edge.edge_id}' point leaves CONTENT/title-caption avoidance zone")
+
+    metrics = compute_graph_metrics(layout_graph.routed_edges, boxes)
+    if metrics.edge_node_intersection_count:
+        violations.append(f"{metrics.edge_node_intersection_count} routed edge(s) intersect unrelated nodes")
+    valid = not violations
+    report = GraphPreflightReport(
+        valid=valid,
+        endpoint_violation_count=endpoint_v,
+        orthogonal_violation_count=ortho_v,
+        edge_node_intersection_count=metrics.edge_node_intersection_count,
+        edge_crossing_count=metrics.edge_crossing_count,
+        bend_count=metrics.bend_count,
+        total_edge_length=metrics.total_edge_length,
+        violations=violations,
+    )
+    if not valid:
+        raise LayoutPreflightFailedError("Graph layout preflight failed", report.__dict__)
+    return report

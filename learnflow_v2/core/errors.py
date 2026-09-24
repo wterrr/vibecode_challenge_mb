@@ -151,3 +151,38 @@ class LayoutPreflightFailedError(LearnFlowV2Error):
 
     def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
         super().__init__("LAYOUT_PREFLIGHT_FAILED", message, details)
+
+
+class GraphLayoutInvalidInputError(LearnFlowV2Error):
+    """Raised when V2 graph-layout input is invalid."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("GRAPH_LAYOUT_INVALID_INPUT", message, details)
+
+
+class GraphLayoutBackendUnavailableError(LearnFlowV2Error):
+    """Raised when a requested graph-layout backend is unavailable."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("GRAPH_LAYOUT_BACKEND_UNAVAILABLE", message, details)
+
+
+class GraphLayoutBackendError(LearnFlowV2Error):
+    """Raised when a graph-layout backend fails or returns malformed output."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("GRAPH_LAYOUT_BACKEND_ERROR", message, details)
+
+
+class GraphLayoutUnsupportedDirectionError(LearnFlowV2Error):
+    """Raised when V2-04 graph layout is requested for an unsupported direction."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("GRAPH_LAYOUT_UNSUPPORTED_DIRECTION", message, details)
+
+
+class GraphLayoutUnsupportedCapabilityError(LearnFlowV2Error):
+    """Raised when a backend cannot honestly provide a requested capability."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("GRAPH_LAYOUT_UNSUPPORTED_CAPABILITY", message, details)

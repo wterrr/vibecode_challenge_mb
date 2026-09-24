@@ -21,7 +21,9 @@ from learnflow_v2.layout.measurement import (
 )
 from learnflow_v2.layout.preflight import (
     PreflightReport,
+    GraphPreflightReport,
     validate_layout_graph,
+    validate_graph_layout,
 )
 from learnflow_v2.layout.profiles import (
     PROFILE_16_9,
@@ -37,7 +39,12 @@ from learnflow_v2.layout.schema import (
     LayoutBox,
     LayoutGraph,
     LayoutStrategy,
+    SIMPLE_LAYOUT_STRATEGIES,
     LayoutZone,
+    Point,
+    RoutedEdge,
+    RoutingStyle,
+    GraphBackendKind,
     Rect,
 )
 
@@ -63,6 +70,7 @@ __all__ = [
     "GridSpec",
     "FrameProfile",
     "LayoutStrategy",
+    "SIMPLE_LAYOUT_STRATEGIES",
     "LayoutBox",
     "LayoutGraph",
     # Profiles
@@ -77,4 +85,16 @@ __all__ = [
     # Preflight
     "PreflightReport",
     "validate_layout_graph",
+    "build_graph_layout_input",
+    "layout_directed_graph",
+    "LayoutDirection",
+    "GraphLayoutKind",
+    "validate_graph_layout",
+    "GraphPreflightReport",
+    "GraphBackendKind",
+    "RoutingStyle",
+    "RoutedEdge",
+    "Point",
 ]
+
+from learnflow_v2.layout.graph import GraphLayoutKind, LayoutDirection, layout_directed_graph, build_graph_layout_input

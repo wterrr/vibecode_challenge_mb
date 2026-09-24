@@ -56,3 +56,27 @@ Source of truth:
 
 
 Future modules do not exist yet and must not be implemented until their respective checkpoints.
+
+## V2 milestone status
+
+- V2-00 ✅ V1 freeze + benchmark
+- V2-01 ✅ ConceptRegistry and SceneGraph semantic IR
+- V2-02 ✅ intrinsic measurement
+- V2-03 ✅ FrameProfile, safe zones, grid, Kiwi constraints, LayoutGraph preflight
+- V2-04 ✅ graph layout
+
+V2-04 implemented deterministic graph layout only:
+- ELK Layered adapter through local `elkjs` bridge
+- Graphviz `dot -Tjson0` fallback/baseline adapter
+- directed graph nodes, ports, orthogonal routed edges
+- routed-edge artifact schema
+- graph preflight helpers and observational edge metrics
+
+Not implemented in V2-04:
+- collision repair
+- layout scoring or candidate comparison/ranking
+- layout continuity
+- motion planning
+- rendering
+- VLM
+- Hermes

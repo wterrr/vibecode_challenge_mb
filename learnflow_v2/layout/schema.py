@@ -10,16 +10,25 @@ All models enforce:
 
 from enum import Enum
 import math
-from typing import Any
+from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from learnflow_v2.core.jsonsafe import ensure_json_safe_dict
 
 
-def _check_finite_number(val: float, name: str) -> float:
-    """Ensure a numeric value is real and finite."""
+def _check_finite_number(val: Any, name: str) -> float:
+    """Ensure a value is a real Python/JSON number, not bool/string/NaN/Inf."""
+    if isinstance(val, bool) or not isinstance(val, (int, float)):
+        raise ValueError(f"{name} must be a real finite number, got {type(val).__name__}")
     f_val = float(val)
     if not math.isfinite(f_val):
         raise ValueError(f"{name} must be a finite number, got {val}")
     return f_val
+
+def _check_strict_int(val: Any, name: str) -> int:
+    """Strict integer validator that rejects bool/string and accepts only ints."""
+    if isinstance(val, bool) or not isinstance(val, int):
+        raise ValueError(f"{name} must be an integer, got {type(val).__name__}")
+    return val
 
 
 class Rect(BaseModel):
@@ -32,9 +41,9 @@ class Rect(BaseModel):
     width: float = Field(..., gt=0.0, description="Width of the rectangle (must be > 0)")
     height: float = Field(..., gt=0.0, description="Height of the rectangle (must be > 0)")
 
-    @field_validator("x", "y", "width", "height")
+    @field_validator("x", "y", "width", "height", mode="before")
     @classmethod
-    def validate_finite(cls, v: float, info: Any) -> float:
+    def validate_finite(cls, v: Any, info: Any) -> float:
         return _check_finite_number(v, info.field_name)
 
     @property
@@ -91,9 +100,9 @@ class FrameInsets(BaseModel):
     bottom: float = Field(default=0.0, ge=0.0)
     left: float = Field(default=0.0, ge=0.0)
 
-    @field_validator("top", "right", "bottom", "left")
+    @field_validator("top", "right", "bottom", "left", mode="before")
     @classmethod
-    def validate_finite(cls, v: float, info: Any) -> float:
+    def validate_finite(cls, v: Any, info: Any) -> float:
         return _check_finite_number(v, info.field_name)
 
 
@@ -117,9 +126,14 @@ class GridSpec(BaseModel):
     horizontal_gap: float = Field(default=16.0, ge=0.0, description="Horizontal gap between columns")
     vertical_gap: float = Field(default=16.0, ge=0.0, description="Vertical gap between rows")
 
-    @field_validator("horizontal_gap", "vertical_gap")
+    @field_validator("columns", "rows", mode="before")
     @classmethod
-    def validate_finite(cls, v: float, info: Any) -> float:
+    def validate_strict_ints(cls, v: Any, info: Any) -> int:
+        return _check_strict_int(v, info.field_name)
+
+    @field_validator("horizontal_gap", "vertical_gap", mode="before")
+    @classmethod
+    def validate_finite(cls, v: Any, info: Any) -> float:
         return _check_finite_number(v, info.field_name)
 
 
@@ -136,14 +150,29 @@ class FrameProfile(BaseModel):
     zones: dict[str, Rect] = Field(..., description="Named safe region rects")
     grid: GridSpec = Field(default_factory=GridSpec, description="Grid specification")
 
-    @field_validator("width", "height")
+    @field_validator("width", "height", mode="before")
     @classmethod
-    def validate_finite(cls, v: float, info: Any) -> float:
+    def validate_finite(cls, v: Any, info: Any) -> float:
         return _check_finite_number(v, info.field_name)
 
     @model_validator(mode="after")
     def validate_profile_structure(self) -> "FrameProfile":
-        # Safe edge insets must not exceed frame dimensions
+        # Declared aspect ratio must agree with frame geometry.
+        expected_ratios = {
+            "16:9": 16.0 / 9.0,
+            "9:16": 9.0 / 16.0,
+        }
+        if self.aspect_ratio in expected_ratios:
+            actual = self.width / self.height
+            expected = expected_ratios[self.aspect_ratio]
+            # Allow equivalent scaled profiles while rejecting materially wrong ratios.
+            if abs(actual - expected) > 1e-4:
+                raise ValueError(
+                    f"FrameProfile aspect_ratio '{self.aspect_ratio}' does not match "
+                    f"dimensions {self.width}x{self.height} (actual={actual:.8f}, expected={expected:.8f})"
+                )
+
+        # Safe edge insets must define a real positive region.
         total_h_insets = self.safe_edge_insets.left + self.safe_edge_insets.right
         total_v_insets = self.safe_edge_insets.top + self.safe_edge_insets.bottom
         if total_h_insets >= self.width:
@@ -154,16 +183,39 @@ class FrameProfile(BaseModel):
             raise ValueError(
                 f"safe_edge_insets vertical ({total_v_insets}) must be strictly less than height ({self.height})"
             )
-        # All zones must fit within physical frame and safe edge rect
+
         safe = self.safe_edge_rect
         for z_name, z_rect in self.zones.items():
-            if z_rect.right > self.width + 1e-4 or z_rect.bottom > self.height + 1e-4:
+            if not z_name or not str(z_name).strip():
+                raise ValueError("FrameProfile zone names must be non-empty strings")
+            # All configured zones must be finite, positive, and inside the physical frame.
+            if (
+                z_rect.left < -1e-4
+                or z_rect.top < -1e-4
+                or z_rect.right > self.width + 1e-4
+                or z_rect.bottom > self.height + 1e-4
+            ):
                 raise ValueError(
-                    f"Zone '{z_name}' boundary ({z_rect.right}, {z_rect.bottom}) exceeds frame ({self.width}, {self.height})"
+                    f"Zone '{z_name}' ({z_rect.left}, {z_rect.top}, {z_rect.right}, {z_rect.bottom}) "
+                    f"must be inside frame ({self.width}, {self.height})"
                 )
-            if not safe.contains_rect(z_rect, tol=1e-2):
+            # Safe/profile semantic zones are deliberately defined within SAFE_EDGE.
+            if z_name in {
+                "SAFE_EDGE",
+                "SAFE_TITLE",
+                "SAFE_CONTENT",
+                "SAFE_CAPTION",
+                "TITLE",
+                "CONTENT",
+                "CAPTION",
+                "TOP_HOOK",
+                "PRIMARY_CONTENT",
+                "SUBTITLE_ZONE",
+                "BOTTOM_UI_SAFE",
+            } and not safe.contains_rect(z_rect, tol=1e-2):
                 raise ValueError(
-                    f"Zone '{z_name}' must be contained within safe_edge_rect ({safe.left}, {safe.top}, {safe.right}, {safe.bottom})"
+                    f"Zone '{z_name}' must be contained within safe_edge_rect "
+                    f"({safe.left}, {safe.top}, {safe.right}, {safe.bottom})"
                 )
         return self
 
@@ -204,13 +256,72 @@ class FrameProfile(BaseModel):
 V2_LAYOUT_SCHEMA_VERSION = "2.1"
 
 
+class RoutingStyle(str, Enum):
+    """Finite physical edge routing representations."""
+
+    ORTHOGONAL = "ORTHOGONAL"
+    POLYLINE = "POLYLINE"
+    SPLINE = "SPLINE"
+
+
+class GraphBackendKind(str, Enum):
+    """Finite graph-layout backend identifiers stored in artifacts."""
+
+    ELK = "ELK"
+    GRAPHVIZ = "GRAPHVIZ"
+
+
+class Point(BaseModel):
+    """Strict immutable 2D point for routed edge geometry."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    x: float = Field(..., description="X coordinate")
+    y: float = Field(..., description="Y coordinate")
+
+    @field_validator("x", "y", mode="before")
+    @classmethod
+    def validate_finite(cls, v: Any, info: Any) -> float:
+        return _check_finite_number(v, info.field_name)
+
+
+class RoutedEdge(BaseModel):
+    """Replayable physical route for a semantic directed edge."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    edge_id: str = Field(..., min_length=1)
+    source: str = Field(..., min_length=1)
+    target: str = Field(..., min_length=1)
+    source_port: str | None = Field(default=None)
+    target_port: str | None = Field(default=None)
+    points: list[Point] = Field(..., min_length=2)
+    routing_style: RoutingStyle = Field(...)
+    backend: GraphBackendKind = Field(...)
+
+
 class LayoutStrategy(str, Enum):
-    """Layout templates supported in V2-03."""
+    """Layout strategies supported by the V2 layout artifact layer.
+
+    V2-03 template strategies remain unchanged. V2-04 directed graph layouts use
+    DIRECTED_GRAPH while their semantic graph subtype is recorded separately in
+    LayoutGraph.metadata["graph_kind"] as GraphLayoutKind.
+    """
 
     CONCEPT_CARD = "CONCEPT_CARD"
     COMPARISON = "COMPARISON"
     IMAGE_TEXT = "IMAGE_TEXT"
     QUOTE = "QUOTE"
+    DIRECTED_GRAPH = "DIRECTED_GRAPH"
+
+
+SIMPLE_LAYOUT_STRATEGIES = frozenset({
+    LayoutStrategy.CONCEPT_CARD,
+    LayoutStrategy.COMPARISON,
+    LayoutStrategy.IMAGE_TEXT,
+    LayoutStrategy.QUOTE,
+})
+"""Authoritative strategy set accepted by the simple template layout compiler."""
 
 
 class LayoutBox(BaseModel):
@@ -229,12 +340,13 @@ class LayoutGraph(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: str = Field(default=V2_LAYOUT_SCHEMA_VERSION, description="Layout artifact schema version")
+    schema_version: Literal["2.1"] = Field(default=V2_LAYOUT_SCHEMA_VERSION, description="Layout artifact schema version")
     scene_id: str = Field(..., min_length=1, description="Source SceneGraph ID")
     frame_profile_id: str = Field(..., min_length=1, description="FrameProfile identifier")
     frame_width: float = Field(..., gt=0.0, description="Frame width")
     frame_height: float = Field(..., gt=0.0, description="Frame height")
     boxes: list[LayoutBox] = Field(default_factory=list, description="Solved node layout boxes")
+    routed_edges: list[RoutedEdge] = Field(default_factory=list, description="Solved routed edge geometry")
     strategy: LayoutStrategy = Field(..., description="Layout strategy applied")
     feasible: bool = Field(default=True, description="Whether layout solver found feasible solution")
     metadata: dict[str, Any] = Field(default_factory=dict, description="Deterministic layout metadata")
@@ -251,16 +363,11 @@ class LayoutGraph(BaseModel):
     @field_validator("metadata")
     @classmethod
     def validate_metadata_json_safe(cls, v: dict[str, Any]) -> dict[str, Any]:
-        import json
-        try:
-            json.dumps(v)
-        except (TypeError, ValueError) as exc:
-            raise ValueError(f"LayoutGraph metadata must be JSON-serializable: {exc}") from exc
-        return v
+        return ensure_json_safe_dict(v, path="metadata")
 
-    @field_validator("frame_width", "frame_height")
+    @field_validator("frame_width", "frame_height", mode="before")
     @classmethod
-    def validate_finite(cls, v: float, info: Any) -> float:
+    def validate_finite(cls, v: Any, info: Any) -> float:
         return _check_finite_number(v, info.field_name)
 
     @field_validator("boxes")
@@ -268,3 +375,9 @@ class LayoutGraph(BaseModel):
     def validate_boxes(cls, boxes: list[LayoutBox]) -> list[LayoutBox]:
         # Enforce deterministic order by node_id
         return sorted(boxes, key=lambda b: b.node_id)
+
+    @field_validator("routed_edges")
+    @classmethod
+    def validate_routed_edges(cls, edges: list[RoutedEdge]) -> list[RoutedEdge]:
+        # Enforce deterministic order by edge_id
+        return sorted(edges, key=lambda e: e.edge_id)

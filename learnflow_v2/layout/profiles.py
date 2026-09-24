@@ -12,6 +12,14 @@ from typing import Literal
 from learnflow_v2.core.errors import LayoutInvalidInputError
 from learnflow_v2.core.errors import LayoutInvalidInputError
 from learnflow_v2.layout.schema import FrameInsets, FrameProfile, GridSpec, Rect
+import math
+from typing import Any
+
+
+def _strict_profile_dimension(v: Any, name: str) -> float:
+    if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(float(v)) or float(v) <= 0:
+        raise LayoutInvalidInputError(f"{name} must be a finite positive real number")
+    return float(v)
 
 
 def create_frame_profile_16_9(
@@ -26,8 +34,8 @@ def create_frame_profile_16_9(
     - SAFE_CONTENT (CONTENT): primary central content area (70% safe height)
     - SAFE_CAPTION (CAPTION): bottom caption/subtitle area (11% safe height)
     """
-    w = round(float(width), 2)
-    h = round(float(height), 2)
+    w = round(_strict_profile_dimension(width, "width"), 2)
+    h = round(_strict_profile_dimension(height, "height"), 2)
 
     # 5% safe margin insets
     pad_x = round(w * 0.05, 2)
@@ -97,8 +105,8 @@ def create_frame_profile_9_16(
     - SUBTITLE_ZONE (CAPTION, SAFE_CAPTION): subtitle zone (13% safe height)
     - BOTTOM_UI_SAFE: bottom UI buffer region (5% safe height)
     """
-    w = round(float(width), 2)
-    h = round(float(height), 2)
+    w = round(_strict_profile_dimension(width, "width"), 2)
+    h = round(_strict_profile_dimension(height, "height"), 2)
 
     pad_left = round(w * 0.05, 2)
     pad_right = round(w * 0.05, 2)

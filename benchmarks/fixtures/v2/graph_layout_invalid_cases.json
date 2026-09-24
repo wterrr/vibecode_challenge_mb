@@ -1,0 +1,38 @@
+{
+  "schema": "learnflow_v2_invalid_graph_layout_cases_v2_04",
+  "count": 8,
+  "cases": [
+    {
+      "id": "missing_measurement",
+      "error": "GRAPH_LAYOUT_INVALID_INPUT"
+    },
+    {
+      "id": "unknown_relation_endpoint",
+      "error": "GRAPH_LAYOUT_INVALID_INPUT"
+    },
+    {
+      "id": "unsupported_relation_kind",
+      "error": "GRAPH_LAYOUT_INVALID_INPUT"
+    },
+    {
+      "id": "unsupported_direction",
+      "error": "GRAPH_LAYOUT_UNSUPPORTED_DIRECTION"
+    },
+    {
+      "id": "bad_port_hint",
+      "error": "VALIDATION_ERROR"
+    },
+    {
+      "id": "backend_unavailable",
+      "error": "GRAPH_LAYOUT_BACKEND_UNAVAILABLE"
+    },
+    {
+      "id": "oversized_graph",
+      "error": "LAYOUT_UNSATISFIABLE"
+    },
+    {
+      "id": "malformed_backend_output",
+      "error": "GRAPH_LAYOUT_BACKEND_ERROR"
+    }
+  ]
+}

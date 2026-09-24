@@ -31,9 +31,28 @@ from learnflow_v2.layout.schema import (
     LayoutBox,
     LayoutGraph,
     LayoutStrategy,
+    SIMPLE_LAYOUT_STRATEGIES,
     Rect,
     _check_finite_number,
 )
+from learnflow_v2.layout.semantics import (
+    ZoneClass,
+    canonical_zone_for_role,
+    is_chrome_role,
+    role_zone_class,
+    role_zone_details,
+    zone_class,
+)
+
+
+def _strict_positive_geometry_number(value: Any, name: str) -> float:
+    """Accept real int/float geometry numbers and reject strings, bools, NaN/Inf, and <= 0."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be a real numeric value, got {type(value).__name__}")
+    f_val = _check_finite_number(value, name)
+    if f_val <= 0.0:
+        raise ValueError(f"{name} must be strictly positive, got {f_val}")
+    return f_val
 
 
 class LayoutItemInput(BaseModel):
@@ -50,23 +69,61 @@ class LayoutItemInput(BaseModel):
     aspect_ratio: float | None = Field(default=None, gt=0.0, description="Aspect ratio (width/height)")
     target_zone: str | None = Field(default=None, description="Specific layout zone override")
 
-    @field_validator("min_width", "min_height")
+    @field_validator("min_width", "min_height", mode="before")
     @classmethod
-    def validate_min_sizes(cls, v: float, info: Any) -> float:
-        f_val = _check_finite_number(v, info.field_name)
-        if f_val <= 0.0:
-            raise ValueError(f"{info.field_name} must be strictly positive, got {f_val}")
-        return f_val
+    def validate_min_sizes(cls, v: Any, info: Any) -> float:
+        return _strict_positive_geometry_number(v, info.field_name)
 
-    @field_validator("preferred_width", "preferred_height", "aspect_ratio")
+    @field_validator("preferred_width", "preferred_height", "aspect_ratio", mode="before")
     @classmethod
-    def validate_optional_finite(cls, v: float | None, info: Any) -> float | None:
+    def validate_optional_finite(cls, v: Any, info: Any) -> float | None:
         if v is None:
             return None
-        f_val = _check_finite_number(v, info.field_name)
-        if f_val <= 0.0:
-            raise ValueError(f"{info.field_name} must be strictly positive, got {f_val}")
-        return f_val
+        return _strict_positive_geometry_number(v, info.field_name)
+
+    @field_validator("target_zone")
+    @classmethod
+    def validate_target_zone(cls, v: str | None) -> str | None:
+        if v is not None and not v.strip():
+            raise ValueError("target_zone must be None or a non-empty string")
+        return v
+
+
+
+def _core_items(items: list[LayoutItemInput]) -> list[LayoutItemInput]:
+    """Return ordinary content/core items, excluding title/caption chrome aliases."""
+    return [item for item in items if not is_chrome_role(item.role)]
+
+
+def _validate_simple_template_chrome_cardinality(
+    strategy: LayoutStrategy,
+    items: list[LayoutItemInput],
+) -> None:
+    """V2-03 simple templates permit at most one title-class and one caption-class item."""
+    title_count = sum(1 for item in items if role_zone_class(item.role) == ZoneClass.TITLE)
+    caption_count = sum(1 for item in items if role_zone_class(item.role) == ZoneClass.CAPTION)
+    if title_count > 1:
+        raise LayoutInvalidInputError(
+            f"{strategy.value} strategy allows at most one title-class item, got {title_count}",
+            details={
+                "strategy": strategy.value,
+                "zone_class": ZoneClass.TITLE.value,
+                "count": title_count,
+                "max_allowed": 1,
+                "roles": [item.role for item in items if role_zone_class(item.role) == ZoneClass.TITLE],
+            },
+        )
+    if caption_count > 1:
+        raise LayoutInvalidInputError(
+            f"{strategy.value} strategy allows at most one caption-class item, got {caption_count}",
+            details={
+                "strategy": strategy.value,
+                "zone_class": ZoneClass.CAPTION.value,
+                "count": caption_count,
+                "max_allowed": 1,
+                "roles": [item.role for item in items if role_zone_class(item.role) == ZoneClass.CAPTION],
+            },
+        )
 
 
 def solve_layout(
@@ -94,6 +151,38 @@ def solve_layout(
     """
     if not scene_id or not scene_id.strip():
         raise LayoutInvalidInputError("scene_id must be a non-empty string")
+
+    if isinstance(strategy, str):
+        try:
+            strat_enum = LayoutStrategy(strategy)
+        except ValueError as exc:
+            raise LayoutInvalidInputError(
+                f"Unsupported simple layout strategy '{strategy}'. Supported: {sorted(s.value for s in SIMPLE_LAYOUT_STRATEGIES)}",
+                details={"strategy": strategy, "supported": sorted(s.value for s in SIMPLE_LAYOUT_STRATEGIES)},
+            ) from exc
+    elif isinstance(strategy, LayoutStrategy):
+        strat_enum = strategy
+    else:
+        raise LayoutInvalidInputError(
+            f"Invalid strategy type: expected LayoutStrategy or str, got {type(strategy).__name__}",
+            details={"strategy": str(strategy)},
+        )
+
+    if strat_enum not in SIMPLE_LAYOUT_STRATEGIES:
+        message = (
+            "DIRECTED_GRAPH must be compiled through layout_directed_graph()"
+            if strat_enum == LayoutStrategy.DIRECTED_GRAPH
+            else f"{strat_enum.value} is not supported by solve_layout()"
+        )
+        raise LayoutInvalidInputError(
+            message,
+            details={
+                "strategy": strat_enum.value,
+                "supported": sorted(s.value for s in SIMPLE_LAYOUT_STRATEGIES),
+                "compiler": "solve_layout",
+            },
+        )
+
     if not items:
         raise LayoutInvalidInputError("items list must contain at least one item")
 
@@ -151,45 +240,48 @@ def solve_layout(
     items = validated_items
 
     frame_prof = get_frame_profile(profile)
-    if isinstance(strategy, str):
-        try:
-            strat_enum = LayoutStrategy(strategy)
-        except ValueError as exc:
-            raise LayoutInvalidInputError(
-                f"Unsupported layout strategy '{strategy}'. Supported: {[s.value for s in LayoutStrategy]}",
-                details={"strategy": strategy, "supported": [s.value for s in LayoutStrategy]},
-            ) from exc
-    elif isinstance(strategy, LayoutStrategy):
-        strat_enum = strategy
-    else:
-        raise LayoutInvalidInputError(
-            f"Invalid strategy type: expected LayoutStrategy or str, got {type(strategy).__name__}",
-            details={"strategy": str(strategy)},
-        )
 
-    # Strategy cardinality validation
+    # Strategy cardinality validation: V2-03 supports bounded simple templates only.
+    _validate_simple_template_chrome_cardinality(strat_enum, items)
+
     if strat_enum == LayoutStrategy.COMPARISON:
-        comp_items = [it for it in items if it.role not in ("title", "caption")]
-        if len(comp_items) < 2:
+        comp_items = _core_items(items)
+        if len(comp_items) != 2:
             raise LayoutInvalidInputError(
-                f"COMPARISON strategy requires at least 2 comparison items, got {len(comp_items)}",
+                f"COMPARISON strategy requires exactly 2 comparison items, got {len(comp_items)}",
                 details={"strategy": "COMPARISON", "comparison_items_count": len(comp_items), "total_items": len(items)},
             )
     elif strat_enum == LayoutStrategy.IMAGE_TEXT:
-        has_img = any(it.role == "image" for it in items)
-        has_txt = any(it.role in ("text", "content") for it in items)
-        non_chrome = [it for it in items if it.role not in ("title", "caption")]
-        if not (has_img and has_txt) and len(non_chrome) < 2:
+        core_items = _core_items(items)
+        image_items = [it for it in core_items if it.role == "image"]
+        text_items = [it for it in core_items if it.role in ("text", "content")]
+        extras = [it for it in core_items if it.role not in ("image", "text", "content")]
+        if len(image_items) != 1 or len(text_items) != 1 or extras or len(core_items) != 2:
             raise LayoutInvalidInputError(
-                "IMAGE_TEXT strategy requires both image and text items (or at least 2 content items)",
-                details={"strategy": "IMAGE_TEXT", "has_image": has_img, "has_text": has_txt, "non_chrome_count": len(non_chrome)},
+                "IMAGE_TEXT strategy requires exactly one image item and exactly one text/content item",
+                details={
+                    "strategy": "IMAGE_TEXT",
+                    "image_count": len(image_items),
+                    "text_count": len(text_items),
+                    "extra_core_roles": [it.role for it in extras],
+                    "core_count": len(core_items),
+                },
             )
     elif strat_enum == LayoutStrategy.QUOTE:
-        quote_items = [it for it in items if it.role in ("quote", "content")]
-        if not quote_items:
+        core_items = _core_items(items)
+        quote_items = [it for it in core_items if it.role in ("quote", "content")]
+        attr_items = [it for it in core_items if it.role in ("attribution", "author")]
+        extras = [it for it in core_items if it.role not in ("quote", "content", "attribution", "author")]
+        if len(quote_items) != 1 or len(attr_items) > 1 or extras or len(core_items) != len(quote_items) + len(attr_items):
             raise LayoutInvalidInputError(
-                "QUOTE strategy requires at least one quote or content item",
-                details={"strategy": "QUOTE", "total_items": len(items)},
+                "QUOTE strategy requires exactly one quote/content item and zero or one attribution",
+                details={
+                    "strategy": "QUOTE",
+                    "quote_count": len(quote_items),
+                    "attribution_count": len(attr_items),
+                    "extra_core_roles": [it.role for it in extras],
+                    "core_count": len(core_items),
+                },
             )
 
     solver = KiwiLayoutSolver(scene_id=scene_id)
@@ -227,18 +319,35 @@ def solve_layout(
         if math.isfinite(pref_h):
             solver.add_constraint(bv.height == float(pref_h), STRENGTH_WEAK, stage="preferred_size")
 
-        # Determine target zone
+        # Determine and validate target zone. A target override may select only a
+        # compatible alias within the role's semantic class; it may never cross
+        # title/content/caption classes or use reserved spanning zones.
         if item.target_zone:
             assigned_zone = item.target_zone
-        elif item.role in ("title", "safe_title", "header"):
-            assigned_zone = "TITLE"
-        elif item.role in ("caption", "safe_caption", "subtitle"):
-            assigned_zone = "CAPTION"
+            requested_class = zone_class(assigned_zone)
+            if requested_class is not None and requested_class != role_zone_class(item.role):
+                raise LayoutInvalidInputError(
+                    f"Item '{item.node_id}' role '{item.role}' cannot target zone '{assigned_zone}'",
+                    details=role_zone_details(item.node_id, item.role, assigned_zone),
+                )
         else:
-            assigned_zone = "CONTENT"
+            assigned_zone = canonical_zone_for_role(item.role)
 
         item_zones[item.node_id] = assigned_zone
-        z_rect = frame_prof.get_zone(assigned_zone)
+        try:
+            z_rect = frame_prof.get_zone(assigned_zone)
+        except KeyError as exc:
+            raise LayoutInvalidInputError(
+                f"Unknown target zone '{assigned_zone}' for item '{item.node_id}' in profile '{frame_prof.id}'",
+                details={"node_id": item.node_id, "target_zone": assigned_zone, "profile_id": frame_prof.id},
+            ) from exc
+
+        requested_class = zone_class(assigned_zone)
+        if requested_class is None or requested_class != role_zone_class(item.role):
+            raise LayoutInvalidInputError(
+                f"Item '{item.node_id}' role '{item.role}' cannot target zone '{assigned_zone}'",
+                details=role_zone_details(item.node_id, item.role, assigned_zone),
+            )
 
         # Enforce containment in assigned zone (REQUIRED)
         solver.add_constraint(bv.x >= z_rect.left, STRENGTH_REQUIRED, stage="zone_containment")
@@ -294,8 +403,8 @@ def _apply_concept_card_constraints(
     caption_zone: Rect,
 ) -> None:
     """Concept card: title centered in TITLE, main content centered in CONTENT."""
-    content_items = [it for it in items if it.role not in ("title", "caption")]
-    title_items = [it for it in items if it.role == "title"]
+    content_items = _core_items(items)
+    title_items = [it for it in items if role_zone_class(it.role) == ZoneClass.TITLE]
 
     for it in title_items:
         bv = solver.get_box(it.node_id)
@@ -335,10 +444,10 @@ def _apply_comparison_constraints(
     - mirror symmetry around content center: (left.center_x + right.center_x) == 2 * content_zone.center_x (STRONG)
     - vertical centering in content zone: left.center_y == content_zone.center_y (MEDIUM)
     """
-    comp_items = [it for it in items if it.role not in ("title", "caption")]
-    if len(comp_items) < 2:
+    comp_items = _core_items(items)
+    if len(comp_items) != 2:
         raise LayoutInvalidInputError(
-            "COMPARISON strategy requires at least 2 comparison items",
+            "COMPARISON strategy requires exactly 2 comparison items",
             details={"item_count": len(comp_items)},
         )
 
@@ -410,14 +519,10 @@ def _apply_image_text_constraints(
     text_item = next((it for it in items if it.role in ("text", "content")), None)
 
     if img_item is None or text_item is None:
-        comp_items = [it for it in items if it.role not in ("title", "caption")]
-        if len(comp_items) >= 2:
-            img_item, text_item = comp_items[0], comp_items[1]
-        else:
-            raise LayoutInvalidInputError(
-                "IMAGE_TEXT strategy requires both image and text items",
-                details={"item_count": len(items)},
-            )
+        raise LayoutInvalidInputError(
+            "IMAGE_TEXT strategy requires both image and text items",
+            details={"item_count": len(items)},
+        )
 
     b_img = solver.get_box(img_item.node_id)
     b_txt = solver.get_box(text_item.node_id)
@@ -458,7 +563,7 @@ def _apply_image_text_constraints(
     # Image aspect ratio constraint if specified
     if img_item.aspect_ratio is not None and img_item.aspect_ratio > 0:
         ar = float(img_item.aspect_ratio)
-        solver.add_constraint(b_img.width == ar * b_img.height, STRENGTH_MEDIUM, stage="image_aspect_ratio")
+        solver.add_constraint(b_img.width == ar * b_img.height, STRENGTH_REQUIRED, stage="image_aspect_ratio")
 
 
 def _apply_quote_constraints(
