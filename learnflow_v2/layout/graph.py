@@ -75,6 +75,7 @@ class GraphNodeInput:
     id: str
     width: float
     height: float
+    semantic_key: str | None = None
 
 
 @dataclass(frozen=True)
@@ -94,6 +95,17 @@ class GraphLayoutInput:
     direction: LayoutDirection
     kind: GraphLayoutKind
     strict_orthogonal: bool = True
+    preserve_model_order: bool = False
+    node_order: list[str] | None = None
+
+    def get_ordered_nodes(self) -> list[GraphNodeInput]:
+        """Return nodes according to explicit stable continuity ordering contract."""
+        if self.node_order:
+            order_map = {nid: idx for idx, nid in enumerate(self.node_order)}
+            return sorted(self.nodes, key=lambda n: (order_map.get(n.id, 999999), n.id))
+        if self.preserve_model_order:
+            return list(self.nodes)
+        return sorted(self.nodes, key=lambda n: n.id)
 
 
 @dataclass(frozen=True)
@@ -103,6 +115,7 @@ class BackendNode:
     y: float
     width: float
     height: float
+    semantic_key: str | None = None
 
 
 @dataclass(frozen=True)
@@ -213,6 +226,8 @@ def build_graph_layout_input(
     direction: ReadingDirection | LayoutDirection | None = None,
     kind: GraphLayoutKind | str | None = None,
     strict_orthogonal: bool = True,
+    node_order: list[str] | None = None,
+    preserve_model_order: bool = False,
 ) -> GraphLayoutInput:
     if direction is not None:
         direction_source = direction
@@ -224,11 +239,25 @@ def build_graph_layout_input(
     chosen_kind = infer_graph_kind(scene_graph, kind)
     node_ids = {n.id for n in scene_graph.nodes}
     nodes: list[GraphNodeInput] = []
-    for node in sorted(scene_graph.nodes, key=lambda n: n.id):
+
+    if node_order:
+        order_map = {nid: idx for idx, nid in enumerate(node_order)}
+        sorted_nodes = sorted(scene_graph.nodes, key=lambda n: (order_map.get(n.id, 999999), n.id))
+    else:
+        sorted_nodes = sorted(scene_graph.nodes, key=lambda n: n.id)
+
+    for node in sorted_nodes:
         if node.id not in measurements:
             raise GraphLayoutInvalidInputError(f"Missing measurement for node '{node.id}'", {"node_id": node.id})
         w, h = _measure_size(measurements[node.id], node.id)
-        nodes.append(GraphNodeInput(id=node.id, width=round(w, 4), height=round(h, 4)))
+        nodes.append(
+            GraphNodeInput(
+                id=node.id,
+                width=round(w, 4),
+                height=round(h, 4),
+                semantic_key=node.semantic_key,
+            )
+        )
 
     edges: list[GraphEdgeInput] = []
     for rel in sorted(scene_graph.relations, key=lambda r: r.id):
@@ -250,6 +279,8 @@ def build_graph_layout_input(
         direction=chosen_direction,
         kind=chosen_kind,
         strict_orthogonal=strict_orthogonal,
+        preserve_model_order=preserve_model_order,
+        node_order=node_order,
     )
 
 
@@ -271,8 +302,16 @@ def _translate_point(pt: Point, dx: float, dy: float) -> Point:
 
 def _normalize_backend_result(result: BackendLayoutResult, graph_input: GraphLayoutInput) -> BackendLayoutResult:
     expected_dims = {n.id: (n.width, n.height) for n in graph_input.nodes}
+    expected_keys = {n.id: n.semantic_key for n in graph_input.nodes}
     nodes = [
-        BackendNode(id=n.id, x=round(n.x, 4), y=round(n.y, 4), width=round(expected_dims[n.id][0], 4), height=round(expected_dims[n.id][1], 4))
+        BackendNode(
+            id=n.id,
+            x=round(n.x, 4),
+            y=round(n.y, 4),
+            width=round(expected_dims[n.id][0], 4),
+            height=round(expected_dims[n.id][1], 4),
+            semantic_key=expected_keys.get(n.id),
+        )
         for n in result.nodes
     ]
     routes = [
@@ -309,7 +348,13 @@ def translate_center_into_content(
     dx = round(content.x + (content.width - graph_w) / 2.0 - min_x, 4)
     dy = round(content.y + (content.height - graph_h) / 2.0 - min_y, 4)
     boxes = [
-        LayoutBox(node_id=n.id, rect=Rect(x=round(n.x + dx, 4), y=round(n.y + dy, 4), width=n.width, height=n.height), zone="CONTENT", strategy_role="graph_node")
+        LayoutBox(
+            node_id=n.id,
+            rect=Rect(x=round(n.x + dx, 4), y=round(n.y + dy, 4), width=n.width, height=n.height),
+            zone="CONTENT",
+            strategy_role="graph_node",
+            semantic_key=n.semantic_key,
+        )
         for n in result.nodes
     ]
     routed = [
@@ -373,8 +418,32 @@ def layout_directed_graph(
     direction: ReadingDirection | LayoutDirection | None = None,
     kind: GraphLayoutKind | str | None = None,
     strict_orthogonal: bool = True,
+    previous_scene_graph: SceneGraph | None = None,
+    previous_layout: LayoutGraph | None = None,
 ) -> LayoutGraph:
-    graph_input = build_graph_layout_input(scene_graph, measurements, profile, direction, kind, strict_orthogonal)
+    node_order: list[str] | None = None
+    preserve_model_order = False
+    if previous_scene_graph is not None and previous_layout is not None:
+        from learnflow_v2.layout.continuity import derive_stable_graph_order
+        chosen_dir = choose_direction(profile, direction)
+        node_order = derive_stable_graph_order(
+            previous_scene_graph=previous_scene_graph,
+            previous_layout=previous_layout,
+            current_scene_graph=scene_graph,
+            direction=chosen_dir,
+        )
+        preserve_model_order = True
+
+    graph_input = build_graph_layout_input(
+        scene_graph,
+        measurements,
+        profile,
+        direction,
+        kind,
+        strict_orthogonal,
+        node_order=node_order,
+        preserve_model_order=preserve_model_order,
+    )
     backend_kind = GraphBackendKind(backend)
     import importlib
     if backend_kind == GraphBackendKind.ELK:

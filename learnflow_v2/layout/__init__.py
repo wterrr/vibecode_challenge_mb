@@ -65,11 +65,13 @@ from learnflow_v2.layout.score import (
 )
 from learnflow_v2.layout.optimization import (
     MAX_LAYOUT_SOLVES,
+    CollisionRepairResult,
     LayoutCandidate,
     LayoutOptimizationResult,
     choose_best_candidate,
-    optimize_simple_layout,
     evaluate_graph_candidate,
+    optimize_simple_layout,
+    repair_layout_collisions,
 )
 
 __all__ = [
@@ -134,11 +136,32 @@ __all__ = [
     "compute_soft_score",
     # Optimization & Candidates (V2-05)
     "MAX_LAYOUT_SOLVES",
+    "CollisionRepairResult",
+    "repair_layout_collisions",
     "LayoutCandidate",
     "LayoutOptimizationResult",
     "choose_best_candidate",
     "optimize_simple_layout",
     "evaluate_graph_candidate",
+    # Continuity (V2-06)
+    "ContinuityAnchor",
+    "ContinuityContext",
+    "ContinuityConstraint",
+    "ContinuityStrength",
+    "ContinuityMetrics",
+    "build_continuity_context",
+    "compute_continuity_metrics",
+    "derive_stable_graph_order",
 ]
 
+from learnflow_v2.layout.continuity import (
+    ContinuityAnchor,
+    ContinuityContext,
+    ContinuityConstraint,
+    ContinuityStrength,
+    ContinuityMetrics,
+    build_continuity_context,
+    compute_continuity_metrics,
+    derive_stable_graph_order,
+)
 from learnflow_v2.layout.graph import GraphLayoutKind, LayoutDirection, layout_directed_graph, build_graph_layout_input

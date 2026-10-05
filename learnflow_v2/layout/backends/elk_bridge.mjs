@@ -47,6 +47,7 @@ try {
       'org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers': payload.spacing?.nodeNodeBetweenLayers ?? 80,
       'org.eclipse.elk.spacing.edgeNode': payload.spacing?.edgeNode ?? 20,
       'org.eclipse.elk.spacing.edgeEdge': payload.spacing?.edgeEdge ?? 12,
+      ...(payload.preserve_model_order ? { 'org.eclipse.elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES' } : {}),
       'org.eclipse.elk.randomSeed': 7
     }
   };

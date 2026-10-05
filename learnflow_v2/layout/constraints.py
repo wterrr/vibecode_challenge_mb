@@ -20,6 +20,7 @@ from learnflow_v2.core.errors import (
 )
 from learnflow_v2.layout.backends.kiwi import (
     KiwiLayoutSolver,
+    STRENGTH_CONTINUITY,
     STRENGTH_MEDIUM,
     STRENGTH_REQUIRED,
     STRENGTH_STRONG,
@@ -68,6 +69,7 @@ class LayoutItemInput(BaseModel):
     preferred_height: float | None = Field(default=None, description="Preferred height (soft)")
     aspect_ratio: float | None = Field(default=None, gt=0.0, description="Aspect ratio (width/height)")
     target_zone: str | None = Field(default=None, description="Specific layout zone override")
+    semantic_key: str | None = Field(default=None, description="Canonical semantic key for cross-scene continuity")
 
     @field_validator("min_width", "min_height", mode="before")
     @classmethod
@@ -87,6 +89,15 @@ class LayoutItemInput(BaseModel):
         if v is not None and not v.strip():
             raise ValueError("target_zone must be None or a non-empty string")
         return v
+
+    @field_validator("semantic_key", mode="before")
+    @classmethod
+    def validate_semantic_key(cls, v: Any) -> str | None:
+        if v is None:
+            return None
+        if isinstance(v, bool) or not isinstance(v, str) or not v.strip():
+            raise ValueError("semantic_key must be a non-empty string if provided")
+        return v.strip()
 
 
 
@@ -134,6 +145,7 @@ def solve_layout(
     metadata: dict[str, Any] | None = None,
     separation_constraints: list[Any] | None = None,
     variant: str = "PRIMARY",
+    continuity_constraints: list[Any] | None = None,
 ) -> LayoutGraph:
     """Compile items and profile into linear constraints and solve for LayoutGraph.
 
@@ -243,6 +255,32 @@ def solve_layout(
 
     frame_prof = get_frame_profile(profile)
 
+    # Validate continuity constraints against current layout items
+    if continuity_constraints:
+        item_by_id = {it.node_id: it for it in items}
+        for cc in continuity_constraints:
+            if cc.node_id not in item_by_id:
+                raise LayoutInvalidInputError(
+                    f"Continuity constraint references unknown node_id '{cc.node_id}' not in current layout items",
+                    details={"node_id": cc.node_id, "constraint_semantic_key": cc.semantic_key},
+                )
+            cur_item = item_by_id[cc.node_id]
+            if cur_item.semantic_key and cur_item.semantic_key != cc.semantic_key:
+                raise LayoutInvalidInputError(
+                    f"Continuity constraint semantic_key '{cc.semantic_key}' does not match item '{cc.node_id}' semantic_key '{cur_item.semantic_key}'",
+                    details={
+                        "node_id": cc.node_id,
+                        "constraint_semantic_key": cc.semantic_key,
+                        "item_semantic_key": cur_item.semantic_key,
+                    },
+                )
+
+    anchored_node_ids = {
+        cc.node_id
+        for cc in continuity_constraints
+        if (cc.strength.value if hasattr(cc.strength, "value") else str(cc.strength)) == "CONTINUITY"
+    } if continuity_constraints else set()
+
     # Strategy cardinality validation: V2-03 supports bounded simple templates only.
     _validate_simple_template_chrome_cardinality(strat_enum, items)
 
@@ -255,9 +293,9 @@ def solve_layout(
             )
     elif strat_enum == LayoutStrategy.IMAGE_TEXT:
         core_items = _core_items(items)
-        image_items = [it for it in core_items if it.role == "image"]
+        image_items = [it for it in core_items if it.role in ("image", "media")]
         text_items = [it for it in core_items if it.role in ("text", "content")]
-        extras = [it for it in core_items if it.role not in ("image", "text", "content")]
+        extras = [it for it in core_items if it.role not in ("image", "media", "text", "content")]
         if len(image_items) != 1 or len(text_items) != 1 or extras or len(core_items) != 2:
             raise LayoutInvalidInputError(
                 "IMAGE_TEXT strategy requires exactly one image item and exactly one text/content item",
@@ -365,25 +403,25 @@ def solve_layout(
     if strat_enum == LayoutStrategy.CONCEPT_CARD:
         if norm_variant != "PRIMARY":
             raise LayoutInvalidInputError(f"CONCEPT_CARD only supports variant 'PRIMARY', got '{variant}'")
-        _apply_concept_card_constraints(solver, items, content_zone, title_zone, caption_zone)
+        _apply_concept_card_constraints(solver, items, content_zone, title_zone, caption_zone, anchored_node_ids)
     elif strat_enum == LayoutStrategy.COMPARISON:
         if norm_variant in ("PRIMARY", "TWO_COLUMN"):
-            _apply_comparison_constraints(solver, items, content_zone, gutter_h)
+            _apply_comparison_constraints(solver, items, content_zone, gutter_h, anchored_node_ids)
         elif norm_variant in ("STACKED", "TWO_ROW"):
-            _apply_comparison_stacked_constraints(solver, items, content_zone, gutter_v)
+            _apply_comparison_stacked_constraints(solver, items, content_zone, gutter_v, anchored_node_ids)
         else:
             raise LayoutInvalidInputError(f"Unsupported variant '{variant}' for COMPARISON strategy")
     elif strat_enum == LayoutStrategy.IMAGE_TEXT:
         if norm_variant == "PRIMARY":
-            _apply_image_text_constraints(solver, items, content_zone, frame_prof.aspect_ratio, gutter_h, gutter_v)
+            _apply_image_text_constraints(solver, items, content_zone, frame_prof.aspect_ratio, gutter_h, gutter_v, anchored_node_ids)
         elif norm_variant == "STACKED":
-            _apply_image_text_constraints(solver, items, content_zone, "9:16", gutter_h, gutter_v)
+            _apply_image_text_constraints(solver, items, content_zone, "9:16", gutter_h, gutter_v, anchored_node_ids)
         else:
             raise LayoutInvalidInputError(f"Unsupported variant '{variant}' for IMAGE_TEXT strategy")
     elif strat_enum == LayoutStrategy.QUOTE:
         if norm_variant != "PRIMARY":
             raise LayoutInvalidInputError(f"QUOTE only supports variant 'PRIMARY', got '{variant}'")
-        _apply_quote_constraints(solver, items, content_zone, gutter_v)
+        _apply_quote_constraints(solver, items, content_zone, gutter_v, anchored_node_ids)
 
     # Apply explicit separation constraints (REQUIRED)
     if separation_constraints:
@@ -404,6 +442,23 @@ def solve_layout(
                 else:
                     solver.add_constraint(b2.bottom + gap <= b1.top, STRENGTH_REQUIRED, stage="separation_constraint")
 
+    # Apply soft continuity constraints targeting previous concept positions
+    if continuity_constraints:
+        for cc in continuity_constraints:
+            b_cont = solver.get_box(cc.node_id)
+            cc_str = cc.strength.value if hasattr(cc.strength, "value") else str(cc.strength)
+            kiwi_strength = STRENGTH_CONTINUITY if cc_str == "CONTINUITY" else STRENGTH_WEAK
+            solver.add_constraint(
+                b_cont.center_x == float(cc.target_center_x),
+                kiwi_strength,
+                stage="continuity_target_x",
+            )
+            solver.add_constraint(
+                b_cont.center_y == float(cc.target_center_y),
+                kiwi_strength,
+                stage="continuity_target_y",
+            )
+
     # Solve linear constraints
     rects = solver.solve()
 
@@ -414,6 +469,7 @@ def solve_layout(
             rect=rects[item.node_id],
             zone=item_zones[item.node_id],
             strategy_role=item.role,
+            semantic_key=item.semantic_key,
         )
         for item in sorted(items, key=lambda x: x.node_id)
     ]
@@ -437,29 +493,34 @@ def _apply_concept_card_constraints(
     content_zone: Rect,
     title_zone: Rect,
     caption_zone: Rect,
+    anchored_node_ids: set[str] | None = None,
 ) -> None:
     """Concept card: title centered in TITLE, main content centered in CONTENT."""
+    anchored = anchored_node_ids or set()
     content_items = _core_items(items)
     title_items = [it for it in items if role_zone_class(it.role) == ZoneClass.TITLE]
 
     for it in title_items:
         bv = solver.get_box(it.node_id)
-        # Center title horizontally
-        solver.add_constraint(bv.center_x == title_zone.center_x, STRENGTH_STRONG, stage="concept_title_center")
+        # Center title horizontally (demote if anchored)
+        title_str = STRENGTH_WEAK if it.node_id in anchored else STRENGTH_STRONG
+        solver.add_constraint(bv.center_x == title_zone.center_x, title_str, stage="concept_title_center")
 
     if content_items:
         primary = content_items[0]
         bv = solver.get_box(primary.node_id)
-        # Center primary content horizontally and vertically in content zone
-        solver.add_constraint(bv.center_x == content_zone.center_x, STRENGTH_STRONG, stage="concept_content_center_x")
-        solver.add_constraint(bv.center_y == content_zone.center_y, STRENGTH_STRONG, stage="concept_content_center_y")
+        # Center primary content horizontally and vertically in content zone (demote if anchored)
+        content_str = STRENGTH_WEAK if primary.node_id in anchored else STRENGTH_STRONG
+        solver.add_constraint(bv.center_x == content_zone.center_x, content_str, stage="concept_content_center_x")
+        solver.add_constraint(bv.center_y == content_zone.center_y, content_str, stage="concept_content_center_y")
 
         # If secondary content items exist, stack them below primary
         for idx in range(1, len(content_items)):
             prev_bv = solver.get_box(content_items[idx - 1].node_id)
             cur_bv = solver.get_box(content_items[idx].node_id)
             solver.add_constraint(cur_bv.y >= prev_bv.bottom + 16.0, STRENGTH_REQUIRED, stage="concept_subitem_stack")
-            solver.add_constraint(cur_bv.center_x == content_zone.center_x, STRENGTH_STRONG, stage="concept_subitem_center")
+            sub_str = STRENGTH_WEAK if content_items[idx].node_id in anchored else STRENGTH_STRONG
+            solver.add_constraint(cur_bv.center_x == content_zone.center_x, sub_str, stage="concept_subitem_center")
 
 
 def _apply_comparison_constraints(
@@ -467,6 +528,7 @@ def _apply_comparison_constraints(
     items: list[LayoutItemInput],
     content_zone: Rect,
     gutter_h: float,
+    anchored_node_ids: set[str] | None = None,
 ) -> None:
     """Comparison: two columns (left & right) in CONTENT zone.
 
@@ -480,6 +542,7 @@ def _apply_comparison_constraints(
     - mirror symmetry around content center: (left.center_x + right.center_x) == 2 * content_zone.center_x (STRONG)
     - vertical centering in content zone: left.center_y == content_zone.center_y (MEDIUM)
     """
+    anchored = anchored_node_ids or set()
     comp_items = _core_items(items)
     if len(comp_items) != 2:
         raise LayoutInvalidInputError(
@@ -515,18 +578,19 @@ def _apply_comparison_constraints(
         stage="comparison_equal_widths",
     )
 
-    # 4. Soft preference: Mirror symmetry around content center (STRONG)
-    # (b_left.center_x + b_right.center_x) / 2 == content_zone.center_x
+    # 4. Soft preference: Mirror symmetry around content center (STRONG, demoted if anchored)
+    sym_str = STRENGTH_WEAK if (left_item.node_id in anchored or right_item.node_id in anchored) else STRENGTH_STRONG
     solver.add_constraint(
         b_left.center_x + b_right.center_x == 2.0 * content_zone.center_x,
-        STRENGTH_STRONG,
+        sym_str,
         stage="comparison_mirror_symmetry",
     )
 
-    # 5. Soft preference: Centered vertically in content zone (MEDIUM)
+    # 5. Soft preference: Centered vertically in content zone (MEDIUM, demoted if anchored)
+    v_str = STRENGTH_WEAK if (left_item.node_id in anchored or right_item.node_id in anchored) else STRENGTH_MEDIUM
     solver.add_constraint(
         b_left.center_y == content_zone.center_y,
-        STRENGTH_MEDIUM,
+        v_str,
         stage="comparison_vertical_center",
     )
 
@@ -543,6 +607,7 @@ def _apply_comparison_stacked_constraints(
     items: list[LayoutItemInput],
     content_zone: Rect,
     gutter_v: float,
+    anchored_node_ids: set[str] | None = None,
 ) -> None:
     """Comparison stacked fallback: two rows (top & bottom) in CONTENT zone.
 
@@ -555,6 +620,7 @@ def _apply_comparison_stacked_constraints(
     - equal widths: top.width == bottom.width (STRONG)
     - mirror symmetry around vertical content center (STRONG)
     """
+    anchored = anchored_node_ids or set()
     comp_items = _core_items(items)
     if len(comp_items) != 2:
         raise LayoutInvalidInputError(
@@ -575,15 +641,17 @@ def _apply_comparison_stacked_constraints(
         stage="comparison_stacked_vertical_sep",
     )
 
-    # 2. Horizontal centering in content zone (STRONG)
+    # 2. Horizontal centering in content zone (STRONG, demoted if anchored)
+    top_h_str = STRENGTH_WEAK if left_item.node_id in anchored else STRENGTH_STRONG
+    bot_h_str = STRENGTH_WEAK if right_item.node_id in anchored else STRENGTH_STRONG
     solver.add_constraint(
         b_top.center_x == content_zone.center_x,
-        STRENGTH_STRONG,
+        top_h_str,
         stage="comparison_stacked_top_center_x",
     )
     solver.add_constraint(
         b_bottom.center_x == content_zone.center_x,
-        STRENGTH_STRONG,
+        bot_h_str,
         stage="comparison_stacked_bottom_center_x",
     )
 
@@ -594,10 +662,11 @@ def _apply_comparison_stacked_constraints(
         stage="comparison_stacked_equal_widths",
     )
 
-    # 4. Mirror vertical symmetry around content center (STRONG)
+    # 4. Mirror vertical symmetry around content center (STRONG, demoted if anchored)
+    sym_y_str = STRENGTH_WEAK if (left_item.node_id in anchored or right_item.node_id in anchored) else STRENGTH_STRONG
     solver.add_constraint(
         b_top.center_y + b_bottom.center_y == 2.0 * content_zone.center_y,
-        STRENGTH_STRONG,
+        sym_y_str,
         stage="comparison_stacked_mirror_symmetry_y",
     )
 
@@ -609,13 +678,15 @@ def _apply_image_text_constraints(
     aspect_ratio: str,
     gutter_h: float,
     gutter_v: float,
+    anchored_node_ids: set[str] | None = None,
 ) -> None:
     """Image + Text:
 
     - 16:9: Side-by-side (image | text)
     - 9:16: Stacked (image / text)
     """
-    img_item = next((it for it in items if it.role == "image"), None)
+    anchored = anchored_node_ids or set()
+    img_item = next((it for it in items if it.role in ("image", "media")), None)
     text_item = next((it for it in items if it.role in ("text", "content")), None)
 
     if img_item is None or text_item is None:
@@ -634,13 +705,16 @@ def _apply_image_text_constraints(
             STRENGTH_REQUIRED,
             stage="image_text_horizontal_separation",
         )
-        # Vertical centering in content zone
-        solver.add_constraint(b_img.center_y == content_zone.center_y, STRENGTH_STRONG, stage="image_vertical_center")
-        solver.add_constraint(b_txt.center_y == content_zone.center_y, STRENGTH_STRONG, stage="text_vertical_center")
+        # Vertical centering in content zone (demote if anchored)
+        img_v_str = STRENGTH_WEAK if img_item.node_id in anchored else STRENGTH_STRONG
+        txt_v_str = STRENGTH_WEAK if text_item.node_id in anchored else STRENGTH_STRONG
+        solver.add_constraint(b_img.center_y == content_zone.center_y, img_v_str, stage="image_vertical_center")
+        solver.add_constraint(b_txt.center_y == content_zone.center_y, txt_v_str, stage="text_vertical_center")
         # Combined horizontal balance in content zone
+        comp_str = STRENGTH_WEAK if (img_item.node_id in anchored or text_item.node_id in anchored) else STRENGTH_MEDIUM
         solver.add_constraint(
             b_img.left + b_txt.right == 2.0 * content_zone.center_x,
-            STRENGTH_MEDIUM,
+            comp_str,
             stage="image_text_composition_center_x",
         )
     else:
@@ -650,13 +724,16 @@ def _apply_image_text_constraints(
             STRENGTH_REQUIRED,
             stage="image_text_vertical_separation",
         )
-        # Horizontal centering
-        solver.add_constraint(b_img.center_x == content_zone.center_x, STRENGTH_STRONG, stage="image_horizontal_center")
-        solver.add_constraint(b_txt.center_x == content_zone.center_x, STRENGTH_STRONG, stage="text_horizontal_center")
+        # Horizontal centering (demote if anchored)
+        img_h_str = STRENGTH_WEAK if img_item.node_id in anchored else STRENGTH_STRONG
+        txt_h_str = STRENGTH_WEAK if text_item.node_id in anchored else STRENGTH_STRONG
+        solver.add_constraint(b_img.center_x == content_zone.center_x, img_h_str, stage="image_horizontal_center")
+        solver.add_constraint(b_txt.center_x == content_zone.center_x, txt_h_str, stage="text_horizontal_center")
         # Combined vertical balance in content zone
+        comp_str = STRENGTH_WEAK if (img_item.node_id in anchored or text_item.node_id in anchored) else STRENGTH_MEDIUM
         solver.add_constraint(
             b_img.top + b_txt.bottom == 2.0 * content_zone.center_y,
-            STRENGTH_MEDIUM,
+            comp_str,
             stage="image_text_composition_center_y",
         )
 
@@ -671,8 +748,10 @@ def _apply_quote_constraints(
     items: list[LayoutItemInput],
     content_zone: Rect,
     gutter_v: float,
+    anchored_node_ids: set[str] | None = None,
 ) -> None:
     """Quote: quote box centered in CONTENT zone, bounded max width, optional attribution."""
+    anchored = anchored_node_ids or set()
     quote_item = next((it for it in items if it.role in ("quote", "content")), items[0])
     attr_item = next((it for it in items if it.role in ("attribution", "author")), None)
 
@@ -686,10 +765,11 @@ def _apply_quote_constraints(
         stage="quote_max_width_bound",
     )
 
-    # 2. Centered horizontally in content zone (STRONG)
+    # 2. Centered horizontally in content zone (STRONG, demote if anchored)
+    quote_h_str = STRENGTH_WEAK if quote_item.node_id in anchored else STRENGTH_STRONG
     solver.add_constraint(
         b_quote.center_x == content_zone.center_x,
-        STRENGTH_STRONG,
+        quote_h_str,
         stage="quote_horizontal_center",
     )
 
@@ -701,22 +781,25 @@ def _apply_quote_constraints(
             STRENGTH_REQUIRED,
             stage="quote_attribution_separation",
         )
-        # Attribution horizontally aligned (STRONG)
+        # Attribution horizontally aligned (STRONG, demote if anchored)
+        attr_h_str = STRENGTH_WEAK if attr_item.node_id in anchored else STRENGTH_STRONG
         solver.add_constraint(
             b_attr.center_x == content_zone.center_x,
-            STRENGTH_STRONG,
+            attr_h_str,
             stage="attribution_center",
         )
-        # Vertical centering of combined composition (STRONG)
+        # Vertical centering of combined composition (STRONG, demote if anchored)
+        comp_v_str = STRENGTH_WEAK if (quote_item.node_id in anchored or attr_item.node_id in anchored) else STRENGTH_STRONG
         solver.add_constraint(
             b_quote.top + b_attr.bottom == 2.0 * content_zone.center_y,
-            STRENGTH_STRONG,
+            comp_v_str,
             stage="quote_composition_vertical_center",
         )
     else:
-        # Quote alone centered vertically (STRONG)
+        # Quote alone centered vertically (STRONG, demote if anchored)
+        quote_v_str = STRENGTH_WEAK if quote_item.node_id in anchored else STRENGTH_STRONG
         solver.add_constraint(
             b_quote.center_y == content_zone.center_y,
-            STRENGTH_STRONG,
+            quote_v_str,
             stage="quote_alone_vertical_center",
         )

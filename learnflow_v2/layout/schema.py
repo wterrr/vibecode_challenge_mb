@@ -333,6 +333,16 @@ class LayoutBox(BaseModel):
     rect: Rect = Field(..., description="Solved bounding rectangle")
     zone: str = Field(..., description="Target layout zone or safe region")
     strategy_role: str | None = Field(default=None, description="Semantic role in layout strategy")
+    semantic_key: str | None = Field(default=None, description="Canonical semantic key for cross-scene continuity")
+
+    @field_validator("semantic_key", mode="before")
+    @classmethod
+    def validate_semantic_key(cls, v: Any) -> str | None:
+        if v is None:
+            return None
+        if isinstance(v, bool) or not isinstance(v, str) or not v.strip():
+            raise ValueError("semantic_key must be a non-empty string if provided")
+        return v.strip()
 
 
 class LayoutGraph(BaseModel):

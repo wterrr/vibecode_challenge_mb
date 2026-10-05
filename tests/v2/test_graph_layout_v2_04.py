@@ -280,7 +280,7 @@ def test_malformed_backend_output_rejected():
 def test_no_future_modules_present():
     import pathlib
     root = pathlib.Path("learnflow_v2/layout")
-    forbidden = ["continuity.py", "motion", "render", "verification"]
+    forbidden = ["motion", "render", "verification"]
     assert all(not (root / f).exists() for f in forbidden)
 
 

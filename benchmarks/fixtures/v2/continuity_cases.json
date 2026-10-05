@@ -1,0 +1,1510 @@
+[
+  {
+    "case_id": "concept_card_same_concepts",
+    "description": "Concept card with persistent semantic keys across scenes",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "prev_title",
+        "role": "title",
+        "semantic_key": "concept.title",
+        "min_width": 300.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "prev_body",
+        "role": "content",
+        "semantic_key": "concept.body",
+        "min_width": 400.0,
+        "min_height": 150.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "curr_title",
+        "role": "title",
+        "semantic_key": "concept.title",
+        "min_width": 320.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "curr_body",
+        "role": "content",
+        "semantic_key": "concept.body",
+        "min_width": 420.0,
+        "min_height": 160.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "concept_card_renamed_node_ids",
+    "description": "Concept card retaining continuity despite node IDs changing entirely",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "n_old_1",
+        "role": "title",
+        "semantic_key": "ml.title",
+        "min_width": 280.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "n_old_2",
+        "role": "content",
+        "semantic_key": "ml.desc",
+        "min_width": 380.0,
+        "min_height": 140.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "n_renamed_1",
+        "role": "title",
+        "semantic_key": "ml.title",
+        "min_width": 280.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "n_renamed_2",
+        "role": "content",
+        "semantic_key": "ml.desc",
+        "min_width": 380.0,
+        "min_height": 140.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "concept_card_changed_labels",
+    "description": "Continuity matches identical semantic keys even when user-facing labels differ",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "title_a",
+        "role": "title",
+        "label": "Mean Value",
+        "semantic_key": "stats.mean",
+        "min_width": 250.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "body_a",
+        "role": "content",
+        "label": "Average of sample",
+        "semantic_key": "stats.def",
+        "min_width": 350.0,
+        "min_height": 120.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "title_b",
+        "role": "title",
+        "label": "Arithmetic Mean (Mu)",
+        "semantic_key": "stats.mean",
+        "min_width": 260.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "body_b",
+        "role": "content",
+        "label": "Sum divided by N observations",
+        "semantic_key": "stats.def",
+        "min_width": 360.0,
+        "min_height": 130.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "concept_card_same_label_different_key",
+    "description": "Identical labels but different semantic keys must NOT match",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "p_title",
+        "role": "title",
+        "label": "Overview",
+        "semantic_key": "key.prev.title",
+        "min_width": 250.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "p_body",
+        "role": "content",
+        "label": "Details",
+        "semantic_key": "key.prev.body",
+        "min_width": 350.0,
+        "min_height": 120.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "c_title",
+        "role": "title",
+        "label": "Overview",
+        "semantic_key": "key.curr.title",
+        "min_width": 250.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "c_body",
+        "role": "content",
+        "label": "Details",
+        "semantic_key": "key.curr.body",
+        "min_width": 350.0,
+        "min_height": 120.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 0,
+      "new_count": 2,
+      "removed_count": 2,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "concept_card_new_concept",
+    "description": "Adding a new concept preserves continuity of existing concepts",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "t",
+        "role": "title",
+        "semantic_key": "net.title",
+        "min_width": 260.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "main",
+        "role": "content",
+        "semantic_key": "net.ip",
+        "min_width": 320.0,
+        "min_height": 100.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "t",
+        "role": "title",
+        "semantic_key": "net.title",
+        "min_width": 260.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "main",
+        "role": "content",
+        "semantic_key": "net.ip",
+        "min_width": 320.0,
+        "min_height": 100.0
+      },
+      {
+        "node_id": "sub",
+        "role": "content",
+        "semantic_key": "net.mask",
+        "min_width": 320.0,
+        "min_height": 80.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 1,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "concept_card_removed_concept",
+    "description": "Removing a concept correctly populates removed_keys",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "db_t",
+        "role": "title",
+        "semantic_key": "db.title",
+        "min_width": 240.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "c1",
+        "role": "content",
+        "semantic_key": "db.sql",
+        "min_width": 200.0,
+        "min_height": 80.0
+      },
+      {
+        "node_id": "c2",
+        "role": "content",
+        "semantic_key": "db.nosql",
+        "min_width": 200.0,
+        "min_height": 80.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "db_t",
+        "role": "title",
+        "semantic_key": "db.title",
+        "min_width": 240.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "c1",
+        "role": "content",
+        "semantic_key": "db.sql",
+        "min_width": 200.0,
+        "min_height": 80.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 0,
+      "removed_count": 1,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "concept_card_ambiguous_previous_key",
+    "description": "Duplicate key in previous scene is marked ambiguous and skipped",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "p1",
+        "role": "content",
+        "semantic_key": "dup.key",
+        "min_width": 180.0,
+        "min_height": 80.0
+      },
+      {
+        "node_id": "p2",
+        "role": "content",
+        "semantic_key": "dup.key",
+        "min_width": 180.0,
+        "min_height": 80.0
+      },
+      {
+        "node_id": "p3",
+        "role": "content",
+        "semantic_key": "unique.key",
+        "min_width": 220.0,
+        "min_height": 80.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "c1",
+        "role": "content",
+        "semantic_key": "dup.key",
+        "min_width": 180.0,
+        "min_height": 80.0
+      },
+      {
+        "node_id": "c2",
+        "role": "content",
+        "semantic_key": "unique.key",
+        "min_width": 220.0,
+        "min_height": 80.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 1,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 1
+    }
+  },
+  {
+    "case_id": "concept_card_ambiguous_current_key",
+    "description": "Duplicate key in current scene is marked ambiguous and skipped",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "p1",
+        "role": "content",
+        "semantic_key": "curr_dup.key",
+        "min_width": 180.0,
+        "min_height": 80.0
+      },
+      {
+        "node_id": "p2",
+        "role": "content",
+        "semantic_key": "single.key",
+        "min_width": 220.0,
+        "min_height": 80.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "c1",
+        "role": "content",
+        "semantic_key": "curr_dup.key",
+        "min_width": 180.0,
+        "min_height": 80.0
+      },
+      {
+        "node_id": "c2",
+        "role": "content",
+        "semantic_key": "curr_dup.key",
+        "min_width": 180.0,
+        "min_height": 80.0
+      },
+      {
+        "node_id": "c3",
+        "role": "content",
+        "semantic_key": "single.key",
+        "min_width": 220.0,
+        "min_height": 80.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 1,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 1
+    }
+  },
+  {
+    "case_id": "concept_card_missing_previous_box",
+    "description": "Previous node missing from layout boxes is recorded without crashing",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "corrupt_previous_box": {
+      "type": "missing",
+      "node_id": "prev_miss"
+    },
+    "previous_items": [
+      {
+        "node_id": "prev_t",
+        "role": "title",
+        "semantic_key": "card.title",
+        "min_width": 240.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "prev_miss",
+        "role": "content",
+        "semantic_key": "card.missing",
+        "min_width": 250.0,
+        "min_height": 100.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "curr_t",
+        "role": "title",
+        "semantic_key": "card.title",
+        "min_width": 240.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "curr_miss",
+        "role": "content",
+        "semantic_key": "card.missing",
+        "min_width": 250.0,
+        "min_height": 100.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 1,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "concept_card_invalid_previous_geometry",
+    "description": "Previous box outside declared zone is skipped and recorded in diagnostics",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "corrupt_previous_box": {
+      "type": "out_of_zone",
+      "node_id": "prev_invalid"
+    },
+    "previous_items": [
+      {
+        "node_id": "prev_ok",
+        "role": "title",
+        "semantic_key": "geom.title",
+        "min_width": 240.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "prev_invalid",
+        "role": "content",
+        "semantic_key": "geom.invalid",
+        "min_width": 250.0,
+        "min_height": 100.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "curr_ok",
+        "role": "title",
+        "semantic_key": "geom.title",
+        "min_width": 240.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "curr_invalid",
+        "role": "content",
+        "semantic_key": "geom.invalid",
+        "min_width": 250.0,
+        "min_height": 100.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 1,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "concept_card_role_change_content_to_title",
+    "description": "Role change from content to title projects anchor cleanly into TITLE zone",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "shift_item",
+        "role": "content",
+        "semantic_key": "shift.concept",
+        "min_width": 240.0,
+        "min_height": 80.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "shift_item",
+        "role": "title",
+        "semantic_key": "shift.concept",
+        "min_width": 240.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "body_new",
+        "role": "content",
+        "semantic_key": "shift.body",
+        "min_width": 300.0,
+        "min_height": 120.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 1,
+      "new_count": 1,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "concept_card_safe_title_alias",
+    "description": "safe_title alias correctly maps to TITLE class",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "hdr",
+        "role": "title",
+        "semantic_key": "header.concept",
+        "min_width": 250.0,
+        "min_height": 40.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "hdr_alias",
+        "role": "safe_title",
+        "semantic_key": "header.concept",
+        "min_width": 250.0,
+        "min_height": 40.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 1,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "concept_card_safe_caption_alias",
+    "description": "safe_caption alias correctly maps to CAPTION class",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "c_old",
+        "role": "caption",
+        "semantic_key": "caption.concept",
+        "min_width": 250.0,
+        "min_height": 30.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "c_new",
+        "role": "safe_caption",
+        "semantic_key": "caption.concept",
+        "min_width": 250.0,
+        "min_height": 30.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 1,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "concept_card_attribution_content_role",
+    "description": "attribution role maps strictly to CONTENT class (not CAPTION)",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "attr_1",
+        "role": "attribution",
+        "semantic_key": "attrib.concept",
+        "min_width": 200.0,
+        "min_height": 40.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "attr_2",
+        "role": "attribution",
+        "semantic_key": "attrib.concept",
+        "min_width": 200.0,
+        "min_height": 40.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 1,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "comparison_same_concepts",
+    "description": "Comparison layout with 2 matched persistent concepts",
+    "strategy": "COMPARISON",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "col_a",
+        "role": "content",
+        "semantic_key": "cmp.left",
+        "min_width": 240.0,
+        "min_height": 120.0
+      },
+      {
+        "node_id": "col_b",
+        "role": "content",
+        "semantic_key": "cmp.right",
+        "min_width": 240.0,
+        "min_height": 120.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "col_a_v2",
+        "role": "content",
+        "semantic_key": "cmp.left",
+        "min_width": 240.0,
+        "min_height": 120.0
+      },
+      {
+        "node_id": "col_b_v2",
+        "role": "content",
+        "semantic_key": "cmp.right",
+        "min_width": 240.0,
+        "min_height": 120.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "comparison_insertion_new_concept",
+    "description": "Comparison layout where a concept is replaced by a new concept",
+    "strategy": "COMPARISON",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "item_a",
+        "role": "content",
+        "semantic_key": "model.alpha",
+        "min_width": 220.0,
+        "min_height": 120.0
+      },
+      {
+        "node_id": "item_b",
+        "role": "content",
+        "semantic_key": "model.beta",
+        "min_width": 220.0,
+        "min_height": 120.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "item_a_v2",
+        "role": "content",
+        "semantic_key": "model.alpha",
+        "min_width": 200.0,
+        "min_height": 120.0
+      },
+      {
+        "node_id": "item_new",
+        "role": "content",
+        "semantic_key": "model.gamma",
+        "min_width": 200.0,
+        "min_height": 120.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 1,
+      "new_count": 1,
+      "removed_count": 1,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "comparison_removed_concept",
+    "description": "Comparison layout where title concept is removed across scenes",
+    "strategy": "COMPARISON",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "cmp_title",
+        "role": "title",
+        "semantic_key": "cmp.heading",
+        "min_width": 240.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "col_1",
+        "role": "content",
+        "semantic_key": "cmp.one",
+        "min_width": 200.0,
+        "min_height": 100.0
+      },
+      {
+        "node_id": "col_2",
+        "role": "content",
+        "semantic_key": "cmp.two",
+        "min_width": 200.0,
+        "min_height": 100.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "col_1",
+        "role": "content",
+        "semantic_key": "cmp.one",
+        "min_width": 220.0,
+        "min_height": 100.0
+      },
+      {
+        "node_id": "col_2",
+        "role": "content",
+        "semantic_key": "cmp.two",
+        "min_width": 220.0,
+        "min_height": 100.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 0,
+      "removed_count": 1,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "image_text_same_concepts",
+    "description": "Image-text layout with persistent image and text components",
+    "strategy": "IMAGE_TEXT",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "img",
+        "role": "media",
+        "semantic_key": "it.media",
+        "min_width": 300.0,
+        "min_height": 200.0
+      },
+      {
+        "node_id": "txt",
+        "role": "content",
+        "semantic_key": "it.text",
+        "min_width": 300.0,
+        "min_height": 150.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "img_v2",
+        "role": "media",
+        "semantic_key": "it.media",
+        "min_width": 300.0,
+        "min_height": 200.0
+      },
+      {
+        "node_id": "txt_v2",
+        "role": "content",
+        "semantic_key": "it.text",
+        "min_width": 300.0,
+        "min_height": 150.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "image_text_renamed_node_ids",
+    "description": "Image-text layout with renamed node identifiers",
+    "strategy": "IMAGE_TEXT",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "media_1",
+        "role": "media",
+        "semantic_key": "imgtxt.pic",
+        "min_width": 280.0,
+        "min_height": 180.0
+      },
+      {
+        "node_id": "copy_1",
+        "role": "content",
+        "semantic_key": "imgtxt.desc",
+        "min_width": 280.0,
+        "min_height": 120.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "media_renamed",
+        "role": "media",
+        "semantic_key": "imgtxt.pic",
+        "min_width": 280.0,
+        "min_height": 180.0
+      },
+      {
+        "node_id": "copy_renamed",
+        "role": "content",
+        "semantic_key": "imgtxt.desc",
+        "min_width": 280.0,
+        "min_height": 120.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "image_text_new_concept",
+    "description": "Image-text layout replacing text description with new concept",
+    "strategy": "IMAGE_TEXT",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "img",
+        "role": "media",
+        "semantic_key": "it.art",
+        "min_width": 300.0,
+        "min_height": 200.0
+      },
+      {
+        "node_id": "txt_1",
+        "role": "text",
+        "semantic_key": "it.intro",
+        "min_width": 300.0,
+        "min_height": 100.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "img",
+        "role": "media",
+        "semantic_key": "it.art",
+        "min_width": 300.0,
+        "min_height": 200.0
+      },
+      {
+        "node_id": "txt_2",
+        "role": "text",
+        "semantic_key": "it.detail",
+        "min_width": 300.0,
+        "min_height": 100.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 1,
+      "new_count": 1,
+      "removed_count": 1,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "quote_same_concepts",
+    "description": "Quote layout with matched quote and author",
+    "strategy": "QUOTE",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "quote_body",
+        "role": "quote",
+        "semantic_key": "q.body",
+        "min_width": 350.0,
+        "min_height": 100.0
+      },
+      {
+        "node_id": "author",
+        "role": "author",
+        "semantic_key": "q.author",
+        "min_width": 200.0,
+        "min_height": 40.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "quote_body",
+        "role": "quote",
+        "semantic_key": "q.body",
+        "min_width": 360.0,
+        "min_height": 100.0
+      },
+      {
+        "node_id": "author",
+        "role": "author",
+        "semantic_key": "q.author",
+        "min_width": 210.0,
+        "min_height": 40.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "quote_attribution_role",
+    "description": "Quote layout with attribution role",
+    "strategy": "QUOTE",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "q_body",
+        "role": "quote",
+        "semantic_key": "quote.text",
+        "min_width": 340.0,
+        "min_height": 90.0
+      },
+      {
+        "node_id": "q_attr",
+        "role": "attribution",
+        "semantic_key": "quote.source",
+        "min_width": 220.0,
+        "min_height": 40.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "q_body_2",
+        "role": "quote",
+        "semantic_key": "quote.text",
+        "min_width": 340.0,
+        "min_height": 90.0
+      },
+      {
+        "node_id": "q_attr_2",
+        "role": "attribution",
+        "semantic_key": "quote.source",
+        "min_width": 220.0,
+        "min_height": 40.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "quote_changed_author",
+    "description": "Quote layout with persistent quote body but replaced author",
+    "strategy": "QUOTE",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "q_body",
+        "role": "quote",
+        "semantic_key": "quote.saying",
+        "min_width": 350.0,
+        "min_height": 90.0
+      },
+      {
+        "node_id": "q_author",
+        "role": "author",
+        "semantic_key": "quote.einstein",
+        "min_width": 200.0,
+        "min_height": 40.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "q_body",
+        "role": "quote",
+        "semantic_key": "quote.saying",
+        "min_width": 350.0,
+        "min_height": 90.0
+      },
+      {
+        "node_id": "q_author_new",
+        "role": "author",
+        "semantic_key": "quote.feynman",
+        "min_width": 200.0,
+        "min_height": 40.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 1,
+      "new_count": 1,
+      "removed_count": 1,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "scaling_1280x720_to_1920x1080",
+    "description": "Resolution scaling from 720p to 1080p maintains proportional continuity",
+    "strategy": "CONCEPT_CARD",
+    "previous_profile": "16:9_1280x720",
+    "current_profile": "16:9_1920x1080",
+    "previous_items": [
+      {
+        "node_id": "t",
+        "role": "title",
+        "semantic_key": "scale.title",
+        "min_width": 300.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "b",
+        "role": "content",
+        "semantic_key": "scale.body",
+        "min_width": 400.0,
+        "min_height": 150.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "t",
+        "role": "title",
+        "semantic_key": "scale.title",
+        "min_width": 450.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "b",
+        "role": "content",
+        "semantic_key": "scale.body",
+        "min_width": 600.0,
+        "min_height": 225.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "orientation_16_9_to_9_16",
+    "description": "Cross-aspect ratio transition from landscape 16:9 to portrait 9:16",
+    "strategy": "CONCEPT_CARD",
+    "previous_profile": "16:9",
+    "current_profile": "9:16",
+    "previous_items": [
+      {
+        "node_id": "t",
+        "role": "title",
+        "semantic_key": "orient.title",
+        "min_width": 300.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "b",
+        "role": "content",
+        "semantic_key": "orient.body",
+        "min_width": 350.0,
+        "min_height": 140.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "t",
+        "role": "title",
+        "semantic_key": "orient.title",
+        "min_width": 260.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "b",
+        "role": "content",
+        "semantic_key": "orient.body",
+        "min_width": 260.0,
+        "min_height": 140.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "vietnamese_semantic_labels_and_content",
+    "description": "Vietnamese UTF-8 semantic labels and canonical key continuity",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "vn_title",
+        "role": "title",
+        "label": "Quá trình quang hợp",
+        "semantic_key": "sinh_hoc.quang_hop.tieu_de",
+        "min_width": 300.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "vn_content",
+        "role": "content",
+        "label": "Hấp thụ năng lượng ánh sáng mặt trời",
+        "semantic_key": "sinh_hoc.quang_hop.nang_luong",
+        "min_width": 400.0,
+        "min_height": 120.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "vn_title",
+        "role": "title",
+        "label": "Quá trình quang hợp ở thực vật",
+        "semantic_key": "sinh_hoc.quang_hop.tieu_de",
+        "min_width": 320.0,
+        "min_height": 40.0
+      },
+      {
+        "node_id": "vn_content",
+        "role": "content",
+        "label": "Hấp thụ năng lượng ánh sáng mặt trời và trao đổi khí CO2",
+        "semantic_key": "sinh_hoc.quang_hop.nang_luong",
+        "min_width": 420.0,
+        "min_height": 130.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "vietnamese_comparison_renamed_nodes",
+    "description": "Vietnamese concepts compared across scenes with renamed IDs",
+    "strategy": "COMPARISON",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "vn_node_a",
+        "role": "content",
+        "label": "Tế bào nhân sơ",
+        "semantic_key": "sinh_hoc.te_bao.nhan_so",
+        "min_width": 220.0,
+        "min_height": 100.0
+      },
+      {
+        "node_id": "vn_node_b",
+        "role": "content",
+        "label": "Tế bào nhân thực",
+        "semantic_key": "sinh_hoc.te_bao.nhan_thuc",
+        "min_width": 220.0,
+        "min_height": 100.0
+      }
+    ],
+    "current_items": [
+      {
+        "node_id": "vn_renamed_a",
+        "role": "content",
+        "label": "Tế bào nhân sơ (Prokaryote)",
+        "semantic_key": "sinh_hoc.te_bao.nhan_so",
+        "min_width": 240.0,
+        "min_height": 100.0
+      },
+      {
+        "node_id": "vn_renamed_b",
+        "role": "content",
+        "label": "Tế bào nhân thực (Eukaryote)",
+        "semantic_key": "sinh_hoc.te_bao.nhan_thuc",
+        "min_width": 240.0,
+        "min_height": 100.0
+      }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "process_graph_same_concepts",
+    "description": "Directed process graph pipeline preserving stable model ordering",
+    "strategy": "DIRECTED_GRAPH",
+    "graph_kind": "PROCESS",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "step1",
+        "role": "content",
+        "semantic_key": "proc.ingest",
+        "min_width": 120.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "step2",
+        "role": "content",
+        "semantic_key": "proc.process",
+        "min_width": 120.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "step3",
+        "role": "content",
+        "semantic_key": "proc.store",
+        "min_width": 120.0,
+        "min_height": 60.0
+      }
+    ],
+    "previous_relations": [
+      { "id": "e1", "source": "step1", "target": "step2" },
+      { "id": "e2", "source": "step2", "target": "step3" }
+    ],
+    "current_items": [
+      {
+        "node_id": "step1",
+        "role": "content",
+        "semantic_key": "proc.ingest",
+        "min_width": 120.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "step2",
+        "role": "content",
+        "semantic_key": "proc.process",
+        "min_width": 120.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "step3",
+        "role": "content",
+        "semantic_key": "proc.store",
+        "min_width": 120.0,
+        "min_height": 60.0
+      }
+    ],
+    "current_relations": [
+      { "id": "e1", "source": "step1", "target": "step2" },
+      { "id": "e2", "source": "step2", "target": "step3" }
+    ],
+    "expected_metrics": {
+      "matched_count": 3,
+      "new_count": 0,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "process_graph_chain_insertion",
+    "description": "Directed process graph inserting an intermediate transformation step",
+    "strategy": "DIRECTED_GRAPH",
+    "graph_kind": "PROCESS",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "step1",
+        "role": "content",
+        "semantic_key": "proc.ingest",
+        "min_width": 120.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "step3",
+        "role": "content",
+        "semantic_key": "proc.store",
+        "min_width": 120.0,
+        "min_height": 60.0
+      }
+    ],
+    "previous_relations": [
+      { "id": "e1", "source": "step1", "target": "step3" }
+    ],
+    "current_items": [
+      {
+        "node_id": "step1",
+        "role": "content",
+        "semantic_key": "proc.ingest",
+        "min_width": 120.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "step2_new",
+        "role": "content",
+        "semantic_key": "proc.transform",
+        "min_width": 120.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "step3",
+        "role": "content",
+        "semantic_key": "proc.store",
+        "min_width": 120.0,
+        "min_height": 60.0
+      }
+    ],
+    "current_relations": [
+      { "id": "e1", "source": "step1", "target": "step2_new" },
+      { "id": "e2", "source": "step2_new", "target": "step3" }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 1,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "process_graph_branch_insertion",
+    "description": "Directed process graph branching into a parallel pipeline",
+    "strategy": "DIRECTED_GRAPH",
+    "graph_kind": "PROCESS",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "root",
+        "role": "content",
+        "semantic_key": "branch.root",
+        "min_width": 120.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "branch_a",
+        "role": "content",
+        "semantic_key": "branch.a",
+        "min_width": 120.0,
+        "min_height": 60.0
+      }
+    ],
+    "previous_relations": [
+      { "id": "e1", "source": "root", "target": "branch_a" }
+    ],
+    "current_items": [
+      {
+        "node_id": "root",
+        "role": "content",
+        "semantic_key": "branch.root",
+        "min_width": 120.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "branch_a",
+        "role": "content",
+        "semantic_key": "branch.a",
+        "min_width": 120.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "branch_b",
+        "role": "content",
+        "semantic_key": "branch.b",
+        "min_width": 120.0,
+        "min_height": 60.0
+      }
+    ],
+    "current_relations": [
+      { "id": "e1", "source": "root", "target": "branch_a" },
+      { "id": "e2", "source": "root", "target": "branch_b" }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 1,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "hierarchy_graph_tree_evolution",
+    "description": "Hierarchy tree graph adding a child node to existing parent",
+    "strategy": "DIRECTED_GRAPH",
+    "graph_kind": "HIERARCHY",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "root",
+        "role": "content",
+        "semantic_key": "hier.root",
+        "min_width": 120.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "child1",
+        "role": "content",
+        "semantic_key": "hier.child1",
+        "min_width": 120.0,
+        "min_height": 60.0
+      }
+    ],
+    "previous_relations": [
+      { "id": "e1", "source": "root", "target": "child1" }
+    ],
+    "current_items": [
+      {
+        "node_id": "root",
+        "role": "content",
+        "semantic_key": "hier.root",
+        "min_width": 120.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "child1",
+        "role": "content",
+        "semantic_key": "hier.child1",
+        "min_width": 120.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "child2",
+        "role": "content",
+        "semantic_key": "hier.child2",
+        "min_width": 120.0,
+        "min_height": 60.0
+      }
+    ],
+    "current_relations": [
+      { "id": "e1", "source": "root", "target": "child1" },
+      { "id": "e2", "source": "root", "target": "child2" }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 1,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  },
+  {
+    "case_id": "process_graph_vietnamese_evolution",
+    "description": "Vietnamese process graph evolving with new stage",
+    "strategy": "DIRECTED_GRAPH",
+    "graph_kind": "PROCESS",
+    "profile": "16:9",
+    "previous_items": [
+      {
+        "node_id": "buoc_1",
+        "role": "content",
+        "label": "Thu thập dữ liệu",
+        "semantic_key": "quy_trinh.thu_thap",
+        "min_width": 140.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "buoc_2",
+        "role": "content",
+        "label": "Xử lý thông tin",
+        "semantic_key": "quy_trinh.xu_ly",
+        "min_width": 140.0,
+        "min_height": 60.0
+      }
+    ],
+    "previous_relations": [
+      { "id": "e1", "source": "buoc_1", "target": "buoc_2" }
+    ],
+    "current_items": [
+      {
+        "node_id": "buoc_1",
+        "role": "content",
+        "label": "Thu thập dữ liệu",
+        "semantic_key": "quy_trinh.thu_thap",
+        "min_width": 140.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "buoc_2",
+        "role": "content",
+        "label": "Xử lý thông tin",
+        "semantic_key": "quy_trinh.xu_ly",
+        "min_width": 140.0,
+        "min_height": 60.0
+      },
+      {
+        "node_id": "buoc_3",
+        "role": "content",
+        "label": "Trực quan hóa",
+        "semantic_key": "quy_trinh.truc_quan",
+        "min_width": 140.0,
+        "min_height": 60.0
+      }
+    ],
+    "current_relations": [
+      { "id": "e1", "source": "buoc_1", "target": "buoc_2" },
+      { "id": "e2", "source": "buoc_2", "target": "buoc_3" }
+    ],
+    "expected_metrics": {
+      "matched_count": 2,
+      "new_count": 1,
+      "removed_count": 0,
+      "ambiguous_count": 0
+    }
+  }
+]

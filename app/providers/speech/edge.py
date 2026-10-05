@@ -6,6 +6,13 @@ import os
 from pathlib import Path
 import edge_tts
 
+try:
+    async_timeout_ctx = asyncio.timeout
+except AttributeError:
+    import async_timeout
+
+    async_timeout_ctx = async_timeout.timeout
+
 from app.domain.timeline import SubtitleCue
 from app.providers.speech.base import (
     SpeechProvider,
@@ -76,7 +83,7 @@ class EdgeSpeechProvider(SpeechProvider):
 
                 communicate = edge_tts.Communicate(text=clean_text, voice=voice)
 
-                async with asyncio.timeout(self.timeout):
+                async with async_timeout_ctx(self.timeout):
                     with open(tmp_path, "wb") as f:
                         async for chunk in communicate.stream():
                             chunk_type = chunk.get("type")

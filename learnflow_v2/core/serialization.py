@@ -55,18 +55,24 @@ def _canonicalize_value(val: Any) -> Any:
                     [_canonicalize_value(item) for item in v],
                     key=lambda x: str(x.get("candidate_id", "")),
                 )
-            elif k in ("aliases", "style_refs", "member_ids", "keep_near", "keep_apart") and isinstance(v, list) and all(isinstance(x, str) for x in v):
+            elif k == "persistent_objects" and isinstance(v, list) and all(isinstance(x, dict) and "semantic_key" in x for x in v):
+                # Sort transition persistent objects deterministically by semantic_key
+                normalized[k] = sorted(
+                    [_canonicalize_value(item) for item in v],
+                    key=lambda x: str(x.get("semantic_key", "")),
+                )
+            elif k in ("aliases", "style_refs", "member_ids", "keep_near", "keep_apart", "departing_node_ids", "entering_node_ids", "unmatched_keys") and isinstance(v, list) and all(isinstance(x, str) for x in v):
                 # Sort set-like symbolic string collections
                 normalized[k] = sorted(v)
             else:
                 normalized[k] = _canonicalize_value(v)
         return normalized
-    elif isinstance(val, list):
+    elif isinstance(val, (list, tuple)):
         return [_canonicalize_value(item) for item in val]
     return val
 
 
-def canonical_json(data: BaseModel | dict[str, Any] | list[Any]) -> str:
+def canonical_json(data: BaseModel | dict[str, Any] | list[Any] | tuple[Any, ...]) -> str:
     """Serialize a model or data structure into canonical, deterministic JSON.
 
     Guarantees:
@@ -78,10 +84,10 @@ def canonical_json(data: BaseModel | dict[str, Any] | list[Any]) -> str:
     """
     if isinstance(data, BaseModel):
         raw_payload = data.model_dump(mode="json")
-    elif isinstance(data, (dict, list)):
+    elif isinstance(data, (dict, list, tuple)):
         raw_payload = data
     else:
-        raise TypeError(f"canonical_json requires BaseModel, dict, or list, got {type(data)}")
+        raise TypeError(f"canonical_json requires BaseModel, dict, list, or tuple, got {type(data)}")
 
     canonical_payload = _canonicalize_value(raw_payload)
 

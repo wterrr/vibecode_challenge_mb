@@ -104,15 +104,17 @@ class ElkBackend:
                 ports_by_node[e.target].append({"id": target_port, "side": _SIDE[e.target_side]})
             edge_payload.append({"id": e.id, "source": e.source, "target": e.target, "source_port": source_port, "target_port": target_port})
 
+        ordered_nodes = graph_input.get_ordered_nodes() if hasattr(graph_input, "get_ordered_nodes") else graph_input.nodes
         payload = {
             "id": graph_input.id,
             "direction": graph_input.direction.value,
             "nodes": [
                 {"id": n.id, "width": n.width, "height": n.height, "ports": sorted(ports_by_node[n.id], key=lambda p: p["id"])}
-                for n in graph_input.nodes
+                for n in ordered_nodes
             ],
             "edges": edge_payload,
             "spacing": {"nodeNode": 48, "nodeNodeBetweenLayers": 80, "edgeNode": 20, "edgeEdge": 12},
+            "preserve_model_order": bool(graph_input.preserve_model_order),
         }
         bridge = Path(__file__).with_name("elk_bridge.mjs")
         try:

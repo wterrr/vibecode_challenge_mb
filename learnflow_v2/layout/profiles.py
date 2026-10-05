@@ -173,11 +173,14 @@ def create_frame_profile_9_16(
 
 # Standard singleton instances
 PROFILE_16_9 = create_frame_profile_16_9(1280.0, 720.0)
+PROFILE_16_9_1080P = create_frame_profile_16_9(1920.0, 1080.0)
 PROFILE_9_16 = create_frame_profile_9_16(720.0, 1280.0)
 
 _PROFILES = {
     "16:9": PROFILE_16_9,
     "16:9_1280x720": PROFILE_16_9,
+    "16:9_1920x1080": PROFILE_16_9_1080P,
+    "1080p": PROFILE_16_9_1080P,
     "9:16": PROFILE_9_16,
     "9:16_720x1280": PROFILE_9_16,
 }

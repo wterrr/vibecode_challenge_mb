@@ -90,14 +90,15 @@ class GraphvizBackend:
             raise GraphLayoutBackendError("Graphviz returned malformed JSON layout") from exc
 
     def _build_dot(self, graph_input: GraphLayoutInput) -> str:
-        node_map = {node.id: f"n{i:03d}" for i, node in enumerate(sorted(graph_input.nodes, key=lambda n: n.id))}
+        ordered_nodes = graph_input.get_ordered_nodes() if hasattr(graph_input, "get_ordered_nodes") else graph_input.nodes
+        node_map = {node.id: f"n{i:03d}" for i, node in enumerate(ordered_nodes)}
         lines = [
             "digraph G {",
             f'  graph [rankdir="{_rankdir(graph_input.direction)}", splines="polyline", nodesep="0.55", ranksep="0.85"];',
             '  node [shape="box", fixedsize="true", label="", margin="0", width="1", height="1"];',
             '  edge [arrowsize="0.7"];',
         ]
-        for node in sorted(graph_input.nodes, key=lambda n: n.id):
+        for node in ordered_nodes:
             # inches in DOT, pixels/points internally.
             lines.append(f'  {node_map[node.id]} [width="{node.width / GV_DPI:.6f}", height="{node.height / GV_DPI:.6f}"];')
         for edge in sorted(graph_input.edges, key=lambda e: e.id):
@@ -130,8 +131,8 @@ class GraphvizBackend:
 
     def _parse(self, raw: dict[str, Any], graph_input: GraphLayoutInput) -> BackendLayoutResult:
         _, _, _, top = _parse_bb(raw["bb"])
-        sorted_nodes = sorted(graph_input.nodes, key=lambda n: n.id)
-        backend_to_id = {f"n{i:03d}": n.id for i, n in enumerate(sorted_nodes)}
+        ordered_nodes = graph_input.get_ordered_nodes() if hasattr(graph_input, "get_ordered_nodes") else graph_input.nodes
+        backend_to_id = {f"n{i:03d}": n.id for i, n in enumerate(ordered_nodes)}
         expected_backend = set(backend_to_id)
         nodes: list[BackendNode] = []
         for obj in raw.get("objects", []):
@@ -179,4 +180,9 @@ class GraphvizBackend:
             routes.append(BackendRoute(edge_id=edge.id, source=edge.source, target=edge.target, points=pts, routing_style=RoutingStyle.POLYLINE, source_port=None, target_port=None))
         if {r.edge_id for r in routes} != {e.id for e in graph_input.edges}:
             raise GraphLayoutBackendError("Graphviz output missing edge")
-        return BackendLayoutResult(nodes=sorted(nodes, key=lambda n: n.id), routes=sorted(routes, key=lambda r: r.edge_id), backend=GraphBackendKind.GRAPHVIZ, diagnostics={"dot_version": dot_version(), "dpi": GV_DPI})
+        return BackendLayoutResult(
+            nodes=sorted(nodes, key=lambda n: n.id),
+            routes=sorted(routes, key=lambda r: r.edge_id),
+            backend=GraphBackendKind.GRAPHVIZ,
+            diagnostics={"dot_version": dot_version(), "dpi": GV_DPI, "node_order": [n.id for n in ordered_nodes]},
+        )

@@ -7,7 +7,7 @@ and semantic order preservation without solver mutation or LLM calls.
 from enum import Enum
 import math
 from typing import Any
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator, model_validator
 
 from learnflow_v2.layout.profiles import get_frame_profile
 from learnflow_v2.layout.schema import FrameProfile, LayoutBox, LayoutGraph, LayoutStrategy, _check_finite_number
@@ -45,6 +45,18 @@ class CollisionPair(BaseModel):
     penetration_x: float = Field(..., ge=0.0, description="X-axis penetration depth")
     penetration_y: float = Field(..., ge=0.0, description="Y-axis penetration depth")
 
+    @field_validator("overlap_width", "overlap_height", "overlap_area", "penetration_x", "penetration_y", mode="before")
+    @classmethod
+    def validate_strict_float_fields(cls, v: Any, info: ValidationInfo) -> float:
+        if isinstance(v, bool) or not isinstance(v, (int, float)):
+            raise TypeError(f"Field '{info.field_name}' must be a real number, got {type(v).__name__}: {v!r}")
+        f_val = float(v)
+        if not math.isfinite(f_val):
+            raise ValueError(f"Field '{info.field_name}' must be finite, got {f_val}")
+        if f_val < 0.0:
+            raise ValueError(f"Field '{info.field_name}' must be >= 0.0, got {f_val}")
+        return f_val
+
     @model_validator(mode="after")
     def validate_canonical_and_finite(self) -> "CollisionPair":
         if self.first_node_id >= self.second_node_id:
@@ -52,10 +64,6 @@ class CollisionPair(BaseModel):
                 f"CollisionPair requires canonical node ordering: first_node_id '{self.first_node_id}' "
                 f"must be strictly less than second_node_id '{self.second_node_id}'"
             )
-        for attr in ("overlap_width", "overlap_height", "overlap_area", "penetration_x", "penetration_y"):
-            val = getattr(self, attr)
-            if not isinstance(val, (int, float)) or isinstance(val, bool) or not math.isfinite(val) or val < 0.0:
-                raise ValueError(f"{attr} must be a non-negative finite number, got {val}")
         return self
 
 
@@ -70,12 +78,22 @@ class SeparationConstraint(BaseModel):
     ordering: SeparationOrdering = Field(..., description="Directional ordering of nodes")
     minimum_gap: float = Field(default=16.0, ge=0.0, description="Required minimum gap in pixels")
 
+    @field_validator("minimum_gap", mode="before")
+    @classmethod
+    def validate_strict_gap(cls, v: Any, info: ValidationInfo) -> float:
+        if isinstance(v, bool) or not isinstance(v, (int, float)):
+            raise TypeError(f"Field '{info.field_name}' must be a real number, got {type(v).__name__}: {v!r}")
+        f_val = float(v)
+        if not math.isfinite(f_val):
+            raise ValueError(f"Field '{info.field_name}' must be finite, got {f_val}")
+        if f_val < 0.0:
+            raise ValueError(f"Field '{info.field_name}' must be >= 0.0, got {f_val}")
+        return f_val
+
     @model_validator(mode="after")
     def validate_constraint(self) -> "SeparationConstraint":
         if self.first_node_id == self.second_node_id:
             raise ValueError(f"SeparationConstraint cannot constrain node '{self.first_node_id}' against itself")
-        if not isinstance(self.minimum_gap, (int, float)) or isinstance(self.minimum_gap, bool) or not math.isfinite(self.minimum_gap) or self.minimum_gap < 0.0:
-            raise ValueError(f"minimum_gap must be a non-negative finite number, got {self.minimum_gap}")
         return self
 
 
@@ -278,3 +296,14 @@ def choose_separation_constraint(
         ordering=ordering,
         minimum_gap=min_gap,
     )
+
+
+def __getattr__(name: str) -> Any:
+    if name in ("CollisionRepairResult", "repair_layout_collisions"):
+        from learnflow_v2.layout.optimization import CollisionRepairResult, repair_layout_collisions
+
+        if name == "CollisionRepairResult":
+            return CollisionRepairResult
+        return repair_layout_collisions
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+

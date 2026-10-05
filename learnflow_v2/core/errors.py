@@ -186,3 +186,187 @@ class GraphLayoutUnsupportedCapabilityError(LearnFlowV2Error):
 
     def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
         super().__init__("GRAPH_LAYOUT_UNSUPPORTED_CAPABILITY", message, details)
+
+
+class MotionError(LearnFlowV2Error):
+    """Base error for motion grammar and motion plan operations."""
+
+    def __init__(self, code: str, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__(code, message, details)
+
+
+class MotionGrammarIncompatibleError(MotionError):
+    """Raised when a motion verb and style combination is invalid."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_GRAMMAR_INCOMPATIBLE", message, details)
+
+
+class MotionUnsupportedTierError(MotionError):
+    """Raised when a Tier-2/Tier-3 or unsupported verb/style/capability is used in Tier-1."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_UNSUPPORTED_TIER", message, details)
+
+
+class MotionDuplicateEventIdError(MotionError):
+    """Raised when duplicate event IDs exist within a MotionPlan."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_DUPLICATE_EVENT_ID", message, details)
+
+
+class MotionInvalidTargetError(MotionError):
+    """Raised when a motion event references an unknown target or invalid target type."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_INVALID_TARGET", message, details)
+
+
+class MotionSceneMismatchError(MotionError):
+    """Raised when MotionPlan scene_id does not match the SceneGraph scene_id."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_SCENE_MISMATCH", message, details)
+
+
+class MotionUnsupportedSchemaVersionError(MotionError):
+    """Raised when a MotionPlan has an unsupported schema version."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_UNSUPPORTED_SCHEMA_VERSION", message, details)
+
+
+class MotionInvalidInputError(MotionError):
+    """Raised when a MotionPlan or MotionEvent input is malformed or invalid."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_INVALID_INPUT", message, details)
+
+
+class MotionBeatError(MotionError):
+    """Base error for narration beat alignment and timing operations."""
+
+    def __init__(self, code: str, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__(code, message, details)
+
+
+class MotionBeatTimingError(MotionBeatError):
+    """Raised when word or phrase timing input is invalid, negative, non-finite, or malformed."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_BEAT_TIMING_ERROR", message, details)
+
+
+class MotionUnknownBeatError(MotionBeatError):
+    """Raised when an event trigger references a semantic beat ID not found in the beat map."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_UNKNOWN_BEAT", message, details)
+
+
+class MotionBeatAmbiguityError(MotionBeatError):
+    """Raised when a beat reference matches multiple ambiguous beats or aliases."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_BEAT_AMBIGUOUS", message, details)
+
+
+class MotionSchedulerError(MotionError):
+    """Base error for motion scheduling operations."""
+
+    def __init__(self, code: str, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__(code, message, details)
+
+
+class MotionDependencyCycleError(MotionSchedulerError):
+    """Raised when a cycle is detected in the motion event dependency DAG."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_DEPENDENCY_CYCLE", message, details)
+
+
+class MotionLifecycleError(MotionSchedulerError):
+    """Raised when an event violates target lifecycle (e.g. before ENTER, after EXIT, duplicate EXIT)."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_LIFECYCLE_ERROR", message, details)
+
+
+class MotionConflictError(MotionSchedulerError):
+    """Raised when simultaneous or conflicting operations are scheduled on the same target."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_CONFLICT_ERROR", message, details)
+
+
+class MotionCognitiveBudgetExceededError(MotionSchedulerError):
+    """Raised when simultaneous motion count exceeds the configured cognitive budget and cannot be deferred."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_COGNITIVE_BUDGET_EXCEEDED", message, details)
+
+
+class MotionScheduleTimingError(MotionSchedulerError):
+    """Raised when scheduled timing violates temporal bounds or scene boundaries."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_SCHEDULE_TIMING_ERROR", message, details)
+
+
+class MotionCompilerError(MotionError):
+    """Base error for motion compilation operations."""
+
+    def __init__(self, code: str, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__(code, message, details)
+
+
+class MotionCompilationError(MotionCompilerError):
+    """Raised when compiling an event or property track fails or encounters unsupported grammar."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("MOTION_COMPILATION_ERROR", message, details)
+
+
+class TransitionError(LearnFlowV2Error):
+    """Base error for cross-scene transition planning, capabilities, and compilation."""
+
+    def __init__(self, code: str, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__(code, message, details)
+
+
+class TransitionInvalidInputError(TransitionError):
+    """Raised when transition planning inputs are invalid, malformed, or missing required registries."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("TRANSITION_INVALID_INPUT", message, details)
+
+
+class TransitionUnregisteredSemanticKeyError(TransitionError):
+    """Raised when a candidate persistent object semantic key is not registered in ConceptRegistry."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("TRANSITION_UNREGISTERED_SEMANTIC_KEY", message, details)
+
+
+class TransitionUnsupportedCapabilityError(TransitionError):
+    """Raised when a renderer backend cannot provide even minimal transition capabilities."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("TRANSITION_UNSUPPORTED_CAPABILITY", message, details)
+
+
+class TransitionSemanticMismatchError(TransitionError):
+    """Raised when semantic identities or scene graph topologies conflict during transition compilation."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("TRANSITION_SEMANTIC_MISMATCH", message, details)
+
+
+class TransitionGeometryError(TransitionError):
+    """Raised when transition source or target geometry is missing, invalid, or non-finite."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__("TRANSITION_GEOMETRY_ERROR", message, details)
+
+

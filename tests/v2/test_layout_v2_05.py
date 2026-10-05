@@ -1,20 +1,24 @@
 """Comprehensive test suite for LearnFlow V2-05 Collision & Optimization subsystem.
 
 Coverage:
-1. Collision Pair & Separation Constraint Model Contracts (canonical order, finite values, immutability)
+1. Collision Pair & Separation Constraint Model Contracts (canonical order, finite values, strict validation)
 2. Pure Box-Box Collision Detection (boundary touching is not collision, positive overlap detected)
 3. Deterministic Separation Axis Selection & Semantic Ordering Preservation
-4. Hard Feasibility Gate (strict invariant: feasible=False if any violation > 0, ValueError on violation)
+4. Hard Feasibility Gate (strict invariant: feasible=False if any violation > 0, readability policy)
 5. Soft Layout Scoring (edge penalties, visual balance, whitespace/density)
 6. Candidate Selection & Deterministic Tie-Breaking (order independence, categorical elimination)
-7. Bounded Collision Repair & Solver Integration (MAX_LAYOUT_SOLVES = 5, required Kiwi constraints)
-8. Fallback Variants (Comparison STACKED, Image-Text STACKED)
-9. Dense Fixture Corpus Benchmark Runner (42 cases: no_collision, repairable, fallback_required, impossible)
-10. Directed Graph Candidate Evaluation (zero node dragging, edge-node intersection gates)
-11. Canonical Serialization (deterministic canonical_json output)
+7. Reusable Collision Repair Engine (1-repair acceptance, 3-box multi-box repair, real Kiwi re-solve)
+8. Solver Iteration Bounds (MAX_LAYOUT_SOLVES = 5, strict 1..5 enforcement)
+9. Error Contract & Robustness (no swallowing of invalid inputs or programming bugs)
+10. Strict Numeric Contracts on all V2-05 Artifacts (reject strings, booleans, NaN, Infinity)
+11. Fallback Variants (Comparison STACKED, Image-Text STACKED)
+12. Dense Fixture Corpus Benchmark Runner (48 cases with category-specific assertions)
+13. Directed Graph Candidate Evaluation (zero node dragging, edge-node intersection gates)
+14. Canonical Serialization (deterministic canonical_json output)
 """
 
 import json
+import math
 from pathlib import Path
 import pytest
 from pydantic import ValidationError
@@ -23,6 +27,7 @@ from learnflow_v2.core.errors import LayoutInvalidInputError, LayoutUnsatisfiabl
 from learnflow_v2.core.serialization import canonical_json
 from learnflow_v2.layout import (
     CollisionPair,
+    CollisionRepairResult,
     FrameProfile,
     LayoutBox,
     LayoutCandidate,
@@ -48,7 +53,9 @@ from learnflow_v2.layout import (
     evaluate_graph_candidate,
     get_frame_profile,
     optimize_simple_layout,
+    repair_layout_collisions,
     solve_layout,
+    validate_layout_graph,
 )
 
 
@@ -87,7 +94,6 @@ def make_graph(boxes: list[LayoutBox], strategy: LayoutStrategy = LayoutStrategy
 
 class TestCollisionModels:
     def test_collision_pair_canonical_ordering_enforced(self):
-        # Canonical order: first_node_id < second_node_id
         pair = CollisionPair(
             first_node_id="box_a",
             second_node_id="box_b",
@@ -184,7 +190,6 @@ class TestBoxCollisionDetection:
         assert len(collisions) == 0
 
     def test_boundary_touching_is_not_collision(self):
-        # box1 right is 300, box2 left is 300 (touching)
         box1 = make_box("box1", 100, 100, 200, 150)
         box2 = make_box("box2", 300, 100, 200, 150)
         graph = make_graph([box1, box2])
@@ -193,9 +198,6 @@ class TestBoxCollisionDetection:
         assert len(collisions) == 0
 
     def test_overlapping_boxes_detected_accurately(self):
-        # box1: [100, 300] x [100, 250]
-        # box2: [250, 450] x [150, 300]
-        # Overlap: X in [250, 300] (w=50), Y in [150, 250] (h=100) -> Area=5000
         box1 = make_box("box1", 100, 100, 200, 150)
         box2 = make_box("box2", 250, 150, 200, 150)
         graph = make_graph([box1, box2])
@@ -210,7 +212,6 @@ class TestBoxCollisionDetection:
         assert abs(col.overlap_area - 5000.0) < 1e-3
 
     def test_multi_box_sorted_deterministic_output(self):
-        # 3 mutually overlapping boxes
         b_c = make_box("c_box", 100, 100, 100, 100)
         b_a = make_box("a_box", 120, 120, 100, 100)
         b_b = make_box("b_box", 140, 140, 100, 100)
@@ -218,7 +219,6 @@ class TestBoxCollisionDetection:
 
         collisions = detect_box_collisions(graph)
         assert len(collisions) == 3
-        # Strict canonical order by (first_node_id, second_node_id)
         assert [(c.first_node_id, c.second_node_id) for c in collisions] == [
             ("a_box", "b_box"),
             ("a_box", "c_box"),
@@ -233,8 +233,6 @@ class TestBoxCollisionDetection:
 
 class TestSeparationChoice:
     def test_smaller_overlap_axis_chosen(self):
-        # Box A and B overlap with large X overlap (100) and small Y overlap (10)
-        # Vertical displacement is much cheaper
         box_a = make_box("a", 100, 100, 200, 100)
         box_b = make_box("b", 120, 190, 200, 100)
         box_map = {"a": box_a, "b": box_b}
@@ -254,7 +252,6 @@ class TestSeparationChoice:
         assert sc.ordering == SeparationOrdering.FIRST_BEFORE_SECOND
 
     def test_semantic_order_preservation_chrome_hierarchy(self):
-        # Title box overlaps Content card
         title = make_box("title", 100, 100, 500, 60, role="title", zone="TITLE")
         card = make_box("card", 100, 120, 500, 300, role="card", zone="CONTENT")
         box_map = {"card": card, "title": title}
@@ -271,11 +268,9 @@ class TestSeparationChoice:
 
         sc = choose_separation_constraint(pair, box_map, "16:9", LayoutStrategy.CONCEPT_CARD)
         assert sc.axis == SeparationAxis.VERTICAL
-        # Title must be above Card: title (second) before card (first) -> SECOND_BEFORE_FIRST
         assert sc.ordering == SeparationOrdering.SECOND_BEFORE_FIRST
 
     def test_semantic_order_preservation_comparison(self):
-        # Comparison left and right items
         b_left = make_box("item_left", 300, 300, 500, 300, role="left")
         b_right = make_box("item_right", 500, 300, 500, 300, role="right")
         box_map = {"item_left": b_left, "item_right": b_right}
@@ -296,7 +291,7 @@ class TestSeparationChoice:
 
 
 # ---------------------------------------------------------------------------
-# 4. Hard Feasibility Gate
+# 4. Hard Feasibility Gate & Readability Policy
 # ---------------------------------------------------------------------------
 
 
@@ -339,7 +334,6 @@ class TestFeasibilityGate:
             )
 
     def test_evaluate_feasibility_catches_collision_without_raising(self):
-        # Two overlapping boxes
         b1 = make_box("box1", 100, 250, 400, 200)
         b2 = make_box("box2", 200, 250, 400, 200)
         graph = make_graph([b1, b2])
@@ -349,6 +343,26 @@ class TestFeasibilityGate:
         assert rep.fatal_overlap_count == 1
         assert any("Fatal node collision" in v for v in rep.violations)
 
+    def test_readability_policy_detects_below_min_readable_bounds(self):
+        box = make_box("tiny_box", 200, 200, 150, 50)
+        graph = make_graph([box])
+
+        # Require min bounds 200x100 for tiny_box
+        rep = evaluate_feasibility(graph, min_readable_bounds={"tiny_box": (200.0, 100.0)})
+        assert rep.feasible is False
+        assert rep.minimum_readability_violation_count == 1
+        assert any("violates minimum readability bounds" in v for v in rep.violations)
+
+    def test_readability_derives_from_clipping_when_bounds_not_supplied(self):
+        box = make_box("clipped_box", 200, 200, 150, 50)
+        graph = make_graph([box])
+
+        # Pass measurements indicating intrinsic size is larger -> preflight clipping
+        rep = evaluate_feasibility(graph, measurements={"clipped_box": (300.0, 100.0)})
+        assert rep.clipping_count >= 1
+        assert rep.minimum_readability_violation_count >= 1
+        assert rep.feasible is False
+
 
 # ---------------------------------------------------------------------------
 # 5. Soft Layout Scoring
@@ -357,7 +371,6 @@ class TestFeasibilityGate:
 
 class TestSoftLayoutScore:
     def test_centered_layout_has_lower_balance_penalty(self):
-        # Perfectly centered box in CONTENT zone (CONTENT center is ~960, 582 for 16:9)
         prof = get_frame_profile("16:9")
         cz = prof.get_zone("CONTENT")
 
@@ -365,7 +378,6 @@ class TestSoftLayoutScore:
         graph_centered = make_graph([centered_box])
         score_centered = compute_soft_score(graph_centered)
 
-        # Off-center box
         off_box = make_box("card2", cz.left + 50, cz.top + 50, 600, 300)
         graph_off = make_graph([off_box])
         score_off = compute_soft_score(graph_off)
@@ -377,13 +389,11 @@ class TestSoftLayoutScore:
         prof = get_frame_profile("16:9")
         cz = prof.get_zone("CONTENT")
 
-        # Extremely tiny box (density ~ 0.007 < 0.25)
         tiny_box = make_box("tiny", cz.center_x - 50, cz.center_y - 50, 100, 100)
         graph_tiny = make_graph([tiny_box])
         score_tiny = compute_soft_score(graph_tiny)
         assert score_tiny.whitespace_penalty > 0.0
 
-        # Normal box filling ~ 40% of content zone
         normal_box = make_box("normal", cz.center_x - 400, cz.center_y - 200, 800, 400)
         graph_normal = make_graph([normal_box])
         score_normal = compute_soft_score(graph_normal)
@@ -397,7 +407,6 @@ class TestSoftLayoutScore:
 
 class TestCandidateSelection:
     def test_infeasible_candidate_never_beats_feasible(self):
-        # Infeasible candidate with soft_total=0.0
         infeasible = LayoutCandidate(
             candidate_id="cand_bad",
             strategy=LayoutStrategy.COMPARISON,
@@ -410,7 +419,6 @@ class TestCandidateSelection:
             soft_score=None,
         )
 
-        # Feasible candidate with high soft penalty
         prof = get_frame_profile("16:9")
         cz = prof.get_zone("CONTENT")
         box = make_box("b1", cz.left + 10, cz.top + 10, 400, 200)
@@ -427,7 +435,6 @@ class TestCandidateSelection:
         best = choose_best_candidate([infeasible, feasible])
         assert best.candidate_id == "cand_good"
 
-        # Reverse input order: same outcome
         best_rev = choose_best_candidate([feasible, infeasible])
         assert best_rev.candidate_id == "cand_good"
 
@@ -449,8 +456,6 @@ class TestCandidateSelection:
             choose_best_candidate([infeasible_1, infeasible_2])
 
     def test_deterministic_tie_breaking_order_independent(self):
-        # Two feasible candidates with identical score
-        prof = get_frame_profile("16:9")
         box = make_box("b", 100, 250, 400, 200)
         graph = make_graph([box])
 
@@ -479,7 +484,460 @@ class TestCandidateSelection:
 
 
 # ---------------------------------------------------------------------------
-# 7. Bounded Collision Repair Loop & Optimization
+# 7. Real Collision Repair Engine (Section C, D, E)
+# ---------------------------------------------------------------------------
+
+
+class TestCollisionRepairEngine:
+    def test_real_one_repair_acceptance(self):
+        """V2-05 Section D: Real One-Repair Acceptance Test.
+
+        Construct an intentionally overlapping initial LayoutGraph with valid:
+        node IDs, roles, zones, frame/profile.
+        Call the real collision-repair component:
+        - initial collisions > 0
+        - repair_count >= 1
+        - constraints_added >= 1
+        - real Kiwi re-solve executed
+        - final collisions == 0
+        - final preflight PASS
+        - solve_count <= 5
+        """
+        prof = get_frame_profile("9:16")
+        b1 = LayoutBox(
+            node_id="card_a",
+            rect=Rect(x=100.0, y=300.0, width=400.0, height=250.0),
+            zone="CONTENT",
+            strategy_role="card",
+        )
+        b2 = LayoutBox(
+            node_id="card_b",
+            rect=Rect(x=200.0, y=450.0, width=400.0, height=250.0),
+            zone="CONTENT",
+            strategy_role="card",
+        )
+        initial_graph = LayoutGraph(
+            schema_version="2.1",
+            scene_id="one_repair_acceptance",
+            frame_profile_id=prof.id,
+            frame_width=prof.width,
+            frame_height=prof.height,
+            boxes=[b1, b2],
+            strategy=LayoutStrategy.CONCEPT_CARD,
+            feasible=True,
+        )
+
+        items = [
+            LayoutItemInput(node_id="card_a", role="card", min_width=400, min_height=250),
+            LayoutItemInput(node_id="card_b", role="card", min_width=400, min_height=250),
+        ]
+
+        # 1. Assert initial state has collisions
+        initial_cols = detect_box_collisions(initial_graph)
+        assert len(initial_cols) > 0, "Initial graph must contain at least 1 collision"
+
+        # 2. Call real collision-repair engine
+        repair_res = repair_layout_collisions(initial_graph, profile="9:16", items=items)
+
+        # 3. Assert repair execution invariants
+        assert isinstance(repair_res, CollisionRepairResult)
+        assert repair_res.initial_collision_count > 0
+        assert repair_res.repair_count >= 1
+        assert len(repair_res.constraints_added) >= 1
+        assert repair_res.solve_count <= MAX_LAYOUT_SOLVES
+        assert repair_res.solve_count >= 2  # At least 1 initial solve + 1 re-solve
+        assert repair_res.remaining_collision_count == 0
+        assert repair_res.resolved is True
+
+        # 4. Assert real Kiwi re-solve produced collision-free layout
+        final_cols = detect_box_collisions(repair_res.repaired_graph)
+        assert len(final_cols) == 0, f"Repaired graph has collisions: {final_cols}"
+
+        # 5. Assert final preflight PASS
+        preflight_rep = validate_layout_graph(repair_res.repaired_graph, profile="9:16")
+        assert preflight_rep.valid is True, f"Preflight failed: {preflight_rep.violations}"
+
+    def test_three_box_multi_box_repair(self):
+        """V2-05 Section E: Multi-Box / Bounded Repair Test.
+
+        Construct a 3-box collision case:
+        - initial collisions >= 2
+        - repair engine remains deterministic
+        - final collision count == 0 OR controlled fallback/UNSAT
+        - solver calls <= MAX_LAYOUT_SOLVES
+        """
+        prof = get_frame_profile("16:9")
+        # 3 boxes horizontally overlapping in 16:9
+        b1 = LayoutBox(node_id="card_1", rect=Rect(x=200, y=250, width=280, height=100), zone="CONTENT", strategy_role="card")
+        b2 = LayoutBox(node_id="card_2", rect=Rect(x=350, y=250, width=280, height=100), zone="CONTENT", strategy_role="card")
+        b3 = LayoutBox(node_id="card_3", rect=Rect(x=500, y=250, width=280, height=100), zone="CONTENT", strategy_role="card")
+
+        initial_graph = LayoutGraph(
+            schema_version="2.1",
+            scene_id="three_box_repair_scene",
+            frame_profile_id=prof.id,
+            frame_width=prof.width,
+            frame_height=prof.height,
+            boxes=[b1, b2, b3],
+            strategy=LayoutStrategy.CONCEPT_CARD,
+            feasible=True,
+        )
+
+        items = [
+            LayoutItemInput(node_id="card_1", role="card", min_width=280, min_height=100),
+            LayoutItemInput(node_id="card_2", role="card", min_width=280, min_height=100),
+            LayoutItemInput(node_id="card_3", role="card", min_width=280, min_height=100),
+        ]
+
+        # Initial collisions >= 2 (b1-b2 and b2-b3)
+        initial_cols = detect_box_collisions(initial_graph)
+        assert len(initial_cols) >= 2, f"Expected >= 2 initial collisions, got {len(initial_cols)}"
+
+        # Deterministic repair run 1
+        res_1 = repair_layout_collisions(initial_graph, profile="16:9", items=items)
+
+        # Deterministic repair run 2
+        res_2 = repair_layout_collisions(initial_graph, profile="16:9", items=items)
+
+        assert res_1.solve_count <= MAX_LAYOUT_SOLVES
+        assert res_1.repair_count >= 1
+        assert res_1.remaining_collision_count == 0
+        assert res_1.resolved is True
+
+        # Preflight passes on repaired graph
+        preflight_rep = validate_layout_graph(res_1.repaired_graph, profile="16:9")
+        assert preflight_rep.valid is True, f"Preflight failed: {preflight_rep.violations}"
+
+        # Determinism check
+        assert res_1.solve_count == res_2.solve_count
+        assert res_1.repair_count == res_2.repair_count
+        assert canonical_json(res_1) == canonical_json(res_2)
+
+    def test_repair_layout_collisions_with_items_none_infers_cleanly(self):
+        """Regression test: repair_layout_collisions(initial_graph, items=None).
+
+        Overlapping LayoutGraph + items=None:
+        - repair_count >= 1
+        - real Kiwi re-solve executed
+        - remaining collisions == 0
+        - final preflight PASS
+        """
+        prof = get_frame_profile("9:16")
+        b1 = LayoutBox(
+            node_id="card_a",
+            rect=Rect(x=100.0, y=300.0, width=400.0, height=250.0),
+            zone="CONTENT",
+            strategy_role="card",
+        )
+        b2 = LayoutBox(
+            node_id="card_b",
+            rect=Rect(x=200.0, y=450.0, width=400.0, height=250.0),
+            zone="CONTENT",
+            strategy_role="card",
+        )
+        initial_graph = LayoutGraph(
+            schema_version="2.1",
+            scene_id="test_items_none",
+            frame_profile_id=prof.id,
+            frame_width=prof.width,
+            frame_height=prof.height,
+            boxes=[b1, b2],
+            strategy=LayoutStrategy.CONCEPT_CARD,
+            feasible=True,
+        )
+
+        initial_cols = detect_box_collisions(initial_graph)
+        assert len(initial_cols) > 0, "Expected initial collisions"
+
+        # Explicitly pass items=None
+        res = repair_layout_collisions(initial_graph, profile="9:16", items=None)
+
+        assert res.repair_count >= 1
+        assert res.solve_count >= 2
+        assert res.remaining_collision_count == 0
+        assert res.resolved is True
+
+        preflight_rep = validate_layout_graph(res.repaired_graph, profile="9:16")
+        assert preflight_rep.valid is True
+
+
+# ---------------------------------------------------------------------------
+# 8. Hard-Cap Solver Iterations (Section G)
+# ---------------------------------------------------------------------------
+
+
+class TestSolverIterationBounds:
+    def test_max_solves_valid_bounds(self):
+        items = [
+            LayoutItemInput(node_id="title", role="title", min_width=400, min_height=50),
+            LayoutItemInput(node_id="card", role="card", min_width=600, min_height=300),
+        ]
+        # max_solves=1 is valid
+        res_1 = optimize_simple_layout("s1", LayoutStrategy.CONCEPT_CARD, "16:9", items, max_solves=1)
+        assert res_1.selected.feasibility.feasible is True
+
+        # max_solves=5 is valid
+        res_5 = optimize_simple_layout("s5", LayoutStrategy.CONCEPT_CARD, "16:9", items, max_solves=5)
+        assert res_5.selected.feasibility.feasible is True
+
+    def test_max_solves_out_of_bounds_raises_layout_invalid_input(self):
+        items = [
+            LayoutItemInput(node_id="title", role="title", min_width=400, min_height=50),
+            LayoutItemInput(node_id="card", role="card", min_width=600, min_height=300),
+        ]
+        for bad_ms in [0, -1, 6, 100, True, "5"]:
+            with pytest.raises(LayoutInvalidInputError, match="max_solves"):
+                optimize_simple_layout("s", LayoutStrategy.CONCEPT_CARD, "16:9", items, max_solves=bad_ms)
+
+
+# ---------------------------------------------------------------------------
+# 9. Error Contract & Robustness (Section H)
+# ---------------------------------------------------------------------------
+
+
+class TestErrorContractAndRobustness:
+    def test_comparison_three_items_raises_layout_invalid_input(self):
+        """Semantic error must NOT be silently swallowed into LayoutUnsatisfiableError."""
+        items = [
+            LayoutItemInput(node_id="item_a", role="left", min_width=200, min_height=100),
+            LayoutItemInput(node_id="item_b", role="right", min_width=200, min_height=100),
+            LayoutItemInput(node_id="item_c", role="left", min_width=200, min_height=100),
+        ]
+        with pytest.raises(LayoutInvalidInputError, match="requires exactly 2"):
+            optimize_simple_layout("comp_3_items", LayoutStrategy.COMPARISON, "16:9", items)
+
+    def test_dict_item_validation_error_translates_to_layout_invalid_input(self):
+        bad_items = [
+            {"node_id": "title", "role": "title", "min_width": -100, "min_height": 50},
+        ]
+        with pytest.raises(LayoutInvalidInputError):
+            optimize_simple_layout("bad_dict", LayoutStrategy.CONCEPT_CARD, "16:9", bad_items)
+
+    def test_empty_candidates_raises_invalid_input(self):
+        with pytest.raises(LayoutInvalidInputError, match="at least one candidate"):
+            choose_best_candidate([])
+
+
+# ---------------------------------------------------------------------------
+# 10. Strict Numeric Contracts on V2-05 Artifacts (Section I)
+# ---------------------------------------------------------------------------
+
+
+class TestStrictArtifactModels:
+    def test_collision_pair_rejects_bool_and_string(self):
+        with pytest.raises((TypeError, ValidationError)):
+            CollisionPair(
+                first_node_id="a",
+                second_node_id="b",
+                overlap_width=True,
+                overlap_height=10.0,
+                overlap_area=100.0,
+                penetration_x=10.0,
+                penetration_y=10.0,
+            )
+
+        with pytest.raises((TypeError, ValidationError)):
+            CollisionPair(
+                first_node_id="a",
+                second_node_id="b",
+                overlap_width="2",
+                overlap_height=10.0,
+                overlap_area=100.0,
+                penetration_x=10.0,
+                penetration_y=10.0,
+            )
+
+        for bad in [float("nan"), float("inf"), float("-inf")]:
+            with pytest.raises((TypeError, ValidationError)):
+                CollisionPair(
+                    first_node_id="a",
+                    second_node_id="b",
+                    overlap_width=bad,
+                    overlap_height=10.0,
+                    overlap_area=100.0,
+                    penetration_x=10.0,
+                    penetration_y=10.0,
+                )
+
+    def test_separation_constraint_rejects_bool_and_string(self):
+        with pytest.raises((TypeError, ValidationError)):
+            SeparationConstraint(
+                first_node_id="a",
+                second_node_id="b",
+                axis=SeparationAxis.HORIZONTAL,
+                ordering=SeparationOrdering.FIRST_BEFORE_SECOND,
+                minimum_gap="16",
+            )
+
+        with pytest.raises((TypeError, ValidationError)):
+            SeparationConstraint(
+                first_node_id="a",
+                second_node_id="b",
+                axis=SeparationAxis.HORIZONTAL,
+                ordering=SeparationOrdering.FIRST_BEFORE_SECOND,
+                minimum_gap=True,
+            )
+
+    def test_soft_score_weights_rejects_bool_and_string(self):
+        with pytest.raises((TypeError, ValidationError)):
+            SoftScoreWeights(balance_weight=True)
+
+        with pytest.raises((TypeError, ValidationError)):
+            SoftScoreWeights(balance_weight="5.0")
+
+        with pytest.raises((TypeError, ValidationError)):
+            SoftScoreWeights(balance_weight=float("nan"))
+
+    def test_soft_layout_score_rejects_bool_and_string(self):
+        with pytest.raises((TypeError, ValidationError)):
+            SoftLayoutScore(edge_penalty="1")
+
+        with pytest.raises((TypeError, ValidationError)):
+            SoftLayoutScore(edge_penalty=True)
+
+    def test_feasibility_report_rejects_bool_and_string_counts(self):
+        with pytest.raises((TypeError, ValidationError)):
+            LayoutFeasibilityReport(overflow_count="1")
+
+        with pytest.raises((TypeError, ValidationError)):
+            LayoutFeasibilityReport(overflow_count=True)
+
+        with pytest.raises((TypeError, ValidationError)):
+            LayoutFeasibilityReport(feasible="True")
+
+    def test_layout_candidate_rejects_bool_and_string_counts(self):
+        with pytest.raises((TypeError, ValidationError)):
+            LayoutCandidate(
+                candidate_id="c1",
+                strategy=LayoutStrategy.CONCEPT_CARD,
+                variant="PRIMARY",
+                feasibility=LayoutFeasibilityReport(),
+                solve_count=True,
+            )
+
+        with pytest.raises((TypeError, ValidationError)):
+            LayoutCandidate(
+                candidate_id="c1",
+                strategy=LayoutStrategy.CONCEPT_CARD,
+                variant="PRIMARY",
+                feasibility=LayoutFeasibilityReport(),
+                solve_count="1",
+            )
+
+    def test_collision_repair_result_rejects_bool_and_string_counts(self):
+        box = make_box("a", 100, 100, 200, 100)
+        lg = make_graph([box])
+        with pytest.raises((TypeError, ValidationError)):
+            CollisionRepairResult(
+                initial_graph=lg,
+                repaired_graph=lg,
+                solve_count=True,
+                repair_count=0,
+                initial_collision_count=0,
+                remaining_collision_count=0,
+                resolved=True,
+            )
+
+    def test_layout_optimization_result_strict_attempted_count_and_consistency(self):
+        cand1 = LayoutCandidate(
+            candidate_id="c1",
+            strategy=LayoutStrategy.CONCEPT_CARD,
+            variant="PRIMARY",
+            feasibility=LayoutFeasibilityReport(),
+        )
+        cand2 = LayoutCandidate(
+            candidate_id="c2",
+            strategy=LayoutStrategy.CONCEPT_CARD,
+            variant="STACKED",
+            feasibility=LayoutFeasibilityReport(),
+        )
+
+        # Valid construction
+        res = LayoutOptimizationResult(selected=cand1, candidates=[cand1], attempted_count=1)
+        assert res.attempted_count == 1
+
+        # attempted_count rejects bool, string, float, 0, negative
+        for bad_count in [True, False, "1", 1.0, 0, -1]:
+            with pytest.raises((TypeError, ValueError, ValidationError)):
+                LayoutOptimizationResult(selected=cand1, candidates=[cand1], attempted_count=bad_count)
+
+        # selected absent from candidates -> reject
+        with pytest.raises((ValueError, ValidationError), match="not found in candidates"):
+            LayoutOptimizationResult(selected=cand2, candidates=[cand1], attempted_count=1)
+
+        # attempted_count mismatch -> reject
+        with pytest.raises((ValueError, ValidationError), match="must match len"):
+            LayoutOptimizationResult(selected=cand1, candidates=[cand1], attempted_count=2)
+
+        # empty candidates -> reject
+        with pytest.raises((ValueError, ValidationError)):
+            LayoutOptimizationResult(selected=cand1, candidates=[], attempted_count=0)
+
+        # duplicate candidate IDs -> reject
+        cand1_dup = LayoutCandidate(
+            candidate_id="c1",
+            strategy=LayoutStrategy.CONCEPT_CARD,
+            variant="STACKED",
+            feasibility=LayoutFeasibilityReport(),
+        )
+        with pytest.raises((ValueError, ValidationError), match="Duplicate candidate IDs"):
+            LayoutOptimizationResult(selected=cand1, candidates=[cand1, cand1_dup], attempted_count=2)
+
+    def test_collision_repair_result_internal_consistency(self):
+        box = make_box("a", 100, 100, 200, 100)
+        lg = make_graph([box])
+
+        # resolved=True + remaining > 0 -> reject
+        with pytest.raises((ValueError, ValidationError), match="resolved"):
+            CollisionRepairResult(
+                initial_graph=lg,
+                repaired_graph=lg,
+                solve_count=2,
+                repair_count=1,
+                initial_collision_count=1,
+                remaining_collision_count=1,
+                resolved=True,
+            )
+
+        # resolved=False + remaining == 0 -> reject
+        with pytest.raises((ValueError, ValidationError), match="resolved"):
+            CollisionRepairResult(
+                initial_graph=lg,
+                repaired_graph=lg,
+                solve_count=2,
+                repair_count=1,
+                initial_collision_count=1,
+                remaining_collision_count=0,
+                resolved=False,
+            )
+
+        # repair_count > solve_count - 1 -> reject
+        with pytest.raises((ValueError, ValidationError), match="exceeds solve_count"):
+            CollisionRepairResult(
+                initial_graph=lg,
+                repaired_graph=lg,
+                solve_count=1,
+                repair_count=5,
+                initial_collision_count=1,
+                remaining_collision_count=0,
+                resolved=True,
+            )
+
+        # repair_count > 0 + initial_collision_count == 0 -> reject
+        with pytest.raises((ValueError, ValidationError), match="initial_collision_count"):
+            CollisionRepairResult(
+                initial_graph=lg,
+                repaired_graph=lg,
+                solve_count=2,
+                repair_count=1,
+                initial_collision_count=0,
+                remaining_collision_count=0,
+                resolved=True,
+            )
+
+
+# ---------------------------------------------------------------------------
+# 11. Fallback Variants & Optimization Pass
 # ---------------------------------------------------------------------------
 
 
@@ -503,9 +961,6 @@ class TestOptimizationPass:
         assert len(result.selected.layout_graph.boxes) == 2
 
     def test_fallback_variant_selected_when_primary_infeasible(self):
-        # Comparison with items too wide for side-by-side (PRIMARY) in 16:9 CONTENT (width=1184)
-        # Left min_width=700, Right min_width=700 -> 700 + 700 + 16 = 1416 > 1184!
-        # But vertically (STACKED): height 180 + 180 + 16 = 376 <= 453.6 -> fits!
         items = [
             LayoutItemInput(node_id="item_a", role="left", min_width=700, min_height=180),
             LayoutItemInput(node_id="item_b", role="right", min_width=700, min_height=180),
@@ -520,12 +975,10 @@ class TestOptimizationPass:
 
         assert result.selected.variant == "STACKED"
         assert result.selected.feasibility.feasible is True
-        # PRIMARY candidate variant must be marked infeasible
         primary_cand = next(c for c in result.candidates if c.variant == "PRIMARY")
         assert primary_cand.feasibility.feasible is False
 
     def test_impossible_layout_raises_unsatisfiable(self):
-        # Items way too large to fit in any variant
         items = [
             LayoutItemInput(node_id="item_a", role="left", min_width=2500, min_height=1500),
             LayoutItemInput(node_id="item_b", role="right", min_width=2500, min_height=1500),
@@ -541,7 +994,7 @@ class TestOptimizationPass:
 
 
 # ---------------------------------------------------------------------------
-# 8. Dense Fixture Corpus Benchmark Runner
+# 12. Dense Fixture Corpus Benchmark Runner (Section F)
 # ---------------------------------------------------------------------------
 
 
@@ -553,32 +1006,68 @@ class TestDenseFixtureCorpus:
         with open(fixture_path, "r", encoding="utf-8") as f:
             cases = json.load(f)
 
-        assert len(cases) >= 36, f"Corpus must have at least 36 cases, found {len(cases)}"
+        assert len(cases) >= 42, f"Corpus must have at least 42 cases, found {len(cases)}"
 
         passed_count = 0
+        repairable_verified = 0
+
         for case in cases:
             case_id = case["case_id"]
+            category = case.get("category")
             strategy = LayoutStrategy(case["strategy"])
             profile = case["profile"]
             items = [LayoutItemInput(**it) for it in case["items"]]
-            expected_feasible = case["expected_feasible"]
 
-            if expected_feasible:
+            if category == "repairable":
+                # V2-05 Section F: Real repair fixtures assert repair_count >= 1
+                assert "initial_boxes" in case, f"Case {case_id} must provide initial_boxes"
+                boxes = [
+                    LayoutBox(
+                        node_id=b["node_id"],
+                        rect=Rect(x=b["x"], y=b["y"], width=b["width"], height=b["height"]),
+                        zone=b.get("zone", "CONTENT"),
+                        strategy_role=b.get("role", "card"),
+                    )
+                    for b in case["initial_boxes"]
+                ]
+                prof = get_frame_profile(profile)
+                lg = LayoutGraph(
+                    schema_version="2.1",
+                    scene_id=case_id,
+                    frame_profile_id=prof.id,
+                    frame_width=prof.width,
+                    frame_height=prof.height,
+                    boxes=sorted(boxes, key=lambda b: b.node_id),
+                    strategy=strategy,
+                    feasible=True,
+                )
+                repair_res = repair_layout_collisions(lg, profile=profile, items=items)
+                assert repair_res.initial_collision_count >= 1, f"Case {case_id} had 0 initial collisions"
+                assert repair_res.repair_count >= 1, f"Case {case_id} produced repair_count < 1: {repair_res.repair_count}"
+                assert repair_res.remaining_collision_count == 0, f"Case {case_id} has remaining collisions"
+                assert repair_res.resolved is True
+                assert repair_res.solve_count <= MAX_LAYOUT_SOLVES
+                preflight_rep = validate_layout_graph(repair_res.repaired_graph, profile=profile)
+                assert preflight_rep.valid is True, f"Case {case_id} preflight failed: {preflight_rep.violations}"
+                repairable_verified += 1
+
+            elif category == "fallback_required":
+                # V2-05 Section F: Fallback fixtures assert selected.variant == expected_variant
                 result = optimize_simple_layout(
                     scene_id=case_id,
                     strategy=strategy,
                     profile=profile,
                     items=items,
                 )
-                assert result.selected.feasibility.feasible is True, f"Case {case_id} failed feasibility"
-                if "expected_variant" in case:
-                    assert result.selected.variant == case["expected_variant"], (
-                        f"Case {case_id} selected variant {result.selected.variant}, expected {case['expected_variant']}"
-                    )
-                # Verify zero collisions in selected layout
+                assert result.selected.feasibility.feasible is True
+                assert result.selected.variant == case["expected_variant"], (
+                    f"Case {case_id} selected variant {result.selected.variant}, expected {case['expected_variant']}"
+                )
                 collisions = detect_box_collisions(result.selected.layout_graph)
                 assert len(collisions) == 0, f"Case {case_id} has unresolved collisions: {collisions}"
-            else:
+
+            elif category == "impossible":
+                # V2-05 Section F: Impossible fixtures assert LAYOUT_UNSATISFIABLE
                 with pytest.raises(LayoutUnsatisfiableError):
                     optimize_simple_layout(
                         scene_id=case_id,
@@ -587,13 +1076,27 @@ class TestDenseFixtureCorpus:
                         items=items,
                     )
 
+            else:  # no_collision
+                result = optimize_simple_layout(
+                    scene_id=case_id,
+                    strategy=strategy,
+                    profile=profile,
+                    items=items,
+                )
+                assert result.selected.feasibility.feasible is True
+                if "expected_variant" in case:
+                    assert result.selected.variant == case["expected_variant"]
+                collisions = detect_box_collisions(result.selected.layout_graph)
+                assert len(collisions) == 0, f"Case {case_id} has unresolved collisions: {collisions}"
+
             passed_count += 1
 
         assert passed_count == len(cases)
+        assert repairable_verified >= 6, f"Must verify at least 6 real repairable fixtures, got {repairable_verified}"
 
 
 # ---------------------------------------------------------------------------
-# 9. Canonical Serialization Tests
+# 13. Canonical Serialization Tests
 # ---------------------------------------------------------------------------
 
 
@@ -629,7 +1132,7 @@ class TestCanonicalSerializationV205:
 
 
 # ---------------------------------------------------------------------------
-# 10. Directed Graph Candidate Evaluation Tests
+# 14. Directed Graph Candidate Evaluation Tests
 # ---------------------------------------------------------------------------
 
 
@@ -668,7 +1171,5 @@ class TestDirectedGraphCandidateEvaluation:
         assert candidate.soft_score is not None
         assert candidate.soft_score.total >= 0.0
 
-        # Verify zero node dragging: coordinates remain strictly identical
         post_coords = [(b.node_id, b.rect.x, b.rect.y, b.rect.width, b.rect.height) for b in lg.boxes]
         assert orig_coords == post_coords
-

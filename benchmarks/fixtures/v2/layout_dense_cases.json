@@ -328,8 +328,8 @@
     "expected_variant": "STACKED"
   },
   {
-    "case_id": "dense_cc_repairable_16_9_en_25",
-    "category": "repairable",
+    "case_id": "dense_cc_dense_16_9_en_25",
+    "category": "no_collision",
     "strategy": "CONCEPT_CARD",
     "profile": "16:9",
     "language": "en",
@@ -342,8 +342,8 @@
     "expected_variant": "PRIMARY"
   },
   {
-    "case_id": "dense_cc_repairable_16_9_vi_26",
-    "category": "repairable",
+    "case_id": "dense_cc_dense_16_9_vi_26",
+    "category": "no_collision",
     "strategy": "CONCEPT_CARD",
     "profile": "16:9",
     "language": "vi",
@@ -356,8 +356,8 @@
     "expected_variant": "PRIMARY"
   },
   {
-    "case_id": "dense_comp_repairable_16_9_en_27",
-    "category": "repairable",
+    "case_id": "dense_comp_dense_16_9_en_27",
+    "category": "no_collision",
     "strategy": "COMPARISON",
     "profile": "16:9",
     "language": "en",
@@ -369,8 +369,8 @@
     "expected_variant": "PRIMARY"
   },
   {
-    "case_id": "dense_comp_repairable_16_9_vi_28",
-    "category": "repairable",
+    "case_id": "dense_comp_dense_16_9_vi_28",
+    "category": "no_collision",
     "strategy": "COMPARISON",
     "profile": "16:9",
     "language": "vi",
@@ -382,8 +382,8 @@
     "expected_variant": "PRIMARY"
   },
   {
-    "case_id": "dense_quote_repairable_16_9_en_29",
-    "category": "repairable",
+    "case_id": "dense_quote_dense_16_9_en_29",
+    "category": "no_collision",
     "strategy": "QUOTE",
     "profile": "16:9",
     "language": "en",
@@ -395,8 +395,8 @@
     "expected_variant": "PRIMARY"
   },
   {
-    "case_id": "dense_quote_repairable_16_9_vi_30",
-    "category": "repairable",
+    "case_id": "dense_quote_dense_16_9_vi_30",
+    "category": "no_collision",
     "strategy": "QUOTE",
     "profile": "16:9",
     "language": "vi",
@@ -550,5 +550,107 @@
       {"node_id": "author", "role": "attribution", "min_width": 350.0, "min_height": 80.0}
     ],
     "expected_feasible": false
+  },
+  {
+    "case_id": "dense_cc_repair_16_9_en_43",
+    "category": "repairable",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "language": "en",
+    "items": [
+      {"node_id": "card_1", "role": "card", "min_width": 300.0, "min_height": 120.0},
+      {"node_id": "card_2", "role": "card", "min_width": 300.0, "min_height": 120.0}
+    ],
+    "initial_boxes": [
+      {"node_id": "card_1", "role": "card", "zone": "CONTENT", "x": 300.0, "y": 250.0, "width": 300.0, "height": 120.0},
+      {"node_id": "card_2", "role": "card", "zone": "CONTENT", "x": 400.0, "y": 250.0, "width": 300.0, "height": 120.0}
+    ],
+    "expected_feasible": true,
+    "expected_min_repairs": 1
+  },
+  {
+    "case_id": "dense_cc_repair_16_9_vi_44",
+    "category": "repairable",
+    "strategy": "CONCEPT_CARD",
+    "profile": "16:9",
+    "language": "vi",
+    "items": [
+      {"node_id": "title", "role": "title", "min_width": 400.0, "min_height": 50.0},
+      {"node_id": "card", "role": "card", "min_width": 500.0, "min_height": 200.0}
+    ],
+    "initial_boxes": [
+      {"node_id": "title", "role": "title", "zone": "HEADER", "x": 300.0, "y": 180.0, "width": 400.0, "height": 50.0},
+      {"node_id": "card", "role": "card", "zone": "CONTENT", "x": 300.0, "y": 200.0, "width": 500.0, "height": 200.0}
+    ],
+    "expected_feasible": true,
+    "expected_min_repairs": 1
+  },
+  {
+    "case_id": "dense_quote_repair_16_9_en_45",
+    "category": "repairable",
+    "strategy": "QUOTE",
+    "profile": "16:9",
+    "language": "en",
+    "items": [
+      {"node_id": "quote_text", "role": "quote", "min_width": 500.0, "min_height": 100.0},
+      {"node_id": "author_text", "role": "author", "min_width": 200.0, "min_height": 40.0}
+    ],
+    "initial_boxes": [
+      {"node_id": "author_text", "role": "author", "zone": "CONTENT", "x": 450.0, "y": 320.0, "width": 200.0, "height": 40.0},
+      {"node_id": "quote_text", "role": "quote", "zone": "CONTENT", "x": 390.0, "y": 294.0, "width": 500.0, "height": 100.0}
+    ],
+    "expected_feasible": true,
+    "expected_min_repairs": 1
+  },
+  {
+    "case_id": "dense_cc_repair_9_16_vi_46",
+    "category": "repairable",
+    "strategy": "CONCEPT_CARD",
+    "profile": "9:16",
+    "language": "vi",
+    "items": [
+      {"node_id": "card_a", "role": "card", "min_width": 400.0, "min_height": 250.0},
+      {"node_id": "card_b", "role": "card", "min_width": 400.0, "min_height": 250.0}
+    ],
+    "initial_boxes": [
+      {"node_id": "card_a", "role": "card", "zone": "CONTENT", "x": 100.0, "y": 300.0, "width": 400.0, "height": 250.0},
+      {"node_id": "card_b", "role": "card", "zone": "CONTENT", "x": 200.0, "y": 450.0, "width": 400.0, "height": 250.0}
+    ],
+    "expected_feasible": true,
+    "expected_min_repairs": 1
+  },
+  {
+    "case_id": "dense_comp_repair_9_16_en_47",
+    "category": "repairable",
+    "strategy": "COMPARISON",
+    "profile": "9:16",
+    "language": "en",
+    "items": [
+      {"node_id": "item_left", "role": "left", "min_width": 250.0, "min_height": 250.0},
+      {"node_id": "item_right", "role": "right", "min_width": 250.0, "min_height": 250.0}
+    ],
+    "initial_boxes": [
+      {"node_id": "item_left", "role": "left", "zone": "CONTENT", "x": 100.0, "y": 300.0, "width": 250.0, "height": 250.0},
+      {"node_id": "item_right", "role": "right", "zone": "CONTENT", "x": 200.0, "y": 350.0, "width": 250.0, "height": 250.0}
+    ],
+    "expected_feasible": true,
+    "expected_min_repairs": 1
+  },
+  {
+    "case_id": "dense_quote_repair_9_16_vi_48",
+    "category": "repairable",
+    "strategy": "QUOTE",
+    "profile": "9:16",
+    "language": "vi",
+    "items": [
+      {"node_id": "quote_text", "role": "quote", "min_width": 400.0, "min_height": 150.0},
+      {"node_id": "author_text", "role": "author", "min_width": 250.0, "min_height": 40.0}
+    ],
+    "initial_boxes": [
+      {"node_id": "author_text", "role": "author", "zone": "CONTENT", "x": 200.0, "y": 480.0, "width": 250.0, "height": 40.0},
+      {"node_id": "quote_text", "role": "quote", "zone": "CONTENT", "x": 150.0, "y": 420.0, "width": 400.0, "height": 150.0}
+    ],
+    "expected_feasible": true,
+    "expected_min_repairs": 1
   }
 ]

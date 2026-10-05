@@ -10,6 +10,7 @@ from learnflow_v2.layout.schema import Rect
 
 # Re-export strengths for explicit readability in constraint definitions
 STRENGTH_REQUIRED = kiwisolver.strength.required
+STRENGTH_CONTINUITY = kiwisolver.strength.create(10, 0, 0)
 STRENGTH_STRONG = kiwisolver.strength.strong
 STRENGTH_MEDIUM = kiwisolver.strength.medium
 STRENGTH_WEAK = kiwisolver.strength.weak

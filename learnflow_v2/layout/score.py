@@ -19,7 +19,7 @@ Stage B: Soft Scoring
 
 import math
 from typing import Any
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator, model_validator
 
 from learnflow_v2.layout.collision import detect_box_collisions
 from learnflow_v2.layout.graph_metrics import compute_graph_metrics
@@ -29,8 +29,33 @@ from learnflow_v2.layout.schema import FrameProfile, LayoutGraph, LayoutStrategy
 from learnflow_v2.layout.semantics import is_chrome_role
 
 
+def _validate_strict_int_field(v: Any, info: ValidationInfo, min_val: int = 0) -> int:
+    if isinstance(v, bool) or not isinstance(v, int):
+        raise ValueError(f"Field '{info.field_name}' must be an integer, got {type(v).__name__}: {v!r}")
+    if v < min_val:
+        raise ValueError(f"Field '{info.field_name}' must be >= {min_val}, got {v}")
+    return v
+
+
+def _validate_strict_float_field(v: Any, info: ValidationInfo, min_val: float = 0.0) -> float:
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        raise ValueError(f"Field '{info.field_name}' must be a real number, got {type(v).__name__}: {v!r}")
+    f_val = float(v)
+    if not math.isfinite(f_val):
+        raise ValueError(f"Field '{info.field_name}' must be finite, got {f_val}")
+    if f_val < min_val:
+        raise ValueError(f"Field '{info.field_name}' must be >= {min_val}, got {f_val}")
+    return f_val
+
+
 class LayoutFeasibilityReport(BaseModel):
-    """Strict immutable report on hard geometric and semantic feasibility gates."""
+    """Strict immutable report on hard geometric and semantic feasibility gates.
+
+    Minimum Readability Policy:
+    Enforces that no layout node is rendered below minimum readable size.
+    Evaluated against explicit `min_readable_bounds` if supplied, or derived from
+    preflight intrinsic clipping checks, ensuring this metric is an active hard gate.
+    """
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -43,6 +68,27 @@ class LayoutFeasibilityReport(BaseModel):
     minimum_readability_violation_count: int = Field(default=0, ge=0, description="Violations of minimum readability")
     feasible: bool = Field(default=False, description="Derived hard gate pass/fail status")
     violations: list[str] = Field(default_factory=list, description="Descriptive list of violations")
+
+    @field_validator(
+        "overflow_count",
+        "fatal_overlap_count",
+        "clipping_count",
+        "safe_zone_violation_count",
+        "invalid_geometry_count",
+        "edge_node_intersection_count",
+        "minimum_readability_violation_count",
+        mode="before",
+    )
+    @classmethod
+    def validate_counts(cls, v: Any, info: ValidationInfo) -> int:
+        return _validate_strict_int_field(v, info, min_val=0)
+
+    @field_validator("feasible", mode="before")
+    @classmethod
+    def validate_feasible_bool(cls, v: Any, info: ValidationInfo) -> bool:
+        if not isinstance(v, bool):
+            raise TypeError(f"Field '{info.field_name}' must be a boolean, got {type(v).__name__}: {v!r}")
+        return v
 
     @model_validator(mode="after")
     def validate_hard_gate_invariant(self) -> "LayoutFeasibilityReport":
@@ -81,22 +127,22 @@ class SoftScoreWeights(BaseModel):
     edge_length_weight: float = Field(default=0.001, ge=0.0)
     typography_weight: float = Field(default=1.0, ge=0.0)
     balance_weight: float = Field(default=5.0, ge=0.0)
+    continuity_weight: float = Field(default=10.0, ge=0.0)
     whitespace_weight: float = Field(default=3.0, ge=0.0)
 
-    @model_validator(mode="after")
-    def validate_finite_weights(self) -> "SoftScoreWeights":
-        for attr in (
-            "edge_crossing_weight",
-            "edge_bend_weight",
-            "edge_length_weight",
-            "typography_weight",
-            "balance_weight",
-            "whitespace_weight",
-        ):
-            val = getattr(self, attr)
-            if not isinstance(val, (int, float)) or isinstance(val, bool) or not math.isfinite(val) or val < 0.0:
-                raise ValueError(f"{attr} must be a non-negative finite number, got {val}")
-        return self
+    @field_validator(
+        "edge_crossing_weight",
+        "edge_bend_weight",
+        "edge_length_weight",
+        "typography_weight",
+        "balance_weight",
+        "continuity_weight",
+        "whitespace_weight",
+        mode="before",
+    )
+    @classmethod
+    def validate_weights(cls, v: Any, info: ValidationInfo) -> float:
+        return _validate_strict_float_field(v, info, min_val=0.0)
 
 
 class SoftLayoutScore(BaseModel):
@@ -107,17 +153,27 @@ class SoftLayoutScore(BaseModel):
     edge_penalty: float = Field(default=0.0, ge=0.0, description="Penalty for edge crossings, bends, and length")
     typography_penalty: float = Field(default=0.0, ge=0.0, description="Penalty for deviation from preferred typography")
     balance_penalty: float = Field(default=0.0, ge=0.0, description="Penalty for visual center-of-mass imbalance")
+    continuity_penalty: float = Field(default=0.0, ge=0.0, description="Penalty for displacement of persistent concepts")
     whitespace_penalty: float = Field(default=0.0, ge=0.0, description="Penalty for extreme sparseness or density")
     total: float = Field(default=0.0, ge=0.0, description="Total soft layout objective (lower is better)")
 
+    @field_validator(
+        "edge_penalty",
+        "typography_penalty",
+        "balance_penalty",
+        "continuity_penalty",
+        "whitespace_penalty",
+        "total",
+        mode="before",
+    )
+    @classmethod
+    def validate_scores(cls, v: Any, info: ValidationInfo) -> float:
+        return _validate_strict_float_field(v, info, min_val=0.0)
+
     @model_validator(mode="after")
     def validate_score(self) -> "SoftLayoutScore":
-        for attr in ("edge_penalty", "typography_penalty", "balance_penalty", "whitespace_penalty", "total"):
-            val = getattr(self, attr)
-            if not isinstance(val, (int, float)) or isinstance(val, bool) or not math.isfinite(val) or val < 0.0:
-                raise ValueError(f"{attr} must be a non-negative finite number, got {val}")
         expected_total = round(
-            self.edge_penalty + self.typography_penalty + self.balance_penalty + self.whitespace_penalty, 4
+            self.edge_penalty + self.typography_penalty + self.balance_penalty + self.continuity_penalty + self.whitespace_penalty, 4
         )
         if abs(self.total - expected_total) > 1e-3:
             object.__setattr__(self, "total", expected_total)
@@ -129,12 +185,18 @@ def evaluate_feasibility(
     profile: FrameProfile | str | None = None,
     measurements: dict[str, tuple[float, float]] | None = None,
     expected_node_ids: list[str] | set[str] | None = None,
+    min_readable_bounds: dict[str, tuple[float, float]] | None = None,
     tol: float = 1e-2,
 ) -> LayoutFeasibilityReport:
     """Evaluate all hard feasibility gates for a solved LayoutGraph without raising.
 
     Uses existing preflight and collision detection logic.
     Candidate is marked feasible=True ONLY if every hard violation count is 0.
+
+    Minimum Readability Policy:
+    If `min_readable_bounds` is provided, checks boxes against those minimum dimensions.
+    Otherwise, derives from intrinsic measurement clipping (boxes rendered smaller than required),
+    ensuring minimum readability is actively enforced as a hard gate.
     """
     prof = get_frame_profile(profile or layout_graph.frame_profile_id)
 
@@ -159,6 +221,24 @@ def evaluate_feasibility(
         edge_node_intersections = graph_rep.edge_node_intersection_count
         graph_violations = graph_rep.violations or []
 
+    # 4. Minimum readability evaluation
+    readability_violations = 0
+    readability_msgs: list[str] = []
+    if min_readable_bounds:
+        for box in layout_graph.boxes:
+            if box.node_id in min_readable_bounds:
+                min_w, min_h = min_readable_bounds[box.node_id]
+                if box.rect.width < min_w - tol or box.rect.height < min_h - tol:
+                    msg = (
+                        f"Box '{box.node_id}' violates minimum readability bounds ({min_w}x{min_h}): "
+                        f"rendered ({box.rect.width}x{box.rect.height})"
+                    )
+                    readability_msgs.append(msg)
+                    readability_violations += 1
+    elif preflight_rep.content_clipping_count > 0:
+        # Policy B: clipping below required intrinsic dimensions directly represents readability violation
+        readability_violations = preflight_rep.content_clipping_count
+
     # Compile violations list
     all_violations: list[str] = list(preflight_rep.violations or [])
     for col in collisions:
@@ -167,6 +247,7 @@ def evaluate_feasibility(
             f"overlap area={col.overlap_area}px² ({col.overlap_width}x{col.overlap_height})"
         )
     all_violations.extend(graph_violations)
+    all_violations.extend(readability_msgs)
 
     total_hard_violations = (
         preflight_rep.frame_overflow_count
@@ -176,6 +257,7 @@ def evaluate_feasibility(
         + preflight_rep.invalid_geometry_count
         + preflight_rep.missing_node_count
         + edge_node_intersections
+        + (readability_violations if min_readable_bounds else 0)
     )
 
     return LayoutFeasibilityReport(
@@ -185,7 +267,7 @@ def evaluate_feasibility(
         safe_zone_violation_count=preflight_rep.safe_zone_violation_count,
         invalid_geometry_count=preflight_rep.invalid_geometry_count + preflight_rep.missing_node_count,
         edge_node_intersection_count=edge_node_intersections,
-        minimum_readability_violation_count=0,
+        minimum_readability_violation_count=readability_violations,
         feasible=(total_hard_violations == 0),
         violations=all_violations,
     )
@@ -195,6 +277,7 @@ def compute_soft_score(
     layout_graph: LayoutGraph,
     profile: FrameProfile | str | None = None,
     weights: SoftScoreWeights | None = None,
+    continuity_context: Any | None = None,
 ) -> SoftLayoutScore:
     """Compute explainable soft layout score for a FEASIBLE LayoutGraph.
 
@@ -202,6 +285,7 @@ def compute_soft_score(
     - edge_penalty: crossings (dominant), bends, total edge length
     - typography_penalty: 0.0 in V2-05 (adaptive typography reserved for later)
     - balance_penalty: distance of layout center-of-mass from content zone center
+    - continuity_penalty: normalized displacement of persistent concepts from previous targets
     - whitespace_penalty: layout density deviation from optimal range [0.25, 0.65]
     """
     prof = get_frame_profile(profile or layout_graph.frame_profile_id)
@@ -219,7 +303,7 @@ def compute_soft_score(
             4,
         )
 
-    # 2. Typography soft penalty (0.0 for V2-05)
+    # 2. Typography soft penalty (0.0 for V2-05/V2-06)
     typo_pen = 0.0
 
     # 3. Visual balance penalty
@@ -240,7 +324,14 @@ def compute_soft_score(
     else:
         balance_pen = 0.0
 
-    # 4. Whitespace / density penalty
+    # 4. Continuity soft penalty
+    cont_pen = 0.0
+    if continuity_context is not None:
+        from learnflow_v2.layout.continuity import compute_continuity_metrics
+        cont_metrics = compute_continuity_metrics(continuity_context, layout_graph, profile=prof)
+        cont_pen = round(w.continuity_weight * cont_metrics.mean_displacement, 4)
+
+    # 5. Whitespace / density penalty
     content_area = content_zone.width * content_zone.height
     if content_area > 0:
         density = total_area / content_area
@@ -255,12 +346,13 @@ def compute_soft_score(
     else:
         whitespace_pen = 0.0
 
-    total_score = round(edge_pen + typo_pen + balance_pen + whitespace_pen, 4)
+    total_score = round(edge_pen + typo_pen + balance_pen + cont_pen + whitespace_pen, 4)
 
     return SoftLayoutScore(
         edge_penalty=edge_pen,
         typography_penalty=typo_pen,
         balance_penalty=balance_pen,
+        continuity_penalty=cont_pen,
         whitespace_penalty=whitespace_pen,
         total=total_score,
     )
