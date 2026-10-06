@@ -87,7 +87,7 @@ jobs:
             echo "Pinned Hermes Python not found" >&2
             exit 1
           fi
-          "$HPY" -m pip install -r requirements.txt
+          uv pip install --python "$HPY" -r requirements.txt
           echo "HPY=$HPY" >> "$GITHUB_ENV"
 
       - name: Run one-topic governed live V2D pilot
