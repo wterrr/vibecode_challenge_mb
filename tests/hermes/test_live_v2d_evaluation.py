@@ -101,3 +101,8 @@ def test_workflow_scopes_secret_to_live_job():
     assert workflow.count("secrets.OPENROUTER_API_KEY") == 1
     assert "chatgpt/live-v2d-evaluation" in workflow
     assert "workflow_dispatch:" in workflow
+
+
+def test_research_iteration_budget_is_128_only_for_research():
+    source = (ROOT / "live_evaluation" / "hermes_runner.py").read_text(encoding="utf-8")
+    assert "max_iterations=128 if research else 3" in source
