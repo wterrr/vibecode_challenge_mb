@@ -4,8 +4,6 @@ Source of truth: `PLAN_V2.md`.
 
 ## Current status
 
-Implemented and reviewed checkpoints:
-
 ```text
 V2-00  Freeze V1 + baseline                 PASS
 V2-01  ConceptRegistry + SceneGraph         PASS
@@ -22,16 +20,42 @@ V2-11  Deterministic QA                     PASS
 V2-12  Optional VLM Critic                  PASS
 V2-13  Repair + Dependency Invalidation     PASS
 V2-14  Video Critic                         PASS
+V2 Renderer + A/V Assembly                  PASS
+Frozen V2 End-to-End Benchmark v2           PASS
+CORE GATE                                   PASS
+CORE FREEZE                                 NEXT
+Hermes / V2D                                NOT YET AUTHORIZED
 ```
 
-The V2C component checkpoints are complete, but **Core Gate is not yet passed**.
+## Official Core Gate evidence
 
-Current Core Gate decision for engine commit
-`ca20c79c0e17f990ebfb4ed06f9b8988dbe74305` is:
+Accepted engine commit:
 
 ```text
-BLOCKED
+fdad3db1340d8b28175ab5382d800ff79df9a8a0
 ```
+
+Corrected benchmark: `v2-core-gate-v2`  
+Official workflow run: `37412433812`  
+Official artifact: `11389249199`
+
+Measured result:
+
+```text
+render success                 100% (3/3)
+fatal clipping                 0 / 9
+fatal overlap                  0 / 9
+invalid MotionPlan             0 / 9
+selective repair success       100% (9/9)
+deterministic reproducibility  100% (3/3)
+V1→V2 critical regressions     0 / 3
+static composition delta       +6.0680719
+VLM unavailable contract       PASS
+local repair isolation         PASS
+```
+
+The static-composition metric is a narrow deterministic proxy:
+V1 = 66.15013163, V2 = 72.21820353. It is not a human aesthetic score.
 
 Run the fail-closed evaluator with:
 
@@ -39,19 +63,7 @@ Run the fail-closed evaluator with:
 python scripts/evaluate_v2_core_gate.py
 ```
 
-See `benchmarks/core_gate/README.md`.
-
-## Why Core Gate is currently blocked
-
-The deterministic V2 renderer/assembly baseline is now implemented under `learnflow_v2.render`, so the original "renderer missing" prerequisite is closed.
-
-The repository still lacks evidence required by `PLAN_V2.md` for the following reasons:
-
-1. **No frozen V2 end-to-end benchmark result exists** comparable to the frozen V1 baseline under `benchmarks/baselines/v1/`.
-2. **No agreed V1-vs-V2 static-quality metric artifact exists**, so `V2 static quality > V1 baseline` cannot be claimed scientifically yet.
-3. **Production/API integration and audio mux are not yet benchmarked as a V2 publish path.** The renderer can create deterministic scene/transition MP4 clips and assemble a video-only draft, but this is not yet evidence for the full product path.
-
-Missing evidence is treated as `BLOCKED`, never as an implicit PASS. Hermes/V2D must not start until Core Gate is actually satisfied.
+See `benchmarks/core_gate/README.md` and `benchmarks/baselines/v2/`.
 
 ## Architectural boundary
 
@@ -66,7 +78,7 @@ Motion Grammar + Scheduler/Compiler
         ↓
 InterSceneTransitionPlan
         ↓
-deterministic V2 renderer + assembly
+deterministic V2 renderer + AAC mux + subtitles + assembly
         ↓
 Deterministic QA
         ↓
@@ -82,55 +94,34 @@ Non-negotiable rules:
 - no arbitrary generated rendering code;
 - no LLM-generated pixel coordinates;
 - semantic identity is canonical through `ConceptRegistry`;
-- cross-scene continuity is a typed transition artifact;
-- VLM may diagnose and propose typed patches but does not own geometry/pixels;
-- deterministic QA cannot be overridden by the critic;
-- local repair must invalidate only affected downstream artifacts;
-- deterministic artifacts are hash/provenance tracked;
-- V1 remains the production rollback baseline until Core Gate passes.
+- deterministic QA cannot be overridden by VLM;
+- repair invalidates only affected downstream artifacts;
+- artifacts retain deterministic provenance/hashes;
+- frozen Core Gate benchmark/spec must not be edited after acceptance;
+- V1 remains the rollback reference until Core Freeze explicitly records the boundary.
 
-## Current modules
+## Evidence caveats
 
-- `learnflow_v2.core` — canonical serialization, JSON-safe values, structured errors.
-- `learnflow_v2.concepts` — canonical lesson-level semantic identity.
-- `learnflow_v2.scenegraph` — semantic visual IR and V1 adapter.
-- `learnflow_v2.layout` — intrinsic measurement, safe zones, Kiwi/ELK/Graphviz layout, collision repair, feasibility scoring and continuity.
-- `learnflow_v2.motion` — Tier-1 semantic motion grammar, narration beats, scheduling and property-track compilation.
-- `learnflow_v2.transitions` — semantic cross-scene persistence and renderer capability negotiation.
-- `learnflow_v2.qa` — deterministic scene QA plus optional structured VLM critic.
-- `learnflow_v2.repair` — typed repair planning, artifact provenance/cache reuse, dependency invalidation and deterministic re-check binding.
-- `learnflow_v2.videoqa` — structured whole-video critic for visual variety, continuity, style, pacing and pedagogical alignment.
-- `learnflow_v2.render` — deterministic Pillow/FFmpeg pixel renderer, Tier-1 motion playback, persistent MOVE transitions and video assembly.
-- `learnflow_v2.core_gate` — fail-closed Core Gate evidence schema and evaluator.
+- `v2-core-gate-v1` is invalidated because its V1/V2 static-frame layers were not comparable and its
+  text-fit contract was weaker.
+- `v2-core-gate-v2` uses the same three V1 lessons and compares pre-subtitle scene clips on both sides.
+- The frozen three-lesson corpus does not exercise persistent-object MOVE end-to-end; CP2.10 regression
+  tests cover that contract separately.
+- The benchmark inherits V1's deterministic 40-character subtitle truncation contract. That preserves
+  benchmark parity but is not a claim that subtitle UX is production-complete.
 
-## V1 baseline
-
-V1 remains frozen under `app/` and has deterministic benchmark fixtures/results under:
+## Next engineering step
 
 ```text
-benchmarks/fixtures/v1/
-benchmarks/baselines/v1/baseline.json
-scripts/capture_v1_baseline.py
-```
-
-This is the comparison baseline. Do not replace it while evaluating V2.
-
-## Next engineering work
-
-The next work is **not Hermes**. It is to close Core Gate evidence gaps:
-
-```text
-deterministic renderer baseline ✅
-        ↓
-frozen V2 end-to-end benchmark
-        ↓
-agreed V1↔V2 static-quality metric
-        ↓
-measure all Core Gate criteria
-        ↓
 CORE GATE PASS
-        ↓
+      ↓
 CORE FREEZE
-        ↓
+      ↓
+record accepted engine/evidence/rollback/contracts
+      ↓
+only then
+      ↓
 V2D / Hermes
 ```
+
+Do not start Hermes/V2D before Core Freeze is explicitly complete.
