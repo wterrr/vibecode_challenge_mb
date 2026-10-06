@@ -187,6 +187,51 @@ def test_relation_motion_requires_routed_geometry():
     with pytest.raises(RenderInvalidInputError, match="without routed edge geometry"):
         DeterministicPillowRenderer().render_frame(_scene("s1"), no_route, motion, 0.2)
 
+
+def test_renderer_rejects_routed_edge_that_contradicts_scene_relation():
+    bad_edge = _layout("s1").routed_edges[0].model_copy(update={"source": "b", "target": "a"})
+    bad_layout = _layout("s1").model_copy(update={"routed_edges": [bad_edge]})
+    with pytest.raises(RenderInvalidInputError, match="endpoints contradict"):
+        DeterministicPillowRenderer().render_frame(_scene("s1"), bad_layout, _static_motion("s1"), 0.0)
+
+
+def test_public_scene_render_revalidates_forged_profile(tmp_path: Path):
+    forged = RenderProfile.model_construct(profile_id="bad", fps=0, crf=18, preset="ultrafast")
+    with pytest.raises(Exception):
+        render_scene_video(_scene("s1"), _layout("s1"), _static_motion("s1"), tmp_path/"bad.mp4", profile=forged)
+
+
+def test_transition_rejects_stale_geometry_even_when_plan_is_individually_valid(tmp_path: Path):
+    plan = _transition()
+    stale = plan.model_copy(
+        update={
+            "persistent_objects": (
+                plan.persistent_objects[0].model_copy(
+                    update={"source_rect": Rect(x=35, y=55, width=90, height=60)}
+                ),
+            )
+        }
+    )
+    with pytest.raises(RenderInvalidInputError, match="geometry contradicts"):
+        render_transition_video(
+            _scene("s1"), _layout("s1"),
+            _scene("s2", suffix="2"), _layout("s2", suffix="2", shift=20),
+            stale, tmp_path/"stale.mp4",
+            profile=RenderProfile(profile_id="test", fps=2, preset="ultrafast"),
+        )
+
+
+def test_transition_public_boundary_revalidates_forged_plan(tmp_path: Path):
+    plan = _transition()
+    forged = plan.model_copy(update={"duration": float("nan"), "duration_ms": float("nan")})
+    with pytest.raises(Exception):
+        render_transition_video(
+            _scene("s1"), _layout("s1"),
+            _scene("s2", suffix="2"), _layout("s2", suffix="2", shift=20),
+            forged, tmp_path/"forged.mp4",
+            profile=RenderProfile(profile_id="test", fps=2, preset="ultrafast"),
+        )
+
 def test_source_artifacts_are_not_mutated_by_frame_render():
     scene, layout, motion = _scene("s1"), _layout("s1"), _fade_motion("s1")
     scene_before = scene.model_dump_json()
