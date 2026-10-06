@@ -194,7 +194,7 @@ def run_end_to_end(
         run_id=run_id,
         learning_brief=brief,
         research_pack=research.research_pack,
-        evidence_graph=research.evidence_graph.model_dump(mode="json"),
+        evidence_graph=research.evidence_graph,
         fact_verification=fact_report,
         pedagogy_plan=pedagogy,
         lesson_script=script,
