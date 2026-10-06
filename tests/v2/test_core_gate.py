@@ -180,3 +180,39 @@ def test_repository_blocker_input_is_strict_and_canonical():
     assert report.blockers == ("a", "b")
     with pytest.raises(ValueError):
         evaluate_core_gate(complete_passing_bundle(), repository_blockers=("",))
+
+
+def test_core_gate_manifest_matches_frozen_baseline_evidence_exactly():
+    active = json.loads(Path("benchmarks/core_gate/evidence.json").read_text(encoding="utf-8"))
+    frozen = json.loads(Path("benchmarks/baselines/v2/core_gate_evidence.json").read_text(encoding="utf-8"))
+    assert active == frozen
+
+
+def test_static_quality_metric_artifact_matches_frozen_spec_formula():
+    spec = json.loads(Path("benchmarks/specs/v2_core_gate_v1.json").read_text(encoding="utf-8"))
+    metric = json.loads(Path("benchmarks/core_gate/static_quality_metric.json").read_text(encoding="utf-8"))
+    frozen = spec["static_quality_metric"]
+    for key in (
+        "metric_id",
+        "sample",
+        "background_estimator",
+        "foreground_color_distance_threshold",
+        "weights",
+        "contrast_component",
+        "occupancy_component",
+        "safe_margin_component",
+        "aggregate",
+        "interpretation",
+    ):
+        assert metric[key] == frozen[key]
+
+
+def test_frozen_report_matches_current_evaluator_decision():
+    payload = json.loads(Path("benchmarks/core_gate/evidence.json").read_text(encoding="utf-8"))
+    bundle = CoreGateEvidenceBundle.model_validate(payload)
+    current = evaluate_core_gate(bundle)
+    frozen = json.loads(Path("benchmarks/baselines/v2/core_gate_report.json").read_text(encoding="utf-8"))
+    assert current.state.value == frozen["state"] == "PASS"
+    assert [(item.metric.value, item.state.value) for item in current.criteria] == [
+        (item["metric"], item["state"]) for item in frozen["criteria"]
+    ]
