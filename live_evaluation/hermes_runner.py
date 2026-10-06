@@ -185,6 +185,11 @@ class LiveHermesStructuredRunner:
             raise RuntimeError(
                 "Hermes delegate_task returned invalid JSON"
             ) from exc
+        if isinstance(delegation_payload, dict) and delegation_payload.get("error"):
+            raise RuntimeError(
+                "Hermes delegate_task rejected research fan-out: "
+                + str(delegation_payload["error"])
+            )
 
         assembled = assemble_specialist_delegation_results(
             plan=plan,

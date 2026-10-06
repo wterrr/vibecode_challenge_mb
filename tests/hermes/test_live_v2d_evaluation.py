@@ -18,6 +18,7 @@ from live_evaluation import (
     initialize_governance_state,
 )
 from live_evaluation.hermes_runner import LiveHermesStructuredRunner
+from live_evaluation.pilot import _reset_runtime_preserving_hermes_home
 
 
 def test_pilot_topic_is_frozen_corpus_member():
@@ -217,3 +218,31 @@ def test_nemotron_live_runner_keeps_reasoning_enabled():
     assert 'self.model.startswith("nvidia/nemotron-3-super-")' in source
     assert 'request_overrides["reasoning_effort"] = "medium"' in source
     assert '"max_tokens"' not in source
+
+
+
+def test_runtime_reset_preserves_active_hermes_home(tmp_path, monkeypatch):
+    runtime = tmp_path / "live-v2d"
+    hermes_home = runtime / "hermes-home"
+    hermes_home.mkdir(parents=True)
+    config = hermes_home / "config.yaml"
+    config.write_text(
+        "delegation:\n  max_spawn_depth: 2\n",
+        encoding="utf-8",
+    )
+    stale = runtime / "stale-artifact.txt"
+    stale.write_text("old", encoding="utf-8")
+
+    monkeypatch.setenv("HERMES_HOME", str(hermes_home))
+    _reset_runtime_preserving_hermes_home(runtime)
+
+    assert config.is_file()
+    assert "max_spawn_depth: 2" in config.read_text(encoding="utf-8")
+    assert not stale.exists()
+
+
+def test_research_delegation_surfaces_native_hermes_rejection():
+    source = (
+        ROOT / "live_evaluation" / "hermes_runner.py"
+    ).read_text(encoding="utf-8")
+    assert "Hermes delegate_task rejected research fan-out:" in source

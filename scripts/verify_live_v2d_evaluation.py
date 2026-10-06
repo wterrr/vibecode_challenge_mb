@@ -87,6 +87,12 @@ def main() -> int:
         if required not in probe_source:
             raise SystemExit("LIVE_V2D_CONTRACT=FAIL model capability probe")
 
+    pilot_source = (ROOT / "live_evaluation" / "pilot.py").read_text(encoding="utf-8")
+    if "_reset_runtime_preserving_hermes_home(runtime)" not in pilot_source:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL Hermes profile preservation missing")
+    if "shutil.rmtree(runtime)" in pilot_source:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL pilot deletes active runtime root")
+
     source = (ROOT / "live_evaluation" / "hermes_runner.py").read_text(encoding="utf-8")
     if 'provider="openrouter"' not in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL OpenRouter runner binding")
@@ -119,6 +125,7 @@ def main() -> int:
     print("publication_authorized=false")
     print("live_secret_step_scope=PASS")
     print("native_research_delegation_enabled=PASS")
+    print("active_hermes_profile_preserved=PASS")
     print("deterministic_research_assembly=PASS")
     print("research_max_iterations=128")
     print("provider_attempt_quota=160")

@@ -127,6 +127,35 @@ def _governance_event_summary(path: Path) -> dict[str, Any]:
     }
 
 
+def _reset_runtime_preserving_hermes_home(runtime: Path) -> None:
+    """Clear pilot-owned artifacts without deleting the active Hermes profile."""
+
+    runtime = runtime.resolve()
+    raw_home = str(os.environ.get("HERMES_HOME") or "").strip()
+    hermes_home = Path(raw_home).expanduser().resolve() if raw_home else None
+
+    if not runtime.exists():
+        runtime.mkdir(parents=True, exist_ok=True)
+        return
+
+    for child in runtime.iterdir():
+        child_resolved = child.resolve()
+        preserves_hermes = (
+            hermes_home is not None
+            and (
+                child_resolved == hermes_home
+                or child_resolved in hermes_home.parents
+            )
+        )
+        if preserves_hermes:
+            continue
+        if child.is_dir() and not child.is_symlink():
+            shutil.rmtree(child)
+        else:
+            child.unlink()
+    runtime.mkdir(parents=True, exist_ok=True)
+
+
 def run_live_v2d_pilot(
     *,
     api_key: str,
@@ -139,9 +168,7 @@ def run_live_v2d_pilot(
         if runtime_root is not None
         else (ROOT / ".hermes_runtime" / "live-v2d-evaluation").resolve()
     )
-    if runtime.exists():
-        shutil.rmtree(runtime)
-    runtime.mkdir(parents=True, exist_ok=True)
+    _reset_runtime_preserving_hermes_home(runtime)
 
     state_path = runtime / "governance" / "state.json"
     events_path = runtime / "governance" / "events.jsonl"
