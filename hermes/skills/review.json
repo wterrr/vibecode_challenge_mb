@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "stage": "skills",
+  "production_activation": {
+    "project_skill_trust_required": true,
+    "manual_review_required_before_production": true,
+    "repo_config_auto_trusts_project_skills": false
+  },
+  "skills": [
+    {
+      "name": "build-evidenced-lesson",
+      "purpose": "complete accepted lesson workflow",
+      "allowed_support_dirs": [
+        "references"
+      ],
+      "executable_helpers": false
+    },
+    {
+      "name": "investigate-lesson-facts",
+      "purpose": "bounded research and factual verification workflow",
+      "allowed_support_dirs": [
+        "references"
+      ],
+      "executable_helpers": false
+    },
+    {
+      "name": "repair-failed-lesson",
+      "purpose": "authoritative QA ownership routing and selective repair workflow",
+      "allowed_support_dirs": [
+        "references"
+      ],
+      "executable_helpers": false
+    },
+    {
+      "name": "review-lesson-before-publication",
+      "purpose": "final readiness review before governed publication",
+      "allowed_support_dirs": [
+        "references"
+      ],
+      "executable_helpers": false
+    }
+  ],
+  "review_rules": [
+    "native pinned Hermes discovery must succeed in an isolated trusted-project profile",
+    "project skill security scan must not quarantine any accepted skill",
+    "all linked references must resolve through native skill_view",
+    "skills must not implement a second orchestration runtime",
+    "skills must not contain executable helper scripts",
+    "skills must not bypass typed readiness gates, Core Freeze, runtime governance, or Agent-Aware QA ownership",
+    "production operator must manually review and explicitly trust the repository before enabling project skills"
+  ]
+}

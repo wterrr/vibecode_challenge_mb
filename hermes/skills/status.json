@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "stage": "skills",
+  "name": "Skills",
+  "state": "IMPLEMENTED_AWAITING_CI",
+  "depends_on": [
+    {
+      "stage": "runtime-governance",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "agent-aware-qa",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "end-to-end-orchestration",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
+  ],
+  "acceptance": {
+    "native_project_skill_format": true,
+    "exact_pinned_hermes_discovery": true,
+    "security_scan_not_quarantined": true,
+    "linked_references_resolve": true,
+    "no_executable_skill_helpers": true,
+    "accepted_stage_boundaries_reused": true,
+    "project_not_auto_trusted_for_production": true,
+    "manual_review_required_before_production": true,
+    "kanban_not_implemented": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "next_stage": "Kanban Durability",
+  "evidence": {
+    "accepted_ci_run": null,
+    "accepted_head_sha": null,
+    "skills_verifier": "PENDING",
+    "pytest": "PENDING",
+    "pinned_hermes_skill_discovery": "PENDING",
+    "native_skill_view": "PENDING",
+    "reference_resolution": "PENDING",
+    "security_scan": "PENDING",
+    "core_freeze": "PENDING"
+  }
+}
