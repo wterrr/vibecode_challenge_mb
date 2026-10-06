@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "stage": "agent-aware-qa",
+  "name": "Agent-Aware QA",
+  "state": "IMPLEMENTED_AWAITING_CI",
+  "depends_on": [
+    {"stage": "end-to-end-orchestration", "required_state": "PASS", "current_state": "PASS"},
+    {"stage": "deterministic-qa", "required_state": "PASS", "current_state": "PASS"},
+    {"stage": "optional-vlm-critic", "required_state": "PASS", "current_state": "PASS"},
+    {"stage": "repair-engine", "required_state": "PASS", "current_state": "PASS"},
+    {"stage": "video-critic", "required_state": "PASS", "current_state": "PASS"}
+  ],
+  "acceptance": {
+    "factual_evidence_routes_to_research": true,
+    "factual_narration_routes_to_script": true,
+    "pedagogy_routes_to_pedagogy_agent": true,
+    "semantic_visual_routes_to_visual_director": true,
+    "geometric_and_supported_patch_repairs_stay_in_core": true,
+    "core_repairs_cannot_be_delegated_to_hermes": true,
+    "unknown_artifact_references_fail_closed": true,
+    "existing_agent_contracts_reused": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "next_stage": "Hooks + Budget",
+  "evidence": {
+    "accepted_ci_run": null,
+    "accepted_head_sha": null,
+    "agent_aware_qa_verifier": "PENDING",
+    "pytest": "PENDING",
+    "pinned_hermes_repair_tasks": "PENDING",
+    "core_freeze": "PENDING"
+  }
+}

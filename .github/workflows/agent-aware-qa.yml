@@ -1,0 +1,69 @@
+name: Agent-Aware QA
+
+on:
+  pull_request:
+    paths:
+      - "agent_aware_qa/**"
+      - "hermes/agent-aware-qa/**"
+      - "scripts/verify_agent_aware_qa.py"
+      - "scripts/verify_hermes_agent_aware_qa.py"
+      - "tests/hermes/test_agent_aware_qa.py"
+      - ".github/workflows/agent-aware-qa.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "agent_aware_qa/**"
+      - "hermes/agent-aware-qa/**"
+      - "scripts/verify_agent_aware_qa.py"
+      - "scripts/verify_hermes_agent_aware_qa.py"
+      - "tests/hermes/test_agent_aware_qa.py"
+      - ".github/workflows/agent-aware-qa.yml"
+
+jobs:
+  routing-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "pydantic>=2" pillow "kiwisolver==1.5.1" pytest
+      - name: Verify Agent-Aware QA ownership routing
+        run: python scripts/verify_agent_aware_qa.py
+      - name: Agent-Aware QA regressions
+        run: pytest -q --confcutdir=tests/hermes tests/hermes/test_agent_aware_qa.py
+      - name: Core Freeze guard
+        run: python scripts/verify_v2_core_freeze.py
+
+  pinned-hermes-repair-tasks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install exact pinned Hermes runtime
+        run: bash scripts/install_hermes_bootstrap.sh
+      - name: Prepare isolated Agent-Aware QA profile
+        shell: bash
+        run: |
+          VERIFY_HOME="$PWD/.hermes_runtime/agent-aware-qa/verify-home"
+          rm -rf "$VERIFY_HOME"
+          mkdir -p "$VERIFY_HOME"
+          cp hermes/bootstrap/config.yaml "$VERIFY_HOME/config.yaml"
+      - name: Verify routed agent task schemas
+        shell: bash
+        run: |
+          VERIFY_HOME="$PWD/.hermes_runtime/agent-aware-qa/verify-home"
+          if [[ -x ".hermes_runtime/hermes-agent/venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/venv/bin/python"
+          elif [[ -x ".hermes_runtime/hermes-agent/.venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/.venv/bin/python"
+          else
+            echo "Pinned Hermes Python not found" >&2
+            exit 1
+          fi
+          HERMES_HOME="$VERIFY_HOME" "$HPY" scripts/verify_hermes_agent_aware_qa.py
