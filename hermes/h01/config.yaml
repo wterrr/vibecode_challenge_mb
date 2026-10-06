@@ -1,0 +1,18 @@
+# LearnFlow H-01 Hermes profile template.
+# Secrets do NOT belong here. OPENROUTER_API_KEY is provided at runtime.
+model:
+  default: "openai/gpt-6-luna"
+  provider: "openrouter"
+
+terminal:
+  backend: "local"
+  cwd: "."
+  timeout: 60
+  home_mode: "auto"
+
+agent:
+  max_turns: 8
+
+code_execution:
+  timeout: 60
+  max_tool_calls: 8

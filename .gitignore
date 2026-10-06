@@ -10,6 +10,9 @@ venv/
 .env.*
 !.env.example
 
+# H-01 Hermes project-local runtime, sessions and trajectories
+.hermes_runtime/
+
 # LearnFlow runtime database
 *.db
 *.db-wal
