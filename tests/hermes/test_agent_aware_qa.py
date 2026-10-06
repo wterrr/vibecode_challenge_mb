@@ -257,6 +257,55 @@ def _video_response(scene_ids, issue_type, op, dimension):
     )
 
 
+def test_video_pacing_routes_to_deterministic_core():
+    *_, context = fixture()
+    response = _video_response(
+        context.scene_ids[0],
+        VideoIssueType.PACING,
+        VideoRecommendationOp.ADJUST_PACING,
+        VideoCriticDimension.PACING,
+    )
+    plan = route(AgentAwareQAReport(report_id="r", video_critic_response=response), context)
+    assert plan.intents[0].owner == RepairOwner.CORE_REPAIR
+    assert plan.intents[0].action == RepairActionKind.CORE_TEMPORAL_REPAIR
+
+
+def test_video_transition_continuity_routes_to_deterministic_core():
+    *_, context = fixture()
+    scene_ids = context.scene_ids[:2]
+    issue = VideoCriticIssue(
+        issue_id="continuity",
+        issue_type=VideoIssueType.TRANSITION_CONTINUITY,
+        severity=VideoIssueSeverity.HIGH,
+        scene_ids=scene_ids,
+        transition_ids=("transition:test",),
+        reason="continuity breaks",
+    )
+    response = VideoCriticResponse(
+        status=VideoCriticStatus.REVIEW_REQUIRED,
+        dimension_assessments=tuple(
+            VideoDimensionAssessment(
+                dimension=item,
+                passed=item != VideoCriticDimension.CONTINUITY,
+                summary="repair" if item == VideoCriticDimension.CONTINUITY else "pass",
+            )
+            for item in VideoCriticDimension
+        ),
+        issues=(issue,),
+        recommendations=(
+            VideoCriticRecommendation(
+                recommendation_id="fix",
+                op=VideoRecommendationOp.FIX_CONTINUITY,
+                scene_ids=scene_ids,
+                rationale="preserve continuity",
+            ),
+        ),
+    )
+    plan = route(AgentAwareQAReport(report_id="r", video_critic_response=response), context)
+    assert plan.intents[0].owner == RepairOwner.CORE_REPAIR
+    assert plan.intents[0].action == RepairActionKind.CORE_TEMPORAL_REPAIR
+
+
 def test_video_narration_redundancy_routes_to_script():
     *_, context = fixture()
     response = _video_response(
