@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import copy
-import json
 from pathlib import Path
-from typing import Iterable
 
 import yaml
 
@@ -79,7 +77,6 @@ def install_worker_profiles(
         cfg = copy.deepcopy(base)
         cfg["toolsets"] = ["kanban"]
         cfg.setdefault("terminal", {})["cwd"] = str(repo)
-        cfg.setdefault("kanban", {})["max_in_progress_per_profile"] = spec.max_in_progress
         skill_cfg = cfg.setdefault("skills", {})
         skill_cfg["project_discovery"] = True
         if trust_project_skills:
