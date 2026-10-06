@@ -56,16 +56,40 @@ def _smoke_scene() -> dict:
 
 
 def _prepare_home_if_needed(home: Path) -> None:
-    """Fallback for direct invocations; CI normally prepares/enables this home first."""
+    """Create the isolated H-02 Hermes profile from the pinned H-01 template."""
     config_path = home / "config.yaml"
     if config_path.exists():
         return
     home.mkdir(parents=True, exist_ok=True)
     base_config = (ROOT / "hermes" / "h01" / "config.yaml").read_text(encoding="utf-8").rstrip()
-    config_path.write_text(
-        base_config + "\n\nplugins:\n  enabled:\n    - learnflow\n",
-        encoding="utf-8",
-    )
+    config_path.write_text(base_config + "\n", encoding="utf-8")
+
+
+def _enable_project_plugin_and_install_deps(home: Path) -> None:
+    """Use pinned Hermes config/dependency APIs because its CLI cannot enumerate project plugins."""
+    from hermes_cli.config import load_config, save_config
+    from hermes_cli.plugin_python_deps import install_for_plugin_dir
+
+    config = load_config()
+    plugins = config.setdefault("plugins", {})
+    if not isinstance(plugins, dict):
+        raise RuntimeError("Hermes plugins config must be a mapping")
+    enabled = plugins.setdefault("enabled", [])
+    if not isinstance(enabled, list):
+        raise RuntimeError("Hermes plugins.enabled must be a list")
+    if "learnflow" not in enabled:
+        enabled.append("learnflow")
+    disabled = plugins.get("disabled")
+    if isinstance(disabled, list) and "learnflow" in disabled:
+        plugins["disabled"] = [name for name in disabled if name != "learnflow"]
+    save_config(config)
+
+    outcome = install_for_plugin_dir(ROOT / ".hermes" / "plugins" / "learnflow")
+    if outcome.status not in {"installed", "none"}:
+        raise RuntimeError(
+            f"H-02 dependency install failed: status={outcome.status} message={outcome.message}"
+        )
+    print(f"H02_PLUGIN_DEPS={outcome.status.upper()} specs={list(outcome.specs)}")
 
 
 def main() -> int:
@@ -77,6 +101,8 @@ def main() -> int:
     os.environ["HERMES_ENABLE_PROJECT_PLUGINS"] = "true"
     os.environ["LEARNFLOW_H02_RUNTIME_ROOT"] = str(SMOKE_RUNTIME)
     shutil.rmtree(SMOKE_RUNTIME, ignore_errors=True)
+
+    _enable_project_plugin_and_install_deps(home)
 
     from hermes_cli.plugins import discover_plugins, get_plugin_manager
     from tools.registry import registry
