@@ -21,7 +21,10 @@ from learnflow_v2.layout.schema import (
     LayoutBox,
     LayoutGraph,
     LayoutStrategy,
+    Point,
     Rect,
+    RoutedEdge,
+    RoutingStyle,
 )
 from learnflow_v2.scenegraph.enums import LayoutIntent, NodeKind, RelationKind
 from learnflow_v2.scenegraph.schema import SceneGraph, SceneNode
@@ -184,6 +187,191 @@ def _column_members(scene_graph: SceneGraph, column_id: str) -> list[SceneNode]:
     return members
 
 
+
+def _lane_rects(zone: Rect, count: int, *, gap: float) -> list[Rect]:
+    if count <= 0:
+        return []
+    width = (zone.width - gap * (count - 1)) / count
+    if width <= 24.0:
+        raise LayoutUnsatisfiableError("Compact PROCESS lane cannot fit requested node count")
+    return [
+        Rect(
+            x=round(zone.x + index * (width + gap), 4),
+            y=zone.y,
+            width=round(width, 4),
+            height=zone.height,
+        )
+        for index in range(count)
+    ]
+
+
+def _route_between(source: Rect, target: Rect) -> list[Point]:
+    """Deterministic orthogonal route with endpoints on source/target boundaries."""
+    sx, sy = source.center_x, source.center_y
+    tx, ty = target.center_x, target.center_y
+    if target.top >= source.bottom:
+        start = Point(x=round(sx, 4), y=round(source.bottom, 4))
+        end = Point(x=round(tx, 4), y=round(target.top, 4))
+        mid_y = round((start.y + end.y) / 2.0, 4)
+        return [start, Point(x=start.x, y=mid_y), Point(x=end.x, y=mid_y), end]
+    if source.top >= target.bottom:
+        start = Point(x=round(sx, 4), y=round(source.top, 4))
+        end = Point(x=round(tx, 4), y=round(target.bottom, 4))
+        mid_y = round((start.y + end.y) / 2.0, 4)
+        return [start, Point(x=start.x, y=mid_y), Point(x=end.x, y=mid_y), end]
+    if tx >= sx:
+        start = Point(x=round(source.right, 4), y=round(sy, 4))
+        end = Point(x=round(target.left, 4), y=round(ty, 4))
+    else:
+        start = Point(x=round(source.left, 4), y=round(sy, 4))
+        end = Point(x=round(target.right, 4), y=round(ty, 4))
+    mid_x = round((start.x + end.x) / 2.0, 4)
+    return [start, Point(x=mid_x, y=start.y), Point(x=mid_x, y=end.y), end]
+
+
+def _compile_process_compact(
+    scene_graph: SceneGraph,
+    profile: FrameProfile,
+    measurements: dict[str, TextMeasurement],
+) -> LayoutGraph:
+    """Generic compact PROCESS fallback after directed-graph candidate is infeasible.
+
+    Semantic roles, not lesson IDs, define two visual lanes:
+    process actors above and ordered process steps below. The process topic stays
+    in TITLE. Every SceneGraph relation is routed as an orthogonal edge.
+    """
+    topics = [node for node in scene_graph.nodes if node.semantic_role == "PROCESS_TOPIC"]
+    actors = [node for node in scene_graph.nodes if node.semantic_role == "PROCESS_ACTOR"]
+    steps = [node for node in scene_graph.nodes if node.semantic_role == "PROCESS_STEP"]
+    covered = {node.id for node in topics + actors + steps}
+    extras = [node.id for node in scene_graph.nodes if node.id not in covered]
+    if len(topics) != 1 or not actors or not steps or extras:
+        raise LayoutUnsatisfiableError(
+            "Compact PROCESS fallback requires one PROCESS_TOPIC plus PROCESS_ACTOR/PROCESS_STEP nodes",
+            {"topic_count": len(topics), "actor_count": len(actors), "step_count": len(steps), "extras": sorted(extras)},
+        )
+
+    topic = topics[0]
+    actors = sorted(actors, key=lambda node: node.id)
+    steps = sorted(
+        steps,
+        key=lambda node: (
+            node.layout_hint.preferred_order
+            if node.layout_hint and node.layout_hint.preferred_order is not None
+            else 9999,
+            node.id,
+        ),
+    )
+    title_zone = profile.get_zone("TITLE")
+    content = profile.get_zone("CONTENT")
+    lane_gap = max(8.0, profile.height * 0.025)
+    inter_lane_gap = max(12.0, profile.height * 0.04)
+    actor_h = max(44.0, min(content.height * 0.32, 72.0))
+    step_y = content.y + actor_h + inter_lane_gap
+    step_h = content.bottom - step_y
+    if step_h <= 40.0:
+        raise LayoutUnsatisfiableError("Compact PROCESS fallback has insufficient step-lane height")
+
+    actor_zone = Rect(x=content.x, y=content.y, width=content.width, height=actor_h)
+    step_zone = Rect(x=content.x, y=round(step_y, 4), width=content.width, height=round(step_h, 4))
+    actor_slots = _lane_rects(actor_zone, len(actors), gap=lane_gap)
+    step_slots = _lane_rects(step_zone, len(steps), gap=lane_gap)
+
+    title_measure = measurements[topic.id]
+    boxes: list[LayoutBox] = [
+        LayoutBox(
+            node_id=topic.id,
+            rect=_fit_rect(
+                title_zone,
+                preferred_width=min(title_zone.width, title_measure.width + 30.0),
+                preferred_height=min(title_zone.height, max(24.0, title_measure.height + 12.0)),
+            ),
+            zone="TITLE",
+            strategy_role="title",
+            semantic_key=topic.semantic_key,
+        )
+    ]
+
+    for node, slot in zip(actors, actor_slots):
+        measurement = measurements[node.id]
+        if measurement.minimum_readable_width > slot.width + 1e-6 or measurement.minimum_readable_height > slot.height + 1e-6:
+            raise LayoutUnsatisfiableError(
+                f"Actor '{node.id}' cannot fit minimum readable geometry in compact PROCESS lane"
+            )
+        boxes.append(
+            LayoutBox(
+                node_id=node.id,
+                rect=_fit_rect(
+                    slot,
+                    preferred_width=max(measurement.minimum_readable_width, min(slot.width, measurement.width + 18.0)),
+                    preferred_height=max(measurement.minimum_readable_height, min(slot.height, measurement.height + 12.0)),
+                ),
+                zone="CONTENT",
+                strategy_role="process_actor",
+                semantic_key=node.semantic_key,
+            )
+        )
+
+    for node, slot in zip(steps, step_slots):
+        measurement = measurements[node.id]
+        if measurement.minimum_readable_width > slot.width + 1e-6 or measurement.minimum_readable_height > slot.height + 1e-6:
+            raise LayoutUnsatisfiableError(
+                f"Step '{node.id}' cannot fit minimum readable geometry in compact PROCESS lane"
+            )
+        boxes.append(
+            LayoutBox(
+                node_id=node.id,
+                rect=_fit_rect(
+                    slot,
+                    preferred_width=max(measurement.minimum_readable_width, min(slot.width, measurement.width + 18.0)),
+                    preferred_height=max(measurement.minimum_readable_height, min(slot.height, measurement.height + 18.0)),
+                ),
+                zone="CONTENT",
+                strategy_role="process_step",
+                semantic_key=node.semantic_key,
+            )
+        )
+
+    box_map = {box.node_id: box.rect for box in boxes}
+    routed = [
+        RoutedEdge(
+            edge_id=relation.id,
+            source=relation.source,
+            target=relation.target,
+            points=_route_between(box_map[relation.source], box_map[relation.target]),
+            routing_style=RoutingStyle.ORTHOGONAL,
+            backend=GraphBackendKind.GRAPHVIZ,
+        )
+        for relation in sorted(scene_graph.relations, key=lambda rel: rel.id)
+        if relation.source in box_map and relation.target in box_map
+    ]
+    if len(routed) != len(scene_graph.relations):
+        raise LayoutUnsatisfiableError("Compact PROCESS fallback could not route every semantic relation")
+
+    graph = LayoutGraph(
+        scene_id=scene_graph.scene_id,
+        frame_profile_id=profile.id,
+        frame_width=profile.width,
+        frame_height=profile.height,
+        boxes=boxes,
+        routed_edges=routed,
+        strategy=LayoutStrategy.DIRECTED_GRAPH,
+        feasible=True,
+        metadata={
+            "router": "compact_process_v1",
+            "graph_backend": GraphBackendKind.GRAPHVIZ.value,
+            "graph_kind": "PROCESS",
+        },
+    )
+    validate_layout_graph(
+        graph,
+        profile=profile,
+        measurements={nid: (m.minimum_readable_width, m.minimum_readable_height) for nid, m in measurements.items()},
+        expected_node_ids={node.id for node in scene_graph.nodes},
+    )
+    return graph
+
+
 def _compile_comparison(
     scene_graph: SceneGraph,
     profile: FrameProfile,
@@ -294,19 +482,24 @@ def compile_scene_layout(
 
     intent = scene_graph.layout_intent.type
     if intent in {LayoutIntent.PROCESS, LayoutIntent.HIERARCHY}:
-        graph = layout_directed_graph(
-            scene_graph,
-            measurements,
-            profile,
-            backend=graph_backend,
-        )
-        validate_layout_graph(
-            graph,
-            profile=profile,
-            measurements={nid: (m.minimum_readable_width, m.minimum_readable_height) for nid, m in measurements.items()},
-            expected_node_ids={n.id for n in scene_graph.nodes},
-        )
-        return graph
+        try:
+            graph = layout_directed_graph(
+                scene_graph,
+                measurements,
+                profile,
+                backend=graph_backend,
+            )
+            validate_layout_graph(
+                graph,
+                profile=profile,
+                measurements={nid: (m.minimum_readable_width, m.minimum_readable_height) for nid, m in measurements.items()},
+                expected_node_ids={n.id for n in scene_graph.nodes},
+            )
+            return graph
+        except LayoutUnsatisfiableError:
+            if intent == LayoutIntent.PROCESS:
+                return _compile_process_compact(scene_graph, profile, measurements)
+            raise
     if intent == LayoutIntent.COMPARISON:
         return _compile_comparison(scene_graph, profile, measurements)
     if intent == LayoutIntent.CONCEPT_CARD:
