@@ -38,6 +38,7 @@ Accepted stages:
 - **Pedagogy Agent — PASS.** Hermes produces structured pedagogy from approved claims only; deterministic checks require researched concept progression, objective assessment coverage, and Script readiness.
 - **Script Agent — PASS.** Hermes produces `LessonScript` narration with exact PedagogyPlan claim preservation, objective coverage, required teaching functions, and no visual implementation fields.
 - **Visual Director — PASS.** Hermes produces semantic `Storyboard` + schema-valid `SceneGraph[]`, reuses a deterministic lesson `ConceptRegistry`, preserves Script coverage/order, and emits no geometry or renderer controls.
+- **End-to-End Orchestration — PASS.** The accepted typed pipeline runs Research → Fact Verification → Pedagogy → Script → Visual Director → LearnFlow capability tools → frozen Core V2 → assembled video, failing closed at every deterministic gate.
 
 Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifier, 11 contract regressions, and Core Freeze guard passed.
 
@@ -49,9 +50,11 @@ Accepted stage: **Pedagogy Agent — PASS.** Hermes receives fact-approved resea
 
 Accepted stage: **Script Agent — PASS.** Hermes writes structured narration only; deterministic validation preserves the exact PedagogyPlan claim set, objective coverage, factual claim binding, and the Script/Visual boundary.
 
-Accepted stage: **Visual Director — PASS.** CI run `37437560550` verifies exact Script coverage/order, deterministic ConceptRegistry identity, semantic-only SceneGraph V2.1 output, 18 regressions, exact pinned Hermes structured-output compatibility, and Core Freeze preservation. Next authorized stage: **End-to-End Orchestration**, which has not started yet.
+Accepted stage: **Visual Director — PASS.** CI run `37437560550` verifies exact Script coverage/order, deterministic ConceptRegistry identity, semantic-only SceneGraph V2.1 output, 18 regressions, exact pinned Hermes structured-output compatibility, and Core Freeze preservation.
 
-During End-to-End Orchestration, connect the already accepted typed stages into one bounded query → research → evidence → pedagogy → script → visual direction → Core V2 pipeline. Do not implement Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
+Accepted stage: **End-to-End Orchestration — PASS.** CI run `37439945446` verifies the typed stage order, deterministic gates between agents, Hermes-native Research delegation, capability-based Core handoff, a real five-scene assembled `final.mp4`, 14 fail-closed regressions, pinned Hermes schema compatibility, plugin discovery, replayable artifacts, and Core Freeze preservation. Next authorized stage: **Agent-Aware QA**, which has not started yet.
+
+During Agent-Aware QA, implement only typed issue ownership and routing so factual failures return to Research/Script, semantic visual failures return to Visual Director, and geometric failures stay with deterministic Core repair. Do not implement Hooks + Budget, Skills, or Kanban Durability yet.
 
 ## LearnFlow Capability Plugin safety
 
@@ -166,3 +169,14 @@ The output is a semantic Storyboard plus exactly one SceneGraph per storyboard s
 Storyboard concept_refs, continuity_keys, and SceneGraph node concept_ref/semantic_key pairs must agree with the deterministic ConceptRegistry. SceneGraphs must pass the existing V2.1 schema and registry-aware semantic validation.
 
 Visual Director may choose semantic nodes, relations, groups, symbolic style tokens, layout intent, reading direction, ports, and semantic LayoutHint preferences. It must not choose x/y coordinates, pixel dimensions, absolute font sizes, CSS positioning, motion paths, camera, timeline arithmetic, renderer code, FFmpeg commands, or pixels.
+
+
+## End-to-End Orchestration boundary
+
+End-to-End Orchestration composes the already accepted task builders and deterministic gates in a fixed sequence. It must not introduce a second agent runtime, message bus, recursive scheduler, or alternative research delegation implementation.
+
+Research remains Hermes-native nested delegation. Fact Verification remains deterministic. Pedagogy, Script, and Visual Director are invoked only after the preceding deterministic gate passes, and blocked factual claims must never be reintroduced downstream.
+
+Core V2 may be reached only after Visual Director output is Core-ready. Scene execution uses the accepted `learnflow_create → learnflow_run → learnflow_render` capability boundary, followed by the public deterministic video assembly API. The coordinator must not import renderer internals or accept model-controlled geometry, output paths, codec settings, or renderer code.
+
+Successful runs persist a replayable typed artifact chain and final video manifest. Agent-Aware QA and repair routing are explicitly a later stage and must not be implemented inside this coordinator.

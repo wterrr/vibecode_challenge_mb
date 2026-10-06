@@ -2,14 +2,38 @@
   "schema_version": "1.0",
   "stage": "end-to-end-orchestration",
   "name": "End-to-End Orchestration",
-  "state": "IMPLEMENTED_AWAITING_CI",
+  "state": "PASS",
   "depends_on": [
-    {"stage": "research-orchestration", "required_state": "PASS", "current_state": "PASS"},
-    {"stage": "fact-verification", "required_state": "PASS", "current_state": "PASS"},
-    {"stage": "pedagogy-agent", "required_state": "PASS", "current_state": "PASS"},
-    {"stage": "script-agent", "required_state": "PASS", "current_state": "PASS"},
-    {"stage": "visual-director", "required_state": "PASS", "current_state": "PASS"},
-    {"stage": "learnflow-plugin", "required_state": "PASS", "current_state": "PASS"}
+    {
+      "stage": "research-orchestration",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "fact-verification",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "pedagogy-agent",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "script-agent",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "visual-director",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "learnflow-plugin",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
   ],
   "acceptance": {
     "typed_stage_order": true,
@@ -24,13 +48,23 @@
   },
   "next_stage": "Agent-Aware QA",
   "evidence": {
-    "accepted_ci_run": null,
-    "accepted_head_sha": null,
-    "end_to_end_acceptance_verifier": "PENDING",
-    "pytest": "PENDING",
-    "pinned_hermes_schema_chain": "PENDING",
-    "learnflow_plugin_discovery": "PENDING",
-    "real_final_mp4": "PENDING",
-    "core_freeze": "PENDING"
+    "accepted_ci_run": 37439945446,
+    "accepted_head_sha": "75f52e9b803aef0b62879430a60e289017f4e114",
+    "end_to_end_acceptance_verifier": "PASS",
+    "pytest": "14 passed",
+    "typed_stage_order": "PASS",
+    "native_research_delegation_contract": "PASS",
+    "fact_verification_gate": "PASS",
+    "pedagogy_gate": "PASS",
+    "script_gate": "PASS",
+    "visual_director_gate": "PASS",
+    "learnflow_capability_pipeline": "PASS",
+    "real_final_mp4": "PASS",
+    "rendered_scene_count": 5,
+    "acceptance_run_id": "dacdf711735cdf0c",
+    "replayable_artifact_bundle": "PASS",
+    "pinned_hermes_schema_chain": "PASS",
+    "learnflow_plugin_discovery": "PASS",
+    "core_freeze": "PASS"
   }
 }

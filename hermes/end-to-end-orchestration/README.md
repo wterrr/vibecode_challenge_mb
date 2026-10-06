@@ -2,7 +2,7 @@
 
 This stage connects the already accepted LearnFlow Hermes stages into one bounded typed pipeline and hands validated semantic scenes to frozen Core V2 through the accepted LearnFlow capability surface.
 
-Status: IMPLEMENTED_AWAITING_CI.
+Status: PASS. Accepted CI run `37439945446` proves the typed gate sequence, real five-scene rendering through the LearnFlow capability surface, assembled `final.mp4`, 14 fail-closed regressions, exact pinned Hermes schema-chain compatibility, project-plugin discovery, replayable artifacts, and Core Freeze preservation.
 
 ## Pipeline
 
