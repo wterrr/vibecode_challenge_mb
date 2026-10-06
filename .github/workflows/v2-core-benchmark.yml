@@ -1,0 +1,64 @@
+name: V2 Core Benchmark
+
+on:
+  pull_request:
+    paths:
+      - "benchmarks/**"
+      - "scripts/run_v2_core_benchmark.py"
+      - "scripts/capture_v1_baseline.py"
+      - "learnflow_v2/layout/**"
+      - "learnflow_v2/render/**"
+      - "learnflow_v2/motion/**"
+      - "learnflow_v2/transitions/**"
+      - "learnflow_v2/repair/**"
+      - "tests/v2/**"
+      - ".github/workflows/v2-core-benchmark.yml"
+  push:
+    branches:
+      - "main"
+    paths:
+      - "benchmarks/**"
+      - "scripts/run_v2_core_benchmark.py"
+      - "scripts/capture_v1_baseline.py"
+      - "learnflow_v2/layout/**"
+      - "learnflow_v2/render/**"
+      - "learnflow_v2/motion/**"
+      - "learnflow_v2/transitions/**"
+      - "learnflow_v2/repair/**"
+      - "tests/v2/**"
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - name: System dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg graphviz fonts-dejavu-core
+      - name: Python dependencies
+        run: pip install -r requirements.txt
+      - name: Node dependencies
+        run: npm ci
+      - name: Full V2 regression
+        run: pytest -q --confcutdir=tests/v2 tests/v2
+      - name: Frozen Core Gate benchmark
+        run: python scripts/run_v2_core_benchmark.py benchmark_output/v2_core_gate
+      - name: Upload benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-core-gate-evidence
+          path: benchmark_output/v2_core_gate
+          if-no-files-found: error
+          retention-days: 30
