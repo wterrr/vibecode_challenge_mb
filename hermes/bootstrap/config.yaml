@@ -16,3 +16,16 @@ agent:
 code_execution:
   timeout: 60
   max_tool_calls: 8
+
+delegation:
+  # LearnFlow research tree: Director (depth 0) -> Research Orchestrator (depth 1)
+  # -> up to three leaf specialist researchers (depth 2).
+  max_spawn_depth: 2
+  max_concurrent_children: 3
+  oneshot_max_children: 3
+  orchestrator_enabled: true
+  independent_completions: false
+  inherit_mcp_toolsets: true
+  max_iterations: 32
+  child_timeout_seconds: 0
+  subagent_auto_approve: false
