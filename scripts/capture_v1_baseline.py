@@ -15,6 +15,7 @@ Exercises the real deterministic V1 downstream media path:
 import asyncio
 from datetime import datetime, timezone
 import json
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -239,6 +240,8 @@ async def run_benchmark_lesson(
     fixture_path: Path,
     expected_spec: dict[str, Any],
     global_invariants: dict[str, Any],
+    *,
+    retain_final_to: Path | None = None,
 ) -> dict[str, Any]:
     """Run a single lesson plan through the full downstream V1 pipeline."""
     plan_dict = json.loads(fixture_path.read_text(encoding="utf-8"))
@@ -366,6 +369,12 @@ async def run_benchmark_lesson(
 
         intents = [s.visual_intent.value for s in plan.scenes]
 
+        retained_path: str | None = None
+        if retain_final_to is not None:
+            retain_final_to.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(final_artifact, retain_final_to)
+            retained_path = str(retain_final_to)
+
         return {
             "lesson_key": lesson_key,
             "status": "PASS",
@@ -380,6 +389,7 @@ async def run_benchmark_lesson(
             "duration_seconds": round(duration, 2),
             "total_render_seconds": total_render_seconds,
             "final_file_size": file_size,
+            "retained_final_path": retained_path,
         }
 
 
