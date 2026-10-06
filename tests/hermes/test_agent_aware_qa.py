@@ -179,6 +179,30 @@ def _scene_repair(scene_id, node_id, *, semantic=False):
     )
 
 
+def test_deterministic_warning_does_not_block_publication():
+    *_, context = fixture()
+    report = DeterministicQAReport(
+        scene_id=context.scene_ids[0],
+        passed=True,
+        issues=(
+            QAIssue(
+                issue_id="MIN_FONT_SIZE:warning",
+                code=QAIssueCode.MIN_FONT_SIZE,
+                severity=QAIssueSeverity.WARNING,
+                message="borderline readable",
+                object_ids=("n1",),
+                evidence={},
+            ),
+        ),
+    )
+    plan = route(
+        AgentAwareQAReport(report_id="r", deterministic_reports=(report,)),
+        context,
+    )
+    assert plan.intents == ()
+    assert not plan.publication_blocked
+
+
 def test_supported_scene_critic_patch_stays_in_core():
     *_, visual, context = fixture()
     repair = _scene_repair(
