@@ -134,3 +134,5 @@ class VideoCriticRequest(BaseModel):
     @classmethod
     def from_canonical_json(cls, payload: str) -> "VideoCriticRequest":
         return cls.model_validate_json(payload)
+
+
