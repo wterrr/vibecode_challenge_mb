@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "checkpoint": "H-01",
+  "state": "IMPLEMENTED_AWAITING_LIVE_SMOKE",
+  "verified_at": "2026-10-06",
+  "hermes": {
+    "repository": "NousResearch/hermes-agent",
+    "release_tag": "v2026.9.24",
+    "package_version": "0.21.5",
+    "commit": "f97608f178d1ffeca59860195ab7da295f7c8e5f",
+    "annotated_tag_object": "e3dd27ee2d8b011737a4eea8e3eb3d711ab78690"
+  },
+  "provider": {
+    "id": "openrouter",
+    "api_key_env": "OPENROUTER_API_KEY",
+    "model": "openai/gpt-6-luna"
+  },
+  "protocol": {
+    "cli_output_format": "stream-json",
+    "required_event_types": [
+      "system",
+      "tool_use",
+      "tool_result",
+      "result"
+    ],
+    "expected_sentinel": "HERMES_H01_OK:LEARNFLOW-H01-FIXTURE-v1"
+  },
+  "core_freeze": {
+    "merge_commit": "9ff964f9e8d2dd3e80c1540c1a81a9d301522936",
+    "verifier": "scripts/verify_v2_core_freeze.py",
+    "rule": "H-01 may add control-plane/bootstrap files only; frozen Core implementation and evidence are immutable."
+  },
+  "acceptance": {
+    "offline_contract_tests_required": true,
+    "live_openrouter_smoke_required": true,
+    "merge_before_live_smoke": false
+  }
+}
