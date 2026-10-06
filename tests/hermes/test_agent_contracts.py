@@ -280,3 +280,50 @@ def test_agent_run_requires_registered_artifact_refs():
                 ),
             ),
         )
+
+
+def test_pedagogy_plan_binds_brief_research_and_evidence_ids():
+    graph = _graph()
+    pedagogy = PedagogyPlan(
+        plan_id="pedagogy.demo",
+        brief_id="brief.expected",
+        research_pack_id="research.demo",
+        evidence_graph_id=graph.graph_id,
+        learning_objectives=(
+            {
+                "objective_id": "O1",
+                "description": "Understand the claim.",
+                "assessment_criterion": "Can restate it.",
+            },
+        ),
+        concept_order=("demo",),
+    )
+    brief = LearningBrief(
+        brief_id="brief.other",
+        user_query="Explain.",
+        learner_level="beginner",
+        target_duration_minutes=1,
+        language="en",
+    )
+    with pytest.raises(AgentContractError, match="brief_id"):
+        pedagogy.validate_against(brief, _pack(), graph)
+
+
+def test_succeeded_agent_run_cannot_hide_failed_stage():
+    with pytest.raises(ValidationError, match="non-SUCCEEDED"):
+        AgentRun(
+            run_id="run.inconsistent",
+            brief_id="brief.demo",
+            root_agent_id="director",
+            status=AgentRunStatus.SUCCEEDED,
+            artifacts=(),
+            stages=(
+                AgentStageRecord(
+                    step_id="step.failed",
+                    stage_name="Research",
+                    agent_id="researcher",
+                    status=AgentRunStatus.FAILED,
+                    error="provider failed",
+                ),
+            ),
+        )
