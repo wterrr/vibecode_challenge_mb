@@ -36,6 +36,7 @@ Accepted stages:
 - **Agent Contracts — PASS.** `LearningBrief`, `ResearchPack`, `EvidenceGraph`, `PedagogyPlan`, `LessonScript`, `Storyboard`, `AgentRun`, and `BudgetLedger` are strict, versioned, canonically serializable artifacts with cross-artifact integrity checks.
 - **Fact Verification — PASS.** A deterministic source-grounding/contradiction gate controls factual narration eligibility; Hermes semantic verdicts are structured but cannot override missing evidence.
 - **Pedagogy Agent — PASS.** Hermes produces structured pedagogy from approved claims only; deterministic checks require researched concept progression, objective assessment coverage, and Script readiness.
+- **Script Agent — PASS.** Hermes produces `LessonScript` narration with exact PedagogyPlan claim preservation, objective coverage, required teaching functions, and no visual implementation fields.
 
 Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifier, 11 contract regressions, and Core Freeze guard passed.
 
@@ -45,9 +46,9 @@ Accepted stage: **Fact Verification — PASS.** Source-grounded evidence, cycle-
 
 Accepted stage: **Pedagogy Agent — PASS.** Hermes receives fact-approved research only, unsafe/forged approvals are rejected before context exposure, and deterministic validation enforces concept provenance, assessment coverage, examples, and Script readiness.
 
-Current stage: **Script Agent — IMPLEMENTED / VERIFYING**. Hermes writes structured narration only; deterministic validation preserves the PedagogyPlan claim set, objective coverage, factual claim binding, and the Script/Visual boundary.
+Accepted stage: **Script Agent — PASS.** Hermes writes structured narration only; deterministic validation preserves the exact PedagogyPlan claim set, objective coverage, factual claim binding, and the Script/Visual boundary. Next authorized stage: **Visual Director**, which has not started yet.
 
-During Script Agent, implement only claim-preserving lesson narration/segments with a teaching function per segment and no visual coordinates/code. Do not implement Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
+During Visual Director, implement only semantic visual direction that converts LessonScript segments into schema-valid SceneGraph outputs with semantic layout hints and no pixel coordinates. Do not implement Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
 
 ## LearnFlow Capability Plugin safety
 
