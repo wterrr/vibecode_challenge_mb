@@ -24,20 +24,27 @@ def merge_specialist_findings(
 ) -> ResearchOrchestrationResult:
     """Merge without rewriting source locators, source IDs, claim IDs, or edge references."""
 
-    claim_ids = {claim.claim_id for claim in evidence_findings.claims}
-    for item in (*misconception_findings.misconceptions, *misconception_findings.examples):
-        unknown = sorted(set(item.claim_ids) - claim_ids)
-        if unknown:
-            raise AgentContractError(
-                f"misconception/example output references unknown claims {unknown!r}"
-            )
+    sources = evidence_findings.sources + misconception_findings.sources
+    claims = evidence_findings.claims + misconception_findings.claims
+    edges = evidence_findings.evidence_edges + misconception_findings.evidence_edges
+
+    source_ids = [source.source_id for source in sources]
+    claim_ids = [claim.claim_id for claim in claims]
+    if len(source_ids) != len(set(source_ids)):
+        raise AgentContractError(
+            "specialist source_id namespaces collide; sibling outputs must use distinct IDs"
+        )
+    if len(claim_ids) != len(set(claim_ids)):
+        raise AgentContractError(
+            "specialist claim_id namespaces collide; sibling outputs must use distinct IDs"
+        )
 
     pack = ResearchPack(
         pack_id=pack_id,
         topic=topic,
         concepts=concept_findings.concepts,
-        sources=evidence_findings.sources,
-        claims=evidence_findings.claims,
+        sources=sources,
+        claims=claims,
         misconceptions=misconception_findings.misconceptions,
         examples=misconception_findings.examples,
         open_questions=concept_findings.open_questions,
@@ -45,9 +52,9 @@ def merge_specialist_findings(
     graph = EvidenceGraph(
         graph_id=graph_id,
         research_pack_id=pack.pack_id,
-        source_ids=tuple(source.source_id for source in evidence_findings.sources),
-        claim_ids=tuple(claim.claim_id for claim in evidence_findings.claims),
-        edges=evidence_findings.evidence_edges,
+        source_ids=tuple(source.source_id for source in sources),
+        claim_ids=tuple(claim.claim_id for claim in claims),
+        edges=edges,
     )
     graph.validate_against_research_pack(pack)
 
