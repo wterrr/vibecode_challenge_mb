@@ -3234,7 +3234,7 @@ Nếu điều này chưa đúng thì thêm Hermes cũng chưa giải quyết đ�
 
 # 58. Hermes checkpoints
 
-## H-01 — Hermes bootstrap
+## Hermes Bootstrap
 
 Pin Hermes version/commit.
 
@@ -3257,7 +3257,7 @@ agent
 
 ---
 
-## H-02 — LearnFlow plugin
+## LearnFlow Capability Plugin
 
 Expose capability tools.
 
@@ -3270,7 +3270,7 @@ but cannot touch renderer internals
 
 ---
 
-## H-03 — Agent contracts
+## Agent Contracts
 
 Implement:
 
@@ -3287,7 +3287,7 @@ BudgetLedger
 
 ---
 
-## H-04 — Research orchestration
+## Research Orchestration
 
 Implement:
 
@@ -3309,7 +3309,7 @@ bounded delegation depth
 
 ---
 
-## H-05 — Fact verification
+## Fact Verification
 
 Every factual narration maps to:
 
@@ -3326,7 +3326,7 @@ contradictions flagged
 
 ---
 
-## H-06 — Pedagogy Agent
+## Pedagogy Agent
 
 Acceptance:
 
@@ -3342,7 +3342,7 @@ required before script.
 
 ---
 
-## H-07 — Script Agent
+## Script Agent
 
 Acceptance:
 
@@ -3354,7 +3354,7 @@ no visual coordinates/code
 
 ---
 
-## H-08 — Visual Director
+## Visual Director
 
 Output:
 
@@ -3372,7 +3372,7 @@ no pixel coordinates
 
 ---
 
-## H-09 — End-to-end orchestration
+## End-to-End Orchestration
 
 ```text
 query
@@ -3388,7 +3388,7 @@ Chưa cần repair agents riêng ở checkpoint này.
 
 ---
 
-## H-10 — Agent-aware QA
+## Agent-Aware QA
 
 Hermes nhận:
 
@@ -3418,7 +3418,7 @@ Routing này rất quan trọng để lỗi được sửa ở đúng layer.
 
 ---
 
-## H-11 — Hooks + Budget
+## Hooks + Budget
 
 Implement:
 
@@ -3438,7 +3438,7 @@ illegal publication blocked
 
 ---
 
-## H-12 — Skills
+## Skills
 
 Tạo stable procedures.
 
@@ -3446,7 +3446,7 @@ Skills được review thủ công trước khi production dùng.
 
 ---
 
-## H-13 — Kanban durability
+## Kanban Durability
 
 Chỉ làm sau khi synchronous orchestration chạy ổn.
 

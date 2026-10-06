@@ -136,7 +136,7 @@ CORE FREEZE COMPLETE
       ↓
 V2D / Hermes
       ↓
-H-01 — Hermes bootstrap
+Hermes Bootstrap
 ```
 
 The Core is no longer an open implementation surface for routine Hermes work.

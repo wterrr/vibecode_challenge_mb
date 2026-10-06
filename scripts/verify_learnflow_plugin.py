@@ -56,7 +56,7 @@ def _smoke_scene() -> dict:
 
 
 def _prepare_home_if_needed(home: Path) -> None:
-    """Create the isolated LearnFlow Capability Plugin Hermes profile from the pinned H-01 template."""
+    """Create the isolated LearnFlow Capability Plugin Hermes profile from the pinned Hermes Bootstrap template."""
     config_path = home / "config.yaml"
     if config_path.exists():
         return
