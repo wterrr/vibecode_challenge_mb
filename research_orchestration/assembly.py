@@ -4,8 +4,18 @@ from __future__ import annotations
 
 import json
 from typing import Any, Iterable
+from urllib.parse import urlparse
 
-from agent_contracts import AgentContractError
+from agent_contracts import (
+    AgentContractError,
+    EvidenceEdge,
+    EvidenceNodeKind,
+    EvidenceRelation,
+    ResearchClaim,
+    ResearchExample,
+    ResearchMisconception,
+    SourceRecord,
+)
 
 from .merge import merge_specialist_findings
 from .models import (
@@ -18,10 +28,15 @@ from .models import (
 )
 
 
-_ROLE_MODELS = {
-    ResearchRole.CONCEPT: ConceptResearchFindings,
-    ResearchRole.EVIDENCE: EvidenceResearchFindings,
-    ResearchRole.MISCONCEPTION: MisconceptionResearchFindings,
+_PLACEHOLDER_HOSTS = {
+    "example.com",
+    "www.example.com",
+    "example.org",
+    "www.example.org",
+    "example.net",
+    "www.example.net",
+    "example.test",
+    "localhost",
 }
 
 
@@ -82,6 +97,194 @@ def _index_results(
     return indexed
 
 
+def _require_list(payload: dict[str, Any], field: str) -> list[Any]:
+    value = payload.get(field)
+    if not isinstance(value, list) or not value:
+        raise AgentContractError(f"{field} must be a non-empty array")
+    return value
+
+
+def _validated_indexes(
+    raw: Any,
+    *,
+    upper_bound: int,
+    field_name: str,
+) -> tuple[int, ...]:
+    if not isinstance(raw, list) or not raw:
+        raise AgentContractError(f"{field_name} must be a non-empty index array")
+    values: list[int] = []
+    for item in raw:
+        if not isinstance(item, int) or isinstance(item, bool):
+            raise AgentContractError(f"{field_name} entries must be integers")
+        if item < 0 or item >= upper_bound:
+            raise AgentContractError(
+                f"{field_name} index {item} is outside 0..{upper_bound - 1}"
+            )
+        values.append(item)
+    if len(values) != len(set(values)):
+        raise AgentContractError(f"{field_name} indexes must be unique")
+    return tuple(values)
+
+
+def _validate_locator(locator: str) -> str:
+    locator = str(locator or "").strip()
+    if not locator:
+        raise AgentContractError("source locator cannot be blank")
+    parsed = urlparse(locator)
+    if parsed.scheme in {"http", "https"}:
+        host = (parsed.hostname or "").lower()
+        if host in _PLACEHOLDER_HOSTS or host.endswith(".invalid"):
+            raise AgentContractError(
+                f"placeholder source locator is forbidden: {locator!r}"
+            )
+    return locator
+
+
+def _sources_from_wire(
+    payload: dict[str, Any],
+    *,
+    prefix: str,
+) -> tuple[SourceRecord, ...]:
+    rows = _require_list(payload, "sources")
+    sources: list[SourceRecord] = []
+    for index, row in enumerate(rows, start=1):
+        if not isinstance(row, dict):
+            raise AgentContractError("source entry must be an object")
+        source_payload = {
+            "source_id": f"{prefix}.S{index:03d}",
+            "title": row.get("title"),
+            "locator": _validate_locator(str(row.get("locator") or "")),
+        }
+        for optional in ("source_type", "publisher", "authors"):
+            if optional in row:
+                source_payload[optional] = row[optional]
+        sources.append(SourceRecord.model_validate(source_payload))
+    return tuple(sources)
+
+
+def _claims_and_edges_from_wire(
+    payload: dict[str, Any],
+    *,
+    prefix: str,
+    sources: tuple[SourceRecord, ...],
+) -> tuple[tuple[ResearchClaim, ...], tuple[EvidenceEdge, ...]]:
+    rows = _require_list(payload, "claims")
+    claims: list[ResearchClaim] = []
+    edges: list[EvidenceEdge] = []
+    edge_number = 1
+    for claim_number, row in enumerate(rows, start=1):
+        if not isinstance(row, dict):
+            raise AgentContractError("claim entry must be an object")
+        indexes = _validated_indexes(
+            row.get("source_indexes"),
+            upper_bound=len(sources),
+            field_name=f"claims[{claim_number - 1}].source_indexes",
+        )
+        claim_id = f"{prefix}.C{claim_number:03d}"
+        source_ids = tuple(sources[index].source_id for index in indexes)
+        claims.append(
+            ResearchClaim(
+                claim_id=claim_id,
+                statement=row.get("statement"),
+                source_ids=source_ids,
+                confidence=row.get("confidence"),
+            )
+        )
+        for source_index in indexes:
+            edges.append(
+                EvidenceEdge(
+                    edge_id=f"{prefix}.E{edge_number:03d}",
+                    from_kind=EvidenceNodeKind.SOURCE,
+                    from_id=sources[source_index].source_id,
+                    to_claim_id=claim_id,
+                    relation=EvidenceRelation.SUPPORTS,
+                )
+            )
+            edge_number += 1
+    return tuple(claims), tuple(edges)
+
+
+def _evidence_from_wire(payload: dict[str, Any]) -> EvidenceResearchFindings:
+    sources = _sources_from_wire(payload, prefix="evidence")
+    claims, edges = _claims_and_edges_from_wire(
+        payload,
+        prefix="evidence",
+        sources=sources,
+    )
+    return EvidenceResearchFindings(
+        sources=sources,
+        claims=claims,
+        evidence_edges=edges,
+    )
+
+
+def _misconception_from_wire(payload: dict[str, Any]) -> MisconceptionResearchFindings:
+    sources = _sources_from_wire(payload, prefix="misconception")
+    claims, edges = _claims_and_edges_from_wire(
+        payload,
+        prefix="misconception",
+        sources=sources,
+    )
+
+    misconception_rows = _require_list(payload, "misconceptions")
+    misconceptions: list[ResearchMisconception] = []
+    for index, row in enumerate(misconception_rows, start=1):
+        if not isinstance(row, dict):
+            raise AgentContractError("misconception entry must be an object")
+        claim_indexes = _validated_indexes(
+            row.get("claim_indexes"),
+            upper_bound=len(claims),
+            field_name=f"misconceptions[{index - 1}].claim_indexes",
+        )
+        misconceptions.append(
+            ResearchMisconception(
+                misconception_id=f"misconception.M{index:03d}",
+                statement=row.get("statement"),
+                correction=row.get("correction"),
+                claim_ids=tuple(claims[i].claim_id for i in claim_indexes),
+            )
+        )
+
+    example_rows = _require_list(payload, "examples")
+    examples: list[ResearchExample] = []
+    for index, row in enumerate(example_rows, start=1):
+        if not isinstance(row, dict):
+            raise AgentContractError("example entry must be an object")
+        claim_indexes = _validated_indexes(
+            row.get("claim_indexes"),
+            upper_bound=len(claims),
+            field_name=f"examples[{index - 1}].claim_indexes",
+        )
+        examples.append(
+            ResearchExample(
+                example_id=f"misconception.X{index:03d}",
+                description=row.get("description"),
+                claim_ids=tuple(claims[i].claim_id for i in claim_indexes),
+            )
+        )
+
+    return MisconceptionResearchFindings(
+        sources=sources,
+        claims=claims,
+        evidence_edges=edges,
+        misconceptions=tuple(misconceptions),
+        examples=tuple(examples),
+    )
+
+
+def _parse_role_payload(
+    role: ResearchRole,
+    payload: dict[str, Any],
+):
+    if role == ResearchRole.CONCEPT:
+        return ConceptResearchFindings.model_validate(payload)
+    if role == ResearchRole.EVIDENCE:
+        return _evidence_from_wire(payload)
+    if role == ResearchRole.MISCONCEPTION:
+        return _misconception_from_wire(payload)
+    raise AgentContractError(f"unsupported research role {role!r}")
+
+
 def assemble_specialist_delegation_results(
     *,
     plan: ResearchOrchestrationPlan,
@@ -126,11 +329,17 @@ def assemble_specialist_delegation_results(
                 f"{errors!r}"
             )
 
-        model_type = _ROLE_MODELS[specialist_task.role]
         payload = _extract_json_object(str(entry.get("summary") or ""))
-        parsed_by_role[specialist_task.role] = model_type.model_validate(payload)
+        parsed_by_role[specialist_task.role] = _parse_role_payload(
+            specialist_task.role,
+            payload,
+        )
 
-    expected_roles = set(_ROLE_MODELS)
+    expected_roles = {
+        ResearchRole.CONCEPT,
+        ResearchRole.EVIDENCE,
+        ResearchRole.MISCONCEPTION,
+    }
     if set(parsed_by_role) != expected_roles:
         missing = sorted(
             role.value for role in expected_roles - set(parsed_by_role)

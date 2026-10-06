@@ -4,14 +4,11 @@ from __future__ import annotations
 
 import json
 
-from agent_contracts import LearningBrief, ResearchPack, EvidenceGraph
+from agent_contracts import LearningBrief
 
 from .models import (
-    ConceptResearchFindings,
-    EvidenceResearchFindings,
     MAX_DELEGATION_DEPTH,
     MAX_SPECIALIST_RESEARCHERS,
-    MisconceptionResearchFindings,
     ResearchOrchestrationPlan,
     ResearchOrchestrationResult,
     ResearchRole,
@@ -29,12 +26,20 @@ def _string_array(*, min_items: int = 0) -> dict:
     return schema
 
 
-def _source_wire_schema(prefix: str) -> dict:
+def _index_array(*, min_items: int = 1) -> dict:
+    return {
+        "type": "array",
+        "minItems": min_items,
+        "uniqueItems": True,
+        "items": {"type": "integer", "minimum": 0},
+    }
+
+
+def _source_wire_schema() -> dict:
     return {
         "type": "object",
         "additionalProperties": False,
         "properties": {
-            "source_id": {"type": "string", "pattern": f"^{prefix}\\."},
             "source_type": {
                 "type": "string",
                 "enum": ["WEB", "PAPER", "BOOK", "DATASET", "DOCUMENT", "OTHER"],
@@ -44,40 +49,20 @@ def _source_wire_schema(prefix: str) -> dict:
             "publisher": {"type": ["string", "null"]},
             "authors": _string_array(),
         },
-        "required": ["source_id", "title", "locator"],
+        "required": ["title", "locator"],
     }
 
 
-def _claim_wire_schema(prefix: str) -> dict:
+def _claim_wire_schema() -> dict:
     return {
         "type": "object",
         "additionalProperties": False,
         "properties": {
-            "claim_id": {"type": "string", "pattern": f"^{prefix}\\."},
             "statement": {"type": "string", "minLength": 1},
-            "source_ids": _string_array(min_items=1),
+            "source_indexes": _index_array(),
             "confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0},
-            "concept_ids": _string_array(),
         },
-        "required": ["claim_id", "statement", "source_ids", "confidence"],
-    }
-
-
-def _edge_wire_schema(prefix: str) -> dict:
-    return {
-        "type": "object",
-        "additionalProperties": False,
-        "properties": {
-            "edge_id": {"type": "string", "pattern": f"^{prefix}\\."},
-            "from_kind": {"type": "string", "enum": ["SOURCE", "CLAIM"]},
-            "from_id": {"type": "string", "minLength": 1},
-            "to_claim_id": {"type": "string", "minLength": 1},
-            "relation": {
-                "type": "string",
-                "enum": ["SUPPORTS", "CONTRADICTS", "DERIVES"],
-            },
-        },
-        "required": ["edge_id", "from_kind", "from_id", "to_claim_id", "relation"],
+        "required": ["statement", "source_indexes", "confidence"],
     }
 
 
@@ -98,11 +83,18 @@ def _evidence_wire_schema() -> dict:
         "type": "object",
         "additionalProperties": False,
         "properties": {
-            "sources": {"type": "array", "minItems": 1, "items": _source_wire_schema("evidence")},
-            "claims": {"type": "array", "minItems": 1, "items": _claim_wire_schema("evidence")},
-            "evidence_edges": {"type": "array", "minItems": 1, "items": _edge_wire_schema("evidence")},
+            "sources": {
+                "type": "array",
+                "minItems": 1,
+                "items": _source_wire_schema(),
+            },
+            "claims": {
+                "type": "array",
+                "minItems": 1,
+                "items": _claim_wire_schema(),
+            },
         },
-        "required": ["sources", "claims", "evidence_edges"],
+        "required": ["sources", "claims"],
     }
 
 
@@ -111,9 +103,16 @@ def _misconception_wire_schema() -> dict:
         "type": "object",
         "additionalProperties": False,
         "properties": {
-            "sources": {"type": "array", "minItems": 1, "items": _source_wire_schema("misconception")},
-            "claims": {"type": "array", "minItems": 1, "items": _claim_wire_schema("misconception")},
-            "evidence_edges": {"type": "array", "minItems": 1, "items": _edge_wire_schema("misconception")},
+            "sources": {
+                "type": "array",
+                "minItems": 1,
+                "items": _source_wire_schema(),
+            },
+            "claims": {
+                "type": "array",
+                "minItems": 1,
+                "items": _claim_wire_schema(),
+            },
             "misconceptions": {
                 "type": "array",
                 "minItems": 1,
@@ -121,12 +120,11 @@ def _misconception_wire_schema() -> dict:
                     "type": "object",
                     "additionalProperties": False,
                     "properties": {
-                        "misconception_id": {"type": "string", "minLength": 1},
                         "statement": {"type": "string", "minLength": 1},
                         "correction": {"type": "string", "minLength": 1},
-                        "claim_ids": _string_array(min_items=1),
+                        "claim_indexes": _index_array(),
                     },
-                    "required": ["misconception_id", "statement", "correction", "claim_ids"],
+                    "required": ["statement", "correction", "claim_indexes"],
                 },
             },
             "examples": {
@@ -136,30 +134,19 @@ def _misconception_wire_schema() -> dict:
                     "type": "object",
                     "additionalProperties": False,
                     "properties": {
-                        "example_id": {"type": "string", "minLength": 1},
                         "description": {"type": "string", "minLength": 1},
-                        "claim_ids": _string_array(min_items=1),
+                        "claim_indexes": _index_array(),
                     },
-                    "required": ["example_id", "description", "claim_ids"],
+                    "required": ["description", "claim_indexes"],
                 },
             },
         },
-        "required": ["sources", "claims", "evidence_edges", "misconceptions", "examples"],
+        "required": ["sources", "claims", "misconceptions", "examples"],
     }
 
 
-def _wire_schema(model_type) -> dict:
-    if model_type is ConceptResearchFindings:
-        return _concept_wire_schema()
-    if model_type is EvidenceResearchFindings:
-        return _evidence_wire_schema()
-    if model_type is MisconceptionResearchFindings:
-        return _misconception_wire_schema()
-    raise TypeError(f"unsupported research specialist model: {model_type!r}")
-
-
 def build_research_orchestration_plan(brief: LearningBrief) -> ResearchOrchestrationPlan:
-    """Create the exact three-role research fan-out passed to a Hermes orchestrator child."""
+    """Create the exact three-role research fan-out passed to Hermes."""
 
     shared = {
         "brief_id": brief.brief_id,
@@ -169,9 +156,12 @@ def build_research_orchestration_plan(brief: LearningBrief) -> ResearchOrchestra
         "constraints": list(brief.constraints),
         "rules": [
             "Do not invent sources.",
-            "Preserve stable source identifiers and locators.",
             "Return only JSON matching the supplied output schema.",
             "Do not render, publish, or modify LearnFlow Core.",
+            (
+                "Do not create source IDs, claim IDs, edge IDs, concept IDs, or graph edges. "
+                "The host owns all identifiers and referential integrity."
+            ),
         ],
     }
 
@@ -182,72 +172,71 @@ def build_research_orchestration_plan(brief: LearningBrief) -> ResearchOrchestra
             context=json.dumps(
                 {
                     **shared,
-                    "focus": "concept definitions, terminology, prerequisite distinctions, open questions",
-                    "provenance_rule": "Do not make factual claims that require sources in this role.",
+                    "focus": (
+                        "concept definitions, terminology, prerequisite distinctions, "
+                        "and open questions"
+                    ),
+                    "provenance_rule": (
+                        "Do not make factual claims that require source records in this role."
+                    ),
                 },
                 ensure_ascii=False,
                 sort_keys=True,
             ),
-            output_schema=_wire_schema(ConceptResearchFindings),
+            output_schema=_concept_wire_schema(),
         ),
         SpecialistTask(
             role=ResearchRole.EVIDENCE,
-            goal="Collect source-grounded factual claims and explicit evidence links for the lesson.",
-            context=json.dumps(
-                {
-                    **shared,
-                    "focus": "authoritative sources, claim statements, confidence, source-to-claim evidence edges",
-                    "provenance_rule": (
-                        "Every claim must reference declared source_ids; every source keeps its original locator. "
-                        "Namespace source_id and claim_id values with the prefix 'evidence.' so sibling outputs cannot collide."
-                    ),
-                    "tool_rule": (
-                        "Before the final JSON, you MUST use the available web tool to find real authoritative sources. "
-                        "Copy stable locators from tool results exactly. Never fabricate a source or use example.com."
-                    ),
-                    "output_shape_hint": {
-                        "sources": ["source objects"],
-                        "claims": ["claim objects"],
-                        "evidence_edges": ["edge objects"],
-                    },
-                },
-                ensure_ascii=False,
-                sort_keys=True,
-            ),
-            output_schema=_wire_schema(EvidenceResearchFindings),
-        ),
-        SpecialistTask(
-            role=ResearchRole.MISCONCEPTION,
-            goal="Identify learner misconceptions and useful examples tied to evidence-backed claims.",
+            goal="Collect source-grounded factual claims for the lesson.",
             context=json.dumps(
                 {
                     **shared,
                     "focus": (
-                        "common misconceptions, corrections, examples, plus the sources and factual claims "
-                        "needed to support those corrections/examples"
+                        "authoritative source locators, factual claim statements, "
+                        "confidence, and which source entries support each claim"
                     ),
                     "provenance_rule": (
-                        "This child is isolated from Evidence Researcher. Create only LOCAL source_ids/claim_ids "
-                        "backed by your own sources; namespace them with prefix 'misconception.'. "
-                        "Misconceptions/examples may reference only those local claim_ids."
+                        "Return sources in an array. Each claim references those sources only "
+                        "through zero-based source_indexes. Preserve each locator exactly. "
+                        "The host deterministically assigns evidence.* IDs and support edges."
                     ),
-                    "tool_rule": (
-                        "Before the final JSON, you MUST use the available web tool to find real sources supporting "
-                        "the correction claims. Copy stable locators from tool results exactly. Never fabricate a "
-                        "source or use example.com."
+                    "retrieval_rule": (
+                        "If a web-search capability is actually available, use it before the final "
+                        "JSON. If no retrieval capability is available, do not fabricate placeholder "
+                        "domains such as example.com; return only stable source locators you can identify."
                     ),
-                    "output_shape_hint": {
-                        "sources": ["source objects"],
-                        "claims": ["claim objects"],
-                        "evidence_edges": ["edge objects"],
-                        "misconceptions": ["misconception objects"],
-                        "examples": ["example objects"],
-                    },
                 },
                 ensure_ascii=False,
                 sort_keys=True,
             ),
-            output_schema=_wire_schema(MisconceptionResearchFindings),
+            output_schema=_evidence_wire_schema(),
+        ),
+        SpecialistTask(
+            role=ResearchRole.MISCONCEPTION,
+            goal="Identify learner misconceptions and useful examples with local supporting claims.",
+            context=json.dumps(
+                {
+                    **shared,
+                    "focus": (
+                        "common misconceptions, corrections, useful examples, and the local "
+                        "sources/claims needed to support those corrections"
+                    ),
+                    "provenance_rule": (
+                        "This child is isolated from Evidence Researcher. Return local sources and "
+                        "claims only. Claims use zero-based source_indexes; misconceptions/examples "
+                        "use zero-based claim_indexes. The host deterministically assigns all "
+                        "misconception.* IDs and evidence edges."
+                    ),
+                    "retrieval_rule": (
+                        "If a web-search capability is actually available, use it before the final "
+                        "JSON. If no retrieval capability is available, do not fabricate placeholder "
+                        "domains such as example.com; return only stable source locators you can identify."
+                    ),
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+            ),
+            output_schema=_misconception_wire_schema(),
         ),
     )
 
@@ -288,7 +277,7 @@ def build_director_delegate_task(brief: LearningBrief) -> dict:
             "Each specialist receives only its own goal/context/output_schema.",
             "No specialist may depend on a sibling specialist's IDs or output.",
             "Do not ask a specialist to delegate further.",
-            "Preserve source_id, locator, claim_id and evidence-edge provenance exactly.",
+            "Specialists return content and index references, never stable IDs or graph edges.",
             "Do not synthesize or rewrite ResearchPack/EvidenceGraph in the LLM.",
             "The host validates each specialist result and assembles final research artifacts deterministically.",
         ],
