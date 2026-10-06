@@ -30,14 +30,14 @@ def main() -> int:
     state = initialize_governance_state(runtime / "state.json")
     if state.publication_authorized:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL publication must be disabled")
-    if state.budget is None or state.budget.max_usd != 0.25:
-        raise SystemExit("LIVE_V2D_CONTRACT=FAIL hard USD cap")
+    if state.budget is None or state.budget.max_usd is not None:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL live evaluation must not impose a USD cap")
     if state.budget.limits.subagent_calls != 3:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL subagent cap")
     if state.budget.limits.tool_calls != 32:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL tool cap")
-    if state.budget.limits.provider_attempts != 16:
-        raise SystemExit("LIVE_V2D_CONTRACT=FAIL provider-attempt cap")
+    if state.budget.limits.provider_attempts != 160:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL provider-attempt quota")
     if state.budget.limits.retries != 4:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL retry cap")
 
@@ -49,9 +49,15 @@ def main() -> int:
         "visual_director",
     ):
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL stage reservation order")
-    primary_usd = sum(float(item["usd"]) for item in reservations.values())
-    if round(primary_usd, 8) != 0.20:
-        raise SystemExit("LIVE_V2D_CONTRACT=FAIL primary reservation envelope")
+    if any(float(item["usd"]) != 0.0 for item in reservations.values()):
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL live stages must not reserve USD")
+    if reservations["research_orchestration"]["provider_attempts"] != 128:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL research provider-attempt quota")
+    if any(
+        reservations[name]["provider_attempts"] != 3
+        for name in ("pedagogy_agent", "script_agent", "visual_director")
+    ):
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL non-research provider-attempt quota")
 
     workflow = (ROOT / ".github" / "workflows" / "live-v2d-evaluation.yml").read_text(
         encoding="utf-8"
@@ -78,11 +84,12 @@ def main() -> int:
     print("LIVE_V2D_CONTRACT=PASS")
     print(f"pilot_topic={PILOT_TOPIC_ID}")
     print(f"default_model={DEFAULT_LIVE_MODEL}")
-    print("hard_usd_cap=0.25")
+    print("usd_cap=none")
     print("publication_authorized=false")
     print("live_secret_step_scope=PASS")
     print("native_research_delegation_enabled=PASS")
     print("research_max_iterations=128")
+    print("provider_attempt_quota=160")
     return 0
 
 

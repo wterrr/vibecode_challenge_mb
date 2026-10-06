@@ -39,10 +39,10 @@ def test_governance_state_is_fail_closed(tmp_path):
     state = initialize_governance_state(tmp_path / "state.json")
     assert state.publication_authorized is False
     assert state.budget is not None
-    assert state.budget.max_usd == 0.25
+    assert state.budget.max_usd is None
     assert state.budget.limits.subagent_calls == 3
     assert state.budget.limits.tool_calls == 32
-    assert state.budget.limits.provider_attempts == 16
+    assert state.budget.limits.provider_attempts == 160
     assert state.budget.limits.retries == 4
     assert state.budget.limits.image_generations == 0
     assert state.budget.limits.vlm_repairs == 0
@@ -66,13 +66,14 @@ def test_stage_reservations_cover_only_live_agent_stages():
     )
 
 
-def test_primary_reservations_fit_under_hard_usd_cap():
-    total = sum(
-        float(item["usd"])
-        for item in LiveHermesStructuredRunner._STAGE_RESERVATIONS.values()
-    )
-    assert total == pytest.approx(0.20)
-    assert total < 0.25
+def test_live_eval_has_no_usd_reservation_and_attempt_quota_matches_iterations():
+    reservations = LiveHermesStructuredRunner._STAGE_RESERVATIONS
+    assert all(float(item["usd"]) == 0.0 for item in reservations.values())
+    assert reservations["research_orchestration"]["provider_attempts"] == 128
+    assert reservations["pedagogy_agent"]["provider_attempts"] == 3
+    assert reservations["script_agent"]["provider_attempts"] == 3
+    assert reservations["visual_director"]["provider_attempts"] == 3
+    assert sum(int(item["provider_attempts"]) for item in reservations.values()) == 137
 
 
 def test_research_gets_delegation_and_web_only():

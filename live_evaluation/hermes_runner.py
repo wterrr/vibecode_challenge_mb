@@ -37,13 +37,13 @@ class StageUsage:
 
 
 class LiveHermesStructuredRunner:
-    """Use exact Hermes AIAgent while keeping host-side hard reservations authoritative."""
+    """Use exact Hermes AIAgent with hard usage quotas and uncapped USD telemetry."""
 
     _STAGE_RESERVATIONS = {
-        "research_orchestration": {"usd": 0.08, "provider_attempts": 8},
-        "pedagogy_agent": {"usd": 0.04, "provider_attempts": 2},
-        "script_agent": {"usd": 0.04, "provider_attempts": 2},
-        "visual_director": {"usd": 0.04, "provider_attempts": 2},
+        "research_orchestration": {"usd": 0.0, "provider_attempts": 128},
+        "pedagogy_agent": {"usd": 0.0, "provider_attempts": 3},
+        "script_agent": {"usd": 0.0, "provider_attempts": 3},
+        "visual_director": {"usd": 0.0, "provider_attempts": 3},
     }
 
     def __init__(
@@ -63,11 +63,11 @@ class LiveHermesStructuredRunner:
     def _reserve(self, stage: str, *, retry: bool = False) -> None:
         state = load_state()
         if state.budget is None:
-            raise RuntimeError("governed live runner requires a configured hard budget")
+            raise RuntimeError("governed live runner requires configured usage quotas")
         spec = self._STAGE_RESERVATIONS[stage]
         controller = HardBudgetController(state.budget)
         if retry:
-            usd = 0.01
+            usd = 0.0
             provider_attempts = 1
             retry_count = 1
             charge_id = f"live-eval:{stage}:schema-retry"
@@ -77,7 +77,7 @@ class LiveHermesStructuredRunner:
             provider_attempts = int(spec["provider_attempts"])
             retry_count = 0
             charge_id = f"live-eval:{stage}:primary"
-            reason = f"reserve conservative live-provider envelope for {stage}"
+            reason = f"reserve bounded provider-attempt quota for {stage}"
         controller.authorize(
             BudgetCharge(
                 charge_id=charge_id,

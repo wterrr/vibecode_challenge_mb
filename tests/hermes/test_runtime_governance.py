@@ -72,6 +72,38 @@ def test_usd_overspend_fails_before_commit():
     assert controller.ledger.spent.total_usd == 0.0
 
 
+
+def test_uncapped_usd_still_enforces_provider_attempt_quota():
+    controller = HardBudgetController(
+        BudgetLedger(
+            ledger_id="budget.no-usd-cap",
+            max_usd=None,
+            limits=BudgetLimits(provider_attempts=1),
+        )
+    )
+    controller.authorize(
+        BudgetCharge(
+            charge_id="uncapped.1",
+            category=SpendCategory.LLM,
+            amount_usd=100.0,
+            usage=BudgetUsage(provider_attempts=1),
+            reason="record spend without a money ceiling",
+        )
+    )
+    assert controller.ledger.spent.llm == 100.0
+    assert controller.ledger.remaining_usd is None
+    with pytest.raises(BudgetExceededError):
+        controller.authorize(
+            BudgetCharge(
+                charge_id="uncapped.2",
+                category=SpendCategory.LLM,
+                amount_usd=100.0,
+                usage=BudgetUsage(provider_attempts=1),
+                reason="second provider attempt must still be blocked",
+            )
+        )
+
+
 def test_tool_call_limit_fails_closed():
     controller = HardBudgetController(ledger(tool_calls=1))
     state = GovernanceState(

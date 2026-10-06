@@ -1,4 +1,4 @@
-"""Hard pre-authorization for governed LearnFlow runtime operations."""
+"""Fail-closed pre-authorization for governed LearnFlow runtime operations."""
 
 from __future__ import annotations
 
@@ -40,9 +40,10 @@ def _add_usage(current: BudgetUsage, delta: BudgetUsage) -> dict[str, int]:
 def apply_budget_charge(ledger: BudgetLedger, charge: BudgetCharge) -> BudgetLedger:
     """Return a newly validated ledger or raise before the operation begins.
 
-    Charges are conservative reservations: the maximum authorized amount is
-    consumed up front. This deliberately prefers under-utilization over a
-    provider/tool operation crossing the configured hard limit.
+    Charges are conservative reservations consumed up front. Numeric USD
+    ceilings are enforced when configured; a ledger with max_usd=None records
+    spend telemetry without imposing a money ceiling. Usage counters remain
+    fail-closed hard limits in either mode.
     """
 
     ledger = BudgetLedger.model_validate(ledger.model_dump(mode="json", exclude_computed_fields=True))
@@ -67,7 +68,7 @@ def apply_budget_charge(ledger: BudgetLedger, charge: BudgetCharge) -> BudgetLed
 
 
 class HardBudgetController:
-    """Thread-safe, fail-closed budget state for synchronous orchestration."""
+    """Thread-safe, fail-closed budget/quota state for synchronous orchestration."""
 
     def __init__(self, ledger: BudgetLedger) -> None:
         self._lock = RLock()

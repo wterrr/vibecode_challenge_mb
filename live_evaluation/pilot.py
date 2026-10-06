@@ -70,14 +70,14 @@ def initialize_governance_state(path: str | Path) -> GovernanceState:
         state_id="live-eval.pilot",
         budget=BudgetLedger(
             ledger_id="live-eval.pilot",
-            max_usd=0.25,
+            max_usd=None,
             spent=BudgetSpend(),
             limits=BudgetLimits(
                 subagent_calls=3,
                 vlm_repairs=0,
                 image_generations=0,
                 tool_calls=32,
-                provider_attempts=16,
+                provider_attempts=160,
                 retries=4,
             ),
             usage=BudgetUsage(),
