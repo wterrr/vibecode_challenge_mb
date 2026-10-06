@@ -1,0 +1,59 @@
+name: V2 Core Freeze Guard
+
+on:
+  pull_request:
+    paths:
+      - "learnflow_v2/**"
+      - "benchmarks/core_freeze/**"
+      - "benchmarks/core_gate/**"
+      - "benchmarks/baselines/v1/baseline.json"
+      - "benchmarks/baselines/v2/**"
+      - "benchmarks/specs/v2_core_gate_v2.json"
+      - "benchmarks/v2/static_quality.py"
+      - "scripts/capture_v1_baseline.py"
+      - "scripts/run_v2_core_benchmark.py"
+      - "scripts/verify_v2_core_freeze.py"
+      - "requirements.txt"
+      - "package.json"
+      - "package-lock.json"
+      - "tests/v2/test_core_freeze.py"
+      - ".github/workflows/v2-core-freeze.yml"
+  push:
+    branches:
+      - "main"
+    paths:
+      - "learnflow_v2/**"
+      - "benchmarks/core_freeze/**"
+      - "benchmarks/core_gate/**"
+      - "benchmarks/baselines/v1/baseline.json"
+      - "benchmarks/baselines/v2/**"
+      - "benchmarks/specs/v2_core_gate_v2.json"
+      - "benchmarks/v2/static_quality.py"
+      - "scripts/capture_v1_baseline.py"
+      - "scripts/run_v2_core_benchmark.py"
+      - "scripts/verify_v2_core_freeze.py"
+      - "requirements.txt"
+      - "package.json"
+      - "package-lock.json"
+      - "tests/v2/test_core_freeze.py"
+      - ".github/workflows/v2-core-freeze.yml"
+  workflow_dispatch:
+
+jobs:
+  freeze-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Minimal verifier dependency
+        run: pip install "pydantic>=2" pytest
+      - name: Verify immutable Core Freeze boundary
+        run: python scripts/verify_v2_core_freeze.py
+      - name: Re-evaluate frozen Core Gate evidence
+        run: python scripts/evaluate_v2_core_gate.py
+      - name: Core Freeze contract tests
+        run: pytest -q --confcutdir=tests/v2 tests/v2/test_core_freeze.py tests/v2/test_core_gate.py

@@ -110,18 +110,33 @@ Non-negotiable rules:
 - The benchmark inherits V1's deterministic 40-character subtitle truncation contract. That preserves
   benchmark parity but is not a claim that subtitle UX is production-complete.
 
+## Core Freeze
+
+Core Freeze is now recorded in `benchmarks/core_freeze/manifest.json` and enforced by
+`scripts/verify_v2_core_freeze.py` plus the `V2 Core Freeze Guard` workflow.
+
+Frozen boundary:
+
+```text
+accepted Core engine   fdad3db1340d8b28175ab5382d800ff79df9a8a0
+official evidence      4b2cc7887773a8fb81dee36010fcae3bc2015ccb
+rollback/reference V1  f6dae0e8510a6db8fc49a761eddc2a055ffaefda
+benchmark              v2-core-gate-v2
+```
+
+Hermes may consume Core through typed contracts and add orchestration outside the protected Core
+namespaces. Any protected Core change requires an explicit unfreeze → re-gate → re-freeze cycle.
+
 ## Next engineering step
 
 ```text
 CORE GATE PASS
       ↓
-CORE FREEZE
-      ↓
-record accepted engine/evidence/rollback/contracts
-      ↓
-only then
+CORE FREEZE COMPLETE
       ↓
 V2D / Hermes
+      ↓
+H-01 — Hermes bootstrap
 ```
 
-Do not start Hermes/V2D before Core Freeze is explicitly complete.
+The Core is no longer an open implementation surface for routine Hermes work.
