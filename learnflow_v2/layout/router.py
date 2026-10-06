@@ -134,6 +134,7 @@ def _stack_in_zone(
     gap: float,
     zone_name: str,
     outer_margin_x: float = 4.0,
+    minimum_gap: float = 2.0,
 ) -> list[LayoutBox]:
     """Stack cards using their actual wrapped readable heights, not equal-height slots."""
     ordered = list(nodes)
@@ -165,7 +166,30 @@ def _stack_in_zone(
         required_height = _wrapped_text_height(measurement, preferred_width) + 16.0
         specs.append((node, preferred_width, required_height))
 
-    required_total = sum(item[2] for item in specs) + gap * (len(specs) - 1)
+    if not math.isfinite(gap) or gap < 0.0 or not math.isfinite(minimum_gap) or minimum_gap < 0.0:
+        raise LayoutUnsatisfiableError("stack gaps must be finite and non-negative")
+    if minimum_gap > gap:
+        raise LayoutUnsatisfiableError("minimum_gap cannot exceed preferred gap")
+
+    content_height = sum(item[2] for item in specs)
+    effective_gap = gap
+    if len(specs) > 1 and content_height + effective_gap * (len(specs) - 1) > zone.height + 1e-6:
+        available_gap = max(0.0, (zone.height - content_height) / (len(specs) - 1))
+        if available_gap + 1e-6 < minimum_gap:
+            raise LayoutUnsatisfiableError(
+                "Readable stacked content does not fit specialized layout zone",
+                {
+                    "content_height": content_height,
+                    "preferred_gap": gap,
+                    "minimum_gap": minimum_gap,
+                    "available_gap": available_gap,
+                    "zone_height": zone.height,
+                    "node_ids": [node.id for node, _, _ in specs],
+                },
+            )
+        effective_gap = min(gap, available_gap)
+
+    required_total = content_height + effective_gap * (len(specs) - 1)
     if required_total > zone.height + 1e-6:
         raise LayoutUnsatisfiableError(
             "Readable stacked content does not fit specialized layout zone",
@@ -202,7 +226,7 @@ def _stack_in_zone(
                 semantic_key=node.semantic_key,
             )
         )
-        y += slot_h + gap
+        y += slot_h + effective_gap
     return boxes
 
 def _compile_concept_card(
@@ -548,7 +572,11 @@ def _compile_comparison(
                 semantic_key=column.semantic_key,
             )
         )
-        body_y = col_zone.y + col_title_h + 6.0
+        # Preserve typography before spacing. At compact 16:9 sizes the
+        # header/body gap scales down, while high-resolution profiles retain
+        # approximately the original 6px separation.
+        header_body_gap = max(2.0, min(6.0, profile.height * 0.008))
+        body_y = col_zone.y + col_title_h + header_body_gap
         body = Rect(
             x=col_zone.x,
             y=round(body_y, 4),
@@ -561,6 +589,7 @@ def _compile_comparison(
                 measurements,
                 body,
                 gap=6.0,
+                minimum_gap=2.0,
                 zone_name="CONTENT",
                 # The comparison columns already have a deterministic inter-column
                 # gap; an additional inset here needlessly narrows every card and
