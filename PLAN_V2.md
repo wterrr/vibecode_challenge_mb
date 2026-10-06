@@ -3232,9 +3232,11 @@ Nếu điều này chưa đúng thì thêm Hermes cũng chưa giải quyết đ�
 
 ---
 
-# 58. Hermes checkpoints
+# 58. Hermes delivery stages
 
 ## Hermes Bootstrap
+
+**Status: PASS** — pinned runtime, offline contract, Core Freeze guard, and user-local live OpenRouter tool round-trip all accepted.
 
 Pin Hermes version/commit.
 
@@ -3259,6 +3261,8 @@ agent
 
 ## LearnFlow Capability Plugin
 
+**Status: PASS** — exact pinned Hermes runtime discovers the plugin, dispatches create → run → render, produces a real MP4, and preserves the Core Freeze boundary.
+
 Expose capability tools.
 
 Acceptance:
@@ -3271,6 +3275,8 @@ but cannot touch renderer internals
 ---
 
 ## Agent Contracts
+
+**Status: NEXT / NOT STARTED**
 
 Implement:
 
