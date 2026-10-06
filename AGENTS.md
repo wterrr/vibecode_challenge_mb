@@ -34,14 +34,15 @@ Accepted stages:
 - **Hermes Bootstrap — PASS.** The live OpenRouter smoke passed on 2026-10-06. The primary model was attempted first; the accepted free fallback `nvidia/nemotron-3.5-lightning:free` completed the read-tool round-trip. Offline verification and the Core Freeze guard also passed.
 - **LearnFlow Capability Plugin — PASS.** The exact pinned Hermes runtime discovers the project plugin and dispatches `learnflow_create → learnflow_run → learnflow_render`. Integration verification renders a real MP4 and preserves the Core Freeze boundary.
 - **Agent Contracts — PASS.** `LearningBrief`, `ResearchPack`, `EvidenceGraph`, `PedagogyPlan`, `LessonScript`, `Storyboard`, `AgentRun`, and `BudgetLedger` are strict, versioned, canonically serializable artifacts with cross-artifact integrity checks.
+- **Fact Verification — PASS.** A deterministic source-grounding/contradiction gate controls factual narration eligibility; Hermes semantic verdicts are structured but cannot override missing evidence.
 
 Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifier, 11 contract regressions, and Core Freeze guard passed.
 
 Accepted stage: **Research Orchestration — PASS.** Hermes native nested delegation, isolated child contexts, bounded depth/concurrency, leaf recursion blocking, structured child outputs, and provenance-preserving merge are all verified.
 
-Current stage: **Fact Verification — IMPLEMENTED / VERIFYING**. Hermes may judge evidence semantics, but deterministic source-grounding and contradiction rules have final authority over narration eligibility.
+Accepted stage: **Fact Verification — PASS.** Source-grounded evidence, cycle-safe provenance, contradiction signaling, unsupported-claim blocking, factual narration claim gating, and pinned Hermes semantic-review compatibility are verified. Next authorized stage: **Pedagogy Agent**, which has not started yet.
 
-During Fact Verification, implement only claim/evidence validation, unsupported-claim blocking, and contradiction signaling. Do not implement Pedagogy Agent, Script Agent, Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
+During Pedagogy Agent, implement only objectives, prerequisites, concept progression, worked examples/analogies, misconceptions, and assessment probes over fact-verified claims. Do not implement Script Agent, Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
 
 ## LearnFlow Capability Plugin safety
 
