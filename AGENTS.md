@@ -43,6 +43,7 @@ Accepted stages:
 - **Hooks + Budget — PASS.** Exact pinned Hermes native hooks enforce publication/tool policy and record privacy-minimized metrics/lifecycle evidence, while deterministic host-side conservative reservations hard-cap USD/provider/retry usage before governed agent dispatch.
 - **Skills — PASS.** Four native project-local Hermes procedures package the accepted lesson build, fact investigation, selective repair, and pre-publication review workflows without adding executable helpers, a second orchestrator, or production auto-trust.
 - **Kanban Durability — PASS.** Native Hermes Kanban persists a six-card lesson DAG with idempotent seeding, parent gating, claims/reclaim, bounded task retries, one shared durable workspace, and research/production/review worker profiles; the synchronous Lesson Pipeline remains the execution source of truth.
+- **LearnFlowBench — DETERMINISTIC ABLATION PASS / LIVE EVAL PENDING.** A frozen 100-topic corpus and exact V1/V2A/V2B/V2C/V2D candidate matrix are accepted. CI runs real V1/V2A/V2B/V2C renders on identical frozen core fixtures plus one typed V2D fixture replay, while live-provider cost, full-corpus V2D quality, TeachQuiz learning outcome, and human visual quality remain explicitly unmeasured.
 
 Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifier, 11 contract regressions, and Core Freeze guard passed.
 
@@ -249,4 +250,21 @@ Kanban `max_retries` is the task/worker failure breaker. Runtime Governance rema
 
 Native Hermes recovery semantics are authoritative: dependency promotion, atomic claim, persistent runs/events, stale/crashed-worker recovery, operator reclaim, and restart-safe state. Stable LearnFlow job manifests may store semantic task-ID mappings but must not mirror mutable task statuses.
 
-The next authorized work is Full Benchmark / LearnFlowBench. Do not change the frozen benchmark inputs merely to improve one candidate's score.
+LearnFlowBench deterministic ablation is now accepted. The next authorized work is Governed Live V2D Evaluation on the frozen LearnFlowBench V1 corpus. Do not edit frozen topics or core fixtures to improve a candidate's score.
+
+
+## LearnFlowBench boundary
+
+LearnFlowBench V1 freezes exactly 100 topic prompts. Once accepted, `benchmarks/learnflowbench/corpus_v1.json` must not be edited in place to improve results; a changed corpus requires a new version and separately reported results.
+
+Core ablation is an apples-to-apples track: V1, V2A, V2B, and V2C must consume the exact same frozen V1 `LessonPlan` fixtures. Candidate-specific storyboard/input edits invalidate the comparison. V2A is static SceneGraph + Layout, V2B adds Motion Grammar + transitions, and V2C adds deterministic QA plus critic/repair capability.
+
+The V2D CI fixture replay is integration evidence only. It proves the accepted Research → Fact Verification → Pedagogy → Script → Visual Director → Core typed path and a real final video, but it must not be compared numerically against the core-ablation quality scores as though the inputs were the same.
+
+Every reported metric must be typed as `MEASURED`, `UNMEASURED`, or `NOT_APPLICABLE`. A measured metric requires evidence. Never assign a placeholder number to an unmeasured learning-outcome, human-quality, token, or USD-cost metric.
+
+The deterministic static-composition proxy is a narrow renderer/layout signal, not a human aesthetic score. Wall-clock CI time is environment-specific and not provider cost. Fault-injection repair success is repair-contract evidence, not evidence that naturally occurring production failures have the same rate.
+
+Do not claim LearnFlow is SOTA from the deterministic ablation. A SOTA or broad quality claim requires a governed live V2D protocol on the frozen corpus, fixed model/provider settings, real usage/cost capture, declared failure/retry accounting, fixed semantic/pedagogy/learning-outcome evaluation, and an actually executed external comparison protocol.
+
+Next authorized work: **Governed Live V2D Evaluation**. Keep the frozen corpus unchanged, use Runtime Governance for budget/retry accounting, and preserve all existing Core Freeze and Agent-Aware QA boundaries.

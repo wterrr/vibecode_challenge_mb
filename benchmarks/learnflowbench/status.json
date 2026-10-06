@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "stage": "learnflow-bench",
   "name": "Full Benchmark / LearnFlowBench",
-  "state": "IMPLEMENTED_AWAITING_CI",
+  "state": "DETERMINISTIC_ABLATION_PASS_LIVE_EVAL_PENDING",
   "depends_on": [
     {
       "stage": "core-freeze",
@@ -43,11 +43,63 @@
   },
   "next_stage": "Governed Live V2D Evaluation",
   "evidence": {
-    "accepted_ci_run": null,
-    "accepted_head_sha": null,
-    "benchmark_contract": "PENDING",
-    "pytest": "PENDING",
-    "executable_benchmark": "PENDING",
-    "core_freeze": "PENDING"
+    "accepted_ci_run": 37468207742,
+    "accepted_head_sha": "2e341bb582b33bf3e1b8ccca8bf8efafc26d24eb",
+    "benchmark_contract": "PASS",
+    "pytest": "15 passed",
+    "executable_benchmark": "PASS",
+    "existing_v2_core_benchmark_run": 37468207743,
+    "core_freeze": "PASS",
+    "artifact_id": 11415308483,
+    "artifact_zip_sha256": "77aa9b0527673b1c87efafee3599707503dd9c39f3fabad403e2e0a20e9ef93f",
+    "artifact_file_count": 141,
+    "v1": {
+      "render_success_rate": 1,
+      "static_composition_proxy_v1": 66.15013163,
+      "render_wall_seconds": 5.79,
+      "teachquiz_learning_outcome": "UNMEASURED"
+    },
+    "v2a": {
+      "render_success_rate": 1,
+      "static_composition_proxy_v1": 72.2185595,
+      "static_proxy_delta_vs_v1": 6.06842787,
+      "fatal_clipping_count": 0,
+      "fatal_overlap_count": 0,
+      "motion_event_count": 0,
+      "transition_count": 0,
+      "render_wall_seconds": 8.334997
+    },
+    "v2b": {
+      "render_success_rate": 1,
+      "static_composition_proxy_v1": 72.21820353,
+      "fatal_clipping_count": 0,
+      "fatal_overlap_count": 0,
+      "motion_event_count": 9,
+      "transition_count": 6,
+      "render_wall_seconds": 9.193563
+    },
+    "v2c": {
+      "render_success_rate": 1,
+      "static_composition_proxy_v1": 72.21820353,
+      "fatal_clipping_count": 0,
+      "fatal_overlap_count": 0,
+      "deterministic_qa_pass_rate": 1,
+      "selective_repair_success_rate": 1,
+      "selective_repair_cases": 9,
+      "render_wall_seconds": 9.364739
+    },
+    "v2d_fixture_replay": {
+      "render_success_rate": 1,
+      "typed_stage_count": 7,
+      "objective_coverage_rate": 1,
+      "selected_claim_preservation_rate": 1,
+      "pipeline_wall_seconds": 1.16972,
+      "llm_input_tokens": "UNMEASURED",
+      "llm_output_tokens": "UNMEASURED",
+      "provider_cost_usd": "UNMEASURED",
+      "teachquiz_learning_outcome": "UNMEASURED",
+      "human_visual_quality": "UNMEASURED"
+    },
+    "sota_claim_allowed": false
   }
 }
