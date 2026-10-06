@@ -7,12 +7,8 @@ from typing import Any
 
 from pydantic import Field, computed_field, field_validator, model_validator
 
-from agent_contracts import (
-    AgentContractError,
-    ContractModel,
-    normalize_id,
-    require_unique,
-)
+from agent_contracts import AgentContractError, ContractModel
+from agent_contracts.base import normalize_id, require_unique
 
 
 def _tupleize(value: Any):
