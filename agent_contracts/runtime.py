@@ -179,6 +179,16 @@ class BudgetUsage(ContractModel):
     retries: int = Field(default=0, ge=0)
 
 
+_BUDGET_COUNTER_FIELDS = (
+    "subagent_calls",
+    "vlm_repairs",
+    "image_generations",
+    "tool_calls",
+    "provider_attempts",
+    "retries",
+)
+
+
 class BudgetLedger(ContractModel):
     ledger_id: str
     max_usd: float = Field(..., ge=0.0)
@@ -202,7 +212,7 @@ class BudgetLedger(ContractModel):
             raise AgentContractError(
                 f"BudgetLedger overspent: spent={self.spent.total_usd} max={self.max_usd}"
             )
-        for name in BudgetUsage.model_fields:
+        for name in _BUDGET_COUNTER_FIELDS:
             used = getattr(self.usage, name)
             limit = getattr(self.limits, name)
             if used > limit:
