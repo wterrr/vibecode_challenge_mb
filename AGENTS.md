@@ -37,9 +37,9 @@ Accepted stages:
 
 Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifier, 11 contract regressions, and Core Freeze guard passed.
 
-Current stage: **Research Orchestration — IMPLEMENTED / VERIFYING**. It must use Hermes native `delegate_task`; LearnFlow owns only role policy, typed task/result contracts, provenance preservation, and bounded delegation.
+Accepted stage: **Research Orchestration — PASS.** Hermes native nested delegation, isolated child contexts, bounded depth/concurrency, leaf recursion blocking, structured child outputs, and provenance-preserving merge are all verified. Next authorized stage: **Fact Verification**, which has not started yet.
 
-During Research Orchestration, implement only the Director → Research Orchestrator → bounded specialized-researcher flow and its provenance/delegation constraints. Do not implement Fact Verification, Pedagogy Agent, Script Agent, Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
+During Fact Verification, implement only claim/evidence validation, unsupported-claim blocking, and contradiction signaling. Do not implement Pedagogy Agent, Script Agent, Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
 
 ## LearnFlow Capability Plugin safety
 
