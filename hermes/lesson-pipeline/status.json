@@ -65,6 +65,10 @@
     "pinned_hermes_schema_chain": "PASS",
     "learnflow_plugin_discovery": "PASS",
     "core_freeze": "PASS",
-    "lesson_pipeline_acceptance_verifier": "PASS"
+    "lesson_pipeline_acceptance_verifier": "PASS",
+    "semantic_rename_ci_run": 37464205749,
+    "semantic_package": "lesson_pipeline",
+    "semantic_api": "run_lesson_pipeline / LessonPipelineResult",
+    "compatibility_aliases": "run_end_to_end / EndToEndResult"
   }
 }

@@ -2,7 +2,7 @@
 
 This stage uses **native Hermes Kanban** as the durable work queue for long-running LearnFlow production.
 
-Status: IMPLEMENTED_AWAITING_CI.
+Status: PASS. Accepted CI run `37464205774` proves 21 durability regressions, exact pinned Hermes native SQLite persistence, idempotent seeding, dependency gating, restart-state persistence, native reclaim/resume, preservation of completed work, bounded task retries, one shared durable workspace, three semantic worker profiles, and Core Freeze preservation.
 
 ## Purpose
 
@@ -63,3 +63,7 @@ Runtime Governance remains authoritative for provider/tool cost/retry limits. Ka
     python scripts/verify_v2_core_freeze.py
 
 The pinned-runtime verifier additionally proves idempotent seeding, native dependency promotion, state persistence across connection restart, native reclaim/resume, preservation of completed work, shared workspace, and three valid worker profiles.
+
+## Accepted runtime note
+
+The accepted pinned Hermes runtime links SQLite 3.45.1, which Hermes detects as affected by the WAL-reset corruption bug. Hermes therefore uses its built-in safe `journal_mode=DELETE` fallback for the acceptance board instead of WAL. The restart/reclaim proof passed on that safe fallback.

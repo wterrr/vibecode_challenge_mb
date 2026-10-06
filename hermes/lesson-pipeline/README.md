@@ -47,3 +47,7 @@ Exact pinned Hermes schema compatibility and project-plugin discovery are verifi
 ## Semantic source name
 
 The Python package is `lesson_pipeline/`. Historical acceptance evidence from the original stage name is retained in this status lineage, but new code, tests, CI, and runtime paths use the semantic Lesson Pipeline name.
+
+## Rename verification
+
+CI run `37464205749` re-ran the real Lesson Pipeline render contract and exact pinned Hermes schema chain after the semantic rename. Canonical code now lives in `lesson_pipeline/`; compatibility aliases remain only for external callers migrating from the historical API names.

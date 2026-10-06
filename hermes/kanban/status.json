@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "stage": "kanban-durability",
   "name": "Kanban Durability",
-  "state": "IMPLEMENTED_AWAITING_CI",
+  "state": "PASS",
   "depends_on": [
     {
       "stage": "lesson-pipeline",
@@ -36,12 +36,28 @@
   },
   "next_stage": "Full Benchmark",
   "evidence": {
-    "accepted_ci_run": null,
-    "accepted_head_sha": null,
-    "durable_jobs_verifier": "PENDING",
-    "pytest": "PENDING",
-    "pinned_hermes_kanban": "PENDING",
-    "restart_resume": "PENDING",
-    "core_freeze": "PENDING"
+    "accepted_ci_run": 37464205774,
+    "accepted_head_sha": "c3da043be39a4d6fce7b09977893bf5ce2c17a0a",
+    "durable_jobs_verifier": "PASS",
+    "pytest": "21 passed",
+    "lesson_pipeline_rename": "PASS",
+    "native_kanban_only": "PASS",
+    "durable_dependency_dag": "PASS",
+    "bounded_task_retries": "PASS",
+    "three_worker_profiles": "PASS",
+    "default_skill_trust_off": "PASS",
+    "synchronous_pipeline_independent": "PASS",
+    "pinned_hermes_commit": "f97608f178d1ffeca59860195ab7da295f7c8e5f",
+    "pinned_hermes_kanban": "PASS",
+    "native_sqlite_board": "PASS",
+    "idempotent_seed": "PASS",
+    "dependency_gating": "PASS",
+    "restart_state_persisted": "PASS",
+    "native_reclaim_resume": "PASS",
+    "completed_work_not_repeated": "PASS",
+    "shared_durable_workspace": "PASS",
+    "native_state_authority": "PASS",
+    "sqlite_safe_journal_fallback": "DELETE mode used by pinned Hermes for vulnerable SQLite 3.45.1",
+    "core_freeze": "PASS"
   }
 }
