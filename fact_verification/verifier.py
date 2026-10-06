@@ -39,48 +39,52 @@ def _assert_structural_alignment(pack: ResearchPack, graph: EvidenceGraph) -> No
         raise AgentContractError("EvidenceGraph claim_ids must exactly match ResearchPack claims")
 
 
-def _ground_claim(
-    claim_id: str,
+def _compute_grounding(
     *,
-    incoming_support: dict[str, list],
+    claim_ids: set[str],
     source_ids: set[str],
-    memo: dict[str, _Grounding],
-    visiting: set[str],
-) -> _Grounding:
-    cached = memo.get(claim_id)
-    if cached is not None:
-        return cached
-    if claim_id in visiting:
-        # A claim-only cycle is not provenance.
-        return _Grounding(frozenset(), frozenset())
+    support_edges: list,
+) -> dict[str, _Grounding]:
+    """Propagate provenance to a fixed point; claim-only cycles never self-ground."""
 
-    visiting.add(claim_id)
-    sources: set[str] = set()
-    edges: set[str] = set()
+    grounded_sources: dict[str, set[str]] = {claim_id: set() for claim_id in claim_ids}
+    grounded_edges: dict[str, set[str]] = {claim_id: set() for claim_id in claim_ids}
 
-    for edge in incoming_support.get(claim_id, ()):
-        if edge.from_kind == EvidenceNodeKind.SOURCE:
-            if edge.from_id in source_ids:
-                sources.add(edge.from_id)
-                edges.add(edge.edge_id)
-            continue
+    # Seed only from real source nodes.
+    for edge in support_edges:
+        if edge.from_kind == EvidenceNodeKind.SOURCE and edge.from_id in source_ids:
+            grounded_sources[edge.to_claim_id].add(edge.from_id)
+            grounded_edges[edge.to_claim_id].add(edge.edge_id)
 
-        parent = _ground_claim(
-            edge.from_id,
-            incoming_support=incoming_support,
-            source_ids=source_ids,
-            memo=memo,
-            visiting=visiting,
+    # Then propagate source provenance through claim -> claim support/derivation.
+    changed = True
+    while changed:
+        changed = False
+        for edge in support_edges:
+            if edge.from_kind != EvidenceNodeKind.CLAIM:
+                continue
+            parent_sources = grounded_sources.get(edge.from_id, set())
+            if not parent_sources:
+                continue
+
+            before_sources = len(grounded_sources[edge.to_claim_id])
+            before_edges = len(grounded_edges[edge.to_claim_id])
+            grounded_sources[edge.to_claim_id].update(parent_sources)
+            grounded_edges[edge.to_claim_id].update(grounded_edges[edge.from_id])
+            grounded_edges[edge.to_claim_id].add(edge.edge_id)
+            if (
+                len(grounded_sources[edge.to_claim_id]) != before_sources
+                or len(grounded_edges[edge.to_claim_id]) != before_edges
+            ):
+                changed = True
+
+    return {
+        claim_id: _Grounding(
+            grounded_source_ids=frozenset(grounded_sources[claim_id]),
+            support_edge_ids=frozenset(grounded_edges[claim_id]),
         )
-        if parent.grounded_source_ids:
-            sources.update(parent.grounded_source_ids)
-            edges.update(parent.support_edge_ids)
-            edges.add(edge.edge_id)
-
-    visiting.remove(claim_id)
-    result = _Grounding(frozenset(sources), frozenset(edges))
-    memo[claim_id] = result
-    return result
+        for claim_id in claim_ids
+    }
 
 
 def verify_facts(
@@ -123,17 +127,19 @@ def verify_facts(
                 )
             semantic_by_claim[item.claim_id] = item
 
-    memo: dict[str, _Grounding] = {}
+    grounding_by_claim = _compute_grounding(
+        claim_ids=claim_ids,
+        source_ids=source_ids,
+        support_edges=[
+            edge
+            for edges in incoming_support.values()
+            for edge in edges
+        ],
+    )
     results: list[ClaimVerification] = []
 
     for claim in pack.claims:
-        grounding = _ground_claim(
-            claim.claim_id,
-            incoming_support=incoming_support,
-            source_ids=source_ids,
-            memo=memo,
-            visiting=set(),
-        )
+        grounding = grounding_by_claim[claim.claim_id]
         contradiction_edges = incoming_contradictions.get(claim.claim_id, ())
         issues: list[VerificationIssue] = []
 
