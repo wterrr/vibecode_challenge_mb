@@ -21,9 +21,22 @@ from visual_director import VisualDirectorOutput, build_visual_director_task
 from .models import RepairIntent, RepairOwner
 
 
-def _augment(base: dict, intent: RepairIntent, instruction: str) -> dict:
+def _augment(
+    base: dict,
+    intent: RepairIntent,
+    instruction: str,
+    *,
+    current_artifact_key: str | None = None,
+    current_artifact=None,
+) -> dict:
     payload = json.loads(base["context"])
     payload["agent_aware_qa_repair_intent"] = intent.model_dump(mode="json")
+    if current_artifact_key is not None:
+        if current_artifact is None:
+            raise AgentContractError(
+                f"{current_artifact_key} is required for selective repair"
+            )
+        payload[current_artifact_key] = current_artifact.model_dump(mode="json")
     payload["repair_mode"] = {
         "instruction": instruction,
         "preserve_unaffected_content": True,
@@ -77,7 +90,9 @@ def build_agent_repair_task(
                 pedagogy,
             ),
             intent,
-            "Repair only the routed narration/factual/pacing problem. Do not make visual, geometry, motion, or renderer decisions.",
+            "Repair only the routed narration/factual/pacing problem. Preserve every unaffected segment and ID. Do not make visual, geometry, motion, or renderer decisions.",
+            current_artifact_key="current_lesson_script",
+            current_artifact=script,
         )
 
     if intent.owner == RepairOwner.PEDAGOGY_AGENT:
@@ -89,7 +104,9 @@ def build_agent_repair_task(
                 fact_report,
             ),
             intent,
-            "Repair only the routed pedagogical structure problem. Do not write narration or visual implementation.",
+            "Repair only the routed pedagogical structure problem. Preserve unaffected objectives, concept order, examples, misconceptions, and assessment probes. Do not write narration or visual implementation.",
+            current_artifact_key="current_pedagogy_plan",
+            current_artifact=pedagogy,
         )
 
     if intent.owner == RepairOwner.VISUAL_DIRECTOR:
@@ -103,7 +120,9 @@ def build_agent_repair_task(
                 script,
             ),
             intent,
-            "Repair only the routed semantic visual problem in the affected scenes. Keep output semantic-only; Core owns geometry, motion compilation, and pixels.",
+            "Repair only the routed semantic visual problem in the affected scenes. Preserve unaffected storyboard scenes and SceneGraphs exactly. Keep output semantic-only; Core owns geometry, motion compilation, and pixels.",
+            current_artifact_key="current_visual_director_output",
+            current_artifact=visual,
         )
 
     raise AgentContractError(f"unsupported repair owner {intent.owner.value!r}")
