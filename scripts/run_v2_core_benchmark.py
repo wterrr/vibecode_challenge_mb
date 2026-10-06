@@ -58,7 +58,9 @@ from learnflow_v2.render import (
     DEFAULT_TEXT_FONT_SIZE_PX,
     DeterministicPillowRenderer,
     RenderProfile,
+    SubtitleRenderCue,
     assemble_video,
+    burn_subtitles,
     mux_audio_track,
     render_scene_video,
     render_transition_video,
@@ -304,7 +306,23 @@ def _run_v2_once(
         if index < len(transition_artifacts):
             clips.append(transition_artifacts[index])
     video_only = assemble_video(tuple(clips), out_dir / "final_video_only.mp4")
-    final = mux_audio_track(video_only, narration_audio_path, out_dir / "final.mp4")
+    with_audio = mux_audio_track(video_only, narration_audio_path, out_dir / "final_with_audio.mp4")
+    subtitle_cues = []
+    cursor = 0.0
+    for scene_index, scene in enumerate(plan.scenes):
+        subtitle_cues.append(
+            SubtitleRenderCue(
+                start_seconds=cursor,
+                end_seconds=cursor + scene_duration,
+                # Match the deterministic V1 benchmark speech provider contract:
+                # subtitles are derived from narration and truncated to 40 chars.
+                text=(scene.narration[:40] if scene.narration else "Lesson narration"),
+            )
+        )
+        cursor += scene_duration
+        if scene_index < len(plan.scenes) - 1:
+            cursor += transition_duration
+    final = burn_subtitles(with_audio, tuple(subtitle_cues), out_dir / "final.mp4")
     video, audio, duration = _video_streams(Path(final.path))
     if video is None:
         raise RuntimeError("V2 final artifact has no video stream")
@@ -322,8 +340,7 @@ def _run_v2_once(
         "video_codec": video.get("codec_name"),
         "audio_codec": audio.get("codec_name") if audio else None,
         "audio_present": audio is not None,
-        # Current V2 render/assembly path muxes audio but does not yet burn structured subtitles.
-        "subtitles_integrated": False,
+        "subtitles_integrated": True,
         "width": video.get("width"),
         "height": video.get("height"),
         "duration_seconds": round(duration, 6),
