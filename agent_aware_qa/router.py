@@ -77,12 +77,12 @@ _VIDEO_ROUTE = {
         RepairActionKind.VISUAL_SEMANTIC_REGENERATION,
     ),
     VideoRecommendationOp.FIX_CONTINUITY: (
-        RepairOwner.VISUAL_DIRECTOR,
-        RepairActionKind.VISUAL_SEMANTIC_REGENERATION,
+        RepairOwner.CORE_REPAIR,
+        RepairActionKind.CORE_TEMPORAL_REPAIR,
     ),
     VideoRecommendationOp.ADJUST_PACING: (
-        RepairOwner.SCRIPT_AGENT,
-        RepairActionKind.SCRIPT_PACING_REWRITE,
+        RepairOwner.CORE_REPAIR,
+        RepairActionKind.CORE_TEMPORAL_REPAIR,
     ),
     VideoRecommendationOp.REDUCE_NARRATION_REDUNDANCY: (
         RepairOwner.SCRIPT_AGENT,
