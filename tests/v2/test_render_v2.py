@@ -203,14 +203,19 @@ def test_public_scene_render_revalidates_forged_profile(tmp_path: Path):
 
 def test_transition_rejects_stale_geometry_even_when_plan_is_individually_valid(tmp_path: Path):
     plan = _transition()
-    stale = plan.model_copy(
-        update={
-            "persistent_objects": (
-                plan.persistent_objects[0].model_copy(
-                    update={"source_rect": Rect(x=35, y=55, width=90, height=60)}
-                ),
-            )
-        }
+    item_payload = plan.persistent_objects[0].model_dump(mode="json")
+    item_payload["source_rect"] = {"x":35, "y":55, "width":90, "height":60}
+    for key in ("normalized_displacement_x", "normalized_displacement_y", "normalized_scale_x", "normalized_scale_y"):
+        item_payload.pop(key, None)
+    stale_item = PersistentObjectTransition.model_validate(item_payload)
+    stale = InterSceneTransitionPlan(
+        transition_id=plan.transition_id,
+        from_scene=plan.from_scene,
+        to_scene=plan.to_scene,
+        duration=plan.duration,
+        persistent_objects=(stale_item,),
+        departing_node_ids=plan.departing_node_ids,
+        entering_node_ids=plan.entering_node_ids,
     )
     with pytest.raises(RenderInvalidInputError, match="geometry contradicts"):
         render_transition_video(
