@@ -3370,7 +3370,7 @@ no visual coordinates/code
 
 ## Visual Director
 
-**Status: IMPLEMENTED / AWAITING CI**
+**Status: PASS**
 
 Output:
 
@@ -3389,6 +3389,8 @@ no pixel coordinates
 ---
 
 ## End-to-End Orchestration
+
+**Status: NEXT / NOT STARTED**
 
 ```text
 query

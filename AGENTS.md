@@ -37,6 +37,7 @@ Accepted stages:
 - **Fact Verification — PASS.** A deterministic source-grounding/contradiction gate controls factual narration eligibility; Hermes semantic verdicts are structured but cannot override missing evidence.
 - **Pedagogy Agent — PASS.** Hermes produces structured pedagogy from approved claims only; deterministic checks require researched concept progression, objective assessment coverage, and Script readiness.
 - **Script Agent — PASS.** Hermes produces `LessonScript` narration with exact PedagogyPlan claim preservation, objective coverage, required teaching functions, and no visual implementation fields.
+- **Visual Director — PASS.** Hermes produces semantic `Storyboard` + schema-valid `SceneGraph[]`, reuses a deterministic lesson `ConceptRegistry`, preserves Script coverage/order, and emits no geometry or renderer controls.
 
 Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifier, 11 contract regressions, and Core Freeze guard passed.
 
@@ -46,9 +47,11 @@ Accepted stage: **Fact Verification — PASS.** Source-grounded evidence, cycle-
 
 Accepted stage: **Pedagogy Agent — PASS.** Hermes receives fact-approved research only, unsafe/forged approvals are rejected before context exposure, and deterministic validation enforces concept provenance, assessment coverage, examples, and Script readiness.
 
-Accepted stage: **Script Agent — PASS.** Hermes writes structured narration only; deterministic validation preserves the exact PedagogyPlan claim set, objective coverage, factual claim binding, and the Script/Visual boundary. Next authorized stage: **Visual Director**, which has not started yet.
+Accepted stage: **Script Agent — PASS.** Hermes writes structured narration only; deterministic validation preserves the exact PedagogyPlan claim set, objective coverage, factual claim binding, and the Script/Visual boundary.
 
-During Visual Director, implement only semantic visual direction that converts LessonScript segments into schema-valid SceneGraph outputs with semantic layout hints and no pixel coordinates. Do not implement Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
+Accepted stage: **Visual Director — PASS.** CI run `37437560550` verifies exact Script coverage/order, deterministic ConceptRegistry identity, semantic-only SceneGraph V2.1 output, 18 regressions, exact pinned Hermes structured-output compatibility, and Core Freeze preservation. Next authorized stage: **End-to-End Orchestration**, which has not started yet.
+
+During End-to-End Orchestration, connect the already accepted typed stages into one bounded query → research → evidence → pedagogy → script → visual direction → Core V2 pipeline. Do not implement Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
 
 ## LearnFlow Capability Plugin safety
 

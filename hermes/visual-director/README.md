@@ -2,7 +2,7 @@
 
 This stage uses Hermes to convert an accepted LessonScript into semantic visual direction while keeping geometry and pixels inside LearnFlow Core V2.
 
-Status: IMPLEMENTED_AWAITING_CI.
+Status: PASS. Accepted CI run `37437560550` proves semantic SceneGraph generation, exact Storyboard/Script coverage, deterministic concept identity, 18 focused regressions, exact pinned Hermes schema compatibility, and Core Freeze preservation.
 
 ## Hermes responsibilities
 
