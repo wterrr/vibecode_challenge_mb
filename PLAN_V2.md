@@ -3276,7 +3276,7 @@ but cannot touch renderer internals
 
 ## Agent Contracts
 
-**Status: IMPLEMENTED / VERIFYING**
+**Status: PASS**
 
 Implement:
 
@@ -3294,6 +3294,8 @@ BudgetLedger
 ---
 
 ## Research Orchestration
+
+**Status: NEXT / NOT STARTED**
 
 Implement:
 
