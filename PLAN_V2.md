@@ -3276,7 +3276,7 @@ but cannot touch renderer internals
 
 ## Agent Contracts
 
-**Status: NEXT / NOT STARTED**
+**Status: IMPLEMENTED / VERIFYING**
 
 Implement:
 
