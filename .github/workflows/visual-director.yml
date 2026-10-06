@@ -1,0 +1,71 @@
+name: Visual Director
+
+on:
+  pull_request:
+    paths:
+      - "visual_director/**"
+      - "hermes/visual-director/**"
+      - "scripts/verify_visual_director.py"
+      - "scripts/verify_hermes_visual_director.py"
+      - "tests/hermes/test_visual_director.py"
+      - "AGENTS.md"
+      - "PLAN_V2.md"
+      - ".github/workflows/visual-director.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "visual_director/**"
+      - "hermes/visual-director/**"
+      - "scripts/verify_visual_director.py"
+      - "scripts/verify_hermes_visual_director.py"
+      - "tests/hermes/test_visual_director.py"
+      - "AGENTS.md"
+      - "PLAN_V2.md"
+      - ".github/workflows/visual-director.yml"
+
+jobs:
+  visual-director-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install test dependencies
+        run: python -m pip install "pydantic>=2" pytest
+      - name: Verify Visual Director acceptance
+        run: python scripts/verify_visual_director.py
+      - name: Visual Director tests
+        run: pytest -q --confcutdir=tests/hermes tests/hermes/test_visual_director.py
+      - name: Core Freeze guard
+        run: python scripts/verify_v2_core_freeze.py
+
+  pinned-hermes-visual-schema:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install exact pinned Hermes runtime
+        run: bash scripts/install_hermes_bootstrap.sh
+      - name: Prepare isolated Visual Director profile
+        shell: bash
+        run: |
+          VERIFY_HOME="$PWD/.hermes_runtime/visual-director/verify-home"
+          rm -rf "$VERIFY_HOME"
+          mkdir -p "$VERIFY_HOME"
+          cp hermes/bootstrap/config.yaml "$VERIFY_HOME/config.yaml"
+      - name: Verify structured visual schema against pinned Hermes
+        shell: bash
+        run: |
+          VERIFY_HOME="$PWD/.hermes_runtime/visual-director/verify-home"
+          if [[ -x ".hermes_runtime/hermes-agent/venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/venv/bin/python"
+          elif [[ -x ".hermes_runtime/hermes-agent/.venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/.venv/bin/python"
+          else
+            echo "Pinned Hermes Python not found" >&2
+            exit 1
+          fi
+          HERMES_HOME="$VERIFY_HOME" "$HPY" scripts/verify_hermes_visual_director.py

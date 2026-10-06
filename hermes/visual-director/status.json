@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "stage": "visual-director",
+  "name": "Visual Director",
+  "state": "PASS",
+  "depends_on": [
+    {
+      "stage": "script-agent",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "agent-contracts",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
+  ],
+  "acceptance": {
+    "scenegraphs_schema_valid": true,
+    "storyboard_script_coverage": true,
+    "semantic_layout_hints_only": true,
+    "no_pixel_coordinates": true,
+    "deterministic_concept_registry": true,
+    "registry_identity_validation": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "next_stage": "End-to-End Orchestration",
+  "evidence": {
+    "accepted_ci_run": 37437560550,
+    "accepted_head_sha": "5f055a107899527d7913f1bd3ff899513929a083",
+    "visual_director_acceptance_verifier": "PASS",
+    "pytest": "18 passed",
+    "scenegraphs_schema_valid": "PASS",
+    "storyboard_script_coverage": "PASS",
+    "deterministic_concept_registry": "PASS",
+    "registry_identity_validation": "PASS",
+    "semantic_layout_hints_only": "PASS",
+    "no_pixel_coordinates": "PASS",
+    "pinned_hermes_visual_schema": "PASS",
+    "structured_visual_director_schema": "PASS",
+    "scenegraph_v2_1_schema": "PASS",
+    "core_freeze": "PASS"
+  }
+}
