@@ -12,6 +12,7 @@ if str(ROOT) not in sys.path:
 
 from live_evaluation import (
     DEFAULT_LIVE_MODEL,
+    LIVE_MODEL_CANDIDATES,
     PILOT_TOPIC_ID,
     build_pilot_brief,
     initialize_governance_state,
@@ -23,8 +24,13 @@ def main() -> int:
     brief = build_pilot_brief()
     if brief.brief_id != f"live-eval:{PILOT_TOPIC_ID}":
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL pilot topic binding")
-    if DEFAULT_LIVE_MODEL != "qwen/qwen3.8-27b:free":
-        raise SystemExit("LIVE_V2D_CONTRACT=FAIL pilot must default to Qwen structured-agent candidate")
+    expected_models = (
+        "apodex/apodex-1.1-mini:free",
+        "nvidia/nemotron-3-super-120b-a12b:free",
+        "nex-agi/nex-n2.5-mini:free",
+    )
+    if LIVE_MODEL_CANDIDATES != expected_models or DEFAULT_LIVE_MODEL != expected_models[0]:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL live model candidate order")
 
     runtime = ROOT / ".hermes_runtime" / "live-v2d-contract"
     state = initialize_governance_state(runtime / "state.json")
@@ -71,6 +77,11 @@ def main() -> int:
     if "push" not in workflow or "workflow_dispatch" not in workflow:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL controlled triggers missing")
 
+    probe_source = (ROOT / "live_evaluation" / "model_probe.py").read_text(encoding="utf-8")
+    for required in ('"tools": [', '"tool_choice": "none"', '"type": "json_schema"', '"require_parameters": True'):
+        if required not in probe_source:
+            raise SystemExit("LIVE_V2D_CONTRACT=FAIL model capability probe")
+
     source = (ROOT / "live_evaluation" / "hermes_runner.py").read_text(encoding="utf-8")
     if 'provider="openrouter"' not in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL OpenRouter runner binding")
@@ -84,6 +95,7 @@ def main() -> int:
     print("LIVE_V2D_CONTRACT=PASS")
     print(f"pilot_topic={PILOT_TOPIC_ID}")
     print(f"default_model={DEFAULT_LIVE_MODEL}")
+    print("model_probe=tools+tool_choice+json_schema+require_parameters")
     print("usd_cap=none")
     print("publication_authorized=false")
     print("live_secret_step_scope=PASS")

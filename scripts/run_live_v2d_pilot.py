@@ -13,7 +13,13 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from live_evaluation import DEFAULT_LIVE_MODEL, PILOT_TOPIC_ID, run_live_v2d_pilot
+from live_evaluation import (
+    LIVE_MODEL_CANDIDATES,
+    ModelProbeError,
+    PILOT_TOPIC_ID,
+    run_live_v2d_pilot,
+    select_live_model,
+)
 
 
 def _safe_error(exc: BaseException, secret: str) -> str:
@@ -29,11 +35,20 @@ def main() -> int:
         print("LIVE_V2D_PILOT=BLOCKED reason=OPENROUTER_API_KEY missing", file=sys.stderr)
         return 2
 
-    model = os.environ.get("LEARNFLOW_LIVE_MODEL", DEFAULT_LIVE_MODEL).strip()
+    configured = os.environ.get("LEARNFLOW_LIVE_MODEL_CANDIDATES", "").strip()
+    candidates = (
+        tuple(item.strip() for item in configured.split(",") if item.strip())
+        if configured
+        else LIVE_MODEL_CANDIDATES
+    )
     topic_id = os.environ.get("LEARNFLOW_LIVE_TOPIC_ID", PILOT_TOPIC_ID).strip()
     runtime = ROOT / ".hermes_runtime" / "live-v2d-evaluation"
+    selection = None
 
     try:
+        selection = select_live_model(api_key=key, candidates=candidates)
+        model = selection.selected_model
+        print(f"LIVE_MODEL_PROBE=PASS selected={model}")
         report = run_live_v2d_pilot(
             api_key=key,
             model=model,
@@ -42,6 +57,16 @@ def main() -> int:
         )
     except BaseException as exc:
         runtime.mkdir(parents=True, exist_ok=True)
+        probe_rows = (
+            [item.to_dict() for item in exc.probes]
+            if isinstance(exc, ModelProbeError)
+            else ([] if selection is None else [item.to_dict() for item in selection.probes])
+        )
+        model = (
+            selection.selected_model
+            if selection is not None
+            else (candidates[0] if candidates else "<none>")
+        )
         failure = {
             "schema_version": "1.0",
             "evaluation": "governed-live-v2d-pilot",
@@ -49,6 +74,7 @@ def main() -> int:
             "model": model,
             "success": False,
             "error": _safe_error(exc, key),
+            "model_probe": probe_rows,
         }
         (runtime / "pilot_failure.json").write_text(
             json.dumps(failure, indent=2, ensure_ascii=False) + "\n",
@@ -57,6 +83,12 @@ def main() -> int:
         print(f"LIVE_V2D_PILOT=FAIL reason={failure['error']}", file=sys.stderr)
         traceback.print_exc()
         return 1
+
+    if selection is not None:
+        (runtime / "model_probe.json").write_text(
+            json.dumps(selection.to_dict(), indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
 
     safe = {
         "topic_id": report["topic_id"],

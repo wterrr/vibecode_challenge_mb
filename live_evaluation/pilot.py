@@ -21,10 +21,11 @@ from learnflow_bench import load_corpus
 from runtime_governance import GovernanceState
 
 from .hermes_runner import LiveHermesStructuredRunner
+from .model_probe import LIVE_MODEL_CANDIDATES
 
 ROOT = Path(__file__).resolve().parents[1]
 PILOT_TOPIC_ID = "lfb-001-cs"
-DEFAULT_LIVE_MODEL = "qwen/qwen3.8-27b:free"
+DEFAULT_LIVE_MODEL = LIVE_MODEL_CANDIDATES[0]
 
 
 def _load_capability_plugin():

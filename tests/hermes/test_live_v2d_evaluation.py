@@ -12,6 +12,7 @@ if str(ROOT) not in sys.path:
 
 from live_evaluation import (
     DEFAULT_LIVE_MODEL,
+    LIVE_MODEL_CANDIDATES,
     PILOT_TOPIC_ID,
     build_pilot_brief,
     initialize_governance_state,
@@ -31,8 +32,23 @@ def test_unknown_pilot_topic_fails_closed():
         build_pilot_brief("not-in-frozen-corpus")
 
 
-def test_default_live_model_is_qwen_structured_agent_candidate():
-    assert DEFAULT_LIVE_MODEL == "qwen/qwen3.8-27b:free"
+def test_live_model_candidates_are_ordered_and_qwen_free_is_removed():
+    assert LIVE_MODEL_CANDIDATES == (
+        "apodex/apodex-1.1-mini:free",
+        "nvidia/nemotron-3-super-120b-a12b:free",
+        "nex-agi/nex-n2.5-mini:free",
+    )
+    assert DEFAULT_LIVE_MODEL == LIVE_MODEL_CANDIDATES[0]
+    assert all("qwen/qwen3.8-27b:free" != item for item in LIVE_MODEL_CANDIDATES)
+
+
+def test_model_probe_requires_tools_and_native_json_schema():
+    source = (ROOT / "live_evaluation" / "model_probe.py").read_text(encoding="utf-8")
+    assert '"tools": [' in source
+    assert '"tool_choice": "none"' in source
+    assert '"type": "json_schema"' in source
+    assert '"strict": True' in source
+    assert '"require_parameters": True' in source
 
 
 def test_governance_state_is_fail_closed(tmp_path):
@@ -138,3 +154,10 @@ def test_live_provider_waits_for_contract_job_before_spending_provider_quota():
     assert "live-provider-pilot:\n    needs: live-eval-contract" in workflow
     assert "github.event.pull_request.head.repo.full_name == github.repository" in workflow
     assert "github.head_ref == 'chatgpt/live-v2d-evaluation'" in workflow
+
+
+def test_live_script_selects_model_via_probe_before_pilot():
+    source = (ROOT / "scripts" / "run_live_v2d_pilot.py").read_text(encoding="utf-8")
+    assert "select_live_model(api_key=key, candidates=candidates)" in source
+    assert "LIVE_MODEL_PROBE=PASS" in source
+    assert "model_probe.json" in source
