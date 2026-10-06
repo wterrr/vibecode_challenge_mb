@@ -13,7 +13,9 @@
   "provider": {
     "id": "openrouter",
     "api_key_env": "OPENROUTER_API_KEY",
-    "model": "openai/gpt-6-luna"
+    "primary_model": "openai/gpt-6-luna",
+    "free_fallback_model": "nvidia/nemotron-3.5-lightning:free",
+    "fallback_policy": "Try the pinned Luna model first. If that live attempt does not satisfy H-01, retry once with the pinned free fallback. Record the model that actually passed."
   },
   "protocol": {
     "cli_output_format": "stream-json",
@@ -33,6 +35,7 @@
   "acceptance": {
     "offline_contract_tests_required": true,
     "live_openrouter_smoke_required": true,
-    "merge_before_live_smoke": false
+    "merge_before_live_smoke": false,
+    "live_model_policy": "PASS may use either the primary model or the pinned free fallback, but the result must record the actual model used."
   }
 }
