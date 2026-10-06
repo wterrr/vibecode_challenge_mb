@@ -2,6 +2,8 @@
 
 This stage uses Hermes native `delegate_task` rather than implementing a parallel agent framework.
 
+**Status: PASS.** Accepted CI proves deterministic provenance-preserving merge, 10 regression tests, Core Freeze preservation, and the exact pinned Hermes delegation boundary.
+
 ## Topology
 
 ```text
