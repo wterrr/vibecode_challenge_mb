@@ -72,6 +72,8 @@ def main() -> int:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL stateless live runner")
     if 'disabled = [] if research else ["*"]' not in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL non-research tools not disabled")
+    if "max_iterations=128 if research else 3" not in source:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL research iteration budget")
 
     print("LIVE_V2D_CONTRACT=PASS")
     print(f"pilot_topic={PILOT_TOPIC_ID}")
@@ -80,6 +82,7 @@ def main() -> int:
     print("publication_authorized=false")
     print("live_secret_step_scope=PASS")
     print("native_research_delegation_enabled=PASS")
+    print("research_max_iterations=128")
     return 0
 
 
