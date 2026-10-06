@@ -102,7 +102,9 @@ jobs:
           "$HPY" scripts/run_live_v2d_pilot.py
 
       - name: Core Freeze guard
-        run: "$HPY" scripts/verify_v2_core_freeze.py
+        shell: bash
+        run: |
+          "$HPY" scripts/verify_v2_core_freeze.py
 
       - name: Upload redacted live-eval evidence
         if: always()
