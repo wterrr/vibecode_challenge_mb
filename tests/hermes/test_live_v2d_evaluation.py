@@ -177,3 +177,13 @@ def test_research_host_assembly_has_no_llm_synthesis_turn():
     ]
     assert "run_conversation(" not in research_block
     assert "delegate_task(" in research_block
+
+
+
+def test_live_workflow_cancels_superseded_runs_before_provider_usage():
+    workflow = (
+        ROOT / ".github" / "workflows" / "live-v2d-evaluation.yml"
+    ).read_text(encoding="utf-8")
+    assert "concurrency:" in workflow
+    assert "cancel-in-progress: true" in workflow
+    assert "live-v2d-${{ github.event.pull_request.number || github.ref }}" in workflow

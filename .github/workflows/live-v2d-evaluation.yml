@@ -1,5 +1,9 @@
 name: Governed Live V2D Evaluation
 
+concurrency:
+  group: live-v2d-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
