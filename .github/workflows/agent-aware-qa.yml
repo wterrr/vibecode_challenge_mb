@@ -66,4 +66,5 @@ jobs:
             echo "Pinned Hermes Python not found" >&2
             exit 1
           fi
+          "$HPY" -m pip install -q "pydantic>=2" pillow "kiwisolver==1.5.1"
           HERMES_HOME="$VERIFY_HOME" "$HPY" scripts/verify_hermes_agent_aware_qa.py
