@@ -61,3 +61,19 @@ def test_benchmark_runner_imports_without_executing():
     assert callable(runner._run_v2_once)
     assert callable(runner._repair_benchmark)
     assert callable(runner._scene_qa_report)
+
+
+def test_benchmark_source_sha_uses_explicit_real_head_and_rejects_malformed_env(monkeypatch):
+    import scripts.run_v2_core_benchmark as runner
+
+    expected = "a" * 40
+    monkeypatch.setenv("BENCHMARK_SOURCE_COMMIT", expected)
+    assert runner._benchmark_source_sha() == expected
+
+    monkeypatch.setenv("BENCHMARK_SOURCE_COMMIT", "not-a-sha")
+    try:
+        runner._benchmark_source_sha()
+    except RuntimeError as exc:
+        assert "40-character git SHA" in str(exc)
+    else:
+        raise AssertionError("malformed BENCHMARK_SOURCE_COMMIT must be rejected")
