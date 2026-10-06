@@ -43,11 +43,13 @@ See `benchmarks/core_gate/README.md`.
 
 ## Why Core Gate is currently blocked
 
+The deterministic V2 renderer/assembly baseline is now implemented under `learnflow_v2.render`, so the original "renderer missing" prerequisite is closed.
+
 The repository still lacks evidence required by `PLAN_V2.md` for the following reasons:
 
-1. **No V2 renderer/production integration exists.** The V2 packages compile semantics, layout, motion, transitions, QA, critic and repair artifacts, but there is no `learnflow_v2.render` end-to-end pixel/video path to benchmark.
-2. **No frozen V2 end-to-end benchmark result exists** comparable to the frozen V1 baseline under `benchmarks/baselines/v1/`.
-3. **No agreed V1-vs-V2 static-quality metric artifact exists**, so `V2 static quality > V1 baseline` cannot be claimed scientifically yet.
+1. **No frozen V2 end-to-end benchmark result exists** comparable to the frozen V1 baseline under `benchmarks/baselines/v1/`.
+2. **No agreed V1-vs-V2 static-quality metric artifact exists**, so `V2 static quality > V1 baseline` cannot be claimed scientifically yet.
+3. **Production/API integration and audio mux are not yet benchmarked as a V2 publish path.** The renderer can create deterministic scene/transition MP4 clips and assemble a video-only draft, but this is not yet evidence for the full product path.
 
 Missing evidence is treated as `BLOCKED`, never as an implicit PASS. Hermes/V2D must not start until Core Gate is actually satisfied.
 
@@ -64,7 +66,7 @@ Motion Grammar + Scheduler/Compiler
         ↓
 InterSceneTransitionPlan
         ↓
-renderer (still missing in V2)
+deterministic V2 renderer + assembly
         ↓
 Deterministic QA
         ↓
@@ -98,6 +100,7 @@ Non-negotiable rules:
 - `learnflow_v2.qa` — deterministic scene QA plus optional structured VLM critic.
 - `learnflow_v2.repair` — typed repair planning, artifact provenance/cache reuse, dependency invalidation and deterministic re-check binding.
 - `learnflow_v2.videoqa` — structured whole-video critic for visual variety, continuity, style, pacing and pedagogical alignment.
+- `learnflow_v2.render` — deterministic Pillow/FFmpeg pixel renderer, Tier-1 motion playback, persistent MOVE transitions and video assembly.
 - `learnflow_v2.core_gate` — fail-closed Core Gate evidence schema and evaluator.
 
 ## V1 baseline
@@ -117,7 +120,7 @@ This is the comparison baseline. Do not replace it while evaluating V2.
 The next work is **not Hermes**. It is to close Core Gate evidence gaps:
 
 ```text
-V2 renderer / integration
+deterministic renderer baseline ✅
         ↓
 frozen V2 end-to-end benchmark
         ↓
