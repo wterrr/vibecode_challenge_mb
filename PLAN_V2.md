@@ -3356,7 +3356,7 @@ required before script.
 
 ## Script Agent
 
-**Status: IMPLEMENTED / VERIFYING**
+**Status: PASS**
 
 Acceptance:
 
@@ -3369,6 +3369,8 @@ no visual coordinates/code
 ---
 
 ## Visual Director
+
+**Status: NEXT / NOT STARTED**
 
 Output:
 
