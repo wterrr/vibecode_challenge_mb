@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "metric_id": "static_composition_proxy_v1",
+  "frozen_spec": "benchmarks/specs/v2_core_gate_v1.json",
+  "frozen_spec_sha256": "03e5506a4d90f057e3131cc99734b5e0c113d727f76894887348a3a4a303eeed",
+  "sample": "one midpoint frame per scene",
+  "background_estimator": "median RGB of four 5%-corner patches",
+  "foreground_color_distance_threshold": 24,
+  "weights": {
+    "contrast": 0.4,
+    "occupancy_balance": 0.35,
+    "safe_margin": 0.25
+  },
+  "contrast_component": "clip(luma_std / 64, 0, 1)",
+  "occupancy_component": "clip(1 - abs(foreground_fraction - 0.30) / 0.30, 0, 1)",
+  "safe_margin_component": "1 - clip(foreground_fraction_inside_outer_4pct / 0.08, 0, 1)",
+  "aggregate": "100 * weighted mean across all 9 representative frames",
+  "interpretation": "deterministic static-composition proxy only; not a human aesthetic score",
+  "official_v1_score": 69.1192536,
+  "official_v2_score": 74.66117994,
+  "official_delta": 5.54192634
+}
