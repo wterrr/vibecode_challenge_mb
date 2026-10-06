@@ -7,6 +7,7 @@ import sys
 
 import pytest
 import yaml
+from pydantic import ValidationError
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -81,7 +82,7 @@ def test_each_task_has_runtime_cap():
 
 
 def test_unknown_or_forward_parent_is_rejected():
-    with pytest.raises(AgentContractError, match="unknown/forward parents"):
+    with pytest.raises((AgentContractError, ValidationError), match="unknown/forward parents"):
         DurableJobTemplate(
             template_id="bad",
             version="1",
