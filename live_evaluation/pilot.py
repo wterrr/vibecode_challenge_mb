@@ -18,7 +18,6 @@ from agent_contracts import (
     LearningBrief,
 )
 from learnflow_bench import load_corpus
-from lesson_pipeline import CapabilityCoreGateway, run_lesson_pipeline
 from runtime_governance import GovernanceState
 
 from .hermes_runner import LiveHermesStructuredRunner
@@ -149,6 +148,8 @@ def run_live_v2d_pilot(
     os.environ["LEARNFLOW_GOVERNANCE_EVENTS"] = str(events_path)
     os.environ["HERMES_ENABLE_PROJECT_PLUGINS"] = "true"
     initialize_governance_state(state_path)
+
+    from lesson_pipeline import CapabilityCoreGateway, run_lesson_pipeline
 
     brief = build_pilot_brief(topic_id)
     runner = LiveHermesStructuredRunner(
