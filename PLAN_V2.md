@@ -3319,7 +3319,7 @@ bounded delegation depth
 
 ## Fact Verification
 
-**Status: IMPLEMENTED / VERIFYING**
+**Status: PASS**
 
 Every factual narration maps to:
 
@@ -3337,6 +3337,8 @@ contradictions flagged
 ---
 
 ## Pedagogy Agent
+
+**Status: NEXT / NOT STARTED**
 
 Acceptance:
 
