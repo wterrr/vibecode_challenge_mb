@@ -35,7 +35,9 @@ Accepted stages:
 - **LearnFlow Capability Plugin — PASS.** The exact pinned Hermes runtime discovers the project plugin and dispatches `learnflow_create → learnflow_run → learnflow_render`. Integration verification renders a real MP4 and preserves the Core Freeze boundary.
 - **Agent Contracts — PASS.** `LearningBrief`, `ResearchPack`, `EvidenceGraph`, `PedagogyPlan`, `LessonScript`, `Storyboard`, `AgentRun`, and `BudgetLedger` are strict, versioned, canonically serializable artifacts with cross-artifact integrity checks.
 
-Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifier, 11 contract regressions, and Core Freeze guard passed. Next authorized stage: **Research Orchestration**, which has not started yet.
+Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifier, 11 contract regressions, and Core Freeze guard passed.
+
+Current stage: **Research Orchestration — IMPLEMENTED / VERIFYING**. It must use Hermes native `delegate_task`; LearnFlow owns only role policy, typed task/result contracts, provenance preservation, and bounded delegation.
 
 During Research Orchestration, implement only the Director → Research Orchestrator → bounded specialized-researcher flow and its provenance/delegation constraints. Do not implement Fact Verification, Pedagogy Agent, Script Agent, Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
 
@@ -101,3 +103,13 @@ python scripts/verify_agent_contracts.py
 pytest -q --confcutdir=tests/hermes tests/hermes/test_agent_contracts.py
 python scripts/verify_v2_core_freeze.py
 ```
+
+## Research Orchestration boundary
+
+Research topology is fixed to Director → Research Orchestrator → at most three specialist researchers. Configure Hermes with `max_spawn_depth: 2`, `max_concurrent_children: 3`, and `oneshot_max_children: 3`.
+
+Use Hermes native delegation and isolated child contexts. Do not implement a second agent runtime, message bus, or recursive scheduler in LearnFlow.
+
+Specialist roles are Concept Researcher, Evidence Researcher, and Misconception Researcher. Leaf specialists must not delegate further.
+
+Every evidence claim must preserve declared source IDs and source locators. Research Orchestration may assemble `ResearchPack` and `EvidenceGraph`, but contradiction resolution and unsupported-claim blocking belong to the later Fact Verification stage.
