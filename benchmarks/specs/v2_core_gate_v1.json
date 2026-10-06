@@ -1,0 +1,55 @@
+{
+  "benchmark_id": "v2-core-gate-v1",
+  "schema_version": "1.0",
+  "frozen_against_v1_baseline": "benchmarks/baselines/v1/baseline.json",
+  "lesson_keys": [
+    "photosynthesis",
+    "ram_vs_ssd",
+    "tcp_three_way_handshake"
+  ],
+  "render_profile": {
+    "width": 640,
+    "height": 360,
+    "fps": 12,
+    "scene_duration_seconds": 2,
+    "transition_duration_seconds": 0.5,
+    "repetitions": 2
+  },
+  "motion_policy": {
+    "per_scene": "ENTER_FADE_FIRST_NODE",
+    "triggered": false
+  },
+  "graph_backend": "GRAPHVIZ",
+  "static_quality_metric": {
+    "metric_id": "static_composition_proxy_v1",
+    "sample": "one midpoint frame per scene",
+    "background_estimator": "median RGB of four 5%-corner patches",
+    "foreground_color_distance_threshold": 24,
+    "weights": {
+      "contrast": 0.4,
+      "occupancy_balance": 0.35,
+      "safe_margin": 0.25
+    },
+    "contrast_component": "clip(luma_std / 64, 0, 1)",
+    "occupancy_component": "clip(1 - abs(foreground_fraction - 0.30) / 0.30, 0, 1)",
+    "safe_margin_component": "1 - clip(foreground_fraction_inside_outer_4pct / 0.08, 0, 1)",
+    "aggregate": "100 * weighted mean across all 9 representative frames",
+    "interpretation": "deterministic static-composition proxy only; not a human aesthetic score"
+  },
+  "core_gate_mapping": {
+    "render_success_rate": "successful final V2 lesson videos / 3",
+    "fatal_clipping_count": "sum deterministic layout preflight content clipping across 9 scenes",
+    "fatal_overlap_count": "sum non-semantic bbox collisions across 9 scenes",
+    "invalid_motion_plan_count": "scene MotionPlan/schedule/compiler failures across 9 scenes",
+    "selective_repair_success_rate": "repair cases whose patch changes scene hash and rendered frame digest, deterministic QA/layout preflight passes, and unrelated scene digests remain identical",
+    "reproducibility_rate": "lesson repeated run final frame_digest equality / successful lessons",
+    "v1_v2_critical_regression_count": "count lessons violating frozen V1 required media invariants (video codec, audio stream/codec, resolution, final artifact)",
+    "v2_static_quality_delta": "V2 static_composition_proxy_v1 - V1 static_composition_proxy_v1"
+  },
+  "repair_cases": {
+    "selection": "one deterministic first-node SET_REGION patch per scene",
+    "expected_case_count": 9,
+    "success_requires_pixel_change": true
+  },
+  "freeze_rule": "Spec and metric formula must not change after first benchmark execution. Fix engine only, then rerun this exact spec."
+}
