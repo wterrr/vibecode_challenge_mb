@@ -37,7 +37,9 @@ Accepted stages:
 
 Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifier, 11 contract regressions, and Core Freeze guard passed.
 
-Accepted stage: **Research Orchestration — PASS.** Hermes native nested delegation, isolated child contexts, bounded depth/concurrency, leaf recursion blocking, structured child outputs, and provenance-preserving merge are all verified. Next authorized stage: **Fact Verification**, which has not started yet.
+Accepted stage: **Research Orchestration — PASS.** Hermes native nested delegation, isolated child contexts, bounded depth/concurrency, leaf recursion blocking, structured child outputs, and provenance-preserving merge are all verified.
+
+Current stage: **Fact Verification — IMPLEMENTED / VERIFYING**. Hermes may judge evidence semantics, but deterministic source-grounding and contradiction rules have final authority over narration eligibility.
 
 During Fact Verification, implement only claim/evidence validation, unsupported-claim blocking, and contradiction signaling. Do not implement Pedagogy Agent, Script Agent, Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
 
@@ -113,3 +115,15 @@ Use Hermes native delegation and isolated child contexts. Do not implement a sec
 Specialist roles are Concept Researcher, Evidence Researcher, and Misconception Researcher. Leaf specialists must not delegate further.
 
 Every evidence claim must preserve declared source IDs and source locators. Research Orchestration may assemble `ResearchPack` and `EvidenceGraph`, but contradiction resolution and unsupported-claim blocking belong to the later Fact Verification stage.
+
+## Fact Verification boundary
+
+Fact Verification evaluates `ResearchPack` + `EvidenceGraph` before factual narration. A claim is narratable only when deterministic verification finds a real source-grounded support/derivation path and no contradiction or unresolved semantic uncertainty.
+
+Do not treat `ResearchClaim.source_ids` alone as proof. Declaring a source ID is not equivalent to an evidence path.
+
+Claim-to-claim cycles must not self-ground. Use fixed-point source provenance so a cycle becomes grounded only if some path reaches a real source node.
+
+Hermes semantic review is advisory in the positive direction: `SUPPORTED` cannot override missing deterministic evidence. `CONTRADICTED` or `UNCERTAIN` must fail closed.
+
+Every factual narration must carry one or more approved `claim_id` values. Pedagogy and Script stages must consume this gate rather than re-deciding evidence validity.
