@@ -155,6 +155,13 @@ def video_result(context, issue_type, op, dimension, *, scene_ids=None):
     )
 
 
+def test_routing_context_preserves_storyboard_order():
+    *_, visual, context = fixture()
+    assert context.scene_ids == tuple(
+        scene.scene_id for scene in visual.storyboard.scenes
+    )
+
+
 def test_factual_evidence_routes_to_research():
     *_, context = fixture()
     finding = SemanticQAFinding(
