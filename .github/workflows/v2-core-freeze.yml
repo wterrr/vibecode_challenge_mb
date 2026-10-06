@@ -50,7 +50,7 @@ jobs:
           python-version: "3.12"
           cache: pip
       - name: Minimal verifier dependency
-        run: pip install "pydantic>=2"
+        run: pip install "pydantic>=2" pytest
       - name: Verify immutable Core Freeze boundary
         run: python scripts/verify_v2_core_freeze.py
       - name: Re-evaluate frozen Core Gate evidence
