@@ -121,6 +121,7 @@ def build_director_delegate_task(brief: LearningBrief) -> dict:
         "learning_brief": json.loads(brief.to_canonical_json()),
         "research_plan": {
             "plan_id": plan.plan_id,
+            "brief_id": plan.brief_id,
             "max_delegation_depth": plan.max_delegation_depth,
             "max_specialists": plan.max_specialists,
             "specialist_tasks": specialist_payload,
@@ -132,14 +133,14 @@ def build_director_delegate_task(brief: LearningBrief) -> dict:
             "No specialist may depend on a sibling specialist's IDs or output.",
             "Do not ask a specialist to delegate further.",
             "Preserve source_id, locator, claim_id and evidence-edge provenance exactly.",
-            "Synthesize a ResearchPack and EvidenceGraph; do not perform Fact Verification in this stage.",
-            "Return only JSON matching ResearchOrchestrationResult.",
+            "Do not synthesize or rewrite ResearchPack/EvidenceGraph in the LLM.",
+            "The host validates each specialist result and assembles final research artifacts deterministically.",
         ],
     }
     return {
         "goal": (
             "Act as LearnFlow Research Orchestrator. Fan out the supplied specialist research tasks "
-            "through Hermes native delegation, then synthesize the typed research artifacts."
+            "through Hermes native delegation. Host code assembles the typed research artifacts deterministically."
         ),
         "context": json.dumps(context, ensure_ascii=False, sort_keys=True),
         "output_schema": ResearchOrchestrationResult.model_json_schema(),

@@ -30,6 +30,7 @@ from research_orchestration import (
     ResearchOrchestrationPlan,
     ResearchRole,
     SpecialistTask,
+    assemble_specialist_delegation_results,
     build_director_delegate_task,
     build_research_orchestration_plan,
     merge_specialist_findings,
@@ -300,4 +301,126 @@ def test_specialist_id_namespaces_are_schema_enforced():
                     relation=EvidenceRelation.SUPPORTS,
                 ),
             ),
+        )
+
+
+
+def _delegation_payload_for_assembly():
+    _, evidence = _evidence()
+    misconception = MisconceptionResearchFindings(
+        sources=(
+            SourceRecord(
+                source_id="misconception.S1",
+                title="Misconception source",
+                locator="https://example.test/misconception",
+            ),
+        ),
+        claims=(
+            ResearchClaim(
+                claim_id="misconception.C1",
+                statement="Correction claim.",
+                source_ids=("misconception.S1",),
+                confidence=0.9,
+            ),
+        ),
+        evidence_edges=(
+            EvidenceEdge(
+                edge_id="misconception.E1",
+                from_kind=EvidenceNodeKind.SOURCE,
+                from_id="misconception.S1",
+                to_claim_id="misconception.C1",
+                relation=EvidenceRelation.SUPPORTS,
+            ),
+        ),
+    )
+    summaries = (
+        ConceptResearchFindings(
+            concepts=("demo",),
+        ).to_canonical_json(),
+        evidence.to_canonical_json(),
+        misconception.to_canonical_json(),
+    )
+    return {
+        "results": [
+            {
+                "task_index": index,
+                "status": "completed",
+                "truncated": False,
+                "schema_valid": True,
+                "summary": summary,
+            }
+            for index, summary in enumerate(summaries)
+        ]
+    }
+
+
+def test_host_assembly_is_deterministic_when_hermes_result_order_changes():
+    plan = build_research_orchestration_plan(_brief())
+    payload = _delegation_payload_for_assembly()
+    first = assemble_specialist_delegation_results(
+        plan=plan,
+        brief_id="brief.demo",
+        topic="Explain demo.",
+        delegation_payload=payload,
+    )
+    second = assemble_specialist_delegation_results(
+        plan=plan,
+        brief_id="brief.demo",
+        topic="Explain demo.",
+        delegation_payload={
+            "results": list(reversed(payload["results"]))
+        },
+    )
+    assert first.to_canonical_json() == second.to_canonical_json()
+    assert first.evidence_graph.claim_ids == tuple(
+        claim.claim_id
+        for claim in first.research_pack.claims
+    )
+
+
+@pytest.mark.parametrize(
+    "mutation,match",
+    [
+        (
+            lambda rows: rows[:-1],
+            "exactly 3 specialist results",
+        ),
+        (
+            lambda rows: [
+                {
+                    **rows[0],
+                    "schema_valid": False,
+                    "schema_errors": ["bad"],
+                },
+                *rows[1:],
+            ],
+            "failed output schema validation",
+        ),
+        (
+            lambda rows: [
+                {
+                    **rows[0],
+                    "status": "failed",
+                    "error": "provider error",
+                },
+                *rows[1:],
+            ],
+            "provider error",
+        ),
+    ],
+)
+def test_host_assembly_fails_closed_on_missing_or_invalid_specialist(
+    mutation,
+    match,
+):
+    plan = build_research_orchestration_plan(_brief())
+    payload = _delegation_payload_for_assembly()
+    with pytest.raises(AgentContractError, match=match):
+        assemble_specialist_delegation_results(
+            plan=plan,
+            brief_id="brief.demo",
+            topic="Explain demo.",
+            delegation_payload={
+                "results": mutation(payload["results"])
+            },
         )

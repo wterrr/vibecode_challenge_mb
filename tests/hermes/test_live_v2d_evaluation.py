@@ -125,11 +125,14 @@ def test_research_iteration_budget_is_128_only_for_research():
     assert "max_iterations=128 if research else 3" in source
 
 
-def test_research_agent_is_depth_one_orchestrator_for_sync_native_fanout():
+def test_research_uses_sync_native_fanout_and_host_deterministic_assembly():
     source = (ROOT / "live_evaluation" / "hermes_runner.py").read_text(encoding="utf-8")
     assert "agent._delegate_depth = 1" in source
     assert 'agent._delegate_role = "orchestrator"' in source
-    assert "ONE JSON array containing all three" in source
+    assert "delegate_task(" in source
+    assert "background=False" in source
+    assert "assemble_specialist_delegation_results(" in source
+    assert "then synthesize ResearchOrchestrationResult" not in source
 
 
 def test_schema_retry_restates_schema_previous_output_and_history():
@@ -161,3 +164,16 @@ def test_live_script_selects_model_via_probe_before_pilot():
     assert "select_live_model(api_key=key, candidates=candidates)" in source
     assert "LIVE_MODEL_PROBE=PASS" in source
     assert "model_probe.json" in source
+
+
+
+def test_research_host_assembly_has_no_llm_synthesis_turn():
+    source = (
+        ROOT / "live_evaluation" / "hermes_runner.py"
+    ).read_text(encoding="utf-8")
+    research_block = source[
+        source.index("def _run_research_delegation"):
+        source.index("def _delegation_usage")
+    ]
+    assert "run_conversation(" not in research_block
+    assert "delegate_task(" in research_block

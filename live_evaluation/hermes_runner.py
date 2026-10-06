@@ -105,16 +105,6 @@ class LiveHermesStructuredRunner:
             dict(task["output_schema"]),
         )
         stage_guidance = ""
-        if stage == "research_orchestration":
-            stage_guidance = (
-                "Hermes delegation contract for this stage:\n"
-                "- You are the Research Orchestrator at delegation depth 1.\n"
-                "- Call delegate_task once with tasks set to ONE JSON array containing all three "
-                "research_plan.specialist_tasks.\n"
-                "- Each task item must contain goal, context, and output_schema only; LearnFlow role labels "
-                "are metadata, not Hermes delegate_task roles.\n"
-                "- Wait for the synchronous batch result, then synthesize ResearchOrchestrationResult.\n\n"
-            )
         return (
             f"{task['goal']}\n\n"
             "Follow the task context and accepted LearnFlow boundaries exactly.\n"
@@ -154,6 +144,108 @@ class LiveHermesStructuredRunner:
             "Validation errors:\n"
             + "\n".join(rendered)
         )
+
+    @staticmethod
+    def _research_plan_from_task(task: dict):
+        from research_orchestration import ResearchOrchestrationPlan
+
+        context = json.loads(str(task["context"]))
+        brief = dict(context["learning_brief"])
+        plan_payload = dict(context["research_plan"])
+        plan = ResearchOrchestrationPlan.model_validate(plan_payload)
+        return brief, plan
+
+    def _run_research_delegation(
+        self,
+        *,
+        agent,
+        task: dict,
+        output_model: type[T],
+    ) -> tuple[T, dict[str, Any]]:
+        from research_orchestration import assemble_specialist_delegation_results
+        from tools.delegate_tool import delegate_task
+
+        brief, plan = self._research_plan_from_task(task)
+        hermes_tasks = [
+            {
+                "goal": specialist.goal,
+                "context": specialist.context,
+                "output_schema": specialist.output_schema,
+            }
+            for specialist in plan.specialist_tasks
+        ]
+        raw = delegate_task(
+            tasks=hermes_tasks,
+            background=False,
+            parent_agent=agent,
+        )
+        try:
+            delegation_payload = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(
+                "Hermes delegate_task returned invalid JSON"
+            ) from exc
+
+        assembled = assemble_specialist_delegation_results(
+            plan=plan,
+            brief_id=str(brief["brief_id"]),
+            topic=str(brief["user_query"]),
+            delegation_payload=delegation_payload,
+        )
+        return (
+            output_model.model_validate(
+                assembled.model_dump(mode="json")
+            ),
+            delegation_payload,
+        )
+
+    @staticmethod
+    def _delegation_usage(payload: dict[str, Any]) -> dict[str, Any]:
+        rows = payload.get("results")
+        if not isinstance(rows, list):
+            rows = []
+        statuses = {
+            str(row.get("cost_status") or "unknown")
+            for row in rows
+            if isinstance(row, dict)
+        }
+        input_tokens = sum(
+            int((row.get("tokens") or {}).get("input") or 0)
+            for row in rows
+            if isinstance(row, dict)
+        )
+        output_tokens = sum(
+            int((row.get("tokens") or {}).get("output") or 0)
+            for row in rows
+            if isinstance(row, dict)
+        )
+        return {
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "api_calls": sum(
+                int(row.get("api_calls") or 0)
+                for row in rows
+                if isinstance(row, dict)
+            ),
+            "estimated_cost_usd": round(
+                sum(
+                    float(row.get("cost_usd") or 0.0)
+                    for row in rows
+                    if isinstance(row, dict)
+                ),
+                8,
+            ),
+            "cost_status": (
+                next(iter(statuses))
+                if len(statuses) == 1
+                else ("mixed" if statuses else "unknown")
+            ),
+            "schema_retry_used": any(
+                int(row.get("schema_retries") or 0) > 0
+                for row in rows
+                if isinstance(row, dict)
+            ),
+        }
 
     def _agent(self, *, stage: str):
         from run_agent import AIAgent
@@ -201,6 +293,39 @@ class LiveHermesStructuredRunner:
         schema_retry_used = False
         result: dict[str, Any] | None = None
         try:
+            if stage == "research_orchestration":
+                parsed, delegation_payload = self._run_research_delegation(
+                    agent=agent,
+                    task=task,
+                    output_model=output_model,
+                )
+                observed = self._delegation_usage(delegation_payload)
+                usage = StageUsage(
+                    stage=stage,
+                    model=self.model,
+                    attempts=1,
+                    input_tokens=int(observed["input_tokens"]),
+                    output_tokens=int(observed["output_tokens"]),
+                    total_tokens=(
+                        int(observed["input_tokens"])
+                        + int(observed["output_tokens"])
+                    ),
+                    estimated_cost_usd=float(
+                        observed["estimated_cost_usd"]
+                    ),
+                    cost_status=str(observed["cost_status"]),
+                    api_calls=int(observed["api_calls"]),
+                    duration_seconds=round(
+                        time.perf_counter() - t0,
+                        6,
+                    ),
+                    schema_retry_used=bool(
+                        observed["schema_retry_used"]
+                    ),
+                )
+                self.stage_usage.append(usage)
+                return parsed
+
             result = agent.run_conversation(
                 user_message=self._build_prompt(task, stage=stage),
                 task_id=f"live-eval:{stage}",

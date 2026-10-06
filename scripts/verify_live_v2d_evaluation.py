@@ -91,6 +91,14 @@ def main() -> int:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL non-research tools not disabled")
     if "max_iterations=128 if research else 3" not in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL research iteration budget")
+    if "assemble_specialist_delegation_results(" not in source:
+        raise SystemExit(
+            "LIVE_V2D_CONTRACT=FAIL deterministic research assembly missing"
+        )
+    if "background=False" not in source or "delegate_task(" not in source:
+        raise SystemExit(
+            "LIVE_V2D_CONTRACT=FAIL synchronous native research fan-out missing"
+        )
 
     print("LIVE_V2D_CONTRACT=PASS")
     print(f"pilot_topic={PILOT_TOPIC_ID}")
@@ -100,6 +108,7 @@ def main() -> int:
     print("publication_authorized=false")
     print("live_secret_step_scope=PASS")
     print("native_research_delegation_enabled=PASS")
+    print("deterministic_research_assembly=PASS")
     print("research_max_iterations=128")
     print("provider_attempt_quota=160")
     return 0
