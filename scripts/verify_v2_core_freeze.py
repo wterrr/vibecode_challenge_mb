@@ -22,7 +22,7 @@ EXPECTED_SPEC_SHA256 = "e20ab43e2a7622af8dc47c00c0c5692b42cceb05723ec93a70981eff
 
 def git_blob_sha(path: Path) -> str:
     data = path.read_bytes()
-    header = f"blob {len(data)}\\0".encode("ascii")
+    header = f"blob {len(data)}\\x00".encode("ascii")
     return hashlib.sha1(header + data).hexdigest()
 
 
