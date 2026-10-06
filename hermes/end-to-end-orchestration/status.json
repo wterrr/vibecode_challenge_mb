@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "stage": "end-to-end-orchestration",
+  "name": "End-to-End Orchestration",
+  "state": "IMPLEMENTED_AWAITING_CI",
+  "depends_on": [
+    {"stage": "research-orchestration", "required_state": "PASS", "current_state": "PASS"},
+    {"stage": "fact-verification", "required_state": "PASS", "current_state": "PASS"},
+    {"stage": "pedagogy-agent", "required_state": "PASS", "current_state": "PASS"},
+    {"stage": "script-agent", "required_state": "PASS", "current_state": "PASS"},
+    {"stage": "visual-director", "required_state": "PASS", "current_state": "PASS"},
+    {"stage": "learnflow-plugin", "required_state": "PASS", "current_state": "PASS"}
+  ],
+  "acceptance": {
+    "typed_stage_order": true,
+    "deterministic_gate_between_agents": true,
+    "research_uses_native_hermes_delegation": true,
+    "blocked_claims_do_not_flow_downstream": true,
+    "semantic_visual_boundary_preserved": true,
+    "learnflow_capability_used_for_core_handoff": true,
+    "real_final_mp4": true,
+    "replayable_artifact_bundle": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "next_stage": "Agent-Aware QA",
+  "evidence": {
+    "accepted_ci_run": null,
+    "accepted_head_sha": null,
+    "end_to_end_acceptance_verifier": "PENDING",
+    "pytest": "PENDING",
+    "pinned_hermes_schema_chain": "PENDING",
+    "learnflow_plugin_discovery": "PENDING",
+    "real_final_mp4": "PENDING",
+    "core_freeze": "PENDING"
+  }
+}
