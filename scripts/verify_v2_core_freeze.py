@@ -96,6 +96,20 @@ def verify() -> list[str]:
                     f"{name}={expected_version}"
                 )
 
+    package_lock_path = ROOT / "package-lock.json"
+    if not package_lock_path.is_file():
+        errors.append("package-lock.json is missing")
+    else:
+        package_lock = json.loads(package_lock_path.read_text(encoding="utf-8"))
+        locked_packages = package_lock.get("packages", {})
+        for name, expected_version in required_deps.get("node_lock_versions", {}).items():
+            locked = locked_packages.get(f"node_modules/{name}", {})
+            if locked.get("version") != expected_version:
+                errors.append(
+                    f"required Core Node lock changed or missing: "
+                    f"{name}={expected_version}"
+                )
+
     protected = manifest.get("protected_files", {})
     expected_paths = set(protected)
     actual_paths: set[str] = set(manifest.get("protected_exact_paths", []))

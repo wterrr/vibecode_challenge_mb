@@ -51,3 +51,11 @@ def test_control_plane_dependencies_can_be_added_without_core_unfreeze():
     assert "package-lock.json" not in data["protected_exact_paths"]
     assert "kiwisolver==1.5.1" in data["required_core_dependencies"]["python_requirements"]
     assert data["required_core_dependencies"]["node_dependencies"]["elkjs"] == "0.12.0"
+
+
+def test_gate_evaluator_wrapper_is_part_of_frozen_contract():
+    data = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    assert data["protected_files"]["scripts/evaluate_v2_core_gate.py"] == (
+        "bd3bfca9ab3758d46112972c5953158b973b9b48"
+    )
+    assert data["required_core_dependencies"]["node_lock_versions"]["elkjs"] == "0.12.0"

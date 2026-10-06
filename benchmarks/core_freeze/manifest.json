@@ -42,7 +42,8 @@
     "benchmarks/specs/v2_core_gate_v2.json",
     "benchmarks/v2/static_quality.py",
     "scripts/capture_v1_baseline.py",
-    "scripts/run_v2_core_benchmark.py"
+    "scripts/run_v2_core_benchmark.py",
+    "scripts/evaluate_v2_core_gate.py"
   ],
   "protected_files": {
     "benchmarks/baselines/v1/baseline.json": "b7da44db1653e81276a272fe84996665b5d4e410",
@@ -124,7 +125,8 @@
     "learnflow_v2/videoqa/errors.py": "c150db3187c033b1ad98751824530386928c2945",
     "learnflow_v2/videoqa/schema.py": "086c9b938945d6e3a7e7ffcb8f549baa9b6b9383",
     "scripts/capture_v1_baseline.py": "98633678689b78d1d5d99c88bf71df720c0f3240",
-    "scripts/run_v2_core_benchmark.py": "93f5e05b83d4457a659fc04cf5176e0ded84c254"
+    "scripts/run_v2_core_benchmark.py": "93f5e05b83d4457a659fc04cf5176e0ded84c254",
+    "scripts/evaluate_v2_core_gate.py": "bd3bfca9ab3758d46112972c5953158b973b9b48"
   },
   "frozen_evidence_files": {
     "benchmarks/baselines/v2/result.json": "fed7795d02618a253c169352c92a2d30a500b8d5",
@@ -173,6 +175,9 @@
     "node_dependencies": {
       "elkjs": "0.12.0"
     },
-    "policy": "Core dependency contracts are minimum retained constraints. V2D/Hermes may add control-plane dependencies without unfreezing Core, but removing or changing these Core requirements fails the freeze guard."
+    "policy": "Core dependency contracts are minimum retained constraints. V2D/Hermes may add control-plane dependencies without unfreezing Core, but removing or changing these Core requirements fails the freeze guard.",
+    "node_lock_versions": {
+      "elkjs": "0.12.0"
+    }
   }
 }
