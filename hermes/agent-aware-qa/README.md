@@ -2,7 +2,7 @@
 
 Agent-Aware QA is the deterministic ownership layer between existing QA/VLM reports and the component allowed to repair each problem.
 
-Status: IMPLEMENTED_AWAITING_CI.
+Status: PASS. Accepted CI run `37445667469` proves authoritative scene/video QA ingestion, deterministic ownership routing, 25 fail-closed regressions, exact pinned Hermes repair-task schema compatibility for Research/Script/Pedagogy/Visual, Core delegation blocking, and Core Freeze preservation.
 
 ## Ownership
 
