@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
-      LEARNFLOW_LIVE_MODEL_CANDIDATES: google/gemma-4-31b-it:free,google/gemma-4-26b-a4b-it:free,apodex/apodex-1.1-mini:free
+      LEARNFLOW_LIVE_MODEL_CANDIDATES: google/gemma-4-31b-it:free,poolside/laguna-s-2.1:free,nvidia/nemotron-3-ultra-550b-a55b:free,apodex/apodex-1.1-mini:free
       LEARNFLOW_LIVE_TOPIC_ID: lfb-001-cs
     steps:
       - uses: actions/checkout@v4

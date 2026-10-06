@@ -258,10 +258,10 @@ class LiveHermesStructuredRunner:
         research = stage == "research_orchestration"
         enabled = ["delegation", "web"] if research else []
         disabled = [] if research else ["*"]
-        request_overrides: dict[str, Any] = {
-            "response_format": {"type": "json_object"},
-        }
-        if self.model.startswith(("google/gemma-4-31b-", "google/gemma-4-26b-")):
+        request_overrides: dict[str, Any] = {}
+        if self.model.startswith(("google/gemma-4-", "apodex/apodex-")):
+            request_overrides["response_format"] = {"type": "json_object"}
+        if self.model.startswith("google/gemma-4-"):
             request_overrides["reasoning_effort"] = "medium"
 
         agent = AIAgent(

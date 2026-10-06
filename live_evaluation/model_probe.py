@@ -11,8 +11,14 @@ from urllib.request import Request, urlopen
 
 LIVE_MODEL_CANDIDATES = (
     "google/gemma-4-31b-it:free",
-    "google/gemma-4-26b-a4b-it:free",
+    "poolside/laguna-s-2.1:free",
+    "nvidia/nemotron-3-ultra-550b-a55b:free",
     "apodex/apodex-1.1-mini:free",
+)
+
+_RESPONSE_FORMAT_MODELS = (
+    "google/gemma-4-",
+    "apodex/apodex-",
 )
 
 _SPECIALIST_PROBE_OBJECT = {
@@ -130,12 +136,11 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
                 },
             }
         ],
-        "response_format": {
-            "type": "json_object",
-        },
         "provider": {"require_parameters": True},
     }
-    if model.startswith(("google/gemma-4-31b-", "google/gemma-4-26b-")):
+    if model.startswith(_RESPONSE_FORMAT_MODELS):
+        payload["response_format"] = {"type": "json_object"}
+    if model.startswith("google/gemma-4-"):
         payload["reasoning_effort"] = "medium"
     request = Request(
         OPENROUTER_CHAT_COMPLETIONS,

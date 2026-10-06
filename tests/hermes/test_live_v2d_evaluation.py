@@ -36,7 +36,8 @@ def test_unknown_pilot_topic_fails_closed():
 def test_live_model_candidates_prioritize_specialist_schema_reliability():
     assert LIVE_MODEL_CANDIDATES == (
         "google/gemma-4-31b-it:free",
-        "google/gemma-4-26b-a4b-it:free",
+        "poolside/laguna-s-2.1:free",
+        "nvidia/nemotron-3-ultra-550b-a55b:free",
         "apodex/apodex-1.1-mini:free",
     )
     assert DEFAULT_LIVE_MODEL == LIVE_MODEL_CANDIDATES[0]
@@ -47,7 +48,8 @@ def test_live_model_candidates_prioritize_specialist_schema_reliability():
 def test_model_probe_matches_actual_hermes_free_endpoint_requirements():
     source = (ROOT / "live_evaluation" / "model_probe.py").read_text(encoding="utf-8")
     assert '"tools": [' in source
-    assert '"type": "json_object"' in source
+    assert '_RESPONSE_FORMAT_MODELS' in source
+    assert 'payload["response_format"] = {"type": "json_object"}' in source
     assert '"require_parameters": True' in source
     assert '"tool_choice"' not in source
     assert '"type": "json_schema"' not in source
@@ -209,7 +211,7 @@ def test_probe_uses_specialist_shaped_nested_contract_with_reasoning_enabled():
     assert "_SPECIALIST_PROBE_OBJECT" in source
     assert '"source_indexes": [0]' in source
     assert '"claim_indexes": [0]' in source
-    assert 'google/gemma-4-31b-' in source
+    assert 'google/gemma-4-' in source
     assert 'payload["reasoning_effort"] = "medium"' in source
     assert "parsed != _SPECIALIST_PROBE_OBJECT" in source
     assert "finish_reason=" in source
@@ -217,13 +219,15 @@ def test_probe_uses_specialist_shaped_nested_contract_with_reasoning_enabled():
 
 
 
-def test_gemma_live_runner_keeps_reasoning_enabled_without_low_token_cap():
+def test_live_runner_uses_model_compatible_wire_overrides():
     source = (
         ROOT / "live_evaluation" / "hermes_runner.py"
     ).read_text(encoding="utf-8")
-    assert 'google/gemma-4-31b-' in source
-    assert 'google/gemma-4-26b-' in source
+    assert 'google/gemma-4-' in source
+    assert 'apodex/apodex-' in source
+    assert 'request_overrides["response_format"] = {"type": "json_object"}' in source
     assert 'request_overrides["reasoning_effort"] = "medium"' in source
+    assert 'poolside/laguna' not in source[source.index("request_overrides:"):source.index("agent = AIAgent(")]
     assert '"max_tokens"' not in source
 
 
@@ -253,3 +257,10 @@ def test_research_delegation_surfaces_native_hermes_rejection():
         ROOT / "live_evaluation" / "hermes_runner.py"
     ).read_text(encoding="utf-8")
     assert "Hermes delegate_task rejected research fan-out:" in source
+
+
+
+def test_candidate_chain_diversifies_free_upstream_providers():
+    providers = [model.split("/", 1)[0] for model in LIVE_MODEL_CANDIDATES]
+    assert providers == ["google", "poolside", "nvidia", "apodex"]
+    assert len(set(providers)) == len(providers)

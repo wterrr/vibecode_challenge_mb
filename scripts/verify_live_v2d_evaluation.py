@@ -26,7 +26,8 @@ def main() -> int:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL pilot topic binding")
     expected_models = (
         "google/gemma-4-31b-it:free",
-        "google/gemma-4-26b-a4b-it:free",
+        "poolside/laguna-s-2.1:free",
+        "nvidia/nemotron-3-ultra-550b-a55b:free",
         "apodex/apodex-1.1-mini:free",
     )
     if LIVE_MODEL_CANDIDATES != expected_models or DEFAULT_LIVE_MODEL != expected_models[0]:
@@ -80,7 +81,8 @@ def main() -> int:
     probe_source = (ROOT / "live_evaluation" / "model_probe.py").read_text(encoding="utf-8")
     for required in (
         '"tools": [',
-        '"type": "json_object"',
+        "_RESPONSE_FORMAT_MODELS",
+        'payload["response_format"] = {"type": "json_object"}',
         '"require_parameters": True',
         '"max_tokens": 4096',
         'payload["reasoning_effort"] = "medium"',
@@ -106,8 +108,8 @@ def main() -> int:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL non-research tools not disabled")
     if "max_iterations=128 if research else 3" not in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL research iteration budget")
-    if '"response_format": {"type": "json_object"}' not in source:
-        raise SystemExit("LIVE_V2D_CONTRACT=FAIL json_object wire constraint")
+    if 'request_overrides["response_format"] = {"type": "json_object"}' not in source:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL conditional json_object wire constraint")
     if 'request_overrides["reasoning_effort"] = "medium"' not in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL Gemma reasoning must stay enabled")
     if '"max_tokens"' in source:
@@ -124,7 +126,7 @@ def main() -> int:
     print("LIVE_V2D_CONTRACT=PASS")
     print(f"pilot_topic={PILOT_TOPIC_ID}")
     print(f"default_model={DEFAULT_LIVE_MODEL}")
-    print("model_probe=nested_specialist_shape+tools+json_object+reasoning_medium")
+    print("model_probe=nested_specialist_shape+tools+model_compatible_json+diverse_providers")
     print("usd_cap=none")
     print("publication_authorized=false")
     print("live_secret_step_scope=PASS")
