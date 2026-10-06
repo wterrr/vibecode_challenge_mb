@@ -1,0 +1,73 @@
+name: Research Orchestration
+
+on:
+  pull_request:
+    paths:
+      - "research_orchestration/**"
+      - "hermes/research-orchestration/**"
+      - "hermes/bootstrap/config.yaml"
+      - "scripts/verify_research_orchestration.py"
+      - "scripts/verify_hermes_research_delegation.py"
+      - "tests/hermes/test_research_orchestration.py"
+      - "AGENTS.md"
+      - "PLAN_V2.md"
+      - ".github/workflows/research-orchestration.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "research_orchestration/**"
+      - "hermes/research-orchestration/**"
+      - "hermes/bootstrap/config.yaml"
+      - "scripts/verify_research_orchestration.py"
+      - "scripts/verify_hermes_research_delegation.py"
+      - "tests/hermes/test_research_orchestration.py"
+      - "AGENTS.md"
+      - "PLAN_V2.md"
+      - ".github/workflows/research-orchestration.yml"
+
+jobs:
+  orchestration-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install test dependencies
+        run: python -m pip install "pydantic>=2" pytest
+      - name: Verify deterministic orchestration merge
+        run: python scripts/verify_research_orchestration.py
+      - name: Research Orchestration tests
+        run: pytest -q --confcutdir=tests/hermes tests/hermes/test_research_orchestration.py
+      - name: Core Freeze guard
+        run: python scripts/verify_v2_core_freeze.py
+
+  pinned-hermes-delegation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install exact pinned Hermes runtime
+        run: bash scripts/install_hermes_bootstrap.sh
+      - name: Prepare isolated research profile
+        shell: bash
+        run: |
+          VERIFY_HOME="$PWD/.hermes_runtime/research-orchestration/verify-home"
+          rm -rf "$VERIFY_HOME"
+          mkdir -p "$VERIFY_HOME"
+          cp hermes/bootstrap/config.yaml "$VERIFY_HOME/config.yaml"
+      - name: Verify native Hermes delegation boundary
+        shell: bash
+        run: |
+          VERIFY_HOME="$PWD/.hermes_runtime/research-orchestration/verify-home"
+          if [[ -x ".hermes_runtime/hermes-agent/venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/venv/bin/python"
+          elif [[ -x ".hermes_runtime/hermes-agent/.venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/.venv/bin/python"
+          else
+            echo "Pinned Hermes Python not found" >&2
+            exit 1
+          fi
+          HERMES_HOME="$VERIFY_HOME" "$HPY" scripts/verify_hermes_research_delegation.py

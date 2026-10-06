@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "stage": "research-orchestration",
+  "name": "Research Orchestration",
+  "state": "PASS",
+  "depends_on": [
+    {
+      "stage": "hermes-bootstrap",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "learnflow-capability-plugin",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "agent-contracts",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
+  ],
+  "topology": {
+    "director_depth": 0,
+    "orchestrator_depth": 1,
+    "specialist_depth": 2,
+    "max_specialists": 3,
+    "specialist_roles": [
+      "CONCEPT_RESEARCHER",
+      "EVIDENCE_RESEARCHER",
+      "MISCONCEPTION_RESEARCHER"
+    ]
+  },
+  "hermes_native_delegation": true,
+  "acceptance": {
+    "source_provenance_preserved": true,
+    "isolated_contexts_required": true,
+    "bounded_delegation_depth": 2,
+    "max_specialists": 3,
+    "leaf_recursive_delegation": false,
+    "per_child_output_schema": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "next_stage": "Fact Verification",
+  "evidence": {
+    "accepted_ci_run": 37428061046,
+    "accepted_head_sha": "42c59ae96cb4df7cb34c6bd5e53d08422c9a26e4",
+    "deterministic_orchestration": "PASS",
+    "pytest": "10 passed",
+    "pinned_hermes_delegation": "PASS",
+    "isolated_child_context": "PASS",
+    "orchestrator_nested_delegation": "PASS",
+    "leaf_recursive_delegation_blocked": "PASS",
+    "specialist_batch_limit": 3,
+    "max_spawn_depth": 2,
+    "per_child_output_schema": "PASS",
+    "core_freeze": "PASS"
+  }
+}

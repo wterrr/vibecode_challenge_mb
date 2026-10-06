@@ -3295,7 +3295,7 @@ BudgetLedger
 
 ## Research Orchestration
 
-**Status: NEXT / NOT STARTED**
+**Status: PASS**
 
 Implement:
 
@@ -3318,6 +3318,8 @@ bounded delegation depth
 ---
 
 ## Fact Verification
+
+**Status: NEXT / NOT STARTED**
 
 Every factual narration maps to:
 
