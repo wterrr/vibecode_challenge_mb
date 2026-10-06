@@ -8,11 +8,15 @@ from PIL import Image, ImageDraw
 from benchmarks.v2.static_quality import score_frame
 
 
-def test_frozen_benchmark_spec_matches_v1_baseline_and_metric_weights():
-    spec = json.loads(Path("benchmarks/specs/v2_core_gate_v1.json").read_text(encoding="utf-8"))
+def test_corrected_frozen_benchmark_spec_matches_v1_baseline_and_preserves_invalidated_v1():
+    legacy = json.loads(Path("benchmarks/specs/v2_core_gate_v1.json").read_text(encoding="utf-8"))
+    spec = json.loads(Path("benchmarks/specs/v2_core_gate_v2.json").read_text(encoding="utf-8"))
     baseline = json.loads(Path("benchmarks/baselines/v1/baseline.json").read_text(encoding="utf-8"))
 
-    assert spec["benchmark_id"] == "v2-core-gate-v1"
+    assert legacy["benchmark_id"] == "v2-core-gate-v1"
+    assert spec["benchmark_id"] == "v2-core-gate-v2"
+    assert spec["supersedes_invalid_run"]["benchmark_id"] == "v2-core-gate-v1"
+    assert len(spec["supersedes_invalid_run"]["reason"]) >= 2
     assert spec["lesson_keys"] == sorted(baseline["lessons"].keys())
     assert spec["render_profile"] == {
         "width": 640,
@@ -22,10 +26,18 @@ def test_frozen_benchmark_spec_matches_v1_baseline_and_metric_weights():
         "transition_duration_seconds": 0.5,
         "repetitions": 2,
     }
+    assert spec["rendered_text_contract"]["font_size_px"] == 18
+    assert spec["rendered_text_contract"]["overflow_policy"] == "REJECT_RENDER"
+    assert "pre-subtitle scene clip" in spec["static_quality_metric"]["sample"]
+    assert spec["static_quality_metric"]["v1_source"].startswith("retained V1 scenes/")
+    assert spec["deterministic_qa"]["min_font_size_px"] == 18
+    assert "burned subtitles derived from lesson narration" in spec["product_parity"]["required_from_v1"]
+    assert "benchmark-only metadata" in spec["product_parity"]["subtitle_policy"]
     weights = spec["static_quality_metric"]["weights"]
     assert abs(sum(weights.values()) - 1.0) < 1e-12
     assert spec["repair_cases"]["expected_case_count"] == 9
-    assert spec["freeze_rule"].startswith("Spec and metric formula must not change")
+    assert spec["evidence_policy"]["ephemeral_actions_artifact_alone_is_not_sufficient"] is True
+    assert spec["freeze_rule"].startswith("After the first VALID")
 
 
 def test_static_quality_metric_is_deterministic(tmp_path: Path):
@@ -45,6 +57,23 @@ def test_static_quality_metric_is_deterministic(tmp_path: Path):
 def test_benchmark_runner_imports_without_executing():
     import scripts.run_v2_core_benchmark as runner
 
-    assert runner.SPEC_PATH.name == "v2_core_gate_v1.json"
+    assert runner.SPEC_PATH.name == "v2_core_gate_v2.json"
     assert callable(runner._run_v2_once)
     assert callable(runner._repair_benchmark)
+    assert callable(runner._scene_qa_report)
+
+
+def test_benchmark_source_sha_uses_explicit_real_head_and_rejects_malformed_env(monkeypatch):
+    import scripts.run_v2_core_benchmark as runner
+
+    expected = "a" * 40
+    monkeypatch.setenv("BENCHMARK_SOURCE_COMMIT", expected)
+    assert runner._benchmark_source_sha() == expected
+
+    monkeypatch.setenv("BENCHMARK_SOURCE_COMMIT", "not-a-sha")
+    try:
+        runner._benchmark_source_sha()
+    except RuntimeError as exc:
+        assert "40-character git SHA" in str(exc)
+    else:
+        raise AssertionError("malformed BENCHMARK_SOURCE_COMMIT must be rejected")

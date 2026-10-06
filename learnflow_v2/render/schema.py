@@ -45,6 +45,40 @@ class RenderProfile(BaseModel):
         return value
 
 
+class SubtitleRenderCue(BaseModel):
+    """Renderer-neutral subtitle cue consumed by the deterministic FFmpeg backend."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    start_seconds: float = Field(..., ge=0.0)
+    end_seconds: float = Field(..., gt=0.0)
+    text: str = Field(..., min_length=1, max_length=4000)
+
+    @field_validator("start_seconds", "end_seconds", mode="before")
+    @classmethod
+    def _finite_time(cls, value: Any) -> float:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise RenderInvalidInputError("subtitle times must be finite numbers")
+        result = float(value)
+        if not math.isfinite(result) or result < 0.0:
+            raise RenderInvalidInputError("subtitle times must be finite and non-negative")
+        return result
+
+    @field_validator("text")
+    @classmethod
+    def _normalize_text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise RenderInvalidInputError("subtitle text cannot be blank")
+        return value
+
+    @model_validator(mode="after")
+    def _validate_interval(self) -> "SubtitleRenderCue":
+        if self.end_seconds <= self.start_seconds:
+            raise RenderInvalidInputError("subtitle end_seconds must be greater than start_seconds")
+        return self
+
+
 class RenderedArtifact(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 

@@ -32,7 +32,7 @@ from learnflow_v2.scenegraph.schema import SceneGraph, SceneNode
 
 _DEFAULT_POLICY = MeasurementPolicy(
     preferred_font_size=18.0,
-    minimum_font_size=14.0,
+    minimum_font_size=18.0,
     candidate_max_widths=[120.0, 180.0, 240.0, 320.0, 480.0],
 )
 
@@ -61,6 +61,31 @@ def measure_scene_nodes(
 ) -> dict[str, TextMeasurement]:
     policy = policy or _DEFAULT_POLICY
     return {node.id: _measure(node, policy) for node in scene_graph.nodes}
+
+
+def _wrapped_text_height(measurement: TextMeasurement, outer_width: float, *, horizontal_padding: float = 20.0) -> float:
+    """Measure wrapped readable text at the exact renderer inner width."""
+    inner_width = max(1.0, float(outer_width) - horizontal_padding)
+    exact = measure_text(
+        measurement.content,
+        MeasurementPolicy(
+            preferred_font_size=_DEFAULT_POLICY.preferred_font_size,
+            minimum_font_size=_DEFAULT_POLICY.minimum_font_size,
+            candidate_max_widths=[inner_width],
+            emergency_break_long_tokens=False,
+        ),
+    )
+    candidate = exact.wrap_candidates[0]
+    if candidate.had_overflow_token or candidate.width > inner_width + 1e-6:
+        raise LayoutUnsatisfiableError(
+            "Text cannot fit readable width without overflow",
+            {
+                "inner_width": inner_width,
+                "candidate_width": candidate.width,
+                "candidate_max_width": candidate.max_width,
+            },
+        )
+    return float(candidate.height)
 
 
 def _fit_rect(
@@ -108,32 +133,112 @@ def _stack_in_zone(
     *,
     gap: float,
     zone_name: str,
+    outer_margin_x: float = 4.0,
+    minimum_gap: float = 2.0,
 ) -> list[LayoutBox]:
+    """Stack cards using their actual wrapped readable heights, not equal-height slots."""
     ordered = list(nodes)
     if not ordered:
         return []
-    available = zone.height - gap * (len(ordered) - 1)
-    if available <= 0:
-        raise LayoutUnsatisfiableError("Not enough vertical space for stacked layout")
-    slot_h = available / len(ordered)
-    boxes: list[LayoutBox] = []
-    for index, node in enumerate(ordered):
+
+    specs: list[tuple[SceneNode, float, float]] = []
+    for node in ordered:
         measurement = measurements[node.id]
-        if measurement.minimum_readable_height > slot_h + 1e-6:
+        if not math.isfinite(outer_margin_x) or outer_margin_x < 0.0:
+            raise LayoutUnsatisfiableError("stack outer_margin_x must be finite and non-negative")
+        # Measure against the exact maximum outer width that _fit_rect() will
+        # actually return so Layout and Renderer cannot disagree about wrapping.
+        max_outer_width = max(24.0, zone.width - outer_margin_x * 2.0)
+        minimum_outer_width = measurement.minimum_readable_width + 20.0
+        if minimum_outer_width > max_outer_width + 1e-6:
             raise LayoutUnsatisfiableError(
-                f"Node '{node.id}' minimum readable height does not fit specialized layout",
-                {"minimum_height": measurement.minimum_readable_height, "slot_height": slot_h},
+                "Readable stacked content cannot fit available width",
+                {
+                    "node_id": node.id,
+                    "minimum_outer_width": minimum_outer_width,
+                    "available_outer_width": max_outer_width,
+                },
             )
-        y = zone.y + index * (slot_h + gap)
+        # Prefer the full semantic lane for readability. If a horizontal
+        # preferred_region exists, preserve a tiny deterministic alignment
+        # degree-of-freedom only when doing so does NOT increase wrapped text
+        # height. This keeps SET_REGION patches observable without sacrificing
+        # the 18px readability contract.
+        preferred_width = max_outer_width
+        text_height = _wrapped_text_height(measurement, preferred_width)
+        horizontal_regions = {
+            PreferredRegion.LEFT,
+            PreferredRegion.RIGHT,
+            PreferredRegion.TOP_LEFT,
+            PreferredRegion.TOP_RIGHT,
+            PreferredRegion.BOTTOM_LEFT,
+            PreferredRegion.BOTTOM_RIGHT,
+        }
+        region = node.layout_hint.preferred_region if node.layout_hint else None
+        alignment_slack = 4.0
+        candidate_width = max_outer_width - alignment_slack
+        if (
+            region in horizontal_regions
+            and candidate_width >= minimum_outer_width - 1e-6
+            and candidate_width >= 24.0
+        ):
+            candidate_height = _wrapped_text_height(measurement, candidate_width)
+            if candidate_height <= text_height + 1e-6:
+                preferred_width = candidate_width
+                text_height = candidate_height
+        required_height = text_height + 16.0
+        specs.append((node, preferred_width, required_height))
+
+    if not math.isfinite(gap) or gap < 0.0 or not math.isfinite(minimum_gap) or minimum_gap < 0.0:
+        raise LayoutUnsatisfiableError("stack gaps must be finite and non-negative")
+    if minimum_gap > gap:
+        raise LayoutUnsatisfiableError("minimum_gap cannot exceed preferred gap")
+
+    content_height = sum(item[2] for item in specs)
+    effective_gap = gap
+    if len(specs) > 1 and content_height + effective_gap * (len(specs) - 1) > zone.height + 1e-6:
+        available_gap = max(0.0, (zone.height - content_height) / (len(specs) - 1))
+        if available_gap + 1e-6 < minimum_gap:
+            raise LayoutUnsatisfiableError(
+                "Readable stacked content does not fit specialized layout zone",
+                {
+                    "content_height": content_height,
+                    "preferred_gap": gap,
+                    "minimum_gap": minimum_gap,
+                    "available_gap": available_gap,
+                    "zone_height": zone.height,
+                    "node_ids": [node.id for node, _, _ in specs],
+                },
+            )
+        effective_gap = min(gap, available_gap)
+
+    required_total = content_height + effective_gap * (len(specs) - 1)
+    if required_total > zone.height + 1e-6:
+        raise LayoutUnsatisfiableError(
+            "Readable stacked content does not fit specialized layout zone",
+            {
+                "required_height": required_total,
+                "zone_height": zone.height,
+                "node_ids": [node.id for node, _, _ in specs],
+            },
+        )
+
+    extra_per_slot = max(0.0, zone.height - required_total) / len(specs)
+    boxes: list[LayoutBox] = []
+    y = zone.y
+    for node, preferred_width, required_height in specs:
+        slot_h = required_height + extra_per_slot
         slot = Rect(x=zone.x, y=round(y, 4), width=zone.width, height=round(slot_h, 4))
         rect = _fit_rect(
             slot,
-            preferred_width=max(
-                measurement.minimum_readable_width,
-                min(measurement.width + 28.0, slot.width * 0.86),
-            ),
-            preferred_height=max(measurement.minimum_readable_height + 12.0, min(measurement.height + 12.0, slot.height)),
+            preferred_width=preferred_width,
+            preferred_height=required_height,
             preferred_region=node.layout_hint.preferred_region if node.layout_hint else None,
+            margin_x=outer_margin_x,
+            # required_height already includes renderer vertical text padding,
+            # while `gap` owns inter-card separation. A second slot inset here
+            # would shrink a proven-readable box below its measured contract.
+            margin_y=0.0,
         )
         boxes.append(
             LayoutBox(
@@ -144,8 +249,8 @@ def _stack_in_zone(
                 semantic_key=node.semantic_key,
             )
         )
+        y += slot_h + effective_gap
     return boxes
-
 
 def _compile_concept_card(
     scene_graph: SceneGraph,
@@ -163,12 +268,14 @@ def _compile_concept_card(
         primary = [sorted(scene_graph.nodes, key=lambda n: (-(n.layout_hint.importance if n.layout_hint else 0.5), n.id))[0]]
     primary_node = primary[0]
     title_m = measurements[primary_node.id]
+    title_width = min(title_zone.width - 8.0, title_m.width + 36.0)
+    title_required_h = _wrapped_text_height(title_m, title_width) + 16.0
     title_box = LayoutBox(
         node_id=primary_node.id,
         rect=_fit_rect(
             title_zone,
-            preferred_width=min(title_zone.width, title_m.width + 36.0),
-            preferred_height=min(title_zone.height, max(26.0, title_m.height + 14.0)),
+            preferred_width=title_width,
+            preferred_height=min(title_zone.height - 4.0, max(38.0, title_required_h)),
             preferred_region=primary_node.layout_hint.preferred_region if primary_node.layout_hint else None,
         ),
         zone="TITLE",
@@ -308,8 +415,11 @@ def _compile_process_compact(
             node_id=topic.id,
             rect=_fit_rect(
                 title_zone,
-                preferred_width=min(title_zone.width, title_measure.width + 30.0),
-                preferred_height=min(title_zone.height, max(24.0, title_measure.height + 12.0)),
+                preferred_width=min(title_zone.width - 8.0, title_measure.width + 30.0),
+                preferred_height=min(
+                    title_zone.height - 4.0,
+                    max(38.0, _wrapped_text_height(title_measure, min(title_zone.width - 8.0, title_measure.width + 30.0)) + 16.0),
+                ),
             ),
             zone="TITLE",
             strategy_role="title",
@@ -319,17 +429,26 @@ def _compile_process_compact(
 
     for node, slot in zip(actors, actor_slots):
         measurement = measurements[node.id]
-        if measurement.minimum_readable_width > slot.width + 1e-6 or measurement.minimum_readable_height > slot.height + 1e-6:
+        if measurement.minimum_readable_width > slot.width + 1e-6:
             raise LayoutUnsatisfiableError(
-                f"Actor '{node.id}' cannot fit minimum readable geometry in compact PROCESS lane"
+                f"Actor '{node.id}' cannot fit minimum readable width in compact PROCESS lane"
+            )
+        preferred_width = min(
+            max(measurement.minimum_readable_width + 20.0, min(slot.width * 0.90, measurement.width + 20.0)),
+            max(24.0, slot.width - 16.0),
+        )
+        required_height = _wrapped_text_height(measurement, preferred_width) + 16.0
+        if required_height > slot.height - 8.0 + 1e-6:
+            raise LayoutUnsatisfiableError(
+                f"Actor '{node.id}' wrapped readable text does not fit compact PROCESS lane"
             )
         boxes.append(
             LayoutBox(
                 node_id=node.id,
                 rect=_fit_rect(
                     slot,
-                    preferred_width=max(measurement.minimum_readable_width, min(slot.width * 0.86, measurement.width + 18.0)),
-                    preferred_height=max(measurement.minimum_readable_height, min(slot.height, measurement.height + 12.0)),
+                    preferred_width=preferred_width,
+                    preferred_height=required_height,
                     preferred_region=node.layout_hint.preferred_region if node.layout_hint else None,
                 ),
                 zone="CONTENT",
@@ -340,17 +459,26 @@ def _compile_process_compact(
 
     for node, slot in zip(steps, step_slots):
         measurement = measurements[node.id]
-        if measurement.minimum_readable_width > slot.width + 1e-6 or measurement.minimum_readable_height > slot.height + 1e-6:
+        if measurement.minimum_readable_width > slot.width + 1e-6:
             raise LayoutUnsatisfiableError(
-                f"Step '{node.id}' cannot fit minimum readable geometry in compact PROCESS lane"
+                f"Step '{node.id}' cannot fit minimum readable width in compact PROCESS lane"
+            )
+        preferred_width = min(
+            max(measurement.minimum_readable_width + 20.0, min(slot.width * 0.90, measurement.width + 20.0)),
+            max(24.0, slot.width - 16.0),
+        )
+        required_height = _wrapped_text_height(measurement, preferred_width) + 16.0
+        if required_height > slot.height - 8.0 + 1e-6:
+            raise LayoutUnsatisfiableError(
+                f"Step '{node.id}' wrapped readable text does not fit compact PROCESS lane"
             )
         boxes.append(
             LayoutBox(
                 node_id=node.id,
                 rect=_fit_rect(
                     slot,
-                    preferred_width=max(measurement.minimum_readable_width, min(slot.width * 0.86, measurement.width + 18.0)),
-                    preferred_height=max(measurement.minimum_readable_height, min(slot.height, measurement.height + 18.0)),
+                    preferred_width=preferred_width,
+                    preferred_height=required_height,
                     preferred_region=node.layout_hint.preferred_region if node.layout_hint else None,
                 ),
                 zone="CONTENT",
@@ -423,8 +551,11 @@ def _compile_comparison(
             node_id=title.id,
             rect=_fit_rect(
                 title_zone,
-                preferred_width=min(title_zone.width, title_m.width + 36.0),
-                preferred_height=min(title_zone.height, max(26.0, title_m.height + 14.0)),
+                preferred_width=min(title_zone.width - 8.0, title_m.width + 36.0),
+                preferred_height=min(
+                    title_zone.height - 4.0,
+                    max(38.0, _wrapped_text_height(title_m, min(title_zone.width - 8.0, title_m.width + 36.0)) + 16.0),
+                ),
                 preferred_region=title.layout_hint.preferred_region if title.layout_hint else None,
             ),
             zone="TITLE",
@@ -438,30 +569,57 @@ def _compile_comparison(
         x = content.x + idx * (col_w + gap)
         col_zone = Rect(x=round(x, 4), y=content.y, width=round(col_w, 4), height=content.height)
         members = _column_members(scene_graph, column.id)
-        col_title_h = min(max(34.0, measurements[column.id].minimum_readable_height + 14.0), col_zone.height * 0.25)
+        column_width = min(col_zone.width - 16.0, measurements[column.id].width + 24.0)
+        column_required_h = _wrapped_text_height(measurements[column.id], column_width) + 16.0
+        # Use the measured readable height directly. The old +4 heuristic and
+        # a second _fit_rect vertical inset consumed content space while still
+        # shrinking the actual header below its measured text requirement.
+        col_title_h = min(max(38.0, column_required_h), col_zone.height * 0.30)
+        if column_required_h > col_title_h + 1e-6:
+            raise LayoutUnsatisfiableError(
+                f"Comparison column '{column.id}' title cannot fit readable text"
+            )
         title_slot = Rect(x=col_zone.x, y=col_zone.y, width=col_zone.width, height=col_title_h)
         boxes.append(
             LayoutBox(
                 node_id=column.id,
                 rect=_fit_rect(
                     title_slot,
-                    preferred_width=min(col_zone.width, measurements[column.id].width + 20.0),
-                    preferred_height=min(col_title_h, measurements[column.id].height + 12.0),
+                    preferred_width=column_width,
+                    preferred_height=column_required_h,
                     preferred_region=column.layout_hint.preferred_region if column.layout_hint else None,
+                    margin_y=0.0,
                 ),
                 zone="CONTENT",
                 strategy_role="comparison_column",
                 semantic_key=column.semantic_key,
             )
         )
-        body_y = col_zone.y + col_title_h + 6.0
+        # Preserve typography before spacing. At compact 16:9 sizes the
+        # header/body gap scales down, while high-resolution profiles retain
+        # approximately the original 6px separation.
+        header_body_gap = max(2.0, min(6.0, profile.height * 0.008))
+        body_y = col_zone.y + col_title_h + header_body_gap
         body = Rect(
             x=col_zone.x,
             y=round(body_y, 4),
             width=col_zone.width,
             height=round(max(1.0, col_zone.bottom - body_y), 4),
         )
-        boxes.extend(_stack_in_zone(members, measurements, body, gap=6.0, zone_name="CONTENT"))
+        boxes.extend(
+            _stack_in_zone(
+                members,
+                measurements,
+                body,
+                gap=6.0,
+                minimum_gap=2.0,
+                zone_name="CONTENT",
+                # The comparison columns already have a deterministic inter-column
+                # gap; an additional inset here needlessly narrows every card and
+                # can add an avoidable wrap at the 18px readability floor.
+                outer_margin_x=0.0,
+            )
+        )
 
     covered = {box.node_id for box in boxes}
     extras = [node for node in scene_graph.nodes if node.id not in covered]

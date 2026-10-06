@@ -1,0 +1,90 @@
+{
+  "benchmark_id": "v2-core-gate-v2",
+  "schema_version": "2.0",
+  "supersedes_invalid_run": {
+    "benchmark_id": "v2-core-gate-v1",
+    "reason": [
+      "V1 static-quality frames were sampled from final videos with burned subtitles while V2 frames were sampled from pre-subtitle scene clips.",
+      "Renderer text payload/font-fit semantics were not aligned with LayoutRouter measurement, allowing rendered text overflow to escape fatal clipping metrics."
+    ]
+  },
+  "frozen_against_v1_baseline": "benchmarks/baselines/v1/baseline.json",
+  "lesson_keys": [
+    "photosynthesis",
+    "ram_vs_ssd",
+    "tcp_three_way_handshake"
+  ],
+  "render_profile": {
+    "width": 640,
+    "height": 360,
+    "fps": 12,
+    "scene_duration_seconds": 2,
+    "transition_duration_seconds": 0.5,
+    "repetitions": 2
+  },
+  "motion_policy": {
+    "per_scene": "ENTER_FADE_FIRST_NODE",
+    "triggered": false
+  },
+  "graph_backend": "GRAPHVIZ",
+  "rendered_text_contract": {
+    "font_size_px": 18,
+    "horizontal_padding_px": 10,
+    "vertical_padding_px": 8,
+    "overflow_policy": "REJECT_RENDER",
+    "payload_policy": "content_else_label_else_semantic_role_else_kind"
+  },
+  "static_quality_metric": {
+    "metric_id": "static_composition_proxy_v2",
+    "sample": "one midpoint frame per pre-subtitle scene clip for BOTH V1 and V2",
+    "v1_source": "retained V1 scenes/<scene_id>.mp4 before VideoAssembler subtitle burn-in",
+    "v2_source": "V2 rendered scene clips before final audio mux",
+    "background_estimator": "median RGB of four 5%-corner patches",
+    "foreground_color_distance_threshold": 24,
+    "weights": {
+      "contrast": 0.4,
+      "occupancy_balance": 0.35,
+      "safe_margin": 0.25
+    },
+    "contrast_component": "clip(luma_std / 64, 0, 1)",
+    "occupancy_component": "clip(1 - abs(foreground_fraction - 0.30) / 0.30, 0, 1)",
+    "safe_margin_component": "1 - clip(foreground_fraction_inside_outer_4pct / 0.08, 0, 1)",
+    "aggregate": "100 * weighted mean across all 9 representative scene frames",
+    "interpretation": "deterministic static-composition proxy only; not a human aesthetic score"
+  },
+  "deterministic_qa": {
+    "min_font_size_px": 18,
+    "require_renderer_text_fit": true,
+    "require_all_scene_layout_preflight_pass": true
+  },
+  "core_gate_mapping": {
+    "render_success_rate": "successful final V2 lesson videos / 3",
+    "fatal_clipping_count": "sum layout content clipping/frame overflow plus any renderer text-fit failure across 9 scenes",
+    "fatal_overlap_count": "sum non-semantic bbox collisions across 9 scenes",
+    "invalid_motion_plan_count": "scene MotionPlan/schedule/compiler failures across 9 scenes",
+    "selective_repair_success_rate": "repair cases whose patch changes scene hash and rendered frame digest, repaired render satisfies the same text-fit/layout QA contract, and unrelated scene digests remain identical",
+    "reproducibility_rate": "lesson repeated run final frame_digest equality / successful lessons",
+    "v1_v2_critical_regression_count": "count lessons violating frozen V1 required media/product invariants (video codec, audio stream/codec, resolution, final artifact, burned subtitle capability)",
+    "v2_static_quality_delta": "V2 static_composition_proxy_v2 - V1 static_composition_proxy_v2 using pre-subtitle scene clips on both sides"
+  },
+  "repair_cases": {
+    "selection": "one deterministic first-node SET_REGION patch per scene",
+    "expected_case_count": 9,
+    "success_requires_pixel_change": true
+  },
+  "evidence_policy": {
+    "first_valid_run_must_be_persisted": "benchmarks/baselines/v2/",
+    "ephemeral_actions_artifact_alone_is_not_sufficient": true
+  },
+  "freeze_rule": "After the first VALID v2-core-gate-v2 execution, this specification and metric formula must not change. Fix engine only, then rerun this exact spec.",
+  "product_parity": {
+    "required_from_v1": [
+      "final artifact",
+      "h264 video",
+      "aac audio",
+      "640x360 output",
+      "burned subtitles derived from lesson narration"
+    ],
+    "subtitle_policy": "V2 must expose an actual subtitle-integrated final render path; benchmark-only metadata or a no-op flag is not sufficient."
+  }
+}

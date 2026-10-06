@@ -2,7 +2,7 @@
 """Run the frozen LearnFlow V2 Core Gate benchmark against the frozen V1 lessons.
 
 The benchmark specification is immutable after the first execution:
-benchmarks/specs/v2_core_gate_v1.json
+benchmarks/specs/v2_core_gate_v2.json
 
 This runner intentionally reports failures instead of substituting benchmark-only
 fallbacks. The same frozen V1 LessonPlan fixtures feed V1 and V2.
@@ -13,6 +13,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -20,6 +21,8 @@ import sys
 import tempfile
 import time
 from typing import Any
+
+from PIL import ImageStat
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -31,6 +34,7 @@ from learnflow_v2.core_gate import (
     CoreGateEvidence,
     CoreGateEvidenceBundle,
     CoreGateMetric,
+    CoreGateState,
     EvidenceKind,
     evaluate_core_gate,
 )
@@ -40,20 +44,36 @@ from learnflow_v2.motion import MotionEvent, MotionPlan, MotionStyle, MotionVerb
 from learnflow_v2.motion.compiler import compile_motion_schedule
 from learnflow_v2.motion.scheduler import schedule_motion_plan
 from learnflow_v2.qa import (
+    AudioProbe,
     CriticPatchOp,
     CriticPatchSuggestion,
     CriticTargetKind,
     CriticTargetRef,
+    DeterministicQAConfig,
+    FrameProbe,
+    RenderedSceneProbe,
+    TextElementProbe,
+    analyze_deterministic_qa,
 )
 from learnflow_v2.repair import apply_safe_scenegraph_patches
-from learnflow_v2.render import RenderProfile, assemble_video, mux_audio_track, render_scene_video, render_transition_video
+from learnflow_v2.render import (
+    DEFAULT_TEXT_FONT_SIZE_PX,
+    DeterministicPillowRenderer,
+    RenderProfile,
+    SubtitleRenderCue,
+    assemble_video,
+    burn_subtitles,
+    mux_audio_track,
+    render_scene_video,
+    render_transition_video,
+)
 from learnflow_v2.scenegraph import adapt_v1_lesson_plan
 from learnflow_v2.scenegraph.enums import PreferredRegion
 from learnflow_v2.transitions import compile_inter_scene_transition
 from scripts.capture_v1_baseline import run_benchmark_lesson
 
 
-SPEC_PATH = REPO_ROOT / "benchmarks" / "specs" / "v2_core_gate_v1.json"
+SPEC_PATH = REPO_ROOT / "benchmarks" / "specs" / "v2_core_gate_v2.json"
 V1_BASELINE_PATH = REPO_ROOT / "benchmarks" / "baselines" / "v1" / "baseline.json"
 V1_FIXTURES = REPO_ROOT / "benchmarks" / "fixtures" / "v1"
 
@@ -67,7 +87,21 @@ def _git_sha() -> str:
         text=True,
         check=True,
     )
-    return proc.stdout.strip()
+    value = proc.stdout.strip().lower()
+    if len(value) != 40 or any(ch not in "0123456789abcdef" for ch in value):
+        raise RuntimeError("git rev-parse HEAD did not return a 40-character SHA")
+    return value
+
+
+def _benchmark_source_sha() -> str:
+    """Return the real source head under PR CI, not GitHub's synthetic merge SHA."""
+    value = os.environ.get("BENCHMARK_SOURCE_COMMIT")
+    if value is None:
+        return _git_sha()
+    value = value.strip().lower()
+    if len(value) != 40 or any(ch not in "0123456789abcdef" for ch in value):
+        raise RuntimeError("BENCHMARK_SOURCE_COMMIT must be a 40-character git SHA")
+    return value
 
 
 def _sha256(path: Path) -> str:
@@ -98,6 +132,50 @@ def _video_streams(path: Path) -> tuple[dict[str, Any] | None, dict[str, Any] | 
     audio = next((item for item in streams if item.get("codec_type") == "audio"), None)
     duration = float(data.get("format", {}).get("duration") or 0.0)
     return video, audio, duration
+
+
+def _frame_probe(renderer: DeterministicPillowRenderer, scene_graph, layout, compiled, timestamp: float) -> FrameProbe:
+    image = renderer.render_frame(scene_graph, layout, compiled, timestamp).convert("RGB")
+    luma = image.convert("L")
+    mean_luma = float(ImageStat.Stat(luma).mean[0])
+    values = list(luma.getdata())
+    non_black_fraction = sum(1 for value in values if value > 2) / len(values)
+    return FrameProbe(
+        timestamp=timestamp,
+        mean_luma=mean_luma,
+        non_black_fraction=non_black_fraction,
+        expected_blank=False,
+    )
+
+
+def _scene_qa_report(scene_graph, layout, compiled, artifact, profile):
+    renderer = DeterministicPillowRenderer()
+    timestamp = min(compiled.scene_duration / 2.0, artifact.duration)
+    probe = RenderedSceneProbe(
+        scene_id=scene_graph.scene_id,
+        expected_duration=compiled.scene_duration,
+        rendered_duration=artifact.duration,
+        text_elements=tuple(
+            TextElementProbe(
+                element_id=node.id,
+                font_size_px=float(DEFAULT_TEXT_FONT_SIZE_PX),
+                alpha=1.0,
+            )
+            for node in scene_graph.nodes
+        ),
+        visual_elements=(),
+        assets=(),
+        frames=(_frame_probe(renderer, scene_graph, layout, compiled, timestamp),),
+        audio=AudioProbe(duration=artifact.duration, rms_windows=(), expected_audio=False),
+        subtitles=(),
+    )
+    return analyze_deterministic_qa(
+        layout,
+        probe,
+        expected_node_ids={node.id for node in scene_graph.nodes},
+        config=DeterministicQAConfig(min_font_size_px=float(DEFAULT_TEXT_FONT_SIZE_PX)),
+        profile=profile,
+    )
 
 
 def _build_motion(scene_graph, scene_duration: float):
@@ -176,6 +254,12 @@ def _run_v2_once(
             scene_dir / f"{scene_graph.scene_id}.mp4",
             profile=render_profile,
         )
+        qa_report = _scene_qa_report(scene_graph, layout, compiled, artifact, profile)
+        if not qa_report.passed:
+            raise RuntimeError(
+                f"Deterministic rendered-scene QA failed for {scene_graph.scene_id}: "
+                f"{[issue.code.value for issue in qa_report.issues]}"
+            )
         layouts.append(layout)
         compiled_motion.append(compiled)
         scene_artifacts.append(artifact)
@@ -194,7 +278,8 @@ def _run_v2_once(
                 "motion_event_count": len(motion_plan.events),
                 "frame_digest": artifact.frame_digest,
                 "source_hash": artifact.source_hash,
-                "render_seconds": round(time.perf_counter() - t0, 6),
+                "deterministic_qa_pass": qa_report.passed,
+                "deterministic_qa_issue_codes": [issue.code.value for issue in qa_report.issues],
             }
         )
 
@@ -237,7 +322,23 @@ def _run_v2_once(
         if index < len(transition_artifacts):
             clips.append(transition_artifacts[index])
     video_only = assemble_video(tuple(clips), out_dir / "final_video_only.mp4")
-    final = mux_audio_track(video_only, narration_audio_path, out_dir / "final.mp4")
+    with_audio = mux_audio_track(video_only, narration_audio_path, out_dir / "final_with_audio.mp4")
+    subtitle_cues = []
+    cursor = 0.0
+    for scene_index, scene in enumerate(plan.scenes):
+        subtitle_cues.append(
+            SubtitleRenderCue(
+                start_seconds=cursor,
+                end_seconds=cursor + scene_duration,
+                # Match the deterministic V1 benchmark speech provider contract:
+                # subtitles are derived from narration and truncated to 40 chars.
+                text=(scene.narration[:40] if scene.narration else "Lesson narration"),
+            )
+        )
+        cursor += scene_duration
+        if scene_index < len(plan.scenes) - 1:
+            cursor += transition_duration
+    final = burn_subtitles(with_audio, tuple(subtitle_cues), out_dir / "final.mp4")
     video, audio, duration = _video_streams(Path(final.path))
     if video is None:
         raise RuntimeError("V2 final artifact has no video stream")
@@ -255,6 +356,7 @@ def _run_v2_once(
         "video_codec": video.get("codec_name"),
         "audio_codec": audio.get("codec_name") if audio else None,
         "audio_present": audio is not None,
+        "subtitles_integrated": True,
         "width": video.get("width"),
         "height": video.get("height"),
         "duration_seconds": round(duration, 6),
@@ -311,18 +413,20 @@ def _repair_benchmark(
             out_dir / f"repair_{scene_graph.scene_id}.mp4",
             profile=render_profile,
         )
+        qa_report = _scene_qa_report(
+            patch_result.scene_graph,
+            new_layout,
+            compiled,
+            new_artifact,
+            profile,
+        )
         pixel_changed = new_artifact.frame_digest != original_artifacts[index].frame_digest
         unrelated_unchanged = all(
             original_digests[row["scene_id"]] == row["frame_digest"]
             for row in base_run["scenes"]
             if row["scene_id"] != scene_graph.scene_id
         )
-        qa_pass = (
-            preflight.frame_overflow_count == 0
-            and preflight.content_clipping_count == 0
-            and preflight.safe_zone_violation_count == 0
-            and not detect_box_collisions(new_layout)
-        )
+        qa_pass = qa_report.passed
         success = changed_scene_hash and pixel_changed and qa_pass and unrelated_unchanged
         cases.append(
             {
@@ -332,6 +436,7 @@ def _repair_benchmark(
                 "scene_hash_changed": changed_scene_hash,
                 "pixel_changed": pixel_changed,
                 "qa_pass": qa_pass,
+                "qa_issue_codes": [issue.code.value for issue in qa_report.issues],
                 "unrelated_scene_digests_unchanged": unrelated_unchanged,
                 "success": success,
             }
@@ -352,7 +457,8 @@ async def main() -> int:
     scene_duration = float(spec["render_profile"]["scene_duration_seconds"])
     transition_duration = float(spec["render_profile"]["transition_duration_seconds"])
     repetitions = int(spec["render_profile"]["repetitions"])
-    commit = _git_sha()
+    checkout_commit = _git_sha()
+    commit = _benchmark_source_sha()
     output_root = Path(sys.argv[1]) if len(sys.argv) > 1 else REPO_ROOT / "benchmark_output" / "v2_core_gate"
     if output_root.exists():
         shutil.rmtree(output_root)
@@ -362,6 +468,7 @@ async def main() -> int:
         "benchmark_id": spec["benchmark_id"],
         "spec_sha256": _sha256(SPEC_PATH),
         "repo_commit": commit,
+        "checkout_commit": checkout_commit,
         "lessons": {},
         "repair_cases": [],
     }
@@ -388,6 +495,7 @@ async def main() -> int:
             baseline_spec,
             v1_baseline["media_invariants"],
             retain_final_to=v1_final,
+            retain_scenes_to=lesson_dir / "v1" / "scenes",
         )
 
         v2_runs = []
@@ -432,6 +540,9 @@ async def main() -> int:
                 regression_reasons.append(f"resolution:{base['width']}x{base['height']}!={width}x{height}")
             if Path(base["final_path"]).name != required_name:
                 regression_reasons.append("final_artifact_name")
+            if "burned subtitles derived from lesson narration" in spec.get("product_parity", {}).get("required_from_v1", []):
+                if not base.get("subtitles_integrated", False):
+                    regression_reasons.append("subtitles_not_integrated")
             if regression_reasons:
                 critical_regressions += 1
 
@@ -468,21 +579,28 @@ async def main() -> int:
                 "error": error,
             }
 
-        # V1 benchmark speech is frozen at exactly 2 seconds per scene.
-        for index in range(int(baseline_spec["scene_count"])):
-            timestamp = scene_duration * index + scene_duration / 2.0
-            out = lesson_dir / "static_frames" / f"v1_scene_{index+1}.png"
-            extract_frame(v1_final, timestamp, out)
+        # Static-quality comparison must use the same visual layer on both sides:
+        # pre-subtitle scene clips for V1 and pre-mux scene clips for V2.
+        retained_scene_paths = [Path(path) for path in v1_result.get("retained_scene_paths", ())]
+        if len(retained_scene_paths) != int(baseline_spec["scene_count"]):
+            raise RuntimeError(
+                f"Expected {baseline_spec['scene_count']} retained V1 scene clips, got {len(retained_scene_paths)}"
+            )
+        for index, scene_path in enumerate(retained_scene_paths, 1):
+            out = lesson_dir / "static_frames" / f"v1_scene_{index}.png"
+            extract_frame(scene_path, scene_duration / 2.0, out)
             v1_frame_paths.append(out)
 
         result["lessons"][lesson_key] = lesson_result
 
     v1_quality = aggregate_static_quality(v1_frame_paths)
+    v1_quality["metric_id"] = spec["static_quality_metric"]["metric_id"]
     v2_quality = aggregate_static_quality(v2_frame_paths) if v2_frame_paths else {
         "metric_id": "static_composition_proxy_v1",
         "frame_count": 0,
         "score": 0.0,
     }
+    v2_quality["metric_id"] = spec["static_quality_metric"]["metric_id"]
     static_delta = round(float(v2_quality["score"]) - float(v1_quality["score"]), 8)
 
     repair_cases = result["repair_cases"]
@@ -549,7 +667,9 @@ async def main() -> int:
 
     print(json.dumps(result["summary"], indent=2))
     print(f"CORE_GATE={report.state.value}")
-    return 0
+    # The benchmark artifact is written regardless of decision so failed gates
+    # remain auditable, but CI must never report success for FAIL/BLOCKED.
+    return 0 if report.state == CoreGateState.PASS else 2
 
 
 if __name__ == "__main__":

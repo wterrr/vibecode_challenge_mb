@@ -16,7 +16,8 @@ from learnflow_v2.motion.compiler import (
 from learnflow_v2.motion.enums import MotionStyle, MotionTargetKind, MotionVerb
 from learnflow_v2.render import (
     DeterministicPillowRenderer, RenderArtifactKind, RenderInvalidInputError,
-    RenderProfile, assemble_video, mux_audio_track, render_scene_video, render_transition_video,
+    RenderProfile, SubtitleRenderCue, assemble_video, burn_subtitles, mux_audio_track,
+    render_scene_video, render_transition_video,
 )
 from learnflow_v2.scenegraph.enums import LayoutIntent, NodeKind, RelationKind
 from learnflow_v2.scenegraph.schema import (
@@ -276,3 +277,131 @@ def test_source_artifacts_are_not_mutated_by_frame_render():
     assert scene.model_dump_json() == scene_before
     assert layout.model_dump_json() == layout_before
     assert motion.to_canonical_json() == motion_before
+
+
+def test_renderer_text_payload_matches_layout_content_precedence():
+    scene = SceneGraph(
+        scene_id="text_contract",
+        nodes=(
+            SceneNode(
+                id="n",
+                kind=NodeKind.CONCEPT,
+                label="THIS LABEL IS INTENTIONALLY MUCH TOO LONG FOR THE CARD AND MUST NOT BE CONCATENATED",
+                content="Short content",
+            ),
+        ),
+        relations=(),
+        layout_intent=LayoutIntentSpec(type=LayoutIntent.CONCEPT_CARD),
+    )
+    layout = LayoutGraph(
+        scene_id="text_contract",
+        frame_profile_id="test-320x180",
+        frame_width=320,
+        frame_height=180,
+        boxes=(LayoutBox(node_id="n", rect=Rect(x=90, y=55, width=140, height=70), zone="CONTENT"),),
+        routed_edges=(),
+        strategy=LayoutStrategy.CONCEPT_CARD,
+        feasible=True,
+    )
+    frame = DeterministicPillowRenderer().render_frame(scene, layout, None, 0.0)
+    assert frame.size == (320, 180)
+
+
+def test_renderer_rejects_text_that_cannot_fit_readable_18px_box():
+    scene = SceneGraph(
+        scene_id="text_overflow",
+        nodes=(
+            SceneNode(
+                id="n",
+                kind=NodeKind.CONCEPT,
+                content="This content requires several readable wrapped lines and must never spill outside its solved card.",
+            ),
+        ),
+        relations=(),
+        layout_intent=LayoutIntentSpec(type=LayoutIntent.CONCEPT_CARD),
+    )
+    layout = LayoutGraph(
+        scene_id="text_overflow",
+        frame_profile_id="test-320x180",
+        frame_width=320,
+        frame_height=180,
+        boxes=(LayoutBox(node_id="n", rect=Rect(x=120, y=75, width=80, height=28), zone="CONTENT"),),
+        routed_edges=(),
+        strategy=LayoutStrategy.CONCEPT_CARD,
+        feasible=True,
+    )
+    with pytest.raises(RenderInvalidInputError, match="does not fit solved LayoutGraph box"):
+        DeterministicPillowRenderer().render_frame(scene, layout, None, 0.0)
+
+
+@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg required")
+def test_subtitle_burn_changes_video_pixels_and_preserves_aac_audio(tmp_path: Path):
+    profile = RenderProfile(profile_id="test", fps=5, preset="ultrafast")
+    scene, layout, motion = _scene("s1"), _layout("s1"), _static_motion("s1", duration=1.0)
+    scene_video = render_scene_video(scene, layout, motion, tmp_path/"scene.mp4", profile=profile)
+    video_only = assemble_video((scene_video,), tmp_path/"video_only.mp4")
+
+    audio = tmp_path/"audio.wav"
+    proc = __import__("subprocess").run(
+        [
+            "ffmpeg", "-y", "-loglevel", "error",
+            "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo:d=1.0",
+            str(audio),
+        ],
+        check=False,
+    )
+    assert proc.returncode == 0
+    with_audio = mux_audio_track(video_only, audio, tmp_path/"with_audio.mp4")
+    subtitled = burn_subtitles(
+        with_audio,
+        (SubtitleRenderCue(start_seconds=0.0, end_seconds=0.9, text="Narration subtitle"),),
+        tmp_path/"subtitled.mp4",
+    )
+    assert Path(subtitled.path).stat().st_size > 1000
+    assert subtitled.frame_digest != with_audio.frame_digest
+    assert subtitled.source_hash != with_audio.source_hash
+
+    probe = __import__("subprocess").run(
+        [
+            "ffprobe", "-v", "error", "-show_entries", "stream=codec_name,codec_type",
+            "-of", "json", str(subtitled.path),
+        ],
+        capture_output=True, text=True, check=True,
+    )
+    streams = __import__("json").loads(probe.stdout)["streams"]
+    assert any(item["codec_type"] == "video" and item["codec_name"] == "h264" for item in streams)
+    assert any(item["codec_type"] == "audio" and item["codec_name"] == "aac" for item in streams)
+
+
+def test_subtitle_cue_contract_rejects_invalid_or_overlapping_input(tmp_path: Path):
+    with pytest.raises(Exception):
+        SubtitleRenderCue(start_seconds=True, end_seconds=1.0, text="x")
+    with pytest.raises(Exception):
+        SubtitleRenderCue(start_seconds=1.0, end_seconds=1.0, text="x")
+    with pytest.raises(Exception):
+        SubtitleRenderCue(start_seconds=0.0, end_seconds=1.0, text="   ")
+
+
+@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg required")
+def test_subtitle_burn_rejects_overlap_and_out_of_duration_cues(tmp_path: Path):
+    profile = RenderProfile(profile_id="test", fps=5, preset="ultrafast")
+    scene, layout, motion = _scene("s1"), _layout("s1"), _static_motion("s1", duration=1.0)
+    scene_video = render_scene_video(scene, layout, motion, tmp_path/"scene.mp4", profile=profile)
+    video = assemble_video((scene_video,), tmp_path/"video.mp4")
+
+    with pytest.raises(RenderInvalidInputError, match="must not overlap"):
+        burn_subtitles(
+            video,
+            (
+                SubtitleRenderCue(start_seconds=0.0, end_seconds=0.7, text="a"),
+                SubtitleRenderCue(start_seconds=0.6, end_seconds=0.9, text="b"),
+            ),
+            tmp_path/"bad_overlap.mp4",
+        )
+
+    with pytest.raises(RenderInvalidInputError, match="exceeds video duration"):
+        burn_subtitles(
+            video,
+            (SubtitleRenderCue(start_seconds=0.8, end_seconds=1.5, text="late"),),
+            tmp_path/"bad_duration.mp4",
+        )

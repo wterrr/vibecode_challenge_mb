@@ -242,6 +242,7 @@ async def run_benchmark_lesson(
     global_invariants: dict[str, Any],
     *,
     retain_final_to: Path | None = None,
+    retain_scenes_to: Path | None = None,
 ) -> dict[str, Any]:
     """Run a single lesson plan through the full downstream V1 pipeline."""
     plan_dict = json.loads(fixture_path.read_text(encoding="utf-8"))
@@ -375,6 +376,17 @@ async def run_benchmark_lesson(
             shutil.copy2(final_artifact, retain_final_to)
             retained_path = str(retain_final_to)
 
+        retained_scene_paths: list[str] = []
+        if retain_scenes_to is not None:
+            retain_scenes_to.mkdir(parents=True, exist_ok=True)
+            for scene in plan.scenes:
+                source_scene = store.get_path(job_id, "scenes", f"{scene.scene_id}.mp4")
+                if not source_scene.exists() or source_scene.stat().st_size <= 0:
+                    raise BaselineContractError(f"Missing rendered V1 scene artifact: {source_scene}")
+                destination = retain_scenes_to / f"{scene.scene_id}.mp4"
+                shutil.copy2(source_scene, destination)
+                retained_scene_paths.append(str(destination))
+
         return {
             "lesson_key": lesson_key,
             "status": "PASS",
@@ -390,6 +402,7 @@ async def run_benchmark_lesson(
             "total_render_seconds": total_render_seconds,
             "final_file_size": file_size,
             "retained_final_path": retained_path,
+            "retained_scene_paths": retained_scene_paths,
         }
 
 
