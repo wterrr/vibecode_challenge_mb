@@ -31,6 +31,8 @@ def test_corrected_frozen_benchmark_spec_matches_v1_baseline_and_preserves_inval
     assert "pre-subtitle scene clip" in spec["static_quality_metric"]["sample"]
     assert spec["static_quality_metric"]["v1_source"].startswith("retained V1 scenes/")
     assert spec["deterministic_qa"]["min_font_size_px"] == 18
+    assert "burned subtitles derived from lesson narration" in spec["product_parity"]["required_from_v1"]
+    assert "benchmark-only metadata" in spec["product_parity"]["subtitle_policy"]
     weights = spec["static_quality_metric"]["weights"]
     assert abs(sum(weights.values()) - 1.0) < 1e-12
     assert spec["repair_cases"]["expected_case_count"] == 9
