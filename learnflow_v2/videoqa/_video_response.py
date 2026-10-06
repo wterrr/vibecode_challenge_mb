@@ -225,3 +225,5 @@ def validate_video_critic_response_scope(response: VideoCriticResponse, request:
             raise VideoCriticInvalidInputError(
                 f"video recommendation '{recommendation.recommendation_id}' references unknown scenes {sorted(unknown)}"
             )
+
+
