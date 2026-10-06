@@ -9,11 +9,13 @@ EndToEndResult = LessonPipelineResult
 
 __all__ = [
     "CapabilityCoreGateway",
+    "LessonPipelineResult",
     "EndToEndResult",
     "STAGE_ORDER",
     "SceneDurationResolver",
     "SceneRenderReceipt",
     "StructuredAgentRunner",
     "default_scene_duration",
+    "run_lesson_pipeline",
     "run_end_to_end",
 ]
