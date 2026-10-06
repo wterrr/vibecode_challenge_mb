@@ -13,10 +13,8 @@ if str(ROOT) not in sys.path:
 from agent_contracts import AgentContractError
 from agent_aware_qa import (
     AgentAwareQAReport,
-    QARoutingContext,
     RepairActionKind,
     RepairOwner,
-    SceneCriticRepairReport,
     SemanticFindingKind,
     SemanticQAFinding,
     build_agent_repair_task,
@@ -24,6 +22,8 @@ from agent_aware_qa import (
     route_agent_aware_qa,
 )
 from learnflow_v2.qa import (
+    CriticFailurePolicy,
+    CriticGateState,
     CriticIssue,
     CriticIssueSeverity,
     CriticIssueType,
@@ -37,19 +37,26 @@ from learnflow_v2.qa import (
     QAIssue,
     QAIssueCode,
     QAIssueSeverity,
+    QualityGateResult,
+    QualityMode,
 )
 from learnflow_v2.scenegraph import PreferredRegion
 from learnflow_v2.videoqa import (
     VideoCriticDimension,
+    VideoCriticFailurePolicy,
+    VideoCriticGateState,
     VideoCriticIssue,
     VideoCriticRecommendation,
     VideoCriticResponse,
+    VideoCriticResult,
     VideoCriticStatus,
     VideoDimensionAssessment,
     VideoIssueSeverity,
     VideoIssueType,
     VideoRecommendationOp,
+    compute_video_critic_request_hash,
 )
+from scripts.verify_agent_aware_qa import build_video_request
 from scripts.verify_script_agent import build_fixture, build_script
 from scripts.verify_visual_director import build_visual_output
 from visual_director import build_visual_concept_registry
@@ -70,6 +77,84 @@ def route(report, context):
     return route_agent_aware_qa(report, context=context)
 
 
+def pass_report(scene_id):
+    return DeterministicQAReport(scene_id=scene_id, passed=True, issues=())
+
+
+def deterministic_gate(report):
+    return QualityGateResult(
+        scene_id=report.scene_id,
+        quality_mode=QualityMode.CRITIC,
+        failure_policy=CriticFailurePolicy.STRICT,
+        deterministic_report=report,
+        critic_state=CriticGateState.SKIPPED_DETERMINISTIC_FAIL,
+        critic_response=None,
+        approved=False,
+        warnings=(),
+    )
+
+
+def critic_repair_gate(scene_id, response):
+    return QualityGateResult(
+        scene_id=scene_id,
+        quality_mode=QualityMode.CRITIC,
+        failure_policy=CriticFailurePolicy.STRICT,
+        deterministic_report=pass_report(scene_id),
+        critic_state=CriticGateState.REPAIR_REQUIRED,
+        critic_response=response,
+        approved=False,
+        warnings=(),
+    )
+
+
+def video_result(context, issue_type, op, dimension, *, scene_ids=None):
+    request = build_video_request(context)
+    selected = tuple(scene_ids or (request.scenes[0].scene_id,))
+    response = VideoCriticResponse(
+        status=VideoCriticStatus.REVIEW_REQUIRED,
+        dimension_assessments=tuple(
+            VideoDimensionAssessment(
+                dimension=item,
+                passed=item != dimension,
+                summary="repair" if item == dimension else "pass",
+            )
+            for item in VideoCriticDimension
+        ),
+        issues=(
+            VideoCriticIssue(
+                issue_id="video-issue",
+                issue_type=issue_type,
+                severity=VideoIssueSeverity.MEDIUM,
+                scene_ids=selected,
+                transition_ids=(
+                    ("transition:0",)
+                    if issue_type == VideoIssueType.TRANSITION_CONTINUITY
+                    else ()
+                ),
+                reason="video issue",
+            ),
+        ),
+        recommendations=(
+            VideoCriticRecommendation(
+                recommendation_id="video-repair",
+                op=op,
+                scene_ids=selected,
+                rationale="repair recommendation",
+            ),
+        ),
+    )
+    return VideoCriticResult(
+        video_id=request.video_id,
+        request=request,
+        request_hash=compute_video_critic_request_hash(request),
+        failure_policy=VideoCriticFailurePolicy.STRICT,
+        state=VideoCriticGateState.REVIEW_REQUIRED,
+        response=response,
+        approved=False,
+        warnings=(),
+    )
+
+
 def test_factual_evidence_routes_to_research():
     *_, context = fixture()
     finding = SemanticQAFinding(
@@ -78,7 +163,10 @@ def test_factual_evidence_routes_to_research():
         reason="Evidence contradicts claim.",
         claim_ids=(context.claim_ids[0],),
     )
-    plan = route(AgentAwareQAReport(report_id="r", semantic_findings=(finding,)), context)
+    plan = route(
+        AgentAwareQAReport(report_id="r", semantic_findings=(finding,)),
+        context,
+    )
     assert plan.intents[0].owner == RepairOwner.RESEARCH_ORCHESTRATION
     assert plan.intents[0].action == RepairActionKind.RESEARCH_EVIDENCE_REPAIR
 
@@ -92,7 +180,10 @@ def test_factual_narration_routes_to_script():
         claim_ids=(context.claim_ids[0],),
         segment_ids=(context.segment_ids[0],),
     )
-    plan = route(AgentAwareQAReport(report_id="r", semantic_findings=(finding,)), context)
+    plan = route(
+        AgentAwareQAReport(report_id="r", semantic_findings=(finding,)),
+        context,
+    )
     assert plan.intents[0].owner == RepairOwner.SCRIPT_AGENT
     assert plan.intents[0].action == RepairActionKind.SCRIPT_FACT_REWRITE
 
@@ -105,7 +196,10 @@ def test_semantic_visual_routes_to_visual_director():
         reason="Visual metaphor is wrong.",
         scene_ids=(context.scene_ids[0],),
     )
-    plan = route(AgentAwareQAReport(report_id="r", semantic_findings=(finding,)), context)
+    plan = route(
+        AgentAwareQAReport(report_id="r", semantic_findings=(finding,)),
+        context,
+    )
     assert plan.intents[0].owner == RepairOwner.VISUAL_DIRECTOR
 
 
@@ -117,7 +211,10 @@ def test_pedagogical_structure_routes_to_pedagogy():
         reason="Concept progression is confusing.",
         objective_ids=(context.objective_ids[0],),
     )
-    plan = route(AgentAwareQAReport(report_id="r", semantic_findings=(finding,)), context)
+    plan = route(
+        AgentAwareQAReport(report_id="r", semantic_findings=(finding,)),
+        context,
+    )
     assert plan.intents[0].owner == RepairOwner.PEDAGOGY_AGENT
 
 
@@ -137,46 +234,14 @@ def test_deterministic_geometry_stays_in_core():
             ),
         ),
     )
-    plan = route(AgentAwareQAReport(report_id="r", deterministic_reports=(report,)), context)
+    plan = route(
+        AgentAwareQAReport(
+            report_id="r", scene_quality_results=(deterministic_gate(report),)
+        ),
+        context,
+    )
     assert plan.intents[0].owner == RepairOwner.CORE_REPAIR
     assert plan.intents[0].action == RepairActionKind.CORE_DETERMINISTIC_REPAIR
-
-
-def _scene_repair(scene_id, node_id, *, semantic=False):
-    issue = CriticIssue(
-        issue_id="i",
-        issue_type=(
-            CriticIssueType.PEDAGOGICAL_ALIGNMENT
-            if semantic
-            else CriticIssueType.READABILITY
-        ),
-        severity=CriticIssueSeverity.MEDIUM,
-        targets=(CriticTargetRef(kind=CriticTargetKind.NODE, target_id=node_id),),
-        reason="needs repair",
-    )
-    patch = (
-        CriticPatchSuggestion(
-            patch_id="p",
-            op=CriticPatchOp.CHANGE_VISUAL_INTENT,
-            targets=(CriticTargetRef(kind=CriticTargetKind.NODE, target_id=node_id),),
-            semantic_value="comparison",
-        )
-        if semantic
-        else CriticPatchSuggestion(
-            patch_id="p",
-            op=CriticPatchOp.SET_REGION,
-            targets=(CriticTargetRef(kind=CriticTargetKind.NODE, target_id=node_id),),
-            region=PreferredRegion.RIGHT,
-        )
-    )
-    return SceneCriticRepairReport(
-        scene_id=scene_id,
-        response=CriticResponse(
-            status=CriticStatus.REPAIR,
-            issues=(issue,),
-            patches=(patch,),
-        ),
-    )
 
 
 def test_deterministic_warning_does_not_block_publication():
@@ -195,20 +260,75 @@ def test_deterministic_warning_does_not_block_publication():
             ),
         ),
     )
+    gate = QualityGateResult(
+        scene_id=report.scene_id,
+        quality_mode=QualityMode.DETERMINISTIC,
+        failure_policy=CriticFailurePolicy.CONTINUE,
+        deterministic_report=report,
+        critic_state=CriticGateState.NOT_REQUESTED,
+        critic_response=None,
+        approved=True,
+        warnings=(),
+    )
     plan = route(
-        AgentAwareQAReport(report_id="r", deterministic_reports=(report,)),
+        AgentAwareQAReport(report_id="r", scene_quality_results=(gate,)),
         context,
     )
     assert plan.intents == ()
+    assert plan.blockers == ()
     assert not plan.publication_blocked
+
+
+def scene_repair(scene_id, node_id, *, semantic=False):
+    issue = CriticIssue(
+        issue_id="i",
+        issue_type=(
+            CriticIssueType.PEDAGOGICAL_ALIGNMENT
+            if semantic
+            else CriticIssueType.READABILITY
+        ),
+        severity=CriticIssueSeverity.MEDIUM,
+        targets=(
+            CriticTargetRef(kind=CriticTargetKind.NODE, target_id=node_id),
+        ),
+        reason="needs repair",
+    )
+    patch = (
+        CriticPatchSuggestion(
+            patch_id="p",
+            op=CriticPatchOp.CHANGE_VISUAL_INTENT,
+            targets=(
+                CriticTargetRef(kind=CriticTargetKind.NODE, target_id=node_id),
+            ),
+            semantic_value="comparison",
+        )
+        if semantic
+        else CriticPatchSuggestion(
+            patch_id="p",
+            op=CriticPatchOp.SET_REGION,
+            targets=(
+                CriticTargetRef(kind=CriticTargetKind.NODE, target_id=node_id),
+            ),
+            region=PreferredRegion.RIGHT,
+        )
+    )
+    response = CriticResponse(
+        status=CriticStatus.REPAIR,
+        issues=(issue,),
+        patches=(patch,),
+    )
+    return critic_repair_gate(scene_id, response)
 
 
 def test_supported_scene_critic_patch_stays_in_core():
     *_, visual, context = fixture()
-    repair = _scene_repair(
+    gate = scene_repair(
         context.scene_ids[0], visual.scenegraphs[0].nodes[0].id, semantic=False
     )
-    plan = route(AgentAwareQAReport(report_id="r", scene_critic_repairs=(repair,)), context)
+    plan = route(
+        AgentAwareQAReport(report_id="r", scene_quality_results=(gate,)),
+        context,
+    )
     assert plan.intents[0].owner == RepairOwner.CORE_REPAIR
     assert plan.intents[0].action == RepairActionKind.CORE_SELECTIVE_REPAIR
     assert plan.intents[0].core_patch_ids == ("p",)
@@ -216,133 +336,227 @@ def test_supported_scene_critic_patch_stays_in_core():
 
 def test_semantic_scene_regeneration_routes_to_visual_director():
     *_, visual, context = fixture()
-    repair = _scene_repair(
+    gate = scene_repair(
         context.scene_ids[0], visual.scenegraphs[0].nodes[0].id, semantic=True
     )
-    plan = route(AgentAwareQAReport(report_id="r", scene_critic_repairs=(repair,)), context)
+    plan = route(
+        AgentAwareQAReport(report_id="r", scene_quality_results=(gate,)),
+        context,
+    )
     assert plan.intents[0].owner == RepairOwner.VISUAL_DIRECTOR
     assert plan.intents[0].core_patch_ids == ()
 
 
-def _video_response(scene_ids, issue_type, op, dimension):
-    if isinstance(scene_ids, str):
-        scene_ids = (scene_ids,)
-    return VideoCriticResponse(
-        status=VideoCriticStatus.REVIEW_REQUIRED,
-        dimension_assessments=tuple(
-            VideoDimensionAssessment(
-                dimension=item,
-                passed=item != dimension,
-                summary="repair" if item == dimension else "pass",
-            )
-            for item in VideoCriticDimension
-        ),
-        issues=(
-            VideoCriticIssue(
-                issue_id="vi",
-                issue_type=issue_type,
-                severity=VideoIssueSeverity.MEDIUM,
-                scene_ids=scene_ids,
-                reason="video issue",
-            ),
-        ),
-        recommendations=(
-            VideoCriticRecommendation(
-                recommendation_id="vr",
-                op=op,
-                scene_ids=scene_ids,
-                rationale="repair recommendation",
-            ),
-        ),
+def test_scene_critic_unknown_node_fails_closed():
+    *_, context = fixture()
+    gate = scene_repair(context.scene_ids[0], "n404", semantic=False)
+    with pytest.raises(AgentContractError, match="unknown NODE"):
+        route(
+            AgentAwareQAReport(report_id="r", scene_quality_results=(gate,)),
+            context,
+        )
+
+
+def test_video_narration_redundancy_routes_to_script():
+    *_, context = fixture()
+    result = video_result(
+        context,
+        VideoIssueType.NARRATION_REDUNDANCY,
+        VideoRecommendationOp.REDUCE_NARRATION_REDUNDANCY,
+        VideoCriticDimension.PEDAGOGICAL_ALIGNMENT,
     )
+    plan = route(
+        AgentAwareQAReport(report_id="r", video_critic_result=result),
+        context,
+    )
+    assert plan.intents[0].owner == RepairOwner.SCRIPT_AGENT
+
+
+def test_video_concept_progression_routes_to_pedagogy():
+    *_, context = fixture()
+    result = video_result(
+        context,
+        VideoIssueType.CONCEPT_PROGRESSION,
+        VideoRecommendationOp.IMPROVE_CONCEPT_PROGRESSION,
+        VideoCriticDimension.PEDAGOGICAL_ALIGNMENT,
+    )
+    plan = route(
+        AgentAwareQAReport(report_id="r", video_critic_result=result),
+        context,
+    )
+    assert plan.intents[0].owner == RepairOwner.PEDAGOGY_AGENT
+
+
+def test_video_visual_modality_routes_to_visual_director():
+    *_, context = fixture()
+    result = video_result(
+        context,
+        VideoIssueType.VISUAL_MODALITY_DIVERSITY,
+        VideoRecommendationOp.VARY_VISUAL_MODALITY,
+        VideoCriticDimension.VISUAL_VARIETY,
+        scene_ids=context.scene_ids[:2],
+    )
+    plan = route(
+        AgentAwareQAReport(report_id="r", video_critic_result=result),
+        context,
+    )
+    assert plan.intents[0].owner == RepairOwner.VISUAL_DIRECTOR
 
 
 def test_video_pacing_routes_to_deterministic_core():
     *_, context = fixture()
-    response = _video_response(
-        context.scene_ids[0],
+    result = video_result(
+        context,
         VideoIssueType.PACING,
         VideoRecommendationOp.ADJUST_PACING,
         VideoCriticDimension.PACING,
     )
-    plan = route(AgentAwareQAReport(report_id="r", video_critic_response=response), context)
+    plan = route(
+        AgentAwareQAReport(report_id="r", video_critic_result=result),
+        context,
+    )
     assert plan.intents[0].owner == RepairOwner.CORE_REPAIR
     assert plan.intents[0].action == RepairActionKind.CORE_TEMPORAL_REPAIR
 
 
 def test_video_transition_continuity_routes_to_deterministic_core():
     *_, context = fixture()
-    scene_ids = context.scene_ids[:2]
-    issue = VideoCriticIssue(
-        issue_id="continuity",
-        issue_type=VideoIssueType.TRANSITION_CONTINUITY,
-        severity=VideoIssueSeverity.HIGH,
-        scene_ids=scene_ids,
-        transition_ids=("transition:test",),
-        reason="continuity breaks",
+    result = video_result(
+        context,
+        VideoIssueType.TRANSITION_CONTINUITY,
+        VideoRecommendationOp.FIX_CONTINUITY,
+        VideoCriticDimension.CONTINUITY,
+        scene_ids=context.scene_ids[:2],
     )
+    plan = route(
+        AgentAwareQAReport(report_id="r", video_critic_result=result),
+        context,
+    )
+    assert plan.intents[0].owner == RepairOwner.CORE_REPAIR
+    assert plan.intents[0].action == RepairActionKind.CORE_TEMPORAL_REPAIR
+
+
+def test_video_result_scope_mismatch_fails_closed():
+    *_, context = fixture()
+    request = build_video_request(context)
+    payload = request.model_dump(mode="json")
+    payload["lesson_objective_ids"] = ["other-objective"]
+    for scene in payload["scenes"]:
+        scene["learning_objective_ids"] = ["other-objective"]
+    from learnflow_v2.videoqa import VideoCriticRequest
+    other_request = VideoCriticRequest.model_validate(payload)
     response = VideoCriticResponse(
         status=VideoCriticStatus.REVIEW_REQUIRED,
         dimension_assessments=tuple(
             VideoDimensionAssessment(
                 dimension=item,
-                passed=item != VideoCriticDimension.CONTINUITY,
-                summary="repair" if item == VideoCriticDimension.CONTINUITY else "pass",
+                passed=item != VideoCriticDimension.PACING,
+                summary="repair" if item == VideoCriticDimension.PACING else "pass",
             )
             for item in VideoCriticDimension
         ),
-        issues=(issue,),
+        issues=(
+            VideoCriticIssue(
+                issue_id="i",
+                issue_type=VideoIssueType.PACING,
+                severity=VideoIssueSeverity.MEDIUM,
+                scene_ids=(other_request.scenes[0].scene_id,),
+                reason="pace",
+            ),
+        ),
         recommendations=(
             VideoCriticRecommendation(
-                recommendation_id="fix",
-                op=VideoRecommendationOp.FIX_CONTINUITY,
-                scene_ids=scene_ids,
-                rationale="preserve continuity",
+                recommendation_id="r",
+                op=VideoRecommendationOp.ADJUST_PACING,
+                scene_ids=(other_request.scenes[0].scene_id,),
+                rationale="pace",
             ),
         ),
     )
-    plan = route(AgentAwareQAReport(report_id="r", video_critic_response=response), context)
-    assert plan.intents[0].owner == RepairOwner.CORE_REPAIR
-    assert plan.intents[0].action == RepairActionKind.CORE_TEMPORAL_REPAIR
-
-
-def test_video_narration_redundancy_routes_to_script():
-    *_, context = fixture()
-    response = _video_response(
-        context.scene_ids[0],
-        VideoIssueType.NARRATION_REDUNDANCY,
-        VideoRecommendationOp.REDUCE_NARRATION_REDUNDANCY,
-        VideoCriticDimension.PEDAGOGICAL_ALIGNMENT,
+    result = VideoCriticResult(
+        video_id=other_request.video_id,
+        request=other_request,
+        request_hash=compute_video_critic_request_hash(other_request),
+        failure_policy=VideoCriticFailurePolicy.STRICT,
+        state=VideoCriticGateState.REVIEW_REQUIRED,
+        response=response,
+        approved=False,
+        warnings=(),
     )
-    plan = route(AgentAwareQAReport(report_id="r", video_critic_response=response), context)
-    assert plan.intents[0].owner == RepairOwner.SCRIPT_AGENT
+    with pytest.raises(AgentContractError, match="objective scope"):
+        route(
+            AgentAwareQAReport(report_id="r", video_critic_result=result),
+            context,
+        )
 
 
-def test_video_concept_progression_routes_to_pedagogy():
+def test_strict_scene_critic_outage_blocks_without_agent_repair():
     *_, context = fixture()
-    response = _video_response(
-        context.scene_ids[0],
-        VideoIssueType.CONCEPT_PROGRESSION,
-        VideoRecommendationOp.IMPROVE_CONCEPT_PROGRESSION,
-        VideoCriticDimension.PEDAGOGICAL_ALIGNMENT,
+    scene_id = context.scene_ids[0]
+    gate = QualityGateResult(
+        scene_id=scene_id,
+        quality_mode=QualityMode.CRITIC,
+        failure_policy=CriticFailurePolicy.STRICT,
+        deterministic_report=pass_report(scene_id),
+        critic_state=CriticGateState.PROVIDER_ERROR,
+        critic_response=None,
+        approved=False,
+        warnings=("critic provider failed",),
     )
-    plan = route(AgentAwareQAReport(report_id="r", video_critic_response=response), context)
-    assert plan.intents[0].owner == RepairOwner.PEDAGOGY_AGENT
+    plan = route(
+        AgentAwareQAReport(report_id="r", scene_quality_results=(gate,)),
+        context,
+    )
+    assert plan.intents == ()
+    assert len(plan.blockers) == 1
+    assert plan.publication_blocked
 
 
-def test_video_visual_modality_routes_to_visual_director():
+def test_strict_video_critic_outage_blocks_without_agent_repair():
     *_, context = fixture()
-    response = _video_response(
-        context.scene_ids[:2],
-        VideoIssueType.VISUAL_MODALITY_DIVERSITY,
-        VideoRecommendationOp.VARY_VISUAL_MODALITY,
-        VideoCriticDimension.VISUAL_VARIETY,
+    request = build_video_request(context)
+    result = VideoCriticResult(
+        video_id=request.video_id,
+        request=request,
+        request_hash=compute_video_critic_request_hash(request),
+        failure_policy=VideoCriticFailurePolicy.STRICT,
+        state=VideoCriticGateState.PROVIDER_ERROR,
+        response=None,
+        approved=False,
+        warnings=("video critic provider failed",),
     )
-    plan = route(AgentAwareQAReport(report_id="r", video_critic_response=response), context)
-    assert plan.intents[0].owner == RepairOwner.VISUAL_DIRECTOR
+    plan = route(
+        AgentAwareQAReport(report_id="r", video_critic_result=result),
+        context,
+    )
+    assert plan.intents == ()
+    assert len(plan.blockers) == 1
+    assert plan.publication_blocked
 
 
-def test_unknown_references_fail_closed():
+def test_continue_video_critic_outage_does_not_block():
+    *_, context = fixture()
+    request = build_video_request(context)
+    result = VideoCriticResult(
+        video_id=request.video_id,
+        request=request,
+        request_hash=compute_video_critic_request_hash(request),
+        failure_policy=VideoCriticFailurePolicy.CONTINUE,
+        state=VideoCriticGateState.PROVIDER_ERROR,
+        response=None,
+        approved=True,
+        warnings=("video critic provider failed",),
+    )
+    plan = route(
+        AgentAwareQAReport(report_id="r", video_critic_result=result),
+        context,
+    )
+    assert plan.intents == ()
+    assert plan.blockers == ()
+    assert not plan.publication_blocked
+
+
+def test_unknown_semantic_references_fail_closed():
     *_, context = fixture()
     finding = SemanticQAFinding(
         finding_id="f",
@@ -351,12 +565,15 @@ def test_unknown_references_fail_closed():
         claim_ids=("unknown-claim",),
     )
     with pytest.raises(AgentContractError, match="unknown claim_ids"):
-        route(AgentAwareQAReport(report_id="r", semantic_findings=(finding,)), context)
+        route(
+            AgentAwareQAReport(report_id="r", semantic_findings=(finding,)),
+            context,
+        )
 
 
 def test_core_repair_cannot_become_hermes_task():
     brief, pack, graph, fact_report, pedagogy, script, visual, context = fixture()
-    deterministic = DeterministicQAReport(
+    report = DeterministicQAReport(
         scene_id=context.scene_ids[0],
         passed=False,
         issues=(
@@ -371,7 +588,9 @@ def test_core_repair_cannot_become_hermes_task():
         ),
     )
     intent = route(
-        AgentAwareQAReport(report_id="r", deterministic_reports=(deterministic,)),
+        AgentAwareQAReport(
+            report_id="r", scene_quality_results=(deterministic_gate(report),)
+        ),
         context,
     ).intents[0]
     with pytest.raises(AgentContractError, match="stay deterministic"):
@@ -387,7 +606,7 @@ def test_core_repair_cannot_become_hermes_task():
         )
 
 
-def test_agent_repair_tasks_reuse_existing_boundaries():
+def test_agent_repair_tasks_include_current_artifact_for_selective_repair():
     brief, pack, graph, fact_report, pedagogy, script, visual, context = fixture()
     findings = (
         SemanticQAFinding(
@@ -404,13 +623,22 @@ def test_agent_repair_tasks_reuse_existing_boundaries():
             segment_ids=(context.segment_ids[0],),
         ),
         SemanticQAFinding(
+            finding_id="pedagogy",
+            kind=SemanticFindingKind.PEDAGOGICAL_STRUCTURE,
+            reason="weak progression",
+            objective_ids=(context.objective_ids[0],),
+        ),
+        SemanticQAFinding(
             finding_id="visual",
             kind=SemanticFindingKind.SEMANTIC_VISUAL_MISMATCH,
             reason="wrong visual",
             scene_ids=(context.scene_ids[0],),
         ),
     )
-    plan = route(AgentAwareQAReport(report_id="r", semantic_findings=findings), context)
+    plan = route(
+        AgentAwareQAReport(report_id="r", semantic_findings=findings),
+        context,
+    )
     for intent in plan.intents:
         task = build_agent_repair_task(
             intent,
@@ -424,7 +652,9 @@ def test_agent_repair_tasks_reuse_existing_boundaries():
         )
         payload = json.loads(task["context"])
         assert payload["agent_aware_qa_repair_intent"]["owner"] == intent.owner.value
-        if intent.owner == RepairOwner.SCRIPT_AGENT:
+        if intent.owner == RepairOwner.RESEARCH_ORCHESTRATION:
+            assert payload["current_research_pack"]["pack_id"] == pack.pack_id
+        elif intent.owner == RepairOwner.SCRIPT_AGENT:
             assert payload["current_lesson_script"]["script_id"] == script.script_id
         elif intent.owner == RepairOwner.PEDAGOGY_AGENT:
             assert payload["current_pedagogy_plan"]["plan_id"] == pedagogy.plan_id
@@ -440,6 +670,7 @@ def test_empty_report_allows_publication():
     *_, context = fixture()
     plan = route(AgentAwareQAReport(report_id="r"), context)
     assert plan.intents == ()
+    assert plan.blockers == ()
     assert not plan.publication_blocked
 
 
