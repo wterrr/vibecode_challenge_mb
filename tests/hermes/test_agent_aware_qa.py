@@ -424,6 +424,15 @@ def test_agent_repair_tasks_reuse_existing_boundaries():
         )
         payload = json.loads(task["context"])
         assert payload["agent_aware_qa_repair_intent"]["owner"] == intent.owner.value
+        if intent.owner == RepairOwner.SCRIPT_AGENT:
+            assert payload["current_lesson_script"]["script_id"] == script.script_id
+        elif intent.owner == RepairOwner.PEDAGOGY_AGENT:
+            assert payload["current_pedagogy_plan"]["plan_id"] == pedagogy.plan_id
+        elif intent.owner == RepairOwner.VISUAL_DIRECTOR:
+            assert (
+                payload["current_visual_director_output"]["storyboard"]["storyboard_id"]
+                == visual.storyboard.storyboard_id
+            )
         assert task["output_schema"]["type"] == "object"
 
 
