@@ -56,9 +56,10 @@ def main() -> int:
         raise SystemExit("HERMES_END_TO_END=FAIL research native delegation missing")
 
     visual_context = visual_task["context"].lower()
-    for forbidden in ("pixel_x", "pixel_y", "ffmpeg commands"):
-        if forbidden not in visual_context and forbidden != "ffmpeg commands":
-            continue
+    if "never output x/y coordinates" not in visual_context:
+        raise SystemExit("HERMES_END_TO_END=FAIL visual geometry boundary missing")
+    if "ffmpeg commands" not in visual_context:
+        raise SystemExit("HERMES_END_TO_END=FAIL renderer boundary missing")
     print("HERMES_END_TO_END=PASS")
     print("runtime=exact pinned Hermes")
     print("research_output_schema=PASS")
