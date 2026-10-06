@@ -200,7 +200,9 @@ def test_semantic_scene_regeneration_routes_to_visual_director():
     assert plan.intents[0].core_patch_ids == ()
 
 
-def _video_response(scene_id, issue_type, op, dimension):
+def _video_response(scene_ids, issue_type, op, dimension):
+    if isinstance(scene_ids, str):
+        scene_ids = (scene_ids,)
     return VideoCriticResponse(
         status=VideoCriticStatus.REVIEW_REQUIRED,
         dimension_assessments=tuple(
@@ -216,7 +218,7 @@ def _video_response(scene_id, issue_type, op, dimension):
                 issue_id="vi",
                 issue_type=issue_type,
                 severity=VideoIssueSeverity.MEDIUM,
-                scene_ids=(scene_id,),
+                scene_ids=scene_ids,
                 reason="video issue",
             ),
         ),
@@ -224,7 +226,7 @@ def _video_response(scene_id, issue_type, op, dimension):
             VideoCriticRecommendation(
                 recommendation_id="vr",
                 op=op,
-                scene_ids=(scene_id,),
+                scene_ids=scene_ids,
                 rationale="repair recommendation",
             ),
         ),
@@ -258,7 +260,7 @@ def test_video_concept_progression_routes_to_pedagogy():
 def test_video_visual_modality_routes_to_visual_director():
     *_, context = fixture()
     response = _video_response(
-        context.scene_ids[0],
+        context.scene_ids[:2],
         VideoIssueType.VISUAL_MODALITY_DIVERSITY,
         VideoRecommendationOp.VARY_VISUAL_MODALITY,
         VideoCriticDimension.VISUAL_VARIETY,
