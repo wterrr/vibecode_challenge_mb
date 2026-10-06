@@ -3319,7 +3319,7 @@ bounded delegation depth
 
 ## Fact Verification
 
-**Status: NEXT / NOT STARTED**
+**Status: IMPLEMENTED / VERIFYING**
 
 Every factual narration maps to:
 
