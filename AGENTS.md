@@ -54,7 +54,7 @@ For H-01 offline verification:
 
 ```bash
 python scripts/run_hermes_h01_smoke.py --offline-fixture hermes/h01/fixtures/stream_success.jsonl
-pytest -q tests/hermes/test_h01_bootstrap.py
+pytest -q --confcutdir=tests/hermes tests/hermes/test_h01_bootstrap.py
 python scripts/verify_v2_core_freeze.py
 ```
 
