@@ -11,7 +11,7 @@ from agent_contracts import (
     PedagogyPlan,
     ResearchPack,
 )
-from learnflow_v2.qa import CriticTargetKind
+from learnflow_v2.qa import CriticTargetKind, QAIssueSeverity
 from learnflow_v2.repair import (
     RepairChangeKind,
     RepairLevel,
@@ -201,6 +201,8 @@ def route_agent_aware_qa(
     for deterministic in report.deterministic_reports:
         _require_known((deterministic.scene_id,), context.scene_ids, "scene_ids")
         for issue in deterministic.issues:
+            if issue.severity != QAIssueSeverity.ERROR:
+                continue
             intents.append(
                 RepairIntent(
                     intent_id=_intent_id(
