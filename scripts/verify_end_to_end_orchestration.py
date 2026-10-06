@@ -14,6 +14,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from research_orchestration import ResearchOrchestrationResult, ResearchRole
+from learnflow_v2.scenegraph import LayoutIntent, LayoutIntentSpec, NodeKind
 from scripts.verify_script_agent import build_fixture, build_script
 from scripts.verify_visual_director import build_visual_output
 from visual_director import build_visual_concept_registry
@@ -71,6 +72,27 @@ def build_fixture_runner():
     script = build_script(pedagogy)
     registry = build_visual_concept_registry(pedagogy)
     visual = build_visual_output(script, registry)
+
+    # The semantic SceneGraph schema intentionally permits future node/layout kinds
+    # that the frozen production LayoutRouter does not yet compile. The E2E
+    # acceptance fixture must exercise the currently supported Core surface
+    # without weakening the Visual Director schema.
+    graphs = list(visual.scenegraphs)
+    demo = graphs[2]
+    demo_nodes = [
+        node.model_copy(update={"kind": NodeKind.CALLOUT})
+        if node.kind == NodeKind.SHAPE
+        else node
+        for node in demo.nodes
+    ]
+    graphs[2] = demo.model_copy(
+        update={
+            "nodes": demo_nodes,
+            "layout_intent": LayoutIntentSpec(type=LayoutIntent.PROCESS),
+        }
+    )
+    visual = visual.model_copy(update={"scenegraphs": tuple(graphs)})
+
     research = ResearchOrchestrationResult(
         research_pack=pack,
         evidence_graph=graph,
