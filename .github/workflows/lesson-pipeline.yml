@@ -53,7 +53,7 @@ jobs:
           sudo apt-get install -y ffmpeg
       - name: Install exact pinned Hermes runtime
         run: bash scripts/install_hermes_bootstrap.sh
-      - name: Prepare isolated End-to-End profile
+      - name: Prepare isolated Lesson Pipeline profile
         shell: bash
         run: |
           VERIFY_HOME="$PWD/.hermes_runtime/lesson-pipeline/verify-home"
