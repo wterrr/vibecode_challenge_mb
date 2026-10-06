@@ -1,28 +1,116 @@
 {
-  "schema_version": "2.1",
-  "repo_commit": "ca20c79c0e17f990ebfb4ed06f9b8988dbe74305",
   "evidence": [
     {
-      "metric": "VLM_UNAVAILABLE_DETERMINISTIC_OK",
-      "kind": "CONTRACT_TEST",
-      "value": true,
+      "benchmark_id": "v2-core-gate-v1",
+      "kind": "BENCHMARK",
+      "metric": "FATAL_CLIPPING_COUNT",
+      "notes": "",
+      "sample_count": 9,
       "source": [
-        "tests/v2/test_vlm_critic_v2_12_gate.py"
+        "benchmarks/baselines/v2/result.json"
       ],
-      "sample_count": null,
-      "benchmark_id": null,
-      "notes": "CP2.12 contract: deterministic mode makes zero critic calls; critic outage policy cannot override deterministic QA."
+      "value": 0
     },
     {
-      "metric": "LOCAL_REPAIR_SCOPE_OK",
+      "benchmark_id": "v2-core-gate-v1",
+      "kind": "BENCHMARK",
+      "metric": "FATAL_OVERLAP_COUNT",
+      "notes": "",
+      "sample_count": 9,
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ],
+      "value": 0
+    },
+    {
+      "benchmark_id": "v2-core-gate-v1",
+      "kind": "BENCHMARK",
+      "metric": "INVALID_MOTION_PLAN_COUNT",
+      "notes": "",
+      "sample_count": 9,
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ],
+      "value": 0
+    },
+    {
+      "benchmark_id": null,
       "kind": "CONTRACT_TEST",
-      "value": true,
+      "metric": "LOCAL_REPAIR_SCOPE_OK",
+      "notes": "",
+      "sample_count": null,
       "source": [
         "tests/v2/test_repair_v2_13_invalidation.py"
       ],
-      "sample_count": null,
+      "value": true
+    },
+    {
+      "benchmark_id": "v2-core-gate-v1",
+      "kind": "BENCHMARK",
+      "metric": "RENDER_SUCCESS_RATE",
+      "notes": "",
+      "sample_count": 3,
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ],
+      "value": 1
+    },
+    {
+      "benchmark_id": "v2-core-gate-v1",
+      "kind": "BENCHMARK",
+      "metric": "REPRODUCIBILITY_RATE",
+      "notes": "",
+      "sample_count": 3,
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ],
+      "value": 1
+    },
+    {
+      "benchmark_id": "v2-core-gate-v1",
+      "kind": "BENCHMARK",
+      "metric": "SELECTIVE_REPAIR_SUCCESS_RATE",
+      "notes": "",
+      "sample_count": 9,
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ],
+      "value": 1
+    },
+    {
+      "benchmark_id": "v2-core-gate-v1",
+      "kind": "BENCHMARK",
+      "metric": "V1_V2_CRITICAL_REGRESSION_COUNT",
+      "notes": "",
+      "sample_count": 3,
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ],
+      "value": 0
+    },
+    {
+      "benchmark_id": "v2-core-gate-v1",
+      "kind": "BENCHMARK",
+      "metric": "V2_STATIC_QUALITY_DELTA",
+      "notes": "",
+      "sample_count": 9,
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ],
+      "value": 5.54192634
+    },
+    {
       "benchmark_id": null,
-      "notes": "CP2.13 contract: local geometry repair invalidates only affected scene/downstream transitions/assembly and preserves unrelated scene/audio artifacts."
+      "kind": "CONTRACT_TEST",
+      "metric": "VLM_UNAVAILABLE_DETERMINISTIC_OK",
+      "notes": "",
+      "sample_count": null,
+      "source": [
+        "tests/v2/test_vlm_critic_v2_12_gate.py"
+      ],
+      "value": true
     }
-  ]
+  ],
+  "repo_commit": "25c27da43e6645d2e9ac704958d619e3c96aa4b2",
+  "schema_version": "2.1"
 }
