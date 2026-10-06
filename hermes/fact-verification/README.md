@@ -2,6 +2,8 @@
 
 This stage gates research claims before they can be used as factual narration.
 
+**Status: PASS.** Accepted CI proves source-grounded verification, cycle-safe provenance, contradiction blocking, 13 regressions, Core Freeze preservation, and exact pinned Hermes structured-review compatibility.
+
 ## Authority split
 
 - Hermes may perform semantic evidence judgment and emit a structured `SemanticFactReview`.
