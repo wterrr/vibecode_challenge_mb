@@ -46,11 +46,32 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - name: Install FFmpeg for pinned-runtime render smoke
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
       - name: Install exact pinned H-01 Hermes runtime
         run: bash scripts/install_hermes_h01.sh
-      - name: Discover LearnFlow through pinned Hermes
+      - name: Enable LearnFlow plugin and install declared dependencies
         shell: bash
         run: |
+          VERIFY_HOME="$PWD/.hermes_runtime/h02/verify-home"
+          rm -rf "$VERIFY_HOME"
+          mkdir -p "$VERIFY_HOME"
+          cp hermes/h01/config.yaml "$VERIFY_HOME/config.yaml"
+          if [[ -x ".hermes_runtime/hermes-agent/venv/bin/hermes" ]]; then
+            HERMES=".hermes_runtime/hermes-agent/venv/bin/hermes"
+          elif [[ -x ".hermes_runtime/hermes-agent/.venv/bin/hermes" ]]; then
+            HERMES=".hermes_runtime/hermes-agent/.venv/bin/hermes"
+          else
+            echo "Pinned Hermes executable not found" >&2
+            exit 1
+          fi
+          HERMES_HOME="$VERIFY_HOME" HERMES_ENABLE_PROJECT_PLUGINS=true "$HERMES" plugins enable learnflow
+      - name: Discover and execute LearnFlow through pinned Hermes registry
+        shell: bash
+        run: |
+          VERIFY_HOME="$PWD/.hermes_runtime/h02/verify-home"
           if [[ -x ".hermes_runtime/hermes-agent/venv/bin/python" ]]; then
             HPY=".hermes_runtime/hermes-agent/venv/bin/python"
           elif [[ -x ".hermes_runtime/hermes-agent/.venv/bin/python" ]]; then
@@ -59,4 +80,4 @@ jobs:
             echo "Pinned Hermes Python not found" >&2
             exit 1
           fi
-          HERMES_ENABLE_PROJECT_PLUGINS=true "$HPY" scripts/verify_hermes_h02_plugin.py
+          HERMES_HOME="$VERIFY_HOME" HERMES_ENABLE_PROJECT_PLUGINS=true "$HPY" scripts/verify_hermes_h02_plugin.py
