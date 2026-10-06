@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "stage": "pedagogy-agent",
+  "name": "Pedagogy Agent",
+  "state": "PASS",
+  "depends_on": [
+    {
+      "stage": "fact-verification",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "agent-contracts",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
+  ],
+  "acceptance": {
+    "objectives": true,
+    "prerequisites": true,
+    "concept_progression": true,
+    "examples_and_analogies": true,
+    "misconceptions": true,
+    "assessment_probes": true,
+    "approved_claims_only": true,
+    "every_objective_assessed": true,
+    "script_readiness_gate": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "next_stage": "Script Agent",
+  "evidence": {
+    "accepted_ci_run": 37432266652,
+    "accepted_head_sha": "25357554660ace6f817741d569f5076567659d04",
+    "pedagogy_acceptance_verifier": "PASS",
+    "pytest": "13 passed",
+    "approved_claim_filter": "PASS",
+    "forged_fact_report_blocked_before_hermes_context": "PASS",
+    "objectives": "PASS",
+    "prerequisites": "PASS",
+    "concept_progression": "PASS",
+    "examples_and_analogies": "PASS",
+    "misconceptions": "PASS",
+    "assessment_coverage": "PASS",
+    "script_readiness_gate": "PASS",
+    "pinned_hermes_pedagogy_schema": "PASS",
+    "core_freeze": "PASS"
+  }
+}
