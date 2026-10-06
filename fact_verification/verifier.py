@@ -25,7 +25,6 @@ from .models import (
 @dataclass(frozen=True)
 class _Grounding:
     grounded_source_ids: frozenset[str]
-    support_edge_ids: frozenset[str]
 
 
 def _assert_structural_alignment(pack: ResearchPack, graph: EvidenceGraph) -> None:
@@ -48,13 +47,11 @@ def _compute_grounding(
     """Propagate provenance to a fixed point; claim-only cycles never self-ground."""
 
     grounded_sources: dict[str, set[str]] = {claim_id: set() for claim_id in claim_ids}
-    grounded_edges: dict[str, set[str]] = {claim_id: set() for claim_id in claim_ids}
 
     # Seed only from real source nodes.
     for edge in support_edges:
         if edge.from_kind == EvidenceNodeKind.SOURCE and edge.from_id in source_ids:
             grounded_sources[edge.to_claim_id].add(edge.from_id)
-            grounded_edges[edge.to_claim_id].add(edge.edge_id)
 
     # Then propagate source provenance through claim -> claim support/derivation.
     changed = True
@@ -68,20 +65,13 @@ def _compute_grounding(
                 continue
 
             before_sources = len(grounded_sources[edge.to_claim_id])
-            before_edges = len(grounded_edges[edge.to_claim_id])
             grounded_sources[edge.to_claim_id].update(parent_sources)
-            grounded_edges[edge.to_claim_id].update(grounded_edges[edge.from_id])
-            grounded_edges[edge.to_claim_id].add(edge.edge_id)
-            if (
-                len(grounded_sources[edge.to_claim_id]) != before_sources
-                or len(grounded_edges[edge.to_claim_id]) != before_edges
-            ):
+            if len(grounded_sources[edge.to_claim_id]) != before_sources:
                 changed = True
 
     return {
         claim_id: _Grounding(
             grounded_source_ids=frozenset(grounded_sources[claim_id]),
-            support_edge_ids=frozenset(grounded_edges[claim_id]),
         )
         for claim_id in claim_ids
     }
