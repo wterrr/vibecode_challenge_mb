@@ -166,6 +166,27 @@ def test_transition_renderer_rejects_wrong_endpoints(tmp_path: Path):
         render_transition_video(_scene("s1"), _layout("s1"), _scene("s2", suffix="2"), _layout("s2", suffix="2", shift=20), bad, tmp_path/"bad.mp4", profile=RenderProfile(profile_id="test",fps=2,preset="ultrafast"))
 
 
+
+def test_relation_motion_requires_routed_geometry():
+    track = PropertyTrack(
+        track_id="draw__edge", target="r", target_kind=MotionTargetKind.RELATION,
+        property_kind=PropertyTrackKind.EDGE_DRAW_PROGRESS, start_time=0.0, end_time=0.4,
+        keyframes=(
+            PropertyKeyframe(offset=0.0, time=0.0, value=0.0, easing="linear"),
+            PropertyKeyframe(offset=1.0, time=0.4, value=1.0, easing="linear"),
+        ),
+        metadata={"stroke_progress":"source_to_target"},
+    )
+    event = CompiledMotionEvent(
+        event_id="draw", target="r", target_kind=MotionTargetKind.RELATION,
+        verb=MotionVerb.RELATION, style=MotionStyle.DRAW_EDGE,
+        start_time=0.0, end_time=0.4, tracks=(track,),
+    )
+    motion = CompiledMotionArtifact(scene_id="s1", scene_duration=0.5, events=(event,), tracks=(track,))
+    no_route = _layout("s1").model_copy(update={"routed_edges": []})
+    with pytest.raises(RenderInvalidInputError, match="without routed edge geometry"):
+        DeterministicPillowRenderer().render_frame(_scene("s1"), no_route, motion, 0.2)
+
 def test_source_artifacts_are_not_mutated_by_frame_render():
     scene, layout, motion = _scene("s1"), _layout("s1"), _fade_motion("s1")
     scene_before = scene.model_dump_json()
