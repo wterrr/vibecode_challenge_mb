@@ -34,9 +34,9 @@ Accepted stages:
 - **Hermes Bootstrap — PASS.** The live OpenRouter smoke passed on 2026-10-06. The primary model was attempted first; the accepted free fallback `nvidia/nemotron-3.5-lightning:free` completed the read-tool round-trip. Offline verification and the Core Freeze guard also passed.
 - **LearnFlow Capability Plugin — PASS.** The exact pinned Hermes runtime discovers the project plugin and dispatches `learnflow_create → learnflow_run → learnflow_render`. Integration verification renders a real MP4 and preserves the Core Freeze boundary.
 
-Next authorized stage: **Agent Contracts**. It has not started yet.
+Current stage: **Agent Contracts — IMPLEMENTED / VERIFYING**. The typed artifacts and regression verifier exist on the active branch; do not mark the stage PASS until CI and Core Freeze verification pass.
 
-Do not implement Research Orchestration, Fact Verification, Pedagogy Agent, Script Agent, Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability until their named stage is active.
+Do not implement Research Orchestration, Fact Verification, Pedagogy Agent, Script Agent, Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability during Agent Contracts. This stage defines data contracts only.
 
 ## LearnFlow Capability Plugin safety
 
@@ -85,4 +85,18 @@ Pinned-runtime discovery and execution:
 HERMES_ENABLE_PROJECT_PLUGINS=true \
   .hermes_runtime/hermes-agent/venv/bin/python \
   scripts/verify_learnflow_plugin.py
+```
+
+## Agent Contracts boundary
+
+The public control-plane contracts live in `agent_contracts/`. Keep them renderer-independent and geometry-free.
+
+Agent Contracts may define strict artifact schemas, cross-artifact reference validation, canonical serialization, provenance, run-audit records, and budget state. They must not execute research, generate pedagogy/script/storyboards with an LLM, invoke rendering, or implement delegation/hooks.
+
+Verification:
+
+```bash
+python scripts/verify_agent_contracts.py
+pytest -q --confcutdir=tests/hermes tests/hermes/test_agent_contracts.py
+python scripts/verify_v2_core_freeze.py
 ```
