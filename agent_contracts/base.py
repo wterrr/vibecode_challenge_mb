@@ -86,19 +86,19 @@ class ContractModel(BaseModel):
 class ArtifactRef(ContractModel):
     artifact_type: str = Field(..., min_length=1)
     artifact_id: str = Field(..., min_length=1)
-    content_sha256: str | None = None
+    content_hash: str | None = None
 
     @field_validator("artifact_type", "artifact_id")
     @classmethod
     def _ids(cls, value: str, info) -> str:
         return normalize_id(value, field_name=info.field_name)
 
-    @field_validator("content_sha256")
+    @field_validator("content_hash")
     @classmethod
     def _hash(cls, value: str | None) -> str | None:
         if value is None:
             return None
         value = value.strip().lower()
         if not _SHA256_RE.fullmatch(value):
-            raise AgentContractError("content_sha256 must be lowercase SHA-256")
+            raise AgentContractError("content_hash must be lowercase SHA-256")
         return value
