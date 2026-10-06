@@ -3408,7 +3408,7 @@ Chưa cần repair agents riêng ở checkpoint này.
 
 ## Agent-Aware QA
 
-**Status: NEXT / NOT STARTED**
+**Status: PASS**
 
 Hermes nhận:
 
@@ -3439,6 +3439,8 @@ Routing này rất quan trọng để lỗi được sửa ở đúng layer.
 ---
 
 ## Hooks + Budget
+
+**Status: NEXT / NOT STARTED**
 
 Implement:
 

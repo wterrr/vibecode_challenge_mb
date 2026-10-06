@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "stage": "agent-aware-qa",
+  "name": "Agent-Aware QA",
+  "state": "PASS",
+  "depends_on": [
+    {
+      "stage": "end-to-end-orchestration",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "deterministic-qa",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "optional-vlm-critic",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "repair-engine",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "video-critic",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
+  ],
+  "acceptance": {
+    "factual_evidence_routes_to_research": true,
+    "factual_narration_routes_to_script": true,
+    "pedagogy_routes_to_pedagogy_agent": true,
+    "semantic_visual_routes_to_visual_director": true,
+    "geometric_and_supported_patch_repairs_stay_in_core": true,
+    "core_repairs_cannot_be_delegated_to_hermes": true,
+    "unknown_artifact_references_fail_closed": true,
+    "existing_agent_contracts_reused": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "next_stage": "Hooks + Budget",
+  "evidence": {
+    "accepted_ci_run": 37445667469,
+    "accepted_head_sha": "3142794709ea73486fdca925c8087593bf1e3891",
+    "agent_aware_qa_verifier": "PASS",
+    "pytest": "25 passed",
+    "authoritative_scene_quality_results": "PASS",
+    "authoritative_video_critic_result": "PASS",
+    "factual_evidence_to_research": "PASS",
+    "factual_narration_to_script": "PASS",
+    "pedagogical_structure_to_pedagogy": "PASS",
+    "semantic_visual_to_visual_director": "PASS",
+    "deterministic_geometry_to_core": "PASS",
+    "supported_scene_patches_to_core": "PASS",
+    "video_pacing_and_transition_to_core": "PASS",
+    "video_narration_to_script": "PASS",
+    "strict_critic_failures_block_publication": "PASS",
+    "unknown_scope_references_fail_closed": "PASS",
+    "existing_agent_task_boundaries_reused": "PASS",
+    "pinned_hermes_repair_tasks": "PASS",
+    "research_repair_schema": "PASS",
+    "script_repair_schema": "PASS",
+    "pedagogy_repair_schema": "PASS",
+    "visual_repair_schema": "PASS",
+    "core_delegation_blocked": "PASS",
+    "core_freeze": "PASS"
+  }
+}

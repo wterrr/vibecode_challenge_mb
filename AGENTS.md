@@ -39,6 +39,7 @@ Accepted stages:
 - **Script Agent — PASS.** Hermes produces `LessonScript` narration with exact PedagogyPlan claim preservation, objective coverage, required teaching functions, and no visual implementation fields.
 - **Visual Director — PASS.** Hermes produces semantic `Storyboard` + schema-valid `SceneGraph[]`, reuses a deterministic lesson `ConceptRegistry`, preserves Script coverage/order, and emits no geometry or renderer controls.
 - **End-to-End Orchestration — PASS.** The accepted typed pipeline runs Research → Fact Verification → Pedagogy → Script → Visual Director → LearnFlow capability tools → frozen Core V2 → assembled video, failing closed at every deterministic gate.
+- **Agent-Aware QA — PASS.** Authoritative QA/VLM results are routed to the only layer allowed to repair them: evidence → Research, narration → Script, pedagogy → Pedagogy Agent, semantic visuals → Visual Director, and geometry/temporal/selective patches → deterministic Core repair.
 
 Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifier, 11 contract regressions, and Core Freeze guard passed.
 
@@ -52,9 +53,11 @@ Accepted stage: **Script Agent — PASS.** Hermes writes structured narration on
 
 Accepted stage: **Visual Director — PASS.** CI run `37437560550` verifies exact Script coverage/order, deterministic ConceptRegistry identity, semantic-only SceneGraph V2.1 output, 18 regressions, exact pinned Hermes structured-output compatibility, and Core Freeze preservation.
 
-Accepted stage: **End-to-End Orchestration — PASS.** CI run `37439945446` verifies the typed stage order, deterministic gates between agents, Hermes-native Research delegation, capability-based Core handoff, a real five-scene assembled `final.mp4`, 14 fail-closed regressions, pinned Hermes schema compatibility, plugin discovery, replayable artifacts, and Core Freeze preservation. Next authorized stage: **Agent-Aware QA**, which has not started yet.
+Accepted stage: **End-to-End Orchestration — PASS.** CI run `37439945446` verifies the typed stage order, deterministic gates between agents, Hermes-native Research delegation, capability-based Core handoff, a real five-scene assembled `final.mp4`, 14 fail-closed regressions, pinned Hermes schema compatibility, plugin discovery, replayable artifacts, and Core Freeze preservation.
 
-During Agent-Aware QA, implement only typed issue ownership and routing so factual failures return to Research/Script, semantic visual failures return to Visual Director, and geometric failures stay with deterministic Core repair. Do not implement Hooks + Budget, Skills, or Kanban Durability yet.
+Accepted stage: **Agent-Aware QA — PASS.** CI run `37445667469` verifies authoritative scene/video QA ingestion, typed fail-closed ownership routing, 25 regressions, exact pinned Hermes repair-task schemas for Research/Script/Pedagogy/Visual, strict critic outage blockers, Core-only geometry/temporal/selective repair, scope validation, and Core Freeze preservation. Next authorized stage: **Hooks + Budget**, which has not started yet.
+
+During Hooks + Budget, implement policy hooks, lifecycle tracing/metrics, and hard cost/retry accounting only. Do not implement Skills or Kanban Durability yet.
 
 ## LearnFlow Capability Plugin safety
 
@@ -180,3 +183,18 @@ Research remains Hermes-native nested delegation. Fact Verification remains dete
 Core V2 may be reached only after Visual Director output is Core-ready. Scene execution uses the accepted `learnflow_create → learnflow_run → learnflow_render` capability boundary, followed by the public deterministic video assembly API. The coordinator must not import renderer internals or accept model-controlled geometry, output paths, codec settings, or renderer code.
 
 Successful runs persist a replayable typed artifact chain and final video manifest. Agent-Aware QA and repair routing are explicitly a later stage and must not be implemented inside this coordinator.
+
+
+## Agent-Aware QA boundary
+
+Agent-Aware QA consumes authoritative typed QA artifacts, not free-form repair prose. Scene routing starts from `QualityGateResult`; video routing starts from `VideoCriticResult`; both preserve their failure-policy semantics.
+
+Evidence support/contradiction/uncertainty routes to Research Orchestration. Narration factual mismatch and narration redundancy route to Script Agent. Pedagogical progression/alignment routes to Pedagogy Agent. Semantic visual intent/modality issues route to Visual Director.
+
+Deterministic geometry/render failures and scene-critic patches already supported by the frozen Repair Engine stay in Core. Video pacing and transition continuity mechanics stay in deterministic Core temporal/transition repair. Core-owned repair intent must never be converted into a Hermes task.
+
+Strict critic outages or invalid responses block publication without inventing a repair owner. CONTINUE-policy critic outages remain non-blocking exactly as the underlying Core QA contract specifies.
+
+All scene, claim, segment, objective, and typed scene-object references must be validated against the current artifact chain and fail closed when stale or unknown. Agent repair tasks must reuse the accepted task builders and include the current artifact so repair is selective and unaffected content is preserved.
+
+Agent-Aware QA routes ownership only. It does not implement hooks, budget accounting, retry accounting, Skills, Kanban, geometry, renderer code, or a new agent runtime.
