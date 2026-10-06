@@ -167,7 +167,7 @@ def detect_hermes_binary() -> str:
     )
 
 
-def verify_installed_pin(pin: dict[str, Any]) -> str:
+def verify_installed_pin(status: dict[str, Any]) -> str:
     if not (INSTALL_DIR / ".git").exists():
         raise SmokeValidationError(
             f"project-local Hermes checkout missing: {INSTALL_DIR}"
