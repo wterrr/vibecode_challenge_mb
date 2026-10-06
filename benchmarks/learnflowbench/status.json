@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0",
+  "stage": "learnflow-bench",
+  "name": "Full Benchmark / LearnFlowBench",
+  "state": "DETERMINISTIC_ABLATION_PASS_LIVE_EVAL_PENDING",
+  "depends_on": [
+    {
+      "stage": "core-freeze",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "lesson-pipeline",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "kanban-durability",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
+  ],
+  "acceptance": {
+    "frozen_100_topic_corpus": true,
+    "exact_candidate_matrix": true,
+    "same_core_ablation_fixtures": true,
+    "real_v1_v2a_v2b_v2c_rendering": true,
+    "v2c_fault_injection_repair": true,
+    "v2d_typed_fixture_replay": true,
+    "measured_unmeasured_distinction": true,
+    "learning_outcome_not_fabricated": true,
+    "provider_cost_not_fabricated": true,
+    "sota_claim_blocked": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "honest_scope": {
+    "corpus_defined": 100,
+    "core_ablation_executed_topics": 3,
+    "v2d_fixture_replay_topics": 1,
+    "live_provider_100_topic_run": false,
+    "teachquiz_learning_outcome": false,
+    "human_visual_panel": false
+  },
+  "next_stage": "Governed Live V2D Evaluation",
+  "evidence": {
+    "accepted_ci_run": 37468207742,
+    "accepted_head_sha": "2e341bb582b33bf3e1b8ccca8bf8efafc26d24eb",
+    "benchmark_contract": "PASS",
+    "pytest": "15 passed",
+    "executable_benchmark": "PASS",
+    "existing_v2_core_benchmark_run": 37468207743,
+    "core_freeze": "PASS",
+    "artifact_id": 11415308483,
+    "artifact_zip_sha256": "77aa9b0527673b1c87efafee3599707503dd9c39f3fabad403e2e0a20e9ef93f",
+    "artifact_file_count": 141,
+    "v1": {
+      "render_success_rate": 1,
+      "static_composition_proxy_v1": 66.15013163,
+      "render_wall_seconds": 5.79,
+      "teachquiz_learning_outcome": "UNMEASURED"
+    },
+    "v2a": {
+      "render_success_rate": 1,
+      "static_composition_proxy_v1": 72.2185595,
+      "static_proxy_delta_vs_v1": 6.06842787,
+      "fatal_clipping_count": 0,
+      "fatal_overlap_count": 0,
+      "motion_event_count": 0,
+      "transition_count": 0,
+      "render_wall_seconds": 8.334997
+    },
+    "v2b": {
+      "render_success_rate": 1,
+      "static_composition_proxy_v1": 72.21820353,
+      "fatal_clipping_count": 0,
+      "fatal_overlap_count": 0,
+      "motion_event_count": 9,
+      "transition_count": 6,
+      "render_wall_seconds": 9.193563
+    },
+    "v2c": {
+      "render_success_rate": 1,
+      "static_composition_proxy_v1": 72.21820353,
+      "fatal_clipping_count": 0,
+      "fatal_overlap_count": 0,
+      "deterministic_qa_pass_rate": 1,
+      "selective_repair_success_rate": 1,
+      "selective_repair_cases": 9,
+      "render_wall_seconds": 9.364739
+    },
+    "v2d_fixture_replay": {
+      "render_success_rate": 1,
+      "typed_stage_count": 7,
+      "objective_coverage_rate": 1,
+      "selected_claim_preservation_rate": 1,
+      "pipeline_wall_seconds": 1.16972,
+      "llm_input_tokens": "UNMEASURED",
+      "llm_output_tokens": "UNMEASURED",
+      "provider_cost_usd": "UNMEASURED",
+      "teachquiz_learning_outcome": "UNMEASURED",
+      "human_visual_quality": "UNMEASURED"
+    },
+    "sota_claim_allowed": false
+  }
+}

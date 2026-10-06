@@ -1,0 +1,82 @@
+name: LearnFlowBench
+
+on:
+  pull_request:
+    paths:
+      - "learnflow_bench/**"
+      - "benchmarks/learnflowbench/**"
+      - "scripts/verify_learnflow_bench.py"
+      - "scripts/run_learnflow_bench.py"
+      - "tests/hermes/test_learnflow_bench.py"
+      - ".github/workflows/learnflow-bench.yml"
+      - "PLAN_V2.md"
+      - "AGENTS.md"
+  push:
+    branches:
+      - main
+    paths:
+      - "learnflow_bench/**"
+      - "benchmarks/learnflowbench/**"
+      - "scripts/verify_learnflow_bench.py"
+      - "scripts/run_learnflow_bench.py"
+      - "tests/hermes/test_learnflow_bench.py"
+      - ".github/workflows/learnflow-bench.yml"
+      - "PLAN_V2.md"
+      - "AGENTS.md"
+  workflow_dispatch:
+
+jobs:
+  benchmark-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install contract dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "pydantic>=2" pillow pyyaml pytest
+      - name: Verify frozen benchmark contracts
+        run: python scripts/verify_learnflow_bench.py
+      - name: LearnFlowBench regressions
+        run: pytest -q --confcutdir=tests/hermes tests/hermes/test_learnflow_bench.py
+      - name: Core Freeze guard
+        run: python scripts/verify_v2_core_freeze.py
+
+  executable-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - name: System dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg graphviz fonts-dejavu-core
+      - name: Python dependencies
+        run: pip install -r requirements.txt
+      - name: Node dependencies
+        run: npm ci
+      - name: Run LearnFlowBench executable tracks
+        env:
+          BENCHMARK_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: python scripts/run_learnflow_bench.py benchmark_output/learnflowbench
+      - name: Core Freeze guard
+        run: python scripts/verify_v2_core_freeze.py
+      - name: Upload benchmark report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: learnflowbench-report
+          path: benchmark_output/learnflowbench
+          if-no-files-found: warn
+          retention-days: 30

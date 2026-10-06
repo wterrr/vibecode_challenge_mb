@@ -1,0 +1,1307 @@
+{
+  "schema_version": "1.0",
+  "corpus_id": "learnflowbench-v1-100",
+  "frozen": true,
+  "topics": [
+    {
+      "topic_id": "lfb-001-cs",
+      "domain": "cs",
+      "difficulty": "easy",
+      "query": "Teach me variables and data types with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "variables and data types"
+      ]
+    },
+    {
+      "topic_id": "lfb-002-cs",
+      "domain": "cs",
+      "difficulty": "easy",
+      "query": "Teach me functions and parameters with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "functions and parameters"
+      ]
+    },
+    {
+      "topic_id": "lfb-003-cs",
+      "domain": "cs",
+      "difficulty": "easy",
+      "query": "Teach me arrays and lists with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "arrays and lists"
+      ]
+    },
+    {
+      "topic_id": "lfb-004-cs",
+      "domain": "cs",
+      "difficulty": "easy",
+      "query": "Teach me stacks versus queues with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "stacks versus queues"
+      ]
+    },
+    {
+      "topic_id": "lfb-005-cs",
+      "domain": "cs",
+      "difficulty": "easy",
+      "query": "Teach me binary search intuition with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "binary search intuition"
+      ]
+    },
+    {
+      "topic_id": "lfb-006-cs",
+      "domain": "cs",
+      "difficulty": "easy",
+      "query": "Teach me HTTP request lifecycle with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "http request lifecycle"
+      ]
+    },
+    {
+      "topic_id": "lfb-007-cs",
+      "domain": "cs",
+      "difficulty": "medium",
+      "query": "Teach me hash table collisions with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "hash table collisions"
+      ]
+    },
+    {
+      "topic_id": "lfb-008-cs",
+      "domain": "cs",
+      "difficulty": "medium",
+      "query": "Teach me TCP three-way handshake with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "tcp three-way handshake"
+      ]
+    },
+    {
+      "topic_id": "lfb-009-cs",
+      "domain": "cs",
+      "difficulty": "medium",
+      "query": "Teach me processes versus threads with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "processes versus threads"
+      ]
+    },
+    {
+      "topic_id": "lfb-010-cs",
+      "domain": "cs",
+      "difficulty": "medium",
+      "query": "Teach me database indexes with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "database indexes"
+      ]
+    },
+    {
+      "topic_id": "lfb-011-cs",
+      "domain": "cs",
+      "difficulty": "medium",
+      "query": "Teach me recursion and the call stack with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "recursion and the call stack"
+      ]
+    },
+    {
+      "topic_id": "lfb-012-cs",
+      "domain": "cs",
+      "difficulty": "medium",
+      "query": "Teach me REST idempotency with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "rest idempotency"
+      ]
+    },
+    {
+      "topic_id": "lfb-013-cs",
+      "domain": "cs",
+      "difficulty": "hard",
+      "query": "Teach me virtual memory and page faults with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "virtual memory and page faults"
+      ]
+    },
+    {
+      "topic_id": "lfb-014-cs",
+      "domain": "cs",
+      "difficulty": "hard",
+      "query": "Teach me Raft consensus intuition with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "raft consensus intuition"
+      ]
+    },
+    {
+      "topic_id": "lfb-015-cs",
+      "domain": "cs",
+      "difficulty": "hard",
+      "query": "Teach me B-tree internals with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "b-tree internals"
+      ]
+    },
+    {
+      "topic_id": "lfb-016-cs",
+      "domain": "cs",
+      "difficulty": "hard",
+      "query": "Teach me distributed transactions with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "distributed transactions"
+      ]
+    },
+    {
+      "topic_id": "lfb-017-cs",
+      "domain": "cs",
+      "difficulty": "hard",
+      "query": "Teach me Transformer self-attention with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "computer science",
+        "transformer self-attention"
+      ]
+    },
+    {
+      "topic_id": "lfb-018-math",
+      "domain": "math",
+      "difficulty": "easy",
+      "query": "Teach me fractions and ratios with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "fractions and ratios"
+      ]
+    },
+    {
+      "topic_id": "lfb-019-math",
+      "domain": "math",
+      "difficulty": "easy",
+      "query": "Teach me solving a linear equation with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "solving a linear equation"
+      ]
+    },
+    {
+      "topic_id": "lfb-020-math",
+      "domain": "math",
+      "difficulty": "easy",
+      "query": "Teach me slope of a line with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "slope of a line"
+      ]
+    },
+    {
+      "topic_id": "lfb-021-math",
+      "domain": "math",
+      "difficulty": "easy",
+      "query": "Teach me area of a circle with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "area of a circle"
+      ]
+    },
+    {
+      "topic_id": "lfb-022-math",
+      "domain": "math",
+      "difficulty": "easy",
+      "query": "Teach me mean versus median with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "mean versus median"
+      ]
+    },
+    {
+      "topic_id": "lfb-023-math",
+      "domain": "math",
+      "difficulty": "easy",
+      "query": "Teach me Pythagorean theorem with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "pythagorean theorem"
+      ]
+    },
+    {
+      "topic_id": "lfb-024-math",
+      "domain": "math",
+      "difficulty": "medium",
+      "query": "Teach me derivative as rate of change with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "derivative as rate of change"
+      ]
+    },
+    {
+      "topic_id": "lfb-025-math",
+      "domain": "math",
+      "difficulty": "medium",
+      "query": "Teach me the chain rule with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "the chain rule"
+      ]
+    },
+    {
+      "topic_id": "lfb-026-math",
+      "domain": "math",
+      "difficulty": "medium",
+      "query": "Teach me matrix multiplication with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "matrix multiplication"
+      ]
+    },
+    {
+      "topic_id": "lfb-027-math",
+      "domain": "math",
+      "difficulty": "medium",
+      "query": "Teach me conditional probability with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "conditional probability"
+      ]
+    },
+    {
+      "topic_id": "lfb-028-math",
+      "domain": "math",
+      "difficulty": "medium",
+      "query": "Teach me standard deviation with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "standard deviation"
+      ]
+    },
+    {
+      "topic_id": "lfb-029-math",
+      "domain": "math",
+      "difficulty": "medium",
+      "query": "Teach me exponential growth with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "exponential growth"
+      ]
+    },
+    {
+      "topic_id": "lfb-030-math",
+      "domain": "math",
+      "difficulty": "hard",
+      "query": "Teach me eigenvectors and eigenvalues with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "eigenvectors and eigenvalues"
+      ]
+    },
+    {
+      "topic_id": "lfb-031-math",
+      "domain": "math",
+      "difficulty": "hard",
+      "query": "Teach me Fourier transform intuition with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "fourier transform intuition"
+      ]
+    },
+    {
+      "topic_id": "lfb-032-math",
+      "domain": "math",
+      "difficulty": "hard",
+      "query": "Teach me gradient descent with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "gradient descent"
+      ]
+    },
+    {
+      "topic_id": "lfb-033-math",
+      "domain": "math",
+      "difficulty": "hard",
+      "query": "Teach me Taylor series with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "taylor series"
+      ]
+    },
+    {
+      "topic_id": "lfb-034-math",
+      "domain": "math",
+      "difficulty": "hard",
+      "query": "Teach me Lagrange multipliers with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "mathematics",
+        "lagrange multipliers"
+      ]
+    },
+    {
+      "topic_id": "lfb-035-physics",
+      "domain": "physics",
+      "difficulty": "easy",
+      "query": "Teach me Newton's three laws with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "physics",
+        "newton's three laws"
+      ]
+    },
+    {
+      "topic_id": "lfb-036-physics",
+      "domain": "physics",
+      "difficulty": "easy",
+      "query": "Teach me velocity versus acceleration with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "physics",
+        "velocity versus acceleration"
+      ]
+    },
+    {
+      "topic_id": "lfb-037-physics",
+      "domain": "physics",
+      "difficulty": "easy",
+      "query": "Teach me kinetic and potential energy with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "physics",
+        "kinetic and potential energy"
+      ]
+    },
+    {
+      "topic_id": "lfb-038-physics",
+      "domain": "physics",
+      "difficulty": "easy",
+      "query": "Teach me basic electric circuits with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "physics",
+        "basic electric circuits"
+      ]
+    },
+    {
+      "topic_id": "lfb-039-physics",
+      "domain": "physics",
+      "difficulty": "easy",
+      "query": "Teach me waves: frequency and wavelength with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "physics",
+        "waves: frequency and wavelength"
+      ]
+    },
+    {
+      "topic_id": "lfb-040-physics",
+      "domain": "physics",
+      "difficulty": "easy",
+      "query": "Teach me pressure and buoyancy with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "physics",
+        "pressure and buoyancy"
+      ]
+    },
+    {
+      "topic_id": "lfb-041-physics",
+      "domain": "physics",
+      "difficulty": "medium",
+      "query": "Teach me momentum and collisions with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "physics",
+        "momentum and collisions"
+      ]
+    },
+    {
+      "topic_id": "lfb-042-physics",
+      "domain": "physics",
+      "difficulty": "medium",
+      "query": "Teach me electric fields with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "physics",
+        "electric fields"
+      ]
+    },
+    {
+      "topic_id": "lfb-043-physics",
+      "domain": "physics",
+      "difficulty": "medium",
+      "query": "Teach me electromagnetic induction with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "physics",
+        "electromagnetic induction"
+      ]
+    },
+    {
+      "topic_id": "lfb-044-physics",
+      "domain": "physics",
+      "difficulty": "medium",
+      "query": "Teach me thin-lens optics with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "physics",
+        "thin-lens optics"
+      ]
+    },
+    {
+      "topic_id": "lfb-045-physics",
+      "domain": "physics",
+      "difficulty": "medium",
+      "query": "Teach me first law of thermodynamics with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "physics",
+        "first law of thermodynamics"
+      ]
+    },
+    {
+      "topic_id": "lfb-046-physics",
+      "domain": "physics",
+      "difficulty": "medium",
+      "query": "Teach me orbital motion with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "physics",
+        "orbital motion"
+      ]
+    },
+    {
+      "topic_id": "lfb-047-physics",
+      "domain": "physics",
+      "difficulty": "hard",
+      "query": "Teach me special relativity time dilation with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "physics",
+        "special relativity time dilation"
+      ]
+    },
+    {
+      "topic_id": "lfb-048-physics",
+      "domain": "physics",
+      "difficulty": "hard",
+      "query": "Teach me quantum superposition with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "physics",
+        "quantum superposition"
+      ]
+    },
+    {
+      "topic_id": "lfb-049-physics",
+      "domain": "physics",
+      "difficulty": "hard",
+      "query": "Teach me entropy from statistical mechanics with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "physics",
+        "entropy from statistical mechanics"
+      ]
+    },
+    {
+      "topic_id": "lfb-050-physics",
+      "domain": "physics",
+      "difficulty": "hard",
+      "query": "Teach me simple harmonic motion differential equation with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "physics",
+        "simple harmonic motion differential equation"
+      ]
+    },
+    {
+      "topic_id": "lfb-051-physics",
+      "domain": "physics",
+      "difficulty": "hard",
+      "query": "Teach me electromagnetic waves from Maxwell's equations with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "physics",
+        "electromagnetic waves from maxwell's equations"
+      ]
+    },
+    {
+      "topic_id": "lfb-052-biology",
+      "domain": "biology",
+      "difficulty": "easy",
+      "query": "Teach me cell organelles with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "biology",
+        "cell organelles"
+      ]
+    },
+    {
+      "topic_id": "lfb-053-biology",
+      "domain": "biology",
+      "difficulty": "easy",
+      "query": "Teach me DNA versus RNA with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "biology",
+        "dna versus rna"
+      ]
+    },
+    {
+      "topic_id": "lfb-054-biology",
+      "domain": "biology",
+      "difficulty": "easy",
+      "query": "Teach me photosynthesis with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "biology",
+        "photosynthesis"
+      ]
+    },
+    {
+      "topic_id": "lfb-055-biology",
+      "domain": "biology",
+      "difficulty": "easy",
+      "query": "Teach me cellular respiration with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "biology",
+        "cellular respiration"
+      ]
+    },
+    {
+      "topic_id": "lfb-056-biology",
+      "domain": "biology",
+      "difficulty": "easy",
+      "query": "Teach me mitosis with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "biology",
+        "mitosis"
+      ]
+    },
+    {
+      "topic_id": "lfb-057-biology",
+      "domain": "biology",
+      "difficulty": "easy",
+      "query": "Teach me innate versus adaptive immunity with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "biology",
+        "innate versus adaptive immunity"
+      ]
+    },
+    {
+      "topic_id": "lfb-058-biology",
+      "domain": "biology",
+      "difficulty": "medium",
+      "query": "Teach me gene expression with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "biology",
+        "gene expression"
+      ]
+    },
+    {
+      "topic_id": "lfb-059-biology",
+      "domain": "biology",
+      "difficulty": "medium",
+      "query": "Teach me natural selection with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "biology",
+        "natural selection"
+      ]
+    },
+    {
+      "topic_id": "lfb-060-biology",
+      "domain": "biology",
+      "difficulty": "medium",
+      "query": "Teach me enzyme kinetics with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "biology",
+        "enzyme kinetics"
+      ]
+    },
+    {
+      "topic_id": "lfb-061-biology",
+      "domain": "biology",
+      "difficulty": "medium",
+      "query": "Teach me neuron action potentials with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "biology",
+        "neuron action potentials"
+      ]
+    },
+    {
+      "topic_id": "lfb-062-biology",
+      "domain": "biology",
+      "difficulty": "medium",
+      "query": "Teach me blood circulation with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "biology",
+        "blood circulation"
+      ]
+    },
+    {
+      "topic_id": "lfb-063-biology",
+      "domain": "biology",
+      "difficulty": "medium",
+      "query": "Teach me kidney filtration with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "biology",
+        "kidney filtration"
+      ]
+    },
+    {
+      "topic_id": "lfb-064-biology",
+      "domain": "biology",
+      "difficulty": "hard",
+      "query": "Teach me CRISPR-Cas9 gene editing with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "biology",
+        "crispr-cas9 gene editing"
+      ]
+    },
+    {
+      "topic_id": "lfb-065-biology",
+      "domain": "biology",
+      "difficulty": "hard",
+      "query": "Teach me Hardy-Weinberg equilibrium with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "biology",
+        "hardy-weinberg equilibrium"
+      ]
+    },
+    {
+      "topic_id": "lfb-066-biology",
+      "domain": "biology",
+      "difficulty": "hard",
+      "query": "Teach me oxidative phosphorylation with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "biology",
+        "oxidative phosphorylation"
+      ]
+    },
+    {
+      "topic_id": "lfb-067-biology",
+      "domain": "biology",
+      "difficulty": "hard",
+      "query": "Teach me cell signaling pathways with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "biology",
+        "cell signaling pathways"
+      ]
+    },
+    {
+      "topic_id": "lfb-068-biology",
+      "domain": "biology",
+      "difficulty": "hard",
+      "query": "Teach me protein folding with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "biology",
+        "protein folding"
+      ]
+    },
+    {
+      "topic_id": "lfb-069-chemistry",
+      "domain": "chemistry",
+      "difficulty": "easy",
+      "query": "Teach me atoms and chemical bonds with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "atoms and chemical bonds"
+      ]
+    },
+    {
+      "topic_id": "lfb-070-chemistry",
+      "domain": "chemistry",
+      "difficulty": "easy",
+      "query": "Teach me periodic table trends with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "periodic table trends"
+      ]
+    },
+    {
+      "topic_id": "lfb-071-chemistry",
+      "domain": "chemistry",
+      "difficulty": "easy",
+      "query": "Teach me acids and bases with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "acids and bases"
+      ]
+    },
+    {
+      "topic_id": "lfb-072-chemistry",
+      "domain": "chemistry",
+      "difficulty": "easy",
+      "query": "Teach me stoichiometry with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "stoichiometry"
+      ]
+    },
+    {
+      "topic_id": "lfb-073-chemistry",
+      "domain": "chemistry",
+      "difficulty": "easy",
+      "query": "Teach me oxidation and reduction with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "oxidation and reduction"
+      ]
+    },
+    {
+      "topic_id": "lfb-074-chemistry",
+      "domain": "chemistry",
+      "difficulty": "medium",
+      "query": "Teach me ideal gas law with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "ideal gas law"
+      ]
+    },
+    {
+      "topic_id": "lfb-075-chemistry",
+      "domain": "chemistry",
+      "difficulty": "medium",
+      "query": "Teach me chemical equilibrium with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "chemical equilibrium"
+      ]
+    },
+    {
+      "topic_id": "lfb-076-chemistry",
+      "domain": "chemistry",
+      "difficulty": "medium",
+      "query": "Teach me reaction kinetics with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "reaction kinetics"
+      ]
+    },
+    {
+      "topic_id": "lfb-077-chemistry",
+      "domain": "chemistry",
+      "difficulty": "medium",
+      "query": "Teach me thermochemistry with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "thermochemistry"
+      ]
+    },
+    {
+      "topic_id": "lfb-078-chemistry",
+      "domain": "chemistry",
+      "difficulty": "medium",
+      "query": "Teach me organic functional groups with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "organic functional groups"
+      ]
+    },
+    {
+      "topic_id": "lfb-079-chemistry",
+      "domain": "chemistry",
+      "difficulty": "hard",
+      "query": "Teach me electrochemical cells with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "electrochemical cells"
+      ]
+    },
+    {
+      "topic_id": "lfb-080-chemistry",
+      "domain": "chemistry",
+      "difficulty": "hard",
+      "query": "Teach me solubility equilibria with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "solubility equilibria"
+      ]
+    },
+    {
+      "topic_id": "lfb-081-chemistry",
+      "domain": "chemistry",
+      "difficulty": "hard",
+      "query": "Teach me molecular orbital theory with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "molecular orbital theory"
+      ]
+    },
+    {
+      "topic_id": "lfb-082-chemistry",
+      "domain": "chemistry",
+      "difficulty": "hard",
+      "query": "Teach me spectroscopy basics with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "spectroscopy basics"
+      ]
+    },
+    {
+      "topic_id": "lfb-083-chemistry",
+      "domain": "chemistry",
+      "difficulty": "hard",
+      "query": "Teach me organic reaction mechanisms with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "organic reaction mechanisms"
+      ]
+    },
+    {
+      "topic_id": "lfb-084-chemistry",
+      "domain": "chemistry",
+      "difficulty": "hard",
+      "query": "Teach me Gibbs free energy with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "chemistry",
+        "gibbs free energy"
+      ]
+    },
+    {
+      "topic_id": "lfb-085-history-general",
+      "domain": "history_general",
+      "difficulty": "easy",
+      "query": "Teach me the Industrial Revolution with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "the industrial revolution"
+      ]
+    },
+    {
+      "topic_id": "lfb-086-history-general",
+      "domain": "history_general",
+      "difficulty": "easy",
+      "query": "Teach me causes of World War I with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "causes of world war i"
+      ]
+    },
+    {
+      "topic_id": "lfb-087-history-general",
+      "domain": "history_general",
+      "difficulty": "easy",
+      "query": "Teach me major phases of World War II with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "major phases of world war ii"
+      ]
+    },
+    {
+      "topic_id": "lfb-088-history-general",
+      "domain": "history_general",
+      "difficulty": "easy",
+      "query": "Teach me the Cold War with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "the cold war"
+      ]
+    },
+    {
+      "topic_id": "lfb-089-history-general",
+      "domain": "history_general",
+      "difficulty": "easy",
+      "query": "Teach me the printing press with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "beginner",
+      "target_duration_minutes": 3,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "the printing press"
+      ]
+    },
+    {
+      "topic_id": "lfb-090-history-general",
+      "domain": "history_general",
+      "difficulty": "medium",
+      "query": "Teach me the French Revolution with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "the french revolution"
+      ]
+    },
+    {
+      "topic_id": "lfb-091-history-general",
+      "domain": "history_general",
+      "difficulty": "medium",
+      "query": "Teach me postwar decolonization with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "postwar decolonization"
+      ]
+    },
+    {
+      "topic_id": "lfb-092-history-general",
+      "domain": "history_general",
+      "difficulty": "medium",
+      "query": "Teach me the history of the internet with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "the history of the internet"
+      ]
+    },
+    {
+      "topic_id": "lfb-093-history-general",
+      "domain": "history_general",
+      "difficulty": "medium",
+      "query": "Teach me the scientific method with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "intermediate",
+      "target_duration_minutes": 5,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "the scientific method"
+      ]
+    },
+    {
+      "topic_id": "lfb-094-history-general",
+      "domain": "history_general",
+      "difficulty": "hard",
+      "query": "Teach me the fall of the Roman Republic with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "the fall of the roman republic"
+      ]
+    },
+    {
+      "topic_id": "lfb-095-history-general",
+      "domain": "history_general",
+      "difficulty": "hard",
+      "query": "Teach me the Meiji Restoration with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "the meiji restoration"
+      ]
+    },
+    {
+      "topic_id": "lfb-096-history-general",
+      "domain": "history_general",
+      "difficulty": "hard",
+      "query": "Teach me the Bretton Woods system with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "the bretton woods system"
+      ]
+    },
+    {
+      "topic_id": "lfb-097-history-general",
+      "domain": "history_general",
+      "difficulty": "hard",
+      "query": "Teach me Vietnam's Đổi Mới reforms with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "vietnam's đổi mới reforms"
+      ]
+    },
+    {
+      "topic_id": "lfb-098-history-general",
+      "domain": "history_general",
+      "difficulty": "hard",
+      "query": "Teach me the Green Revolution with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "the green revolution"
+      ]
+    },
+    {
+      "topic_id": "lfb-099-history-general",
+      "domain": "history_general",
+      "difficulty": "hard",
+      "query": "Teach me the space race and Apollo program with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "the space race and apollo program"
+      ]
+    },
+    {
+      "topic_id": "lfb-100-history-general",
+      "domain": "history_general",
+      "difficulty": "hard",
+      "query": "Teach me the history of constitutionalism with a clear explanation, one worked example, and a short knowledge check.",
+      "learner_level": "advanced",
+      "target_duration_minutes": 7,
+      "language": "en",
+      "tags": [
+        "history and general knowledge",
+        "the history of constitutionalism"
+      ]
+    }
+  ]
+}

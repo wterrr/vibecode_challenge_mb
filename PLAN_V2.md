@@ -3490,9 +3490,13 @@ cho long-running production.
 
 # 59. Benchmark
 
-**Status: NEXT / NOT STARTED — Full Benchmark / LearnFlowBench**
+**Status: DETERMINISTIC ABLATION PASS / LIVE V2D EVALUATION PENDING**
 
 Mình sẽ không gọi LearnFlow là “SOTA” nếu chưa có benchmark.
+
+Accepted deterministic evidence: CI `37468207742` freezes LearnFlowBench V1 (100 topics), runs V1/V2A/V2B/V2C on the same three frozen LessonPlan fixtures, and runs one V2D typed fixture replay. V2A improves the narrow static-composition proxy from 66.15013163 to 72.2185595; V2C passes deterministic QA 9/9 and selective repair 9/9. This evidence is intentionally **not** the 100-topic live V2D study: TeachQuiz-style learning outcome, live provider token/USD cost, human visual quality, and full-corpus V2D generation remain UNMEASURED. Therefore SOTA claims remain blocked.
+
+Next authorized evaluation stage: **Governed Live V2D Evaluation** on the frozen LearnFlowBench V1 corpus.
 
 Benchmark bắt buộc có V1 frozen baseline để mọi improvement của V2 đo được A/B trên cùng storyboard/input.
 
