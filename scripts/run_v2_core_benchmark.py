@@ -46,7 +46,7 @@ from learnflow_v2.qa import (
     CriticTargetRef,
 )
 from learnflow_v2.repair import apply_safe_scenegraph_patches
-from learnflow_v2.render import RenderProfile, assemble_video, render_scene_video, render_transition_video
+from learnflow_v2.render import RenderProfile, assemble_video, mux_audio_track, render_scene_video, render_transition_video
 from learnflow_v2.scenegraph import adapt_v1_lesson_plan
 from learnflow_v2.scenegraph.enums import PreferredRegion
 from learnflow_v2.transitions import compile_inter_scene_transition
@@ -132,6 +132,7 @@ def _run_v2_once(
     fps: int,
     scene_duration: float,
     transition_duration: float,
+    narration_audio_path: Path,
 ) -> dict[str, Any]:
     adapted = adapt_v1_lesson_plan(plan)
     registry = adapted.get_registry()
@@ -235,7 +236,8 @@ def _run_v2_once(
         clips.append(scene_artifact)
         if index < len(transition_artifacts):
             clips.append(transition_artifacts[index])
-    final = assemble_video(tuple(clips), out_dir / "final.mp4")
+    video_only = assemble_video(tuple(clips), out_dir / "final_video_only.mp4")
+    final = mux_audio_track(video_only, narration_audio_path, out_dir / "final.mp4")
     video, audio, duration = _video_streams(Path(final.path))
     if video is None:
         raise RuntimeError("V2 final artifact has no video stream")
@@ -402,6 +404,7 @@ async def main() -> int:
                         fps=fps,
                         scene_duration=scene_duration,
                         transition_duration=transition_duration,
+                        narration_audio_path=v1_final,
                     )
                 )
             except Exception as exc:
