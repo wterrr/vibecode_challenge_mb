@@ -3370,7 +3370,7 @@ no visual coordinates/code
 
 ## Visual Director
 
-**Status: NEXT / NOT STARTED**
+**Status: IMPLEMENTED / AWAITING CI**
 
 Output:
 
