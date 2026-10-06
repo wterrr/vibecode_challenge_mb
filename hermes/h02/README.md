@@ -51,21 +51,38 @@ Runtime output is always owned by the adapter under the ignored `.hermes_runtime
 
 ## Hermes project-plugin activation
 
-Hermes project plugins are disabled by default. Run the pinned H-01 runtime from the repository root with:
+Hermes project plugins are disabled by default and require `HERMES_ENABLE_PROJECT_PLUGINS=true`.
+
+At the exact H-01 pin (`f97608f178d1ffeca59860195ab7da295f7c8e5f`), the runtime loader scans project plugins but the `hermes plugins enable` CLI enumerates bundled/user plugins only. Do **not** rely on `hermes plugins enable learnflow` for this project-local plugin.
+
+Instead, run the H-02 verifier with the pinned Hermes Python. It enables `learnflow` in the selected Hermes profile through the pinned config API, installs the plugin declaration through Hermes' own `plugin_python_deps.install_for_plugin_dir()`, discovers the project plugin, and dispatches create → run → render through the real Hermes tool registry.
+
+Linux/macOS against the project-local H-01 profile:
 
 ```bash
-export HERMES_ENABLE_PROJECT_PLUGINS=true
+HERMES_HOME="$PWD/.hermes_runtime/home" \
+HERMES_ENABLE_PROJECT_PLUGINS=true \
+.hermes_runtime/hermes-agent/venv/bin/python \
+scripts/verify_hermes_h02_plugin.py
 ```
 
-and enable the plugin in the Hermes profile:
+If the installer created `.venv` rather than `venv`, use that path.
 
-```bash
-.hermes_runtime/hermes-agent/venv/bin/hermes plugins enable learnflow
+PowerShell:
+
+```powershell
+$env:HERMES_HOME = (Resolve-Path ".hermes_runtime\home").Path
+$env:HERMES_ENABLE_PROJECT_PLUGINS = "true"
+
+$HermesPython = ".hermes_runtime\hermes-agent\venv\Scripts\python.exe"
+if (-not (Test-Path $HermesPython)) {
+    $HermesPython = ".hermes_runtime\hermes-agent\.venv\Scripts\python.exe"
+}
+
+& $HermesPython scripts\verify_hermes_h02_plugin.py
 ```
 
-On Windows, use the corresponding `venv\Scripts\hermes.exe` (or `.venv\Scripts\hermes.exe`) installed by H-01.
-
-The repository verifier does not require an LLM/API key. It creates an isolated Hermes home that enables only the LearnFlow project plugin, then checks discovery against the exact pinned H-01 Hermes runtime.
+No LLM/API key is required for H-02 verification.
 
 ## Verification
 
@@ -84,7 +101,7 @@ HERMES_ENABLE_PROJECT_PLUGINS=true \
   scripts/verify_hermes_h02_plugin.py
 ```
 
-The H-02 integration test renders a real short MP4 with FFmpeg; it is not a mocked renderer test.
+The H-02 integration test renders a real short MP4 with FFmpeg; it is not a mocked renderer test. The accepted PR run also executes all three capability tools through the exact pinned Hermes registry.
 
 ## H-01 dependency
 
