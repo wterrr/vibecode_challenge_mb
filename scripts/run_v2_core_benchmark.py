@@ -13,6 +13,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -86,7 +87,21 @@ def _git_sha() -> str:
         text=True,
         check=True,
     )
-    return proc.stdout.strip()
+    value = proc.stdout.strip().lower()
+    if len(value) != 40 or any(ch not in "0123456789abcdef" for ch in value):
+        raise RuntimeError("git rev-parse HEAD did not return a 40-character SHA")
+    return value
+
+
+def _benchmark_source_sha() -> str:
+    """Return the real source head under PR CI, not GitHub's synthetic merge SHA."""
+    value = os.environ.get("BENCHMARK_SOURCE_COMMIT")
+    if value is None:
+        return _git_sha()
+    value = value.strip().lower()
+    if len(value) != 40 or any(ch not in "0123456789abcdef" for ch in value):
+        raise RuntimeError("BENCHMARK_SOURCE_COMMIT must be a 40-character git SHA")
+    return value
 
 
 def _sha256(path: Path) -> str:
@@ -442,7 +457,8 @@ async def main() -> int:
     scene_duration = float(spec["render_profile"]["scene_duration_seconds"])
     transition_duration = float(spec["render_profile"]["transition_duration_seconds"])
     repetitions = int(spec["render_profile"]["repetitions"])
-    commit = _git_sha()
+    checkout_commit = _git_sha()
+    commit = _benchmark_source_sha()
     output_root = Path(sys.argv[1]) if len(sys.argv) > 1 else REPO_ROOT / "benchmark_output" / "v2_core_gate"
     if output_root.exists():
         shutil.rmtree(output_root)
@@ -452,6 +468,7 @@ async def main() -> int:
         "benchmark_id": spec["benchmark_id"],
         "spec_sha256": _sha256(SPEC_PATH),
         "repo_commit": commit,
+        "checkout_commit": checkout_commit,
         "lessons": {},
         "repair_cases": [],
     }
