@@ -16,7 +16,7 @@ from learnflow_v2.motion.compiler import (
 from learnflow_v2.motion.enums import MotionStyle, MotionTargetKind, MotionVerb
 from learnflow_v2.render import (
     DeterministicPillowRenderer, RenderArtifactKind, RenderInvalidInputError,
-    RenderProfile, assemble_video, render_scene_video, render_transition_video,
+    RenderProfile, assemble_video, mux_audio_track, render_scene_video, render_transition_video,
 )
 from learnflow_v2.scenegraph.enums import LayoutIntent, NodeKind, RelationKind
 from learnflow_v2.scenegraph.schema import (
@@ -236,6 +236,36 @@ def test_transition_public_boundary_revalidates_forged_plan(tmp_path: Path):
             forged, tmp_path/"forged.mp4",
             profile=RenderProfile(profile_id="test", fps=2, preset="ultrafast"),
         )
+
+
+@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg required")
+def test_audio_mux_adds_aac_stream_and_preserves_video_frames(tmp_path: Path):
+    profile = RenderProfile(profile_id="test", fps=5, preset="ultrafast")
+    scene, layout, motion = _scene("s1"), _layout("s1"), _static_motion("s1", duration=0.6)
+    video = render_scene_video(scene, layout, motion, tmp_path/"video.mp4", profile=profile)
+    # Explicit deterministic input audio; production mux must not synthesize implicitly.
+    audio = tmp_path/"audio.wav"
+    proc = __import__("subprocess").run(
+        [
+            "ffmpeg", "-y", "-loglevel", "error",
+            "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo:d=0.3",
+            str(audio),
+        ],
+        check=False,
+    )
+    assert proc.returncode == 0
+    muxed = mux_audio_track(video.model_copy(update={"kind": RenderArtifactKind.VIDEO}), audio, tmp_path/"muxed.mp4")
+    probe = __import__("subprocess").run(
+        [
+            "ffprobe", "-v", "error", "-show_entries", "stream=codec_name,codec_type",
+            "-of", "json", str(muxed.path),
+        ],
+        capture_output=True, text=True, check=True,
+    )
+    streams = __import__("json").loads(probe.stdout)["streams"]
+    assert any(item["codec_type"] == "video" and item["codec_name"] == "h264" for item in streams)
+    assert any(item["codec_type"] == "audio" and item["codec_name"] == "aac" for item in streams)
+    assert muxed.frame_digest == video.frame_digest
 
 def test_source_artifacts_are_not_mutated_by_frame_render():
     scene, layout, motion = _scene("s1"), _layout("s1"), _fade_motion("s1")
