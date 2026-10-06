@@ -209,12 +209,18 @@ class DeterministicPillowRenderer:
                 f"LayoutGraph must exactly cover SceneGraph nodes; missing={sorted(node_ids-box_ids)}, extra={sorted(box_ids-node_ids)}"
             )
         relation_ids = {rel.id for rel in scene_graph.relations}
+        routed_edge_ids = {edge.edge_id for edge in layout_graph.routed_edges}
         if motion is not None:
             for track in motion.tracks:
                 if track.target_kind == MotionTargetKind.NODE and track.target not in node_ids:
                     raise RenderInvalidInputError(f"motion track '{track.track_id}' references unknown node")
-                if track.target_kind == MotionTargetKind.RELATION and track.target not in relation_ids:
-                    raise RenderInvalidInputError(f"motion track '{track.track_id}' references unknown relation")
+                if track.target_kind == MotionTargetKind.RELATION:
+                    if track.target not in relation_ids:
+                        raise RenderInvalidInputError(f"motion track '{track.track_id}' references unknown relation")
+                    if track.target not in routed_edge_ids:
+                        raise RenderInvalidInputError(
+                            f"motion track '{track.track_id}' targets relation '{track.target}' without routed edge geometry"
+                        )
 
     def render_frame(
         self,
