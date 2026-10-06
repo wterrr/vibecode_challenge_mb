@@ -176,7 +176,7 @@ def build_chain():
         ArtifactRef(
             artifact_type=kind,
             artifact_id=artifact_id,
-            content_sha256=artifact.content_sha256(),
+            content_hash=artifact.content_sha256(),
         )
         for kind, artifact_id, artifact in (
             ("learning-brief", brief.brief_id, brief),
