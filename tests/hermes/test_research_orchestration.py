@@ -48,7 +48,7 @@ def _brief():
 
 def _evidence():
     source = SourceRecord(
-        source_id="S1",
+        source_id="evidence.S1",
         title="Source",
         locator="https://example.test/source",
     )
@@ -56,18 +56,18 @@ def _evidence():
         sources=(source,),
         claims=(
             ResearchClaim(
-                claim_id="C001",
+                claim_id="evidence.C001",
                 statement="Supported claim.",
-                source_ids=("S1",),
+                source_ids=("evidence.S1",),
                 confidence=0.9,
             ),
         ),
         evidence_edges=(
             EvidenceEdge(
-                edge_id="E1",
+                edge_id="evidence.E1",
                 from_kind=EvidenceNodeKind.SOURCE,
-                from_id="S1",
-                to_claim_id="C001",
+                from_id="evidence.S1",
+                to_claim_id="evidence.C001",
                 relation=EvidenceRelation.SUPPORTS,
             ),
         ),
@@ -180,8 +180,8 @@ def test_merge_preserves_source_locator_and_claim_source_ids():
         ),
     )
     assert result.research_pack.sources[0].locator == source.locator
-    assert result.research_pack.claims[0].source_ids == ("S1",)
-    assert result.evidence_graph.edges[0].from_id == "S1"
+    assert result.research_pack.claims[0].source_ids == ("evidence.S1",)
+    assert result.evidence_graph.edges[0].from_id == "evidence.S1"
     assert result.research_pack.sources[1].source_id == "misconception.S1"
     assert result.research_pack.claims[1].claim_id == "misconception.C1"
 
@@ -271,3 +271,33 @@ def test_sibling_specialists_do_not_depend_on_each_others_ids():
         "No specialist may depend on a sibling" in rule
         for rule in context["execution_contract"]
     )
+
+
+def test_specialist_id_namespaces_are_schema_enforced():
+    with pytest.raises(ValidationError, match="evidence.*namespace"):
+        EvidenceResearchFindings(
+            sources=(
+                SourceRecord(
+                    source_id="wrong.S1",
+                    title="Source",
+                    locator="https://example.test/source",
+                ),
+            ),
+            claims=(
+                ResearchClaim(
+                    claim_id="wrong.C1",
+                    statement="Claim.",
+                    source_ids=("wrong.S1",),
+                    confidence=0.8,
+                ),
+            ),
+            evidence_edges=(
+                EvidenceEdge(
+                    edge_id="wrong.E1",
+                    from_kind=EvidenceNodeKind.SOURCE,
+                    from_id="wrong.S1",
+                    to_claim_id="wrong.C1",
+                    relation=EvidenceRelation.SUPPORTS,
+                ),
+            ),
+        )
