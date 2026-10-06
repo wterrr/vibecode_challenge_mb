@@ -389,7 +389,7 @@ def handle_render(args: dict[str, Any], **_kwargs: Any) -> str:
         if not output_path.is_file() or output_path.stat().st_size <= 0:
             return _fail("H02_RENDER_MISSING", "renderer did not produce a non-empty MP4")
 
-        relative_output = output_path.relative_to(_REPO_ROOT).as_posix()
+        relative_output = f".hermes_runtime/h02/runs/{run_id}/render/scene.mp4"
         artifact_payload = artifact.model_dump(mode="json")
         _atomic_write_json(
             run_dir / "state.json",
