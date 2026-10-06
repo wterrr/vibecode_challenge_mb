@@ -3338,7 +3338,7 @@ contradictions flagged
 
 ## Pedagogy Agent
 
-**Status: NEXT / NOT STARTED**
+**Status: IMPLEMENTED / VERIFYING**
 
 Acceptance:
 
