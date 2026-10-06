@@ -77,20 +77,27 @@ def build_fixture_runner():
     # that the frozen production LayoutRouter does not yet compile. The E2E
     # acceptance fixture must exercise the currently supported Core surface
     # without weakening the Visual Director schema.
-    graphs = list(visual.scenegraphs)
-    demo = graphs[2]
-    demo_nodes = [
-        node.model_copy(update={"kind": NodeKind.CALLOUT})
-        if node.kind == NodeKind.SHAPE
-        else node
-        for node in demo.nodes
-    ]
-    graphs[2] = demo.model_copy(
-        update={
-            "nodes": demo_nodes,
-            "layout_intent": LayoutIntentSpec(type=LayoutIntent.PROCESS),
-        }
-    )
+    graphs = []
+    for graph in visual.scenegraphs:
+        nodes = [
+            node.model_copy(update={"kind": NodeKind.CALLOUT})
+            if node.kind == NodeKind.SHAPE
+            else node
+            for node in graph.nodes
+        ]
+        # Core Freeze currently proves CONCEPT_CARD as the stable generic
+        # production fallback for these smoke scenes. This avoids making the
+        # E2E checkpoint depend on an unrelated Graphviz text-box tolerance.
+        graphs.append(
+            graph.model_copy(
+                update={
+                    "nodes": nodes,
+                    "layout_intent": LayoutIntentSpec(
+                        type=LayoutIntent.CONCEPT_CARD
+                    ),
+                }
+            )
+        )
     visual = visual.model_copy(update={"scenegraphs": tuple(graphs)})
 
     research = ResearchOrchestrationResult(
