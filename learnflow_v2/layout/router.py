@@ -146,11 +146,20 @@ def _stack_in_zone(
         # Measure against the exact maximum outer width that _fit_rect() will
         # actually return so Layout and Renderer cannot disagree about wrapping.
         max_outer_width = max(24.0, zone.width - 8.0)
-        preferred_width = max(
-            measurement.minimum_readable_width + 20.0,
-            min(measurement.width + 40.0, max_outer_width),
-        )
-        preferred_width = min(preferred_width, max_outer_width)
+        minimum_outer_width = measurement.minimum_readable_width + 20.0
+        if minimum_outer_width > max_outer_width + 1e-6:
+            raise LayoutUnsatisfiableError(
+                "Readable stacked content cannot fit available width",
+                {
+                    "node_id": node.id,
+                    "minimum_outer_width": minimum_outer_width,
+                    "available_outer_width": max_outer_width,
+                },
+            )
+        # A stacked card owns the full width of its semantic lane. Using a
+        # narrower measurement.width-derived card only creates avoidable wraps
+        # and can make a readable layout appear vertically unsatisfiable.
+        preferred_width = max_outer_width
         required_height = _wrapped_text_height(measurement, preferred_width) + 16.0
         specs.append((node, preferred_width, required_height))
 
