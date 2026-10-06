@@ -2,6 +2,7 @@
 
 from learnflow_v2.render.assembly import assemble_video, mux_audio_track
 from learnflow_v2.render.backend import (
+    DEFAULT_TEXT_FONT_SIZE_PX,
     DeterministicPillowRenderer,
     render_scene_video,
     render_transition_video,
@@ -15,6 +16,7 @@ from learnflow_v2.render.schema import (
 )
 
 __all__ = [
+    "DEFAULT_TEXT_FONT_SIZE_PX",
     "DeterministicPillowRenderer",
     "RenderArtifactKind",
     "RenderBackendError",
