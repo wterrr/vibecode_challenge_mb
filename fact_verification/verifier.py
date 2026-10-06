@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import defaultdict, deque
 from dataclasses import dataclass
 
 from agent_contracts import (
@@ -87,6 +87,39 @@ def _compute_grounding(
     }
 
 
+
+def _shortest_source_witness_edges(
+    claim_id: str,
+    source_id: str,
+    *,
+    incoming_support: dict[str, list],
+) -> tuple[str, ...]:
+    """Return one deterministic shortest acyclic support path from source to claim."""
+
+    queue = deque([(claim_id, tuple())])
+    visited = {claim_id}
+
+    while queue:
+        current_claim, reversed_path = queue.popleft()
+        for edge in sorted(
+            incoming_support.get(current_claim, ()),
+            key=lambda item: item.edge_id,
+        ):
+            next_path = reversed_path + (edge.edge_id,)
+            if edge.from_kind == EvidenceNodeKind.SOURCE:
+                if edge.from_id == source_id:
+                    return tuple(reversed(next_path))
+                continue
+
+            parent_claim = edge.from_id
+            if parent_claim in visited:
+                continue
+            visited.add(parent_claim)
+            queue.append((parent_claim, next_path))
+
+    return tuple()
+
+
 def verify_facts(
     pack: ResearchPack,
     graph: EvidenceGraph,
@@ -156,12 +189,22 @@ def verify_facts(
         elif semantic_verdict == SemanticVerdict.UNCERTAIN:
             issues.append(VerificationIssue.SEMANTIC_UNCERTAINTY)
 
+        witness_edge_ids: set[str] = set()
+        for grounded_source_id in sorted(grounding.grounded_source_ids):
+            witness_edge_ids.update(
+                _shortest_source_witness_edges(
+                    claim.claim_id,
+                    grounded_source_id,
+                    incoming_support=incoming_support,
+                )
+            )
+
         results.append(
             ClaimVerification(
                 claim_id=claim.claim_id,
                 issues=tuple(issues),
                 grounded_source_ids=tuple(sorted(grounding.grounded_source_ids)),
-                support_edge_ids=tuple(sorted(grounding.support_edge_ids)),
+                support_edge_ids=tuple(sorted(witness_edge_ids)),
                 contradiction_edge_ids=tuple(
                     sorted(edge.edge_id for edge in contradiction_edges)
                 ),
