@@ -55,6 +55,7 @@ class RepairActionKind(str, Enum):
     VISUAL_SEMANTIC_REGENERATION = "VISUAL_SEMANTIC_REGENERATION"
     CORE_DETERMINISTIC_REPAIR = "CORE_DETERMINISTIC_REPAIR"
     CORE_SELECTIVE_REPAIR = "CORE_SELECTIVE_REPAIR"
+    CORE_TEMPORAL_REPAIR = "CORE_TEMPORAL_REPAIR"
 
 
 class RepairSourceKind(str, Enum):
@@ -239,6 +240,7 @@ class RepairIntent(ContractModel):
             RepairOwner.CORE_REPAIR: {
                 RepairActionKind.CORE_DETERMINISTIC_REPAIR,
                 RepairActionKind.CORE_SELECTIVE_REPAIR,
+                RepairActionKind.CORE_TEMPORAL_REPAIR,
             },
         }
         if self.action not in allowed[self.owner]:
