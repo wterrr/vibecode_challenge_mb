@@ -3390,7 +3390,7 @@ no pixel coordinates
 
 ## End-to-End Orchestration
 
-**Status: NEXT / NOT STARTED**
+**Status: PASS**
 
 ```text
 query
@@ -3407,6 +3407,8 @@ Chưa cần repair agents riêng ở checkpoint này.
 ---
 
 ## Agent-Aware QA
+
+**Status: NEXT / NOT STARTED**
 
 Hermes nhận:
 
