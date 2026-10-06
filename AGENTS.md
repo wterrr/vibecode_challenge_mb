@@ -31,7 +31,7 @@ Work one Hermes checkpoint at a time in the order defined by `PLAN_V2.md`.
 
 Current implementation checkpoint: H-02 LearnFlow plugin.
 
-H-01 implementation and offline CI are complete, but its real OpenRouter smoke is still a required dependency. Do not rewrite H-01 as PASS until a real user-local run returns `H01_LIVE=PASS`.
+H-01 implementation and offline CI are complete, but its real OpenRouter smoke is still a required dependency. A checkpoint is not considered H-01 PASS until the real OpenRouter smoke returns `H01_LIVE=PASS`. Do not rewrite H-01 as PASS without that evidence.
 
 H-02 is limited to:
 
