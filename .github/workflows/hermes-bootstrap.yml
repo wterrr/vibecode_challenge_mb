@@ -1,0 +1,33 @@
+name: Hermes Bootstrap
+
+on:
+  pull_request:
+    paths:
+      - "AGENTS.md"
+      - ".env.example"
+      - ".gitignore"
+      - "hermes/bootstrap/**"
+      - "scripts/install_hermes_bootstrap.sh"
+      - "scripts/install_hermes_bootstrap.ps1"
+      - "scripts/run_hermes_bootstrap_smoke.py"
+      - "tests/hermes/test_bootstrap.py"
+      - ".github/workflows/hermes-bootstrap.yml"
+  workflow_dispatch:
+
+jobs:
+  offline-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test dependency
+        run: pip install pytest
+      - name: Offline structured smoke
+        run: python scripts/run_hermes_bootstrap_smoke.py --offline-fixture hermes/bootstrap/fixtures/successful_tool_roundtrip.jsonl
+      - name: Bootstrap contract tests
+        run: pytest -q --confcutdir=tests/hermes tests/hermes/test_bootstrap.py
+      - name: Prove Core Freeze is untouched
+        run: python scripts/verify_v2_core_freeze.py

@@ -1,4 +1,4 @@
-# LearnFlow H-01 Hermes profile template.
+# LearnFlow Hermes Bootstrap profile template.
 # Secrets do NOT belong here. OPENROUTER_API_KEY is provided at runtime.
 model:
   default: "openai/gpt-6-luna"

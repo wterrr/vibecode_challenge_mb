@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "stage": "hermes-bootstrap",
+  "name": "Hermes Bootstrap",
+  "state": "PASS",
+  "verified_at": "2026-10-06",
+  "hermes": {
+    "repository": "NousResearch/hermes-agent",
+    "release_tag": "v2026.9.24",
+    "package_version": "0.21.5",
+    "commit": "f97608f178d1ffeca59860195ab7da295f7c8e5f",
+    "annotated_tag_object": "e3dd27ee2d8b011737a4eea8e3eb3d711ab78690"
+  },
+  "provider": {
+    "id": "openrouter",
+    "api_key_env": "OPENROUTER_API_KEY",
+    "primary_model": "openai/gpt-6-luna",
+    "free_fallback_model": "nvidia/nemotron-3.5-lightning:free"
+  },
+  "protocol": {
+    "cli_output_format": "stream-json",
+    "required_event_types": [
+      "system",
+      "tool_use",
+      "tool_result",
+      "result"
+    ],
+    "expected_sentinel": "HERMES_BOOTSTRAP_OK:LEARNFLOW-BOOTSTRAP-FIXTURE-v1"
+  },
+  "live_verification": {
+    "status": "PASS",
+    "evidence_source": "user-local run",
+    "model": "nvidia/nemotron-3.5-lightning:free",
+    "fallback_used": true,
+    "attempted_models": [
+      "openai/gpt-6-luna",
+      "nvidia/nemotron-3.5-lightning:free"
+    ],
+    "tool_name": "read_file",
+    "redacted_trajectory_exported": true,
+    "sensitive_runtime_details_committed": false
+  },
+  "offline_verification": {
+    "structured_contract": "PASS",
+    "bootstrap_tests": "PASS",
+    "core_freeze": "PASS"
+  }
+}
