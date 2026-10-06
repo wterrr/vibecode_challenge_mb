@@ -1,0 +1,17 @@
+name: learnflow-governance
+version: "0.1.0"
+description: "LearnFlow runtime governance: pre-tool policy, hard budget reservations, privacy-minimized metrics, and lifecycle tracing."
+manifest_version: 2
+api_version: 1
+kind: backend
+provides_hooks:
+  - pre_tool_call
+  - post_tool_call
+  - post_api_request
+  - api_request_error
+  - on_session_start
+  - on_session_end
+  - subagent_start
+  - subagent_stop
+python_dependencies:
+  - "pydantic>=2"
