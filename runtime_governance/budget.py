@@ -35,17 +35,17 @@ def apply_budget_charge(ledger: BudgetLedger, charge: BudgetCharge) -> BudgetLed
     provider/tool operation crossing the configured hard limit.
     """
 
-    ledger = BudgetLedger.model_validate(ledger.model_dump(mode="json"))
-    charge = BudgetCharge.model_validate(charge.model_dump(mode="json"))
+    ledger = BudgetLedger.model_validate(ledger.model_dump(mode="json", exclude_computed_fields=True))
+    charge = BudgetCharge.model_validate(charge.model_dump(mode="json", exclude_computed_fields=True))
 
-    spent = ledger.spent.model_dump(mode="json")
+    spent = ledger.spent.model_dump(mode="json", exclude_computed_fields=True)
     key = charge.category.value
     spent[key] = float(spent[key]) + charge.amount_usd
     payload = {
         "ledger_id": ledger.ledger_id,
         "max_usd": ledger.max_usd,
-        "spent": BudgetSpend.model_validate(spent).model_dump(mode="json"),
-        "limits": ledger.limits.model_dump(mode="json"),
+        "spent": BudgetSpend.model_validate(spent).model_dump(mode="json", exclude_computed_fields=True),
+        "limits": ledger.limits.model_dump(mode="json", exclude_computed_fields=True),
         "usage": _add_usage(ledger.usage, charge.usage),
     }
     try:
@@ -61,12 +61,12 @@ class HardBudgetController:
 
     def __init__(self, ledger: BudgetLedger) -> None:
         self._lock = RLock()
-        self._ledger = BudgetLedger.model_validate(ledger.model_dump(mode="json"))
+        self._ledger = BudgetLedger.model_validate(ledger.model_dump(mode="json", exclude_computed_fields=True))
 
     @property
     def ledger(self) -> BudgetLedger:
         with self._lock:
-            return BudgetLedger.model_validate(self._ledger.model_dump(mode="json"))
+            return BudgetLedger.model_validate(self._ledger.model_dump(mode="json", exclude_computed_fields=True))
 
     def authorize(self, charge: BudgetCharge) -> BudgetLedger:
         with self._lock:
