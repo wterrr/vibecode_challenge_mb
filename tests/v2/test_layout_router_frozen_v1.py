@@ -8,6 +8,7 @@ from learnflow_v2.layout import compile_scene_layout, create_frame_profile_16_9,
 from learnflow_v2.scenegraph import adapt_v1_lesson_plan
 from learnflow_v2.qa import CriticPatchOp, CriticPatchSuggestion, CriticTargetKind, CriticTargetRef
 from learnflow_v2.repair import apply_safe_scenegraph_patches
+from learnflow_v2.render import DeterministicPillowRenderer
 from learnflow_v2.scenegraph.enums import PreferredRegion
 
 
@@ -68,3 +69,18 @@ def test_set_region_repair_changes_production_layout_geometry():
     after_box = next(box.rect for box in after.boxes if box.node_id == target.id)
     assert repaired.original_scene_hash != repaired.repaired_scene_hash
     assert after_box != before_box
+
+
+def test_frozen_v1_corpus_layouts_are_renderable_at_readable_text_contract():
+    profile = create_frame_profile_16_9(640.0, 360.0)
+    renderer = DeterministicPillowRenderer()
+    rendered = 0
+    for fixture_path in sorted(FIXTURES.glob("*.json")):
+        plan = LessonPlan.model_validate(json.loads(fixture_path.read_text(encoding="utf-8")))
+        adapted = adapt_v1_lesson_plan(plan)
+        for graph in adapted.scene_graphs:
+            layout = compile_scene_layout(graph, profile=profile)
+            frame = renderer.render_frame(graph, layout, None, 0.0)
+            assert frame.size == (640, 360)
+            rendered += 1
+    assert rendered == 9
