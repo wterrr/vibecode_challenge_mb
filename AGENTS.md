@@ -33,10 +33,11 @@ Accepted stages:
 
 - **Hermes Bootstrap — PASS.** The live OpenRouter smoke passed on 2026-10-06. The primary model was attempted first; the accepted free fallback `nvidia/nemotron-3.5-lightning:free` completed the read-tool round-trip. Offline verification and the Core Freeze guard also passed.
 - **LearnFlow Capability Plugin — PASS.** The exact pinned Hermes runtime discovers the project plugin and dispatches `learnflow_create → learnflow_run → learnflow_render`. Integration verification renders a real MP4 and preserves the Core Freeze boundary.
+- **Agent Contracts — PASS.** `LearningBrief`, `ResearchPack`, `EvidenceGraph`, `PedagogyPlan`, `LessonScript`, `Storyboard`, `AgentRun`, and `BudgetLedger` are strict, versioned, canonically serializable artifacts with cross-artifact integrity checks.
 
-Current stage: **Agent Contracts — IMPLEMENTED / VERIFYING**. The typed artifacts and regression verifier exist on the active branch; do not mark the stage PASS until CI and Core Freeze verification pass.
+Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifier, 11 contract regressions, and Core Freeze guard passed. Next authorized stage: **Research Orchestration**, which has not started yet.
 
-Do not implement Research Orchestration, Fact Verification, Pedagogy Agent, Script Agent, Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability during Agent Contracts. This stage defines data contracts only.
+During Research Orchestration, implement only the Director → Research Orchestrator → bounded specialized-researcher flow and its provenance/delegation constraints. Do not implement Fact Verification, Pedagogy Agent, Script Agent, Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
 
 ## LearnFlow Capability Plugin safety
 
