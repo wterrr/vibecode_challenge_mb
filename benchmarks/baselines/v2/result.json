@@ -1,0 +1,165 @@
+{
+  "schema_version": "1.0",
+  "benchmark_id": "v2-core-gate-v2",
+  "repo_commit": "fdad3db1340d8b28175ab5382d800ff79df9a8a0",
+  "spec_sha256": "e20ab43e2a7622af8dc47c00c0c5692b42cceb05723ec93a70981effd62a9cfd",
+  "official_workflow_run_id": 37412433812,
+  "official_artifact_id": 11389249199,
+  "official_artifact_digest": "sha256:5f5b167471779668f0c51b34090d2f54521f974019e294bef26c9a9d3e69e242",
+  "raw_result_sha256": "16ee5c9f5684b53596f890e3978147e11c7df33f281bd48955a8bd01e2fe2609",
+  "full_v2_regression": {
+    "passed": 959,
+    "warnings": 10
+  },
+  "summary": {
+    "lesson_count": 3,
+    "scene_count_expected": 9,
+    "render_success_rate": 1,
+    "fatal_clipping_count": 0,
+    "fatal_overlap_count": 0,
+    "invalid_motion_plan_count": 0,
+    "selective_repair_success_rate": 1,
+    "selective_repair_successes": 9,
+    "selective_repair_cases": 9,
+    "reproducibility_rate": 1,
+    "v1_v2_critical_regression_count": 0,
+    "v2_static_quality_delta": 6.0680719
+  },
+  "static_quality": {
+    "v1": {
+      "metric_id": "static_composition_proxy_v2",
+      "frame_count": 9,
+      "contrast": 0.43185382,
+      "occupancy_balance": 0.8161603,
+      "safe_margin": 0.81241473,
+      "score": 66.15013163
+    },
+    "v2": {
+      "metric_id": "static_composition_proxy_v2",
+      "frame_count": 9,
+      "contrast": 0.65914734,
+      "occupancy_balance": 0.59578029,
+      "safe_margin": 1,
+      "score": 72.21820353
+    },
+    "delta": 6.0680719
+  },
+  "lessons": {
+    "photosynthesis": {
+      "reproducible": true,
+      "critical_regression_reasons": [],
+      "v2_final": {
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "audio_present": true,
+        "subtitles_integrated": true,
+        "width": 640,
+        "height": 360,
+        "duration_seconds": 7,
+        "frame_digest": "14355838d52f6309c81b84a941d4869cb80579de6eb529505983b28190ce12b1"
+      }
+    },
+    "ram_vs_ssd": {
+      "reproducible": true,
+      "critical_regression_reasons": [],
+      "v2_final": {
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "audio_present": true,
+        "subtitles_integrated": true,
+        "width": 640,
+        "height": 360,
+        "duration_seconds": 7,
+        "frame_digest": "9268b28b4a99d0f32b220fd3175222f040fc15e8dc58eb7a5d768296653cf614"
+      }
+    },
+    "tcp_three_way_handshake": {
+      "reproducible": true,
+      "critical_regression_reasons": [],
+      "v2_final": {
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "audio_present": true,
+        "subtitles_integrated": true,
+        "width": 640,
+        "height": 360,
+        "duration_seconds": 7,
+        "frame_digest": "1027aa3708cb8b55015cb3c1d78551efc4a32a2cd21fd4721880f61139b65918"
+      }
+    }
+  },
+  "repair_cases": [
+    {
+      "case_index": 1,
+      "success": true,
+      "qa_pass": true,
+      "pixel_changed": true,
+      "scene_hash_changed": true,
+      "unrelated_scene_digests_unchanged": true
+    },
+    {
+      "case_index": 2,
+      "success": true,
+      "qa_pass": true,
+      "pixel_changed": true,
+      "scene_hash_changed": true,
+      "unrelated_scene_digests_unchanged": true
+    },
+    {
+      "case_index": 3,
+      "success": true,
+      "qa_pass": true,
+      "pixel_changed": true,
+      "scene_hash_changed": true,
+      "unrelated_scene_digests_unchanged": true
+    },
+    {
+      "case_index": 4,
+      "success": true,
+      "qa_pass": true,
+      "pixel_changed": true,
+      "scene_hash_changed": true,
+      "unrelated_scene_digests_unchanged": true
+    },
+    {
+      "case_index": 5,
+      "success": true,
+      "qa_pass": true,
+      "pixel_changed": true,
+      "scene_hash_changed": true,
+      "unrelated_scene_digests_unchanged": true
+    },
+    {
+      "case_index": 6,
+      "success": true,
+      "qa_pass": true,
+      "pixel_changed": true,
+      "scene_hash_changed": true,
+      "unrelated_scene_digests_unchanged": true
+    },
+    {
+      "case_index": 7,
+      "success": true,
+      "qa_pass": true,
+      "pixel_changed": true,
+      "scene_hash_changed": true,
+      "unrelated_scene_digests_unchanged": true
+    },
+    {
+      "case_index": 8,
+      "success": true,
+      "qa_pass": true,
+      "pixel_changed": true,
+      "scene_hash_changed": true,
+      "unrelated_scene_digests_unchanged": true
+    },
+    {
+      "case_index": 9,
+      "success": true,
+      "qa_pass": true,
+      "pixel_changed": true,
+      "scene_hash_changed": true,
+      "unrelated_scene_digests_unchanged": true
+    }
+  ]
+}
