@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "stage": "script-agent",
+  "name": "Script Agent",
+  "state": "PASS",
+  "depends_on": [
+    {
+      "stage": "pedagogy-agent",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "fact-verification",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "agent-contracts",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
+  ],
+  "acceptance": {
+    "claim_ids_preserved": true,
+    "teaching_function_per_segment": true,
+    "pedagogy_objectives_covered": true,
+    "factual_segments_claim_bound": true,
+    "no_visual_coordinates_or_implementation_code": true,
+    "visual_director_readiness_gate": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "next_stage": "Visual Director",
+  "evidence": {
+    "accepted_ci_run": 37435010668,
+    "accepted_head_sha": "e0dba3510d3e92ce97a6d61f75073bf4da738f26",
+    "script_acceptance_verifier": "PASS",
+    "pytest": "18 passed",
+    "claim_ids_preserved": "PASS",
+    "teaching_function_per_segment": "PASS",
+    "factual_segment_claim_binding": "PASS",
+    "pedagogy_objective_coverage": "PASS",
+    "visual_and_implementation_boundary": "PASS",
+    "pinned_hermes_script_schema": "PASS",
+    "structured_lesson_script_schema": "PASS",
+    "core_freeze": "PASS"
+  }
+}
