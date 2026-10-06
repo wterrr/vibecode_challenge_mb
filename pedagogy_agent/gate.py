@@ -9,7 +9,7 @@ from agent_contracts import (
     PedagogyPlan,
     ResearchPack,
 )
-from fact_verification import FactVerificationReport
+from fact_verification import FactVerificationReport, verify_facts
 
 from .models import PedagogyIssue, PedagogyValidation
 
@@ -42,7 +42,16 @@ def validate_pedagogy_plan(
             "FactVerificationReport must cover every ResearchPack claim exactly once"
         )
 
+    baseline_report = verify_facts(pack, graph)
+    baseline_approved = set(baseline_report.approved_claim_ids)
     approved_claim_ids = set(fact_report.approved_claim_ids)
+    unsafe_approvals = sorted(approved_claim_ids - baseline_approved)
+    if unsafe_approvals:
+        raise AgentContractError(
+            "FactVerificationReport approves claims blocked by deterministic verification: "
+            f"{unsafe_approvals!r}"
+        )
+
     referenced_claim_ids = {
         claim_id
         for item in (*plan.worked_examples, *plan.analogies, *plan.misconceptions)
