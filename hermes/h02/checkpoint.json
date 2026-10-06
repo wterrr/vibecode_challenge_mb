@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "checkpoint": "H-02",
   "name": "LearnFlow plugin",
-  "state": "IMPLEMENTED_AWAITING_CI_AND_H01_LIVE",
+  "state": "IMPLEMENTED_PASS_BLOCKED_BY_H01_LIVE",
   "depends_on": {
     "checkpoint": "H-01",
     "required_state": "PASS",
@@ -19,16 +19,35 @@
   },
   "acceptance": {
     "hermes_discovers_project_plugin": true,
-    "create_run": true,
-    "compile_run": true,
-    "render_real_mp4": true,
+    "hermes_registry_executes_create_run_render": true,
+    "real_mp4_render": true,
     "renderer_internals_exposed": false,
     "agent_controlled_output_paths": false,
     "agent_controlled_pixel_geometry": false,
-    "core_freeze_must_remain_complete": true
+    "core_freeze_complete": true
+  },
+  "evidence": {
+    "pull_request": 19,
+    "accepted_ci_run": 37421817837,
+    "accepted_head_sha": "17af74242327133a528140c2294a23252a0880f3",
+    "contract_and_render": {
+      "pytest": "5 passed",
+      "real_ffmpeg_render": true,
+      "core_freeze": "PASS"
+    },
+    "pinned_hermes": {
+      "commit": "f97608f178d1ffeca59860195ab7da295f7c8e5f",
+      "project_plugin_dependencies": "INSTALLED",
+      "project_plugin_discovery": "PASS",
+      "registry_create_run_render": "PASS",
+      "smoke_run_id": "a791a6a27b917290",
+      "frame_count": 6,
+      "fps": 30
+    }
   },
   "notes": [
-    "H-02 implementation may be validated while H-01 live OpenRouter smoke is still pending, but the sequential Hermes milestone is not closed until H-01 passes.",
+    "H-02 implementation acceptance is proven, but the sequential Hermes milestone remains blocked until H-01 has real OpenRouter live-smoke evidence.",
+    "The pinned Hermes runtime loader supports project plugins, while its plugins enable CLI enumerates bundled/user plugins only. H-02 therefore uses the pinned Hermes config and plugin_python_deps APIs for project-plugin activation/dependencies.",
     "H-02 deliberately implements only a bounded single-scene capability adapter. Agent contracts and Visual Director behavior belong to later checkpoints."
   ]
 }
