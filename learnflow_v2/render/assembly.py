@@ -102,6 +102,7 @@ def mux_audio_track(
         "-map", "0:v:0", "-map", "1:a:0",
         "-c:v", "copy",
         "-c:a", "aac", "-b:a", "128k",
+        "-af", "apad",
         "-shortest", "-map_metadata", "-1",
         str(output),
     ]
@@ -119,7 +120,7 @@ def mux_audio_track(
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             audio_digest.update(chunk)
     source_hash = hashlib.sha256(
-        f"{video.source_hash}\n{audio_digest.hexdigest()}\naac-128k".encode("utf-8")
+        f"{video.source_hash}\n{audio_digest.hexdigest()}\naac-128k-apad".encode("utf-8")
     ).hexdigest()
     return video.model_copy(
         update={
