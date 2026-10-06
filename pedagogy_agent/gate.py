@@ -14,17 +14,13 @@ from fact_verification import FactVerificationReport, verify_facts
 from .models import PedagogyIssue, PedagogyValidation
 
 
-def validate_pedagogy_plan(
-    plan: PedagogyPlan,
+def approved_claim_ids_from_safe_report(
     *,
-    brief: LearningBrief,
     pack: ResearchPack,
     graph: EvidenceGraph,
     fact_report: FactVerificationReport,
-) -> PedagogyValidation:
-    """Validate pedagogy without re-deciding research evidence semantics."""
-
-    plan.validate_against(brief, pack, graph)
+) -> set[str]:
+    """Fail closed before either Hermes context construction or plan validation."""
 
     if fact_report.research_pack_id != pack.pack_id:
         raise AgentContractError(
@@ -51,6 +47,25 @@ def validate_pedagogy_plan(
             "FactVerificationReport approves claims blocked by deterministic verification: "
             f"{unsafe_approvals!r}"
         )
+    return approved_claim_ids
+
+
+def validate_pedagogy_plan(
+    plan: PedagogyPlan,
+    *,
+    brief: LearningBrief,
+    pack: ResearchPack,
+    graph: EvidenceGraph,
+    fact_report: FactVerificationReport,
+) -> PedagogyValidation:
+    """Validate pedagogy without re-deciding research evidence semantics."""
+
+    plan.validate_against(brief, pack, graph)
+    approved_claim_ids = approved_claim_ids_from_safe_report(
+        pack=pack,
+        graph=graph,
+        fact_report=fact_report,
+    )
 
     referenced_claim_ids = {
         claim_id
