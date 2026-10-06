@@ -25,3 +25,16 @@ benchmarks/
 - Do **NOT** commit generated runtime MP4/WAV media files as golden fixtures.
 - Do **NOT** use binary MP4 hashes as golden criteria; invariant ranges (codecs, dimensions, stream types, duration bounds) are used instead.
 - The V1 baseline represents LearnFlow V1 CP10.
+
+
+## V2 Core Freeze
+
+After the corrected V2 Core Gate PASS, the accepted engine/evidence/rollback boundary is recorded in
+`benchmarks/core_freeze/manifest.json`. Verify it with:
+
+```bash
+python scripts/verify_v2_core_freeze.py
+```
+
+The freeze is intentionally stricter than the benchmark baseline: it protects the accepted Core source
+surface and rejects silent source/evidence drift before V2D/Hermes integration.
