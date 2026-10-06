@@ -10,6 +10,18 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from tools.lazy_deps import install_specs
+
+deps = install_specs(
+    ("kiwisolver==1.5.1", "pillow"),
+    policy="plugin",
+)
+if not deps.ok:
+    raise SystemExit(
+        "HERMES_AGENT_AWARE_QA=FAIL dependency install "
+        f"blocked={deps.blocked} reason={deps.reason!r} stderr={deps.stderr[-500:]!r}"
+    )
+
 from agent_contracts import AgentContractError
 from agent_aware_qa import RepairOwner, build_agent_repair_task
 from scripts.verify_agent_aware_qa import build_acceptance
@@ -59,6 +71,7 @@ def main() -> int:
         raise SystemExit("HERMES_AGENT_AWARE_QA=FAIL Core repair was delegated")
 
     print("HERMES_AGENT_AWARE_QA=PASS")
+    print("runtime_dependencies=PASS")
     print("runtime=exact pinned Hermes")
     print("research_repair_schema=PASS")
     print("script_repair_schema=PASS")
