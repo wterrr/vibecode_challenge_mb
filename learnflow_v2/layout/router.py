@@ -133,6 +133,7 @@ def _stack_in_zone(
     *,
     gap: float,
     zone_name: str,
+    outer_margin_x: float = 4.0,
 ) -> list[LayoutBox]:
     """Stack cards using their actual wrapped readable heights, not equal-height slots."""
     ordered = list(nodes)
@@ -142,10 +143,11 @@ def _stack_in_zone(
     specs: list[tuple[SceneNode, float, float]] = []
     for node in ordered:
         measurement = measurements[node.id]
-        # Stacked comparison/content cards use a compact 4px outer margin.
+        if not math.isfinite(outer_margin_x) or outer_margin_x < 0.0:
+            raise LayoutUnsatisfiableError("stack outer_margin_x must be finite and non-negative")
         # Measure against the exact maximum outer width that _fit_rect() will
         # actually return so Layout and Renderer cannot disagree about wrapping.
-        max_outer_width = max(24.0, zone.width - 8.0)
+        max_outer_width = max(24.0, zone.width - outer_margin_x * 2.0)
         minimum_outer_width = measurement.minimum_readable_width + 20.0
         if minimum_outer_width > max_outer_width + 1e-6:
             raise LayoutUnsatisfiableError(
@@ -185,7 +187,7 @@ def _stack_in_zone(
             preferred_width=preferred_width,
             preferred_height=required_height,
             preferred_region=node.layout_hint.preferred_region if node.layout_hint else None,
-            margin_x=4.0,
+            margin_x=outer_margin_x,
         )
         boxes.append(
             LayoutBox(
@@ -545,7 +547,19 @@ def _compile_comparison(
             width=col_zone.width,
             height=round(max(1.0, col_zone.bottom - body_y), 4),
         )
-        boxes.extend(_stack_in_zone(members, measurements, body, gap=6.0, zone_name="CONTENT"))
+        boxes.extend(
+            _stack_in_zone(
+                members,
+                measurements,
+                body,
+                gap=6.0,
+                zone_name="CONTENT",
+                # The comparison columns already have a deterministic inter-column
+                # gap; an additional inset here needlessly narrows every card and
+                # can add an avoidable wrap at the 18px readability floor.
+                outer_margin_x=0.0,
+            )
+        )
 
     covered = {box.node_id for box in boxes}
     extras = [node for node in scene_graph.nodes if node.id not in covered]
