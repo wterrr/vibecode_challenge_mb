@@ -1,0 +1,37 @@
+name: V2 Renderer CI
+
+on:
+  pull_request:
+    paths:
+      - "learnflow_v2/**"
+      - "tests/v2/**"
+      - ".github/workflows/v2-renderer.yml"
+  workflow_dispatch:
+
+jobs:
+  renderer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - name: System dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg graphviz fonts-dejavu-core
+      - name: Python dependencies
+        run: pip install -r requirements.txt
+      - name: Node dependencies
+        run: npm ci
+      - name: Renderer focused tests
+        if: ${{ hashFiles('tests/v2/test_render_v2.py') != '' }}
+        run: pytest -q --confcutdir=tests/v2 tests/v2/test_render_v2.py
+      - name: Full V2 regression
+        run: pytest -q --confcutdir=tests/v2 tests/v2
