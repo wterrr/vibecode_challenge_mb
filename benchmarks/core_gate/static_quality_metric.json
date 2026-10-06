@@ -1,0 +1,24 @@
+{
+  "schema_version": "2.0",
+  "metric_id": "static_composition_proxy_v2",
+  "frozen_spec": "benchmarks/specs/v2_core_gate_v2.json",
+  "frozen_spec_sha256": "e20ab43e2a7622af8dc47c00c0c5692b42cceb05723ec93a70981effd62a9cfd",
+  "sample": "one midpoint frame per pre-subtitle scene clip for BOTH V1 and V2",
+  "v1_source": "retained V1 scenes/<scene_id>.mp4 before VideoAssembler subtitle burn-in",
+  "v2_source": "V2 rendered scene clips before final audio mux",
+  "background_estimator": "median RGB of four 5%-corner patches",
+  "foreground_color_distance_threshold": 24,
+  "weights": {
+    "contrast": 0.4,
+    "occupancy_balance": 0.35,
+    "safe_margin": 0.25
+  },
+  "contrast_component": "clip(luma_std / 64, 0, 1)",
+  "occupancy_component": "clip(1 - abs(foreground_fraction - 0.30) / 0.30, 0, 1)",
+  "safe_margin_component": "1 - clip(foreground_fraction_inside_outer_4pct / 0.08, 0, 1)",
+  "aggregate": "100 * weighted mean across all 9 representative scene frames",
+  "interpretation": "deterministic static-composition proxy only; not a human aesthetic score",
+  "official_v1_score": 66.15013163,
+  "official_v2_score": 72.21820353,
+  "official_delta": 6.0680719
+}
