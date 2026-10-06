@@ -64,7 +64,7 @@ def main() -> int:
         open_questions=("How should the learning rate be chosen?",),
     )
     source = SourceRecord(
-        source_id="source.textbook",
+        source_id="evidence.source.textbook",
         source_type=SourceType.BOOK,
         title="Introductory optimization text",
         locator="book:optimization:intro",
@@ -73,7 +73,7 @@ def main() -> int:
         sources=(source,),
         claims=(
             ResearchClaim(
-                claim_id="C001",
+                claim_id="evidence.C001",
                 statement="Gradient descent updates parameters to reduce an objective.",
                 source_ids=(source.source_id,),
                 confidence=0.99,
@@ -82,10 +82,10 @@ def main() -> int:
         ),
         evidence_edges=(
             EvidenceEdge(
-                edge_id="E001",
+                edge_id="evidence.E001",
                 from_kind=EvidenceNodeKind.SOURCE,
                 from_id=source.source_id,
-                to_claim_id="C001",
+                to_claim_id="evidence.C001",
                 relation=EvidenceRelation.SUPPORTS,
             ),
         ),
@@ -142,9 +142,9 @@ def main() -> int:
 
     if merged.research_pack.sources[0].locator != source.locator:
         raise SystemExit("RESEARCH_ORCHESTRATION=FAIL source locator changed")
-    if merged.research_pack.claims[0].source_ids != ("source.textbook",):
+    if merged.research_pack.claims[0].source_ids != ("evidence.source.textbook",):
         raise SystemExit("RESEARCH_ORCHESTRATION=FAIL source provenance changed")
-    if merged.evidence_graph.claim_ids != ("C001", "misconception.C001"):
+    if merged.evidence_graph.claim_ids != ("evidence.C001", "misconception.C001"):
         raise SystemExit("RESEARCH_ORCHESTRATION=FAIL claim IDs changed")
     if merged.research_pack.sources[1].locator != misconception_source.locator:
         raise SystemExit("RESEARCH_ORCHESTRATION=FAIL sibling provenance changed")
