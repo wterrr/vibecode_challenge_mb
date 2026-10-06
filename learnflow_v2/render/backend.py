@@ -28,6 +28,9 @@ from learnflow_v2.transitions.schema import InterSceneTransitionPlan, Transition
 _BG = (15, 17, 22)
 _EDGE = (119, 133, 158)
 _TEXT = (241, 245, 249)
+DEFAULT_TEXT_FONT_SIZE_PX = 18
+_TEXT_PADDING_X = 10
+_TEXT_PADDING_Y = 8
 _KIND_COLORS = {
     "TEXT": (39, 46, 60),
     "MATH": (35, 60, 78),
@@ -130,13 +133,35 @@ def _wrap_text(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont, 
             lines.append(current)
             current = word
     lines.append(current)
-    return lines[:8]
+    return lines
 
 
 def _node_text(node: SceneNode) -> str:
-    if node.label and node.content:
-        return f"{node.label}\n{node.content}"
-    return node.label or node.content or node.semantic_role or node.kind.value
+    # Must match LayoutRouter measurement semantics exactly: content wins over label.
+    return node.content or node.label or node.semantic_role or node.kind.value
+
+
+def _layout_text_in_rect(draw: ImageDraw.ImageDraw, text: str, rect: Rect):
+    font_size = DEFAULT_TEXT_FONT_SIZE_PX
+    font = _font(font_size)
+    inner_width = max(1, int(round(rect.width)) - _TEXT_PADDING_X * 2)
+    inner_height = max(1, int(round(rect.height)) - _TEXT_PADDING_Y * 2)
+    lines: list[str] = []
+    for paragraph in text.splitlines() or [text]:
+        if paragraph.strip():
+            lines.extend(_wrap_text(draw, paragraph, font, inner_width))
+        else:
+            lines.append("")
+    ascent, descent = font.getmetrics() if hasattr(font, "getmetrics") else (font_size, 0)
+    line_h = max(ascent + descent, int(round(font_size * 1.25)))
+    widths = []
+    for line in lines:
+        bbox = draw.textbbox((0, 0), line, font=font)
+        widths.append(max(0, bbox[2] - bbox[0]))
+    text_width = max(widths, default=0)
+    text_height = line_h * len(lines)
+    fits = text_width <= inner_width and text_height <= inner_height
+    return font, tuple(lines), line_h, text_width, text_height, inner_width, inner_height, fits
 
 
 def _rect_tuple(rect: Rect) -> tuple[int, int, int, int]:
@@ -332,22 +357,30 @@ class DeterministicPillowRenderer:
         radius = max(4, min(18, int(min(rect.width, rect.height) * 0.08)))
         draw.rounded_rectangle((x0, y0, x1, y1), radius=radius, fill=fill, outline=outline, width=border)
         text = _node_text(node)
-        font_size = max(12, min(30, int(rect.height * 0.18)))
-        font = _font(font_size)
-        lines: list[str] = []
-        for paragraph in text.splitlines():
-            lines.extend(_wrap_text(draw, paragraph, font, max(10, x1 - x0 - 20)))
+        font, lines, line_h, text_width, text_height, inner_width, inner_height, fits = _layout_text_in_rect(draw, text, rect)
+        if not fits:
+            raise RenderInvalidInputError(
+                f"Text for node '{node.id}' does not fit solved LayoutGraph box at "
+                f"{DEFAULT_TEXT_FONT_SIZE_PX}px; text={text_width}x{text_height}, "
+                f"inner_box={inner_width}x{inner_height}"
+            )
         if lines:
-            line_h = max(12, int(font_size * 1.25))
+            full_x1 = int(round(rect.x + rect.width))
+            full_y1 = int(round(rect.y + rect.height))
             total_h = line_h * len(lines)
-            ty = max(y0 + 8, y0 + (y1 - y0 - total_h) // 2)
+            ty = y0 + max(_TEXT_PADDING_Y, (full_y1 - y0 - total_h) // 2)
             for line in lines:
                 bbox = draw.textbbox((0, 0), line, font=font)
                 tw = bbox[2] - bbox[0]
-                tx = x0 + max(8, (x1 - x0 - tw) // 2)
+                tx = x0 + max(_TEXT_PADDING_X, (full_x1 - x0 - tw) // 2)
                 draw.text((tx, ty), line, font=font, fill=_TEXT + (alpha,))
                 ty += line_h
-        image.paste(layer.convert("RGB"), mask=layer.getchannel("A"))
+        mask = layer.getchannel("A")
+        if reveal < 0.999:
+            reveal_x = max(x0, min(int(round(rect.x + rect.width * reveal)), int(round(rect.x + rect.width))))
+            mask_draw = ImageDraw.Draw(mask)
+            mask_draw.rectangle((reveal_x, y0, int(round(rect.x + rect.width)), int(round(rect.y + rect.height))), fill=0)
+        image.paste(layer.convert("RGB"), mask=mask)
 
 
 def _encode_frames(
