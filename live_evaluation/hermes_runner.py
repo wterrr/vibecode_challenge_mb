@@ -152,7 +152,7 @@ class LiveHermesStructuredRunner:
             save_trajectories=False,
             enabled_toolsets=enabled,
             disabled_toolsets=disabled,
-            max_iterations=8 if research else 3,
+            max_iterations=128 if research else 3,
             ephemeral_system_prompt=(
                 "You are a bounded LearnFlow evaluation agent. "
                 "Follow the supplied typed output contract exactly. "
