@@ -191,7 +191,7 @@ class DeterministicPillowRenderer:
         scene_graph: SceneGraph,
         layout_graph: LayoutGraph,
         motion: CompiledMotionArtifact | None,
-    ) -> None:
+    ) -> tuple[SceneGraph, LayoutGraph, CompiledMotionArtifact | None]:
         scene_graph = SceneGraph.model_validate(scene_graph.model_dump(mode="json"))
         layout_graph = LayoutGraph.model_validate(layout_graph.model_dump(mode="json"))
         if scene_graph.scene_id != layout_graph.scene_id:
@@ -221,6 +221,7 @@ class DeterministicPillowRenderer:
                         raise RenderInvalidInputError(
                             f"motion track '{track.track_id}' targets relation '{track.target}' without routed edge geometry"
                         )
+        return scene_graph, layout_graph, motion
 
     def render_frame(
         self,
@@ -231,7 +232,7 @@ class DeterministicPillowRenderer:
         *,
         hidden_node_ids: frozenset[str] = frozenset(),
     ) -> Image.Image:
-        self.validate_scene_inputs(scene_graph, layout_graph, motion)
+        scene_graph, layout_graph, motion = self.validate_scene_inputs(scene_graph, layout_graph, motion)
         duration = motion.scene_duration if motion is not None else max(0.0, time_s)
         if not math.isfinite(time_s) or time_s < 0.0 or (motion is not None and time_s > duration + 1e-6):
             raise RenderInvalidInputError("frame timestamp outside scene duration")
@@ -388,7 +389,11 @@ def render_scene_video(
     renderer: DeterministicPillowRenderer | None = None,
 ) -> RenderedArtifact:
     renderer = renderer or DeterministicPillowRenderer()
-    renderer.validate_scene_inputs(scene_graph, layout_graph, motion)
+    profile = RenderProfile.model_validate(profile.model_dump(mode="json"))
+    scene_graph, layout_graph, validated_motion = renderer.validate_scene_inputs(scene_graph, layout_graph, motion)
+    if validated_motion is None:
+        raise RenderInvalidInputError("scene video rendering requires compiled motion artifact")
+    motion = validated_motion
     width, height = int(round(layout_graph.frame_width)), int(round(layout_graph.frame_height))
     frame_count = max(1, int(round(motion.scene_duration * profile.fps)))
     rendered_duration = frame_count / profile.fps
@@ -424,21 +429,56 @@ def render_transition_video(
     renderer: DeterministicPillowRenderer | None = None,
 ) -> RenderedArtifact:
     renderer = renderer or DeterministicPillowRenderer()
-    renderer.validate_scene_inputs(source_scene, source_layout, None)
-    renderer.validate_scene_inputs(target_scene, target_layout, None)
+    profile = RenderProfile.model_validate(profile.model_dump(mode="json"))
+    source_scene, source_layout, _ = renderer.validate_scene_inputs(source_scene, source_layout, None)
+    target_scene, target_layout, _ = renderer.validate_scene_inputs(target_scene, target_layout, None)
+    plan = InterSceneTransitionPlan.from_canonical_json(plan.to_canonical_json())
     if plan.from_scene != source_scene.scene_id or plan.to_scene != target_scene.scene_id:
         raise RenderInvalidInputError("transition plan endpoints do not match supplied scenes")
     sw, sh = int(round(source_layout.frame_width)), int(round(source_layout.frame_height))
     tw, th = int(round(target_layout.frame_width)), int(round(target_layout.frame_height))
     if (sw, sh) != (tw, th):
         raise RenderInvalidInputError("baseline transition renderer requires equal output frame dimensions")
+
+    source_nodes = {node.id: node for node in source_scene.nodes}
+    target_nodes = {node.id: node for node in target_scene.nodes}
+    source_boxes = {box.node_id: box for box in source_layout.boxes}
+    target_boxes = {box.node_id: box for box in target_layout.boxes}
+    for item in plan.persistent_objects:
+        if item.from_node_id not in source_nodes or item.from_node_id not in source_boxes:
+            raise RenderInvalidInputError(
+                f"persistent transition '{item.transition_item_id}' references unknown source node '{item.from_node_id}'"
+            )
+        if item.to_node_id not in target_nodes or item.to_node_id not in target_boxes:
+            raise RenderInvalidInputError(
+                f"persistent transition '{item.transition_item_id}' references unknown target node '{item.to_node_id}'"
+            )
+        if (
+            abs(item.source_frame_width - source_layout.frame_width) > 1e-4
+            or abs(item.source_frame_height - source_layout.frame_height) > 1e-4
+            or abs(item.target_frame_width - target_layout.frame_width) > 1e-4
+            or abs(item.target_frame_height - target_layout.frame_height) > 1e-4
+        ):
+            raise RenderInvalidInputError(
+                f"persistent transition '{item.transition_item_id}' frame geometry contradicts supplied layouts"
+            )
+        if item.source_rect != source_boxes[item.from_node_id].rect or item.target_rect != target_boxes[item.to_node_id].rect:
+            raise RenderInvalidInputError(
+                f"persistent transition '{item.transition_item_id}' geometry contradicts supplied LayoutGraph boxes"
+            )
+    unknown_departing = set(plan.departing_node_ids) - set(source_nodes)
+    unknown_entering = set(plan.entering_node_ids) - set(target_nodes)
+    if unknown_departing or unknown_entering:
+        raise RenderInvalidInputError(
+            f"transition plan contains unknown entering/departing nodes; "
+            f"departing={sorted(unknown_departing)}, entering={sorted(unknown_entering)}"
+        )
+
     move_items = tuple(item for item in plan.persistent_objects if item.effective_operation == TransitionOperation.MOVE)
     hidden_source = frozenset(item.from_node_id for item in move_items)
     hidden_target = frozenset(item.to_node_id for item in move_items)
     source_bg = renderer.render_frame(source_scene, source_layout, None, 0.0, hidden_node_ids=hidden_source)
     target_bg = renderer.render_frame(target_scene, target_layout, None, 0.0, hidden_node_ids=hidden_target)
-    source_nodes = {node.id: node for node in source_scene.nodes}
-    target_nodes = {node.id: node for node in target_scene.nodes}
     frame_count = max(1, int(round(plan.duration * profile.fps)))
     rendered_duration = frame_count / profile.fps
 
