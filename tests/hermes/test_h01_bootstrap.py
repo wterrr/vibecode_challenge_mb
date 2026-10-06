@@ -18,11 +18,13 @@ def test_h01_pins_stable_hermes_release_and_openrouter_model():
     assert data["hermes"]["release_tag"] == "v2026.9.24"
     assert data["hermes"]["package_version"] == "0.21.5"
     assert data["hermes"]["commit"] == "f97608f178d1ffeca59860195ab7da295f7c8e5f"
-    assert data["provider"] == {
-        "id": "openrouter",
-        "api_key_env": "OPENROUTER_API_KEY",
-        "model": "openai/gpt-6-luna",
-    }
+    assert data["provider"]["id"] == "openrouter"
+    assert data["provider"]["api_key_env"] == "OPENROUTER_API_KEY"
+    assert data["provider"]["primary_model"] == "openai/gpt-6-luna"
+    assert (
+        data["provider"]["free_fallback_model"]
+        == "nvidia/nemotron-3.5-lightning:free"
+    )
 
 
 def test_h01_config_contains_no_secret_and_uses_openrouter():
@@ -57,6 +59,22 @@ def test_h01_install_wrappers_pin_exact_commit():
     assert expected in ps1
     assert "raw.githubusercontent.com/NousResearch/hermes-agent/$PIN/" in sh
     assert "raw.githubusercontent.com/NousResearch/hermes-agent/$Pin/" in ps1
+
+
+def test_h01_runner_pins_project_local_binary_before_any_global_install():
+    text = (ROOT / "scripts" / "run_hermes_h01_smoke.py").read_text(encoding="utf-8")
+    assert 'INSTALL_DIR / "venv" / "bin" / "hermes"' in text
+    assert "shutil.which" not in text
+
+
+def test_h01_runner_declares_primary_and_free_fallback():
+    text = (ROOT / "scripts" / "run_hermes_h01_smoke.py").read_text(encoding="utf-8")
+    assert 'PRIMARY_MODEL = "openai/gpt-6-luna"' in text
+    assert (
+        'FREE_FALLBACK_MODEL = "nvidia/nemotron-3.5-lightning:free"'
+        in text
+    )
+    assert '"fallback_used": passed_model == FREE_FALLBACK_MODEL' in text
 
 
 def test_h01_offline_stream_contract_passes():
