@@ -1,0 +1,71 @@
+name: Script Agent
+
+on:
+  pull_request:
+    paths:
+      - "script_agent/**"
+      - "hermes/script-agent/**"
+      - "scripts/verify_script_agent.py"
+      - "scripts/verify_hermes_script_agent.py"
+      - "tests/hermes/test_script_agent.py"
+      - "AGENTS.md"
+      - "PLAN_V2.md"
+      - ".github/workflows/script-agent.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "script_agent/**"
+      - "hermes/script-agent/**"
+      - "scripts/verify_script_agent.py"
+      - "scripts/verify_hermes_script_agent.py"
+      - "tests/hermes/test_script_agent.py"
+      - "AGENTS.md"
+      - "PLAN_V2.md"
+      - ".github/workflows/script-agent.yml"
+
+jobs:
+  script-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install test dependencies
+        run: python -m pip install "pydantic>=2" pytest
+      - name: Verify Script Agent acceptance
+        run: python scripts/verify_script_agent.py
+      - name: Script Agent tests
+        run: pytest -q --confcutdir=tests/hermes tests/hermes/test_script_agent.py
+      - name: Core Freeze guard
+        run: python scripts/verify_v2_core_freeze.py
+
+  pinned-hermes-script-schema:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install exact pinned Hermes runtime
+        run: bash scripts/install_hermes_bootstrap.sh
+      - name: Prepare isolated Script Agent profile
+        shell: bash
+        run: |
+          VERIFY_HOME="$PWD/.hermes_runtime/script-agent/verify-home"
+          rm -rf "$VERIFY_HOME"
+          mkdir -p "$VERIFY_HOME"
+          cp hermes/bootstrap/config.yaml "$VERIFY_HOME/config.yaml"
+      - name: Verify structured LessonScript schema against pinned Hermes
+        shell: bash
+        run: |
+          VERIFY_HOME="$PWD/.hermes_runtime/script-agent/verify-home"
+          if [[ -x ".hermes_runtime/hermes-agent/venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/venv/bin/python"
+          elif [[ -x ".hermes_runtime/hermes-agent/.venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/.venv/bin/python"
+          else
+            echo "Pinned Hermes Python not found" >&2
+            exit 1
+          fi
+          HERMES_HOME="$VERIFY_HOME" "$HPY" scripts/verify_hermes_script_agent.py
