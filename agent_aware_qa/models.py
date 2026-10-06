@@ -16,7 +16,12 @@ def _tupleize(value: Any):
     return tuple(value) if isinstance(value, list) else value
 
 
-def _clean_ids(value: Any, label: str) -> tuple[str, ...]:
+def _normalized_ids(
+    value: Any,
+    label: str,
+    *,
+    preserve_order: bool = False,
+) -> tuple[str, ...]:
     value = _tupleize(value)
     if not isinstance(value, tuple):
         raise AgentContractError(f"{label} must be a tuple/list")
@@ -27,7 +32,13 @@ def _clean_ids(value: Any, label: str) -> tuple[str, ...]:
         normalized.append(item.strip())
     if len(normalized) != len(set(normalized)):
         raise AgentContractError(f"{label} cannot contain duplicates")
+    if preserve_order:
+        return tuple(normalized)
     return tuple(sorted(normalized))
+
+
+def _clean_ids(value: Any, label: str) -> tuple[str, ...]:
+    return _normalized_ids(value, label, preserve_order=False)
 
 
 class SemanticFindingKind(str, Enum):
@@ -176,16 +187,19 @@ class QARoutingContext(ContractModel):
     objective_ids: tuple[str, ...] = Field(default_factory=tuple)
     scene_objects: tuple[SceneObjectScope, ...] = Field(..., min_length=1)
 
-    @field_validator(
-        "scene_ids",
-        "claim_ids",
-        "segment_ids",
-        "objective_ids",
-        mode="before",
-    )
+    @field_validator("scene_ids", "segment_ids", "objective_ids", mode="before")
     @classmethod
-    def _ids(cls, value: Any, info):
-        return _clean_ids(value, info.field_name or "ids")
+    def _ordered_ids(cls, value: Any, info):
+        return _normalized_ids(
+            value,
+            info.field_name or "ids",
+            preserve_order=True,
+        )
+
+    @field_validator("claim_ids", mode="before")
+    @classmethod
+    def _claim_ids(cls, value: Any):
+        return _clean_ids(value, "claim_ids")
 
     @field_validator("scene_objects", mode="before")
     @classmethod
@@ -201,10 +215,11 @@ class QARoutingContext(ContractModel):
             raise AgentContractError(
                 "scene object scopes must exactly cover routing scene_ids"
             )
+        order = {scene_id: index for index, scene_id in enumerate(self.scene_ids)}
         object.__setattr__(
             self,
             "scene_objects",
-            tuple(sorted(self.scene_objects, key=lambda item: item.scene_id)),
+            tuple(sorted(self.scene_objects, key=lambda item: order[item.scene_id])),
         )
         return self
 
