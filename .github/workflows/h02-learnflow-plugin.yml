@@ -1,0 +1,62 @@
+name: H02 LearnFlow Plugin
+
+on:
+  pull_request:
+    paths:
+      - ".hermes/plugins/learnflow/**"
+      - "hermes/h02/**"
+      - "scripts/verify_hermes_h02_plugin.py"
+      - "tests/hermes/test_h02_plugin.py"
+      - "AGENTS.md"
+      - ".github/workflows/h02-learnflow-plugin.yml"
+  push:
+    branches:
+      - main
+      - "chatgpt/h02-learnflow-plugin"
+    paths:
+      - ".hermes/plugins/learnflow/**"
+      - "hermes/h02/**"
+      - "scripts/verify_hermes_h02_plugin.py"
+      - "tests/hermes/test_h02_plugin.py"
+      - "AGENTS.md"
+      - ".github/workflows/h02-learnflow-plugin.yml"
+
+jobs:
+  contract-and-render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install H-02 test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --upgrade pip
+          python -m pip install "pydantic>=2" pillow "kiwisolver==1.5.1" pytest
+      - name: H-02 plugin contract and real render integration
+        run: python -m pytest -q --confcutdir=tests/hermes tests/hermes/test_h02_plugin.py
+      - name: Core Freeze guard
+        run: python scripts/verify_v2_core_freeze.py
+
+  pinned-hermes-discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install exact pinned H-01 Hermes runtime
+        run: bash scripts/install_hermes_h01.sh
+      - name: Discover LearnFlow through pinned Hermes
+        shell: bash
+        run: |
+          if [[ -x ".hermes_runtime/hermes-agent/venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/venv/bin/python"
+          elif [[ -x ".hermes_runtime/hermes-agent/.venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/.venv/bin/python"
+          else
+            echo "Pinned Hermes Python not found" >&2
+            exit 1
+          fi
+          HERMES_ENABLE_PROJECT_PLUGINS=true "$HPY" scripts/verify_hermes_h02_plugin.py
