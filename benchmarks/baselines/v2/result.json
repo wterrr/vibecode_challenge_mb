@@ -1,0 +1,215 @@
+{
+  "schema_version": "1.0",
+  "benchmark_id": "v2-core-gate-v1",
+  "repo_commit": "25c27da43e6645d2e9ac704958d619e3c96aa4b2",
+  "spec_sha256": "03e5506a4d90f057e3131cc99734b5e0c113d727f76894887348a3a4a303eeed",
+  "official_workflow_run_id": 37404184018,
+  "official_artifact_id": 11386363669,
+  "official_artifact_digest": "sha256:155be2d732cad1d85cc020f3cbe897d40fef346a148df82f44096f5bce15e59b",
+  "raw_result_sha256": "7e566aedea34120c52d0a2b8796ac32d9bc20b40b17974c90f84bf79cbb38c5f",
+  "summary": {
+    "lesson_count": 3,
+    "scene_count_expected": 9,
+    "render_success_rate": 1,
+    "fatal_clipping_count": 0,
+    "fatal_overlap_count": 0,
+    "invalid_motion_plan_count": 0,
+    "selective_repair_success_rate": 1,
+    "selective_repair_successes": 9,
+    "selective_repair_cases": 9,
+    "reproducibility_rate": 1,
+    "v1_v2_critical_regression_count": 0,
+    "v2_static_quality_delta": 5.54192634
+  },
+  "static_quality": {
+    "v1": {
+      "metric_id": "static_composition_proxy_v1",
+      "frame_count": 9,
+      "contrast": 0.5299618,
+      "occupancy_balance": 0.80448977,
+      "safe_margin": 0.79054558,
+      "score": 69.1192536
+    },
+    "v2": {
+      "metric_id": "static_composition_proxy_v1",
+      "frame_count": 9,
+      "contrast": 0.50800668,
+      "occupancy_balance": 0.83831179,
+      "safe_margin": 1,
+      "score": 74.66117994
+    },
+    "delta": 5.54192634
+  },
+  "lessons": {
+    "photosynthesis": {
+      "reproducible": true,
+      "critical_regression_reasons": [],
+      "v2_runs": [
+        {
+          "final_frame_digest": "bd5e8b3739c4044f843ef4d7776a103986252e5c06182a071bea11ce081d09bc",
+          "final_source_hash": "7a8d005dc3682e252d28837be47cedcc1367ba80b1dad6e321ecc92e6952a005",
+          "video_codec": "h264",
+          "audio_codec": "aac",
+          "audio_present": true,
+          "width": 640,
+          "height": 360,
+          "duration_seconds": 7
+        },
+        {
+          "final_frame_digest": "bd5e8b3739c4044f843ef4d7776a103986252e5c06182a071bea11ce081d09bc",
+          "final_source_hash": "7a8d005dc3682e252d28837be47cedcc1367ba80b1dad6e321ecc92e6952a005",
+          "video_codec": "h264",
+          "audio_codec": "aac",
+          "audio_present": true,
+          "width": 640,
+          "height": 360,
+          "duration_seconds": 7
+        }
+      ]
+    },
+    "ram_vs_ssd": {
+      "reproducible": true,
+      "critical_regression_reasons": [],
+      "v2_runs": [
+        {
+          "final_frame_digest": "8f1a5fd4ba7f0ec2cc7e32ae70113cc12cfa46826ed56389a84ae70f9e6e8d80",
+          "final_source_hash": "bbcb09a6facf9ab5fe3feb14d4fa6b152f6161c058127cc44482fc6d1e4c9002",
+          "video_codec": "h264",
+          "audio_codec": "aac",
+          "audio_present": true,
+          "width": 640,
+          "height": 360,
+          "duration_seconds": 7
+        },
+        {
+          "final_frame_digest": "8f1a5fd4ba7f0ec2cc7e32ae70113cc12cfa46826ed56389a84ae70f9e6e8d80",
+          "final_source_hash": "bbcb09a6facf9ab5fe3feb14d4fa6b152f6161c058127cc44482fc6d1e4c9002",
+          "video_codec": "h264",
+          "audio_codec": "aac",
+          "audio_present": true,
+          "width": 640,
+          "height": 360,
+          "duration_seconds": 7
+        }
+      ]
+    },
+    "tcp_three_way_handshake": {
+      "reproducible": true,
+      "critical_regression_reasons": [],
+      "v2_runs": [
+        {
+          "final_frame_digest": "2f414dca91df6baaa269fce4327f8afdeb662ab5e9da7dce30b7df22cfe5093d",
+          "final_source_hash": "1dcb24abb5566bf2bd0f062f00a9833e55186bc979f0096751a743068bcef0be",
+          "video_codec": "h264",
+          "audio_codec": "aac",
+          "audio_present": true,
+          "width": 640,
+          "height": 360,
+          "duration_seconds": 7
+        },
+        {
+          "final_frame_digest": "2f414dca91df6baaa269fce4327f8afdeb662ab5e9da7dce30b7df22cfe5093d",
+          "final_source_hash": "1dcb24abb5566bf2bd0f062f00a9833e55186bc979f0096751a743068bcef0be",
+          "video_codec": "h264",
+          "audio_codec": "aac",
+          "audio_present": true,
+          "width": 640,
+          "height": 360,
+          "duration_seconds": 7
+        }
+      ]
+    }
+  },
+  "repair_cases": [
+    {
+      "case_id": "photosynthesis::s01_concept",
+      "target_node_id": "s_1_concept",
+      "requested_region": "RIGHT",
+      "scene_hash_changed": true,
+      "pixel_changed": true,
+      "qa_pass": true,
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
+    },
+    {
+      "case_id": "photosynthesis::s02_steps",
+      "target_node_id": "s_2_act_calvin",
+      "requested_region": "RIGHT",
+      "scene_hash_changed": true,
+      "pixel_changed": true,
+      "qa_pass": true,
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
+    },
+    {
+      "case_id": "photosynthesis::s03_comparison",
+      "target_node_id": "s_3_c1_pt_1",
+      "requested_region": "RIGHT",
+      "scene_hash_changed": true,
+      "pixel_changed": true,
+      "qa_pass": true,
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
+    },
+    {
+      "case_id": "ram_vs_ssd::s01_intro",
+      "target_node_id": "s_1_concept",
+      "requested_region": "RIGHT",
+      "scene_hash_changed": true,
+      "pixel_changed": true,
+      "qa_pass": true,
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
+    },
+    {
+      "case_id": "ram_vs_ssd::s02_flow",
+      "target_node_id": "s_2_act_cpu",
+      "requested_region": "RIGHT",
+      "scene_hash_changed": true,
+      "pixel_changed": true,
+      "qa_pass": true,
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
+    },
+    {
+      "case_id": "ram_vs_ssd::s03_comparison",
+      "target_node_id": "s_3_c1_pt_1",
+      "requested_region": "RIGHT",
+      "scene_hash_changed": true,
+      "pixel_changed": true,
+      "qa_pass": true,
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
+    },
+    {
+      "case_id": "tcp_three_way_handshake::s01_intro",
+      "target_node_id": "s_1_concept",
+      "requested_region": "RIGHT",
+      "scene_hash_changed": true,
+      "pixel_changed": true,
+      "qa_pass": true,
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
+    },
+    {
+      "case_id": "tcp_three_way_handshake::s02_steps",
+      "target_node_id": "s_2_act_client",
+      "requested_region": "RIGHT",
+      "scene_hash_changed": true,
+      "pixel_changed": true,
+      "qa_pass": true,
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
+    },
+    {
+      "case_id": "tcp_three_way_handshake::s03_comparison",
+      "target_node_id": "s_3_c1_pt_1",
+      "requested_region": "RIGHT",
+      "scene_hash_changed": true,
+      "pixel_changed": true,
+      "qa_pass": true,
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
+    }
+  ]
+}
