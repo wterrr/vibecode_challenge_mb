@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "stage": "agent-contracts",
+  "name": "Agent Contracts",
+  "state": "IMPLEMENTED_AWAITING_CI",
+  "depends_on": [
+    {
+      "stage": "hermes-bootstrap",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "learnflow-capability-plugin",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
+  ],
+  "public_contracts": [
+    "LearningBrief",
+    "ResearchPack",
+    "EvidenceGraph",
+    "PedagogyPlan",
+    "LessonScript",
+    "Storyboard",
+    "AgentRun",
+    "BudgetLedger"
+  ],
+  "invariants": {
+    "immutable_extra_forbid": true,
+    "canonical_serialization": true,
+    "provenance_integrity": true,
+    "evidence_reference_integrity": true,
+    "upstream_artifact_binding": true,
+    "script_claim_linkage": true,
+    "storyboard_script_coverage": true,
+    "model_controlled_geometry": false,
+    "run_state_integrity": true,
+    "budget_overspend_representable": false,
+    "core_freeze_must_remain_complete": true
+  },
+  "next_stage": "Research Orchestration"
+}
