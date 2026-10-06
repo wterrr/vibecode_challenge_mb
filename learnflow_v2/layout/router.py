@@ -147,10 +147,7 @@ def _stack_in_zone(
             min(measurement.width + 40.0, max(24.0, zone.width - 16.0)),
         )
         preferred_width = min(preferred_width, max(24.0, zone.width - 16.0))
-        required_height = max(
-            measurement.minimum_readable_height + 16.0,
-            _wrapped_text_height(measurement, preferred_width) + 16.0,
-        )
+        required_height = _wrapped_text_height(measurement, preferred_width) + 16.0
         specs.append((node, preferred_width, required_height))
 
     required_total = sum(item[2] for item in specs) + gap * (len(specs) - 1)
@@ -204,12 +201,14 @@ def _compile_concept_card(
         primary = [sorted(scene_graph.nodes, key=lambda n: (-(n.layout_hint.importance if n.layout_hint else 0.5), n.id))[0]]
     primary_node = primary[0]
     title_m = measurements[primary_node.id]
+    title_width = min(title_zone.width - 8.0, title_m.width + 36.0)
+    title_required_h = _wrapped_text_height(title_m, title_width) + 16.0
     title_box = LayoutBox(
         node_id=primary_node.id,
         rect=_fit_rect(
             title_zone,
-            preferred_width=min(title_zone.width, title_m.width + 36.0),
-            preferred_height=min(title_zone.height, max(26.0, title_m.height + 18.0)),
+            preferred_width=title_width,
+            preferred_height=min(title_zone.height - 4.0, max(38.0, title_required_h)),
             preferred_region=primary_node.layout_hint.preferred_region if primary_node.layout_hint else None,
         ),
         zone="TITLE",
@@ -349,8 +348,11 @@ def _compile_process_compact(
             node_id=topic.id,
             rect=_fit_rect(
                 title_zone,
-                preferred_width=min(title_zone.width, title_measure.width + 30.0),
-                preferred_height=min(title_zone.height, max(24.0, title_measure.height + 18.0)),
+                preferred_width=min(title_zone.width - 8.0, title_measure.width + 30.0),
+                preferred_height=min(
+                    title_zone.height - 4.0,
+                    max(38.0, _wrapped_text_height(title_measure, min(title_zone.width - 8.0, title_measure.width + 30.0)) + 16.0),
+                ),
             ),
             zone="TITLE",
             strategy_role="title",
@@ -360,9 +362,9 @@ def _compile_process_compact(
 
     for node, slot in zip(actors, actor_slots):
         measurement = measurements[node.id]
-        if measurement.minimum_readable_width > slot.width + 1e-6 or measurement.minimum_readable_height > slot.height + 1e-6:
+        if measurement.minimum_readable_width > slot.width + 1e-6:
             raise LayoutUnsatisfiableError(
-                f"Actor '{node.id}' cannot fit minimum readable geometry in compact PROCESS lane"
+                f"Actor '{node.id}' cannot fit minimum readable width in compact PROCESS lane"
             )
         preferred_width = min(
             max(measurement.minimum_readable_width + 20.0, min(slot.width * 0.90, measurement.width + 20.0)),
@@ -390,9 +392,9 @@ def _compile_process_compact(
 
     for node, slot in zip(steps, step_slots):
         measurement = measurements[node.id]
-        if measurement.minimum_readable_width > slot.width + 1e-6 or measurement.minimum_readable_height > slot.height + 1e-6:
+        if measurement.minimum_readable_width > slot.width + 1e-6:
             raise LayoutUnsatisfiableError(
-                f"Step '{node.id}' cannot fit minimum readable geometry in compact PROCESS lane"
+                f"Step '{node.id}' cannot fit minimum readable width in compact PROCESS lane"
             )
         preferred_width = min(
             max(measurement.minimum_readable_width + 20.0, min(slot.width * 0.90, measurement.width + 20.0)),
@@ -482,8 +484,11 @@ def _compile_comparison(
             node_id=title.id,
             rect=_fit_rect(
                 title_zone,
-                preferred_width=min(title_zone.width, title_m.width + 36.0),
-                preferred_height=min(title_zone.height, max(26.0, title_m.height + 18.0)),
+                preferred_width=min(title_zone.width - 8.0, title_m.width + 36.0),
+                preferred_height=min(
+                    title_zone.height - 4.0,
+                    max(38.0, _wrapped_text_height(title_m, min(title_zone.width - 8.0, title_m.width + 36.0)) + 16.0),
+                ),
                 preferred_region=title.layout_hint.preferred_region if title.layout_hint else None,
             ),
             zone="TITLE",
@@ -499,8 +504,8 @@ def _compile_comparison(
         members = _column_members(scene_graph, column.id)
         column_width = min(col_zone.width - 16.0, measurements[column.id].width + 24.0)
         column_required_h = _wrapped_text_height(measurements[column.id], column_width) + 16.0
-        col_title_h = min(max(38.0, column_required_h + 8.0), col_zone.height * 0.30)
-        if column_required_h > col_title_h - 4.0 + 1e-6:
+        col_title_h = min(max(38.0, column_required_h + 4.0), col_zone.height * 0.30)
+        if column_required_h > col_title_h + 1e-6:
             raise LayoutUnsatisfiableError(
                 f"Comparison column '{column.id}' title cannot fit readable text"
             )
