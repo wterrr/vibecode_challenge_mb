@@ -159,11 +159,34 @@ def _stack_in_zone(
                     "available_outer_width": max_outer_width,
                 },
             )
-        # A stacked card owns the full width of its semantic lane. Using a
-        # narrower measurement.width-derived card only creates avoidable wraps
-        # and can make a readable layout appear vertically unsatisfiable.
+        # Prefer the full semantic lane for readability. If a horizontal
+        # preferred_region exists, preserve a tiny deterministic alignment
+        # degree-of-freedom only when doing so does NOT increase wrapped text
+        # height. This keeps SET_REGION patches observable without sacrificing
+        # the 18px readability contract.
         preferred_width = max_outer_width
-        required_height = _wrapped_text_height(measurement, preferred_width) + 16.0
+        text_height = _wrapped_text_height(measurement, preferred_width)
+        horizontal_regions = {
+            PreferredRegion.LEFT,
+            PreferredRegion.RIGHT,
+            PreferredRegion.TOP_LEFT,
+            PreferredRegion.TOP_RIGHT,
+            PreferredRegion.BOTTOM_LEFT,
+            PreferredRegion.BOTTOM_RIGHT,
+        }
+        region = node.layout_hint.preferred_region if node.layout_hint else None
+        alignment_slack = 4.0
+        candidate_width = max_outer_width - alignment_slack
+        if (
+            region in horizontal_regions
+            and candidate_width >= minimum_outer_width - 1e-6
+            and candidate_width >= 24.0
+        ):
+            candidate_height = _wrapped_text_height(measurement, candidate_width)
+            if candidate_height <= text_height + 1e-6:
+                preferred_width = candidate_width
+                text_height = candidate_height
+        required_height = text_height + 16.0
         specs.append((node, preferred_width, required_height))
 
     if not math.isfinite(gap) or gap < 0.0 or not math.isfinite(minimum_gap) or minimum_gap < 0.0:
