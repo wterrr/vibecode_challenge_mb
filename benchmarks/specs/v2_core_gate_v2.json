@@ -64,7 +64,7 @@
     "invalid_motion_plan_count": "scene MotionPlan/schedule/compiler failures across 9 scenes",
     "selective_repair_success_rate": "repair cases whose patch changes scene hash and rendered frame digest, repaired render satisfies the same text-fit/layout QA contract, and unrelated scene digests remain identical",
     "reproducibility_rate": "lesson repeated run final frame_digest equality / successful lessons",
-    "v1_v2_critical_regression_count": "count lessons violating frozen V1 required media invariants (video codec, audio stream/codec, resolution, final artifact)",
+    "v1_v2_critical_regression_count": "count lessons violating frozen V1 required media/product invariants (video codec, audio stream/codec, resolution, final artifact, burned subtitle capability)",
     "v2_static_quality_delta": "V2 static_composition_proxy_v2 - V1 static_composition_proxy_v2 using pre-subtitle scene clips on both sides"
   },
   "repair_cases": {
@@ -76,5 +76,15 @@
     "first_valid_run_must_be_persisted": "benchmarks/baselines/v2/",
     "ephemeral_actions_artifact_alone_is_not_sufficient": true
   },
-  "freeze_rule": "After the first VALID v2-core-gate-v2 execution, this specification and metric formula must not change. Fix engine only, then rerun this exact spec."
+  "freeze_rule": "After the first VALID v2-core-gate-v2 execution, this specification and metric formula must not change. Fix engine only, then rerun this exact spec.",
+  "product_parity": {
+    "required_from_v1": [
+      "final artifact",
+      "h264 video",
+      "aac audio",
+      "640x360 output",
+      "burned subtitles derived from lesson narration"
+    ],
+    "subtitle_policy": "V2 must expose an actual subtitle-integrated final render path; benchmark-only metadata or a no-op flag is not sufficient."
+  }
 }
