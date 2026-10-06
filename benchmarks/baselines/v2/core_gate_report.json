@@ -1,0 +1,98 @@
+{
+  "schema_version": "2.1",
+  "repo_commit": "fdad3db1340d8b28175ab5382d800ff79df9a8a0",
+  "state": "PASS",
+  "blockers": [],
+  "criteria": [
+    {
+      "metric": "RENDER_SUCCESS_RATE",
+      "state": "PASS",
+      "requirement": "Render success >= 98%",
+      "observed": "value=1.0; kind=BENCHMARK; sample_count=3",
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ]
+    },
+    {
+      "metric": "FATAL_CLIPPING_COUNT",
+      "state": "PASS",
+      "requirement": "Fatal clipping = 0",
+      "observed": "value=0; kind=BENCHMARK; sample_count=9",
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ]
+    },
+    {
+      "metric": "FATAL_OVERLAP_COUNT",
+      "state": "PASS",
+      "requirement": "Fatal overlap ~= 0 (operationalized conservatively as 0)",
+      "observed": "value=0; kind=BENCHMARK; sample_count=9",
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ]
+    },
+    {
+      "metric": "INVALID_MOTION_PLAN_COUNT",
+      "state": "PASS",
+      "requirement": "Invalid MotionPlan = 0",
+      "observed": "value=0; kind=BENCHMARK; sample_count=9",
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ]
+    },
+    {
+      "metric": "SELECTIVE_REPAIR_SUCCESS_RATE",
+      "state": "PASS",
+      "requirement": "Selective repair success >= 90%",
+      "observed": "value=1.0; kind=BENCHMARK; sample_count=9",
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ]
+    },
+    {
+      "metric": "REPRODUCIBILITY_RATE",
+      "state": "PASS",
+      "requirement": "Reproducibility = 100% for deterministic scenes",
+      "observed": "value=1.0; kind=BENCHMARK; sample_count=3",
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ]
+    },
+    {
+      "metric": "V1_V2_CRITICAL_REGRESSION_COUNT",
+      "state": "PASS",
+      "requirement": "V1→V2 regression = 0 critical product regressions",
+      "observed": "value=0; kind=BENCHMARK; sample_count=3",
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ]
+    },
+    {
+      "metric": "V2_STATIC_QUALITY_DELTA",
+      "state": "PASS",
+      "requirement": "V2 static quality > V1 baseline on the agreed benchmark",
+      "observed": "value=6.0680719; kind=BENCHMARK; sample_count=9",
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ]
+    },
+    {
+      "metric": "VLM_UNAVAILABLE_DETERMINISTIC_OK",
+      "state": "PASS",
+      "requirement": "VLM unavailable does not break deterministic mode",
+      "observed": "value=True; kind=CONTRACT_TEST; sample_count=None",
+      "source": [
+        "tests/v2/test_vlm_critic_v2_12_gate.py"
+      ]
+    },
+    {
+      "metric": "LOCAL_REPAIR_SCOPE_OK",
+      "state": "PASS",
+      "requirement": "Local repair does not rebuild unaffected scenes",
+      "observed": "value=True; kind=CONTRACT_TEST; sample_count=None",
+      "source": [
+        "tests/v2/test_repair_v2_13_invalidation.py"
+      ]
+    }
+  ]
+}
