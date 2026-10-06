@@ -138,19 +138,43 @@ def test_merge_preserves_source_locator_and_claim_source_ids():
         concept_findings=ConceptResearchFindings(concepts=("demo",)),
         evidence_findings=evidence,
         misconception_findings=MisconceptionResearchFindings(
+            sources=(
+                SourceRecord(
+                    source_id="misconception.S1",
+                    title="Misconception source",
+                    locator="https://example.test/misconception",
+                ),
+            ),
+            claims=(
+                ResearchClaim(
+                    claim_id="misconception.C1",
+                    statement="Correction claim.",
+                    source_ids=("misconception.S1",),
+                    confidence=0.9,
+                ),
+            ),
+            evidence_edges=(
+                EvidenceEdge(
+                    edge_id="misconception.E1",
+                    from_kind=EvidenceNodeKind.SOURCE,
+                    from_id="misconception.S1",
+                    to_claim_id="misconception.C1",
+                    relation=EvidenceRelation.SUPPORTS,
+                ),
+            ),
             misconceptions=(
                 ResearchMisconception(
                     misconception_id="M1",
                     statement="Wrong idea.",
                     correction="Correct idea.",
-                    claim_ids=("C001",),
+                    claim_ids=("misconception.C1",),
                 ),
             ),
             examples=(
                 ResearchExample(
                     example_id="X1",
                     description="Example.",
-                    claim_ids=("C001",),
+                    claim_ids=("misconception.C1",),
                 ),
             ),
         ),
@@ -158,6 +182,8 @@ def test_merge_preserves_source_locator_and_claim_source_ids():
     assert result.research_pack.sources[0].locator == source.locator
     assert result.research_pack.claims[0].source_ids == ("S1",)
     assert result.evidence_graph.edges[0].from_id == "S1"
+    assert result.research_pack.sources[1].source_id == "misconception.S1"
+    assert result.research_pack.claims[1].claim_id == "misconception.C1"
 
 
 def test_merge_rejects_misconception_claim_not_in_evidence():
@@ -170,6 +196,30 @@ def test_merge_rejects_misconception_claim_not_in_evidence():
             concept_findings=ConceptResearchFindings(concepts=("demo",)),
             evidence_findings=evidence,
             misconception_findings=MisconceptionResearchFindings(
+                sources=(
+                    SourceRecord(
+                        source_id="misconception.S1",
+                        title="Misconception source",
+                        locator="https://example.test/misconception",
+                    ),
+                ),
+                claims=(
+                    ResearchClaim(
+                        claim_id="misconception.C1",
+                        statement="Correction claim.",
+                        source_ids=("misconception.S1",),
+                        confidence=0.9,
+                    ),
+                ),
+                evidence_edges=(
+                    EvidenceEdge(
+                        edge_id="misconception.E1",
+                        from_kind=EvidenceNodeKind.SOURCE,
+                        from_id="misconception.S1",
+                        to_claim_id="misconception.C1",
+                        relation=EvidenceRelation.SUPPORTS,
+                    ),
+                ),
                 misconceptions=(
                     ResearchMisconception(
                         misconception_id="M1",
@@ -206,3 +256,18 @@ def test_bootstrap_config_bounds_hermes_delegation():
     assert "max_concurrent_children: 3" in text
     assert "oneshot_max_children: 3" in text
     assert "orchestrator_enabled: true" in text
+
+
+def test_sibling_specialists_do_not_depend_on_each_others_ids():
+    task = build_director_delegate_task(_brief())
+    context = json.loads(task["context"])
+    specialists = context["research_plan"]["specialist_tasks"]
+    evidence_context = json.loads(specialists[1]["context"])
+    misconception_context = json.loads(specialists[2]["context"])
+    assert "prefix 'evidence.'" in evidence_context["provenance_rule"]
+    assert "isolated from Evidence Researcher" in misconception_context["provenance_rule"]
+    assert "prefix 'misconception.'" in misconception_context["provenance_rule"]
+    assert any(
+        "No specialist may depend on a sibling" in rule
+        for rule in context["execution_contract"]
+    )
