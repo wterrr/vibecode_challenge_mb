@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "candidates": [
+    {
+      "candidate_id": "v1",
+      "label": "V1 deterministic renderer",
+      "track": "core_ablation",
+      "scenegraph": false,
+      "layout_solver": false,
+      "motion": false,
+      "transitions": false,
+      "deterministic_qa": false,
+      "critic": false,
+      "repair": false,
+      "hermes_control_plane": false
+    },
+    {
+      "candidate_id": "v2a",
+      "label": "V2A Smart Static Engine",
+      "track": "core_ablation",
+      "scenegraph": true,
+      "layout_solver": true,
+      "motion": false,
+      "transitions": false,
+      "deterministic_qa": false,
+      "critic": false,
+      "repair": false,
+      "hermes_control_plane": false
+    },
+    {
+      "candidate_id": "v2b",
+      "label": "V2B Motion Engine",
+      "track": "core_ablation",
+      "scenegraph": true,
+      "layout_solver": true,
+      "motion": true,
+      "transitions": true,
+      "deterministic_qa": false,
+      "critic": false,
+      "repair": false,
+      "hermes_control_plane": false
+    },
+    {
+      "candidate_id": "v2c",
+      "label": "V2C Self-Repair",
+      "track": "core_ablation",
+      "scenegraph": true,
+      "layout_solver": true,
+      "motion": true,
+      "transitions": true,
+      "deterministic_qa": true,
+      "critic": true,
+      "repair": true,
+      "hermes_control_plane": false
+    },
+    {
+      "candidate_id": "v2d",
+      "label": "V2D Hermes Full System",
+      "track": "full_system",
+      "scenegraph": true,
+      "layout_solver": true,
+      "motion": true,
+      "transitions": true,
+      "deterministic_qa": true,
+      "critic": true,
+      "repair": true,
+      "hermes_control_plane": true
+    }
+  ]
+}

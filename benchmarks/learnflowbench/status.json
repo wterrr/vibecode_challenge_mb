@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "stage": "learnflow-bench",
+  "name": "Full Benchmark / LearnFlowBench",
+  "state": "IMPLEMENTED_AWAITING_CI",
+  "depends_on": [
+    {
+      "stage": "core-freeze",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "lesson-pipeline",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "kanban-durability",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
+  ],
+  "acceptance": {
+    "frozen_100_topic_corpus": true,
+    "exact_candidate_matrix": true,
+    "same_core_ablation_fixtures": true,
+    "real_v1_v2a_v2b_v2c_rendering": true,
+    "v2c_fault_injection_repair": true,
+    "v2d_typed_fixture_replay": true,
+    "measured_unmeasured_distinction": true,
+    "learning_outcome_not_fabricated": true,
+    "provider_cost_not_fabricated": true,
+    "sota_claim_blocked": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "honest_scope": {
+    "corpus_defined": 100,
+    "core_ablation_executed_topics": 3,
+    "v2d_fixture_replay_topics": 1,
+    "live_provider_100_topic_run": false,
+    "teachquiz_learning_outcome": false,
+    "human_visual_panel": false
+  },
+  "next_stage": "Governed Live V2D Evaluation",
+  "evidence": {
+    "accepted_ci_run": null,
+    "accepted_head_sha": null,
+    "benchmark_contract": "PENDING",
+    "pytest": "PENDING",
+    "executable_benchmark": "PENDING",
+    "core_freeze": "PENDING"
+  }
+}

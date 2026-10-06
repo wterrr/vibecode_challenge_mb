@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "fixture_set_id": "learnflowbench-core-ablation-v1",
+  "legacy_v1_fixture_ids": [
+    "photosynthesis",
+    "ram_vs_ssd",
+    "tcp_three_way_handshake"
+  ],
+  "source_dir": "benchmarks/fixtures/v1",
+  "rule": "V1, V2A, V2B, and V2C must consume these exact frozen LessonPlan fixtures; no candidate-specific storyboard/input edits.",
+  "render_profile": {
+    "width": 640,
+    "height": 360,
+    "fps": 12,
+    "scene_duration_seconds": 2,
+    "transition_duration_seconds": 0.5
+  },
+  "full_system_fixture": {
+    "mode": "fixture_replay",
+    "source": "scripts.verify_lesson_pipeline.build_fixture_runner",
+    "purpose": "exercise the entire V2D typed pipeline without claiming live-provider quality",
+    "comparable_to_core_ablation": false
+  },
+  "claim_policy": {
+    "structural_and_static_core_ablation_comparable": true,
+    "full_system_fixture_is_contract_evidence_only": true,
+    "learning_outcome_requires_external_or_human_evaluation": true,
+    "live_provider_cost_requires_real_provider_usage": true,
+    "sota_claim_allowed": false
+  }
+}
