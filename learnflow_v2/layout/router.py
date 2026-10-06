@@ -64,17 +64,18 @@ def measure_scene_nodes(
 
 
 def _wrapped_text_height(measurement: TextMeasurement, outer_width: float, *, horizontal_padding: float = 20.0) -> float:
-    """Conservative wrapped text height at the actual renderer width.
-
-    Layout and renderer share 18px text semantics. Candidate width is chosen at
-    or below the available inner width so height is never underestimated.
-    """
+    """Measure wrapped readable text at the exact renderer inner width."""
     inner_width = max(1.0, float(outer_width) - horizontal_padding)
-    candidates = sorted(measurement.wrap_candidates, key=lambda item: item.max_width)
-    if not candidates:
-        return measurement.height
-    eligible = [item for item in candidates if item.max_width <= inner_width + 1e-6]
-    candidate = eligible[-1] if eligible else candidates[0]
+    exact = measure_text(
+        measurement.content,
+        MeasurementPolicy(
+            preferred_font_size=_DEFAULT_POLICY.preferred_font_size,
+            minimum_font_size=_DEFAULT_POLICY.minimum_font_size,
+            candidate_max_widths=[inner_width],
+            emergency_break_long_tokens=False,
+        ),
+    )
+    candidate = exact.wrap_candidates[0]
     if candidate.had_overflow_token or candidate.width > inner_width + 1e-6:
         raise LayoutUnsatisfiableError(
             "Text cannot fit readable width without overflow",
@@ -200,7 +201,7 @@ def _compile_concept_card(
         rect=_fit_rect(
             title_zone,
             preferred_width=min(title_zone.width, title_m.width + 36.0),
-            preferred_height=min(title_zone.height, max(26.0, title_m.height + 14.0)),
+            preferred_height=min(title_zone.height, max(26.0, title_m.height + 18.0)),
             preferred_region=primary_node.layout_hint.preferred_region if primary_node.layout_hint else None,
         ),
         zone="TITLE",
@@ -341,7 +342,7 @@ def _compile_process_compact(
             rect=_fit_rect(
                 title_zone,
                 preferred_width=min(title_zone.width, title_measure.width + 30.0),
-                preferred_height=min(title_zone.height, max(24.0, title_measure.height + 12.0)),
+                preferred_height=min(title_zone.height, max(24.0, title_measure.height + 18.0)),
             ),
             zone="TITLE",
             strategy_role="title",
@@ -474,7 +475,7 @@ def _compile_comparison(
             rect=_fit_rect(
                 title_zone,
                 preferred_width=min(title_zone.width, title_m.width + 36.0),
-                preferred_height=min(title_zone.height, max(26.0, title_m.height + 14.0)),
+                preferred_height=min(title_zone.height, max(26.0, title_m.height + 18.0)),
                 preferred_region=title.layout_hint.preferred_region if title.layout_hint else None,
             ),
             zone="TITLE",
@@ -488,15 +489,21 @@ def _compile_comparison(
         x = content.x + idx * (col_w + gap)
         col_zone = Rect(x=round(x, 4), y=content.y, width=round(col_w, 4), height=content.height)
         members = _column_members(scene_graph, column.id)
-        col_title_h = min(max(34.0, measurements[column.id].minimum_readable_height + 14.0), col_zone.height * 0.25)
+        column_width = min(col_zone.width - 16.0, measurements[column.id].width + 24.0)
+        column_required_h = _wrapped_text_height(measurements[column.id], column_width) + 16.0
+        col_title_h = min(max(38.0, column_required_h + 8.0), col_zone.height * 0.30)
+        if column_required_h > col_title_h - 4.0 + 1e-6:
+            raise LayoutUnsatisfiableError(
+                f"Comparison column '{column.id}' title cannot fit readable text"
+            )
         title_slot = Rect(x=col_zone.x, y=col_zone.y, width=col_zone.width, height=col_title_h)
         boxes.append(
             LayoutBox(
                 node_id=column.id,
                 rect=_fit_rect(
                     title_slot,
-                    preferred_width=min(col_zone.width, measurements[column.id].width + 20.0),
-                    preferred_height=min(col_title_h, measurements[column.id].height + 12.0),
+                    preferred_width=column_width,
+                    preferred_height=column_required_h,
                     preferred_region=column.layout_hint.preferred_region if column.layout_hint else None,
                 ),
                 zone="CONTENT",
