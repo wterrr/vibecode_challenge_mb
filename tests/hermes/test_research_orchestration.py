@@ -186,9 +186,9 @@ def test_merge_preserves_source_locator_and_claim_source_ids():
     assert result.research_pack.claims[1].claim_id == "misconception.C1"
 
 
-def test_merge_rejects_misconception_claim_not_in_evidence():
+def test_misconception_findings_reject_unknown_local_claim_before_merge():
     _, evidence = _evidence()
-    with pytest.raises(AgentContractError, match="unknown claims"):
+    with pytest.raises(ValidationError, match="unknown local claims"):
         merge_specialist_findings(
             pack_id="research.demo",
             graph_id="evidence.demo",
