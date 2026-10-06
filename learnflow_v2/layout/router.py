@@ -293,7 +293,7 @@ def compile_scene_layout(
     measurements = measure_scene_nodes(scene_graph, policy=measurement_policy)
 
     intent = scene_graph.layout_intent.type
-    if intent in {LayoutIntent.PROCESS, LayoutIntent.CAUSAL, LayoutIntent.HIERARCHY, LayoutIntent.FLOW}:
+    if intent in {LayoutIntent.PROCESS, LayoutIntent.HIERARCHY}:
         graph = layout_directed_graph(
             scene_graph,
             measurements,
