@@ -2,6 +2,8 @@
 
 This stage uses Hermes to turn fact-verified research into a structured `PedagogyPlan`, then applies a deterministic script-readiness gate.
 
+**Status: PASS.** Accepted CI proves approved-claim-only context, forged-report rejection before Hermes exposure, pedagogy completeness, 13 regressions, pinned Hermes schema compatibility, and Core Freeze preservation.
+
 ## Hermes responsibilities
 
 - propose learning objectives and measurable assessment criteria;
