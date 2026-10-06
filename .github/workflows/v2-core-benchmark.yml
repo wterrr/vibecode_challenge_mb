@@ -53,6 +53,8 @@ jobs:
       - name: Full V2 regression
         run: pytest -q --confcutdir=tests/v2 tests/v2
       - name: Frozen Core Gate benchmark
+        env:
+          BENCHMARK_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
         run: python scripts/run_v2_core_benchmark.py benchmark_output/v2_core_gate
       - name: Upload benchmark evidence
         if: always()
