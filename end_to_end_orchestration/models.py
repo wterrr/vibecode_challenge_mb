@@ -8,6 +8,7 @@ from pydantic import Field, field_validator
 
 from agent_contracts import (
     ContractModel,
+    EvidenceGraph,
     LearningBrief,
     LessonScript,
     PedagogyPlan,
@@ -37,7 +38,7 @@ class EndToEndResult(ContractModel):
     run_id: str = Field(..., min_length=1)
     learning_brief: LearningBrief
     research_pack: ResearchPack
-    evidence_graph: dict[str, Any]
+    evidence_graph: EvidenceGraph
     fact_verification: FactVerificationReport
     pedagogy_plan: PedagogyPlan
     lesson_script: LessonScript
