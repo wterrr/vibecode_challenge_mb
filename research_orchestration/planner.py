@@ -63,7 +63,8 @@ def build_research_orchestration_plan(brief: LearningBrief) -> ResearchOrchestra
                     **shared,
                     "focus": "authoritative sources, claim statements, confidence, source-to-claim evidence edges",
                     "provenance_rule": (
-                        "Every claim must reference declared source_ids; every source keeps its original locator."
+                        "Every claim must reference declared source_ids; every source keeps its original locator. "
+                        "Namespace source_id and claim_id values with the prefix 'evidence.' so sibling outputs cannot collide."
                     ),
                 },
                 ensure_ascii=False,
@@ -77,8 +78,15 @@ def build_research_orchestration_plan(brief: LearningBrief) -> ResearchOrchestra
             context=json.dumps(
                 {
                     **shared,
-                    "focus": "common misconceptions, corrections, examples, and the claim_ids they rely on",
-                    "provenance_rule": "Never create a new factual claim; reference claim_ids from evidence research.",
+                    "focus": (
+                        "common misconceptions, corrections, examples, plus the sources and factual claims "
+                        "needed to support those corrections/examples"
+                    ),
+                    "provenance_rule": (
+                        "This child is isolated from Evidence Researcher. Create only LOCAL source_ids/claim_ids "
+                        "backed by your own sources; namespace them with prefix 'misconception.'. "
+                        "Misconceptions/examples may reference only those local claim_ids."
+                    ),
                 },
                 ensure_ascii=False,
                 sort_keys=True,
@@ -121,6 +129,7 @@ def build_director_delegate_task(brief: LearningBrief) -> dict:
             "Use native Hermes delegate_task exactly once for the specialist fan-out.",
             "Dispatch no more than the three supplied specialist tasks.",
             "Each specialist receives only its own goal/context/output_schema.",
+            "No specialist may depend on a sibling specialist's IDs or output.",
             "Do not ask a specialist to delegate further.",
             "Preserve source_id, locator, claim_id and evidence-edge provenance exactly.",
             "Synthesize a ResearchPack and EvidenceGraph; do not perform Fact Verification in this stage.",
