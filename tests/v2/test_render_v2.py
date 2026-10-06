@@ -276,3 +276,58 @@ def test_source_artifacts_are_not_mutated_by_frame_render():
     assert scene.model_dump_json() == scene_before
     assert layout.model_dump_json() == layout_before
     assert motion.to_canonical_json() == motion_before
+
+
+def test_renderer_text_payload_matches_layout_content_precedence():
+    scene = SceneGraph(
+        scene_id="text_contract",
+        nodes=(
+            SceneNode(
+                id="n",
+                kind=NodeKind.CONCEPT,
+                label="THIS LABEL IS INTENTIONALLY MUCH TOO LONG FOR THE CARD AND MUST NOT BE CONCATENATED",
+                content="Short content",
+            ),
+        ),
+        relations=(),
+        layout_intent=LayoutIntentSpec(type=LayoutIntent.CONCEPT_CARD),
+    )
+    layout = LayoutGraph(
+        scene_id="text_contract",
+        frame_profile_id="test-320x180",
+        frame_width=320,
+        frame_height=180,
+        boxes=(LayoutBox(node_id="n", rect=Rect(x=90, y=55, width=140, height=70), zone="CONTENT"),),
+        routed_edges=(),
+        strategy=LayoutStrategy.CONCEPT_CARD,
+        feasible=True,
+    )
+    frame = DeterministicPillowRenderer().render_frame(scene, layout, None, 0.0)
+    assert frame.size == (320, 180)
+
+
+def test_renderer_rejects_text_that_cannot_fit_readable_18px_box():
+    scene = SceneGraph(
+        scene_id="text_overflow",
+        nodes=(
+            SceneNode(
+                id="n",
+                kind=NodeKind.CONCEPT,
+                content="This content requires several readable wrapped lines and must never spill outside its solved card.",
+            ),
+        ),
+        relations=(),
+        layout_intent=LayoutIntentSpec(type=LayoutIntent.CONCEPT_CARD),
+    )
+    layout = LayoutGraph(
+        scene_id="text_overflow",
+        frame_profile_id="test-320x180",
+        frame_width=320,
+        frame_height=180,
+        boxes=(LayoutBox(node_id="n", rect=Rect(x=120, y=75, width=80, height=28), zone="CONTENT"),),
+        routed_edges=(),
+        strategy=LayoutStrategy.CONCEPT_CARD,
+        feasible=True,
+    )
+    with pytest.raises(RenderInvalidInputError, match="does not fit solved LayoutGraph box"):
+        DeterministicPillowRenderer().render_frame(scene, layout, None, 0.0)
