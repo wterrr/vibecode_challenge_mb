@@ -25,9 +25,8 @@ def main() -> int:
     if brief.brief_id != f"live-eval:{PILOT_TOPIC_ID}":
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL pilot topic binding")
     expected_models = (
-        "apodex/apodex-1.1-mini:free",
         "nvidia/nemotron-3-super-120b-a12b:free",
-        "nex-agi/nex-n2.5-mini:free",
+        "apodex/apodex-1.1-mini:free",
     )
     if LIVE_MODEL_CANDIDATES != expected_models or DEFAULT_LIVE_MODEL != expected_models[0]:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL live model candidate order")
@@ -78,7 +77,7 @@ def main() -> int:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL controlled triggers missing")
 
     probe_source = (ROOT / "live_evaluation" / "model_probe.py").read_text(encoding="utf-8")
-    for required in ('"tools": [', '"tool_choice": "none"', '"type": "json_schema"', '"require_parameters": True'):
+    for required in ('"tools": [', '"type": "json_object"', '"require_parameters": True'):
         if required not in probe_source:
             raise SystemExit("LIVE_V2D_CONTRACT=FAIL model capability probe")
 
@@ -91,6 +90,8 @@ def main() -> int:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL non-research tools not disabled")
     if "max_iterations=128 if research else 3" not in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL research iteration budget")
+    if '"response_format": {"type": "json_object"}' not in source:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL json_object wire constraint")
     if "assemble_specialist_delegation_results(" not in source:
         raise SystemExit(
             "LIVE_V2D_CONTRACT=FAIL deterministic research assembly missing"
@@ -103,7 +104,7 @@ def main() -> int:
     print("LIVE_V2D_CONTRACT=PASS")
     print(f"pilot_topic={PILOT_TOPIC_ID}")
     print(f"default_model={DEFAULT_LIVE_MODEL}")
-    print("model_probe=tools+tool_choice+json_schema+require_parameters")
+    print("model_probe=tools+json_object+host_shape_validation+require_parameters")
     print("usd_cap=none")
     print("publication_authorized=false")
     print("live_secret_step_scope=PASS")

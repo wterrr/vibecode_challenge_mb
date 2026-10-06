@@ -10,9 +10,8 @@ from urllib.request import Request, urlopen
 
 
 LIVE_MODEL_CANDIDATES = (
-    "apodex/apodex-1.1-mini:free",
     "nvidia/nemotron-3-super-120b-a12b:free",
-    "nex-agi/nex-n2.5-mini:free",
+    "apodex/apodex-1.1-mini:free",
 )
 
 OPENROUTER_CHAT_COMPLETIONS = "https://openrouter.ai/api/v1/chat/completions"
@@ -83,7 +82,8 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
             {
                 "role": "user",
                 "content": (
-                    "Return only the required JSON object. "
+                    "Return only this JSON object exactly: "
+                    "{\"ok\":true,\"marker\":\"live-v2d-probe\"}. "
                     "Do not call the probe_noop tool."
                 ),
             }
@@ -104,14 +104,8 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
                 },
             }
         ],
-        "tool_choice": "none",
         "response_format": {
-            "type": "json_schema",
-            "json_schema": {
-                "name": "live_v2d_probe",
-                "strict": True,
-                "schema": schema,
-            },
+            "type": "json_object",
         },
         "provider": {"require_parameters": True},
     }

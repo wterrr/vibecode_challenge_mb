@@ -34,21 +34,20 @@ def test_unknown_pilot_topic_fails_closed():
 
 def test_live_model_candidates_are_ordered_and_qwen_free_is_removed():
     assert LIVE_MODEL_CANDIDATES == (
-        "apodex/apodex-1.1-mini:free",
         "nvidia/nemotron-3-super-120b-a12b:free",
-        "nex-agi/nex-n2.5-mini:free",
+        "apodex/apodex-1.1-mini:free",
     )
     assert DEFAULT_LIVE_MODEL == LIVE_MODEL_CANDIDATES[0]
     assert all("qwen/qwen3.8-27b:free" != item for item in LIVE_MODEL_CANDIDATES)
 
 
-def test_model_probe_requires_tools_and_native_json_schema():
+def test_model_probe_matches_actual_hermes_free_endpoint_requirements():
     source = (ROOT / "live_evaluation" / "model_probe.py").read_text(encoding="utf-8")
     assert '"tools": [' in source
-    assert '"tool_choice": "none"' in source
-    assert '"type": "json_schema"' in source
-    assert '"strict": True' in source
+    assert '"type": "json_object"' in source
     assert '"require_parameters": True' in source
+    assert '"tool_choice"' not in source
+    assert '"type": "json_schema"' not in source
 
 
 def test_governance_state_is_fail_closed(tmp_path):
@@ -187,3 +186,12 @@ def test_live_workflow_cancels_superseded_runs_before_provider_usage():
     assert "concurrency:" in workflow
     assert "cancel-in-progress: true" in workflow
     assert "live-v2d-${{ github.event.pull_request.number || github.ref }}" in workflow
+
+
+
+def test_runner_uses_json_object_wire_constraint():
+    source = (
+        ROOT / "live_evaluation" / "hermes_runner.py"
+    ).read_text(encoding="utf-8")
+    assert 'request_overrides={' in source
+    assert '"response_format": {"type": "json_object"}' in source

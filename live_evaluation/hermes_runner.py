@@ -266,6 +266,9 @@ class LiveHermesStructuredRunner:
             enabled_toolsets=enabled,
             disabled_toolsets=disabled,
             max_iterations=128 if research else 3,
+            request_overrides={
+                "response_format": {"type": "json_object"},
+            },
             ephemeral_system_prompt=(
                 "You are a bounded LearnFlow evaluation agent. "
                 "Follow the supplied typed output contract exactly. "
