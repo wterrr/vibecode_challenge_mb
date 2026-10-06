@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "stage": "research-orchestration",
   "name": "Research Orchestration",
-  "state": "IMPLEMENTED_AWAITING_CI",
+  "state": "PASS",
   "depends_on": [
     {
       "stage": "hermes-bootstrap",
@@ -41,5 +41,19 @@
     "per_child_output_schema": true,
     "core_freeze_must_remain_complete": true
   },
-  "next_stage": "Fact Verification"
+  "next_stage": "Fact Verification",
+  "evidence": {
+    "accepted_ci_run": 37428061046,
+    "accepted_head_sha": "42c59ae96cb4df7cb34c6bd5e53d08422c9a26e4",
+    "deterministic_orchestration": "PASS",
+    "pytest": "10 passed",
+    "pinned_hermes_delegation": "PASS",
+    "isolated_child_context": "PASS",
+    "orchestrator_nested_delegation": "PASS",
+    "leaf_recursive_delegation_blocked": "PASS",
+    "specialist_batch_limit": 3,
+    "max_spawn_depth": 2,
+    "per_child_output_schema": "PASS",
+    "core_freeze": "PASS"
+  }
 }
