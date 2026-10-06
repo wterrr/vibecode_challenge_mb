@@ -14,7 +14,7 @@ from .base import (
     normalize_text,
     require_unique,
 )
-from .research import EvidenceGraph
+from .research import EvidenceGraph, ResearchPack
 
 
 def _tupleize(value: Any):
@@ -214,9 +214,19 @@ class PedagogyPlan(ContractModel):
                 )
         return self
 
-    def validate_against_evidence(self, graph: EvidenceGraph) -> None:
+    def validate_against(
+        self,
+        brief: LearningBrief,
+        pack: ResearchPack,
+        graph: EvidenceGraph,
+    ) -> None:
+        if self.brief_id != brief.brief_id:
+            raise AgentContractError("PedagogyPlan brief_id does not match LearningBrief")
+        if self.research_pack_id != pack.pack_id:
+            raise AgentContractError("PedagogyPlan research_pack_id does not match ResearchPack")
         if self.evidence_graph_id != graph.graph_id:
             raise AgentContractError("PedagogyPlan evidence_graph_id does not match EvidenceGraph")
+        graph.validate_against_research_pack(pack)
         known = set(graph.claim_ids)
         for item in (*self.worked_examples, *self.analogies, *self.misconceptions):
             unknown = sorted(set(item.claim_ids) - known)
