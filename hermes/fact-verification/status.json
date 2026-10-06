@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "stage": "fact-verification",
+  "name": "Fact Verification",
+  "state": "IMPLEMENTED_AWAITING_CI",
+  "depends_on": [
+    {
+      "stage": "research-orchestration",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "agent-contracts",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
+  ],
+  "authority": {
+    "hermes": "semantic evidence judgment",
+    "deterministic_gate": "final narration eligibility"
+  },
+  "acceptance": {
+    "every_factual_narration_maps_to_claim_id": true,
+    "unsupported_claim_blocked": true,
+    "contradictions_flagged": true,
+    "claim_only_cycles_not_grounded": true,
+    "source_grounding_required": true,
+    "hermes_supported_cannot_override_missing_evidence": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "next_stage": "Pedagogy Agent"
+}
