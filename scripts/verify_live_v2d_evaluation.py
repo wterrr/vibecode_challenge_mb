@@ -77,7 +77,13 @@ def main() -> int:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL controlled triggers missing")
 
     probe_source = (ROOT / "live_evaluation" / "model_probe.py").read_text(encoding="utf-8")
-    for required in ('"tools": [', '"type": "json_object"', '"require_parameters": True'):
+    for required in (
+        '"tools": [',
+        '"type": "json_object"',
+        '"require_parameters": True',
+        '"max_tokens": 256',
+        'payload["reasoning_effort"] = "none"',
+    ):
         if required not in probe_source:
             raise SystemExit("LIVE_V2D_CONTRACT=FAIL model capability probe")
 
@@ -104,7 +110,7 @@ def main() -> int:
     print("LIVE_V2D_CONTRACT=PASS")
     print(f"pilot_topic={PILOT_TOPIC_ID}")
     print(f"default_model={DEFAULT_LIVE_MODEL}")
-    print("model_probe=tools+json_object+host_shape_validation+require_parameters")
+    print("model_probe=tools+json_object+host_shape_validation+bounded_no_reasoning_smoke")
     print("usd_cap=none")
     print("publication_authorized=false")
     print("live_secret_step_scope=PASS")

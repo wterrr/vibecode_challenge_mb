@@ -88,7 +88,7 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
                 ),
             }
         ],
-        "max_tokens": 48,
+        "max_tokens": 256,
         "temperature": 0,
         "tools": [
             {
@@ -109,6 +109,11 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
         },
         "provider": {"require_parameters": True},
     }
+    if model.startswith("nvidia/nemotron-3-super-"):
+        # The Super model supports extended thinking. Disable reasoning only for
+        # this tiny capability probe so reasoning tokens cannot consume the
+        # completion budget before the required JSON object is finished.
+        payload["reasoning_effort"] = "none"
     request = Request(
         OPENROUTER_CHAT_COMPLETIONS,
         data=json.dumps(payload).encode("utf-8"),
@@ -143,15 +148,30 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
         )
 
     try:
-        message = body["choices"][0]["message"]
+        choice = body["choices"][0]
+        message = choice["message"]
         text = _extract_text(message)
         parsed = json.loads(text)
     except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
+        finish_reason = None
+        try:
+            finish_reason = body["choices"][0].get("finish_reason")
+        except Exception:
+            pass
+        safe_prefix = ""
+        try:
+            safe_prefix = _extract_text(body["choices"][0].get("message", {}))[:240]
+        except Exception:
+            pass
         return ModelProbeResult(
             model=model,
             passed=False,
             status="invalid_probe_response",
-            detail=_safe_detail(exc),
+            detail=_safe_detail(
+                f"{type(exc).__name__}: {exc}; "
+                f"finish_reason={finish_reason!r}; "
+                f"response_prefix={safe_prefix!r}"
+            ),
         )
 
     if parsed != {"ok": True, "marker": "live-v2d-probe"}:
