@@ -194,12 +194,13 @@ def test_live_workflow_cancels_superseded_runs_before_provider_usage():
 
 
 
-def test_runner_uses_json_object_wire_constraint():
+def test_runner_uses_conditional_json_object_wire_constraint():
     source = (
         ROOT / "live_evaluation" / "hermes_runner.py"
     ).read_text(encoding="utf-8")
-    assert 'request_overrides: dict[str, Any]' in source
-    assert '"response_format": {"type": "json_object"}' in source
+    assert 'request_overrides: dict[str, Any] = {}' in source
+    assert 'if self.model.startswith(("google/gemma-4-", "apodex/apodex-")):' in source
+    assert 'request_overrides["response_format"] = {"type": "json_object"}' in source
 
 
 
