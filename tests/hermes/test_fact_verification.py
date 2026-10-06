@@ -323,3 +323,30 @@ def test_fact_verification_surface_has_no_renderer_or_pedagogy_controls():
         "scriptsegment",
     ):
         assert forbidden not in text
+
+
+def test_cycle_with_external_source_support_converges_to_grounded():
+    pack, graph = _pack_and_graph(
+        (
+            _support("E0", "S1", "C1"),
+            EvidenceEdge(
+                edge_id="E1",
+                from_kind=EvidenceNodeKind.CLAIM,
+                from_id="C1",
+                to_claim_id="C2",
+                relation=EvidenceRelation.DERIVES,
+            ),
+            EvidenceEdge(
+                edge_id="E2",
+                from_kind=EvidenceNodeKind.CLAIM,
+                from_id="C2",
+                to_claim_id="C1",
+                relation=EvidenceRelation.DERIVES,
+            ),
+        )
+    )
+    report = verify_facts(pack, graph)
+    assert report.approved_claim_ids == ("C1", "C2")
+    c2 = next(item for item in report.claims if item.claim_id == "C2")
+    assert c2.grounded_source_ids == ("S1",)
+    assert set(c2.support_edge_ids) == {"E0", "E1"}
