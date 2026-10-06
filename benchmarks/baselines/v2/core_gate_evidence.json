@@ -1,0 +1,116 @@
+{
+  "schema_version": "2.1",
+  "repo_commit": "fdad3db1340d8b28175ab5382d800ff79df9a8a0",
+  "evidence": [
+    {
+      "metric": "FATAL_CLIPPING_COUNT",
+      "kind": "BENCHMARK",
+      "value": 0,
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ],
+      "sample_count": 9,
+      "benchmark_id": "v2-core-gate-v2",
+      "notes": ""
+    },
+    {
+      "metric": "FATAL_OVERLAP_COUNT",
+      "kind": "BENCHMARK",
+      "value": 0,
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ],
+      "sample_count": 9,
+      "benchmark_id": "v2-core-gate-v2",
+      "notes": ""
+    },
+    {
+      "metric": "INVALID_MOTION_PLAN_COUNT",
+      "kind": "BENCHMARK",
+      "value": 0,
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ],
+      "sample_count": 9,
+      "benchmark_id": "v2-core-gate-v2",
+      "notes": ""
+    },
+    {
+      "metric": "LOCAL_REPAIR_SCOPE_OK",
+      "kind": "CONTRACT_TEST",
+      "value": true,
+      "source": [
+        "tests/v2/test_repair_v2_13_invalidation.py"
+      ],
+      "sample_count": null,
+      "benchmark_id": null,
+      "notes": ""
+    },
+    {
+      "metric": "RENDER_SUCCESS_RATE",
+      "kind": "BENCHMARK",
+      "value": 1,
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ],
+      "sample_count": 3,
+      "benchmark_id": "v2-core-gate-v2",
+      "notes": ""
+    },
+    {
+      "metric": "REPRODUCIBILITY_RATE",
+      "kind": "BENCHMARK",
+      "value": 1,
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ],
+      "sample_count": 3,
+      "benchmark_id": "v2-core-gate-v2",
+      "notes": ""
+    },
+    {
+      "metric": "SELECTIVE_REPAIR_SUCCESS_RATE",
+      "kind": "BENCHMARK",
+      "value": 1,
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ],
+      "sample_count": 9,
+      "benchmark_id": "v2-core-gate-v2",
+      "notes": ""
+    },
+    {
+      "metric": "V1_V2_CRITICAL_REGRESSION_COUNT",
+      "kind": "BENCHMARK",
+      "value": 0,
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ],
+      "sample_count": 3,
+      "benchmark_id": "v2-core-gate-v2",
+      "notes": ""
+    },
+    {
+      "metric": "V2_STATIC_QUALITY_DELTA",
+      "kind": "BENCHMARK",
+      "value": 6.0680719,
+      "source": [
+        "benchmarks/baselines/v2/result.json"
+      ],
+      "sample_count": 9,
+      "benchmark_id": "v2-core-gate-v2",
+      "notes": ""
+    },
+    {
+      "metric": "VLM_UNAVAILABLE_DETERMINISTIC_OK",
+      "kind": "CONTRACT_TEST",
+      "value": true,
+      "source": [
+        "tests/v2/test_vlm_critic_v2_12_gate.py"
+      ],
+      "sample_count": null,
+      "benchmark_id": null,
+      "notes": ""
+    }
+  ]
+}
