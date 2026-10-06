@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "stage": "skills",
   "name": "Skills",
-  "state": "IMPLEMENTED_AWAITING_CI",
+  "state": "PASS",
   "depends_on": [
     {
       "stage": "runtime-governance",
@@ -34,14 +34,22 @@
   },
   "next_stage": "Kanban Durability",
   "evidence": {
-    "accepted_ci_run": null,
-    "accepted_head_sha": null,
-    "skills_verifier": "PENDING",
-    "pytest": "PENDING",
-    "pinned_hermes_skill_discovery": "PENDING",
-    "native_skill_view": "PENDING",
-    "reference_resolution": "PENDING",
-    "security_scan": "PENDING",
-    "core_freeze": "PENDING"
+    "accepted_ci_run": 37460533649,
+    "accepted_head_sha": "611e2f2417bbf298e940f9c243c84dddd21de8e2",
+    "skills_verifier": "PASS",
+    "pytest": "21 passed",
+    "native_folder_structure": "PASS",
+    "frontmatter_and_versions": "PASS",
+    "no_executable_skill_helpers": "PASS",
+    "project_not_auto_trusted": "PASS",
+    "production_manual_review_gate": "PASS",
+    "pinned_hermes_skill_discovery": "PASS",
+    "trusted_project_discovery": "PASS",
+    "security_scan": "PASS",
+    "native_skills_list": "PASS",
+    "native_skill_view": "PASS",
+    "reference_resolution": "PASS",
+    "skill_count": 4,
+    "core_freeze": "PASS"
   }
 }

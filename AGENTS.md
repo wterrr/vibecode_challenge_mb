@@ -41,6 +41,7 @@ Accepted stages:
 - **End-to-End Orchestration — PASS.** The accepted typed pipeline runs Research → Fact Verification → Pedagogy → Script → Visual Director → LearnFlow capability tools → frozen Core V2 → assembled video, failing closed at every deterministic gate.
 - **Agent-Aware QA — PASS.** Authoritative QA/VLM results are routed to the only layer allowed to repair them: evidence → Research, narration → Script, pedagogy → Pedagogy Agent, semantic visuals → Visual Director, and geometry/temporal/selective patches → deterministic Core repair.
 - **Hooks + Budget — PASS.** Exact pinned Hermes native hooks enforce publication/tool policy and record privacy-minimized metrics/lifecycle evidence, while deterministic host-side conservative reservations hard-cap USD/provider/retry usage before governed agent dispatch.
+- **Skills — PASS.** Four native project-local Hermes procedures package the accepted lesson build, fact investigation, selective repair, and pre-publication review workflows without adding executable helpers, a second orchestrator, or production auto-trust.
 
 Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifier, 11 contract regressions, and Core Freeze guard passed.
 
@@ -58,9 +59,11 @@ Accepted stage: **End-to-End Orchestration — PASS.** CI run `37439945446` veri
 
 Accepted stage: **Agent-Aware QA — PASS.** CI run `37445667469` verifies authoritative scene/video QA ingestion, typed fail-closed ownership routing, 25 regressions, exact pinned Hermes repair-task schemas for Research/Script/Pedagogy/Visual, strict critic outage blockers, Core-only geometry/temporal/selective repair, scope validation, and Core Freeze preservation.
 
-Accepted stage: **Hooks + Budget — PASS.** CI run `37448402550` verifies hard host-side USD/tool/retry reservations, fail-closed publication policy, 16 governance regressions, 11 Agent Contracts regressions, exact pinned Hermes project-plugin discovery and native hook dispatch, post-tool metrics, post-API cost metrics, retry metrics, session/subagent lifecycle tracing, sensitive-payload non-persistence, and Core Freeze preservation. Next authorized stage: **Skills**, which has not started yet.
+Accepted stage: **Hooks + Budget — PASS.** CI run `37448402550` verifies hard host-side USD/tool/retry reservations, fail-closed publication policy, 16 governance regressions, 11 Agent Contracts regressions, exact pinned Hermes project-plugin discovery and native hook dispatch, post-tool metrics, post-API cost metrics, retry metrics, session/subagent lifecycle tracing, sensitive-payload non-persistence, and Core Freeze preservation.
 
-During Skills, package only stable, reviewed procedures that reuse the already accepted typed stages and boundaries. Do not implement Kanban Durability yet.
+Accepted stage: **Skills — PASS.** CI run `37460533649` verifies four native project-local procedures, 21 boundary regressions, exact pinned Hermes trusted-project discovery, project-skill security-scan acceptance, native skill listing/viewing, linked-reference resolution, no executable helpers, no repository auto-trust, and Core Freeze preservation. Production use still requires manual operator review plus explicit project trust. Next authorized stage: **Kanban Durability**, which has not started yet.
+
+During Kanban Durability, add only the durable long-running execution profiles and persistence required by the PLAN. Do not weaken synchronous orchestration, Skills trust/review, Runtime Governance, Agent-Aware QA, or Core Freeze boundaries.
 
 ## LearnFlow Capability Plugin safety
 
@@ -214,3 +217,16 @@ Publication authorization is operator-owned governance state. Model tool argumen
 Runtime event persistence must remain privacy-minimized. Do not persist raw prompts, raw tool arguments/results, child goals, or child summaries merely for metrics. Cost accounting and retry accounting stay deterministic even when Hermes observes provider usage afterward.
 
 Hooks + Budget does not implement Skills or Kanban Durability. The next stage may package stable procedures, but it must reuse these accepted governance and typed-artifact boundaries rather than bypass them.
+
+
+## Skills boundary
+
+LearnFlow project skills live under `.hermes/skills/<skill-name>/SKILL.md`. In the accepted Skills stage they are procedure/runbook artifacts only; support content is limited to `references/`. Do not add skill-local Python, shell, JavaScript, templates, renderers, or a parallel orchestration implementation unless a later explicit architecture change proves that executable helper is necessary.
+
+Accepted skills are workflow-oriented rather than one-skill-per-agent: `build-evidenced-lesson`, `investigate-lesson-facts`, `repair-failed-lesson`, and `review-lesson-before-publication`. They must reuse the existing typed task builders, deterministic gates, capability plugin, Agent-Aware QA routing, Runtime Governance, and frozen Core ownership boundaries.
+
+Project-local skill discovery is trust-gated by Hermes and each skill is security-scanned. The repository must not auto-add itself to `skills.trusted_project_dirs`. CI may trust the checkout inside an isolated profile only for verification. Production operators must manually review the skills and explicitly trust the repository before enabling them.
+
+A skill cannot make a blocked artifact valid by instruction, reassign a Core repair to Hermes, self-authorize publication, bypass a hard budget, generate renderer implementation, or silently introduce durable Kanban execution.
+
+The next stage is Kanban Durability. It may add durable long-running execution only after the accepted synchronous workflow remains the source of truth.

@@ -2,7 +2,7 @@
 
 This stage packages stable LearnFlow operating procedures as native Hermes project-local skills.
 
-Status: IMPLEMENTED_AWAITING_CI.
+Status: PASS. Accepted CI run `37460533649` proves 4 native project-local procedures, 21 boundary regressions, exact pinned Hermes trusted-project discovery, project-skill security-scan acceptance, native `skills_list`/`skill_view`, linked-reference loading, no executable skill helpers, no repository auto-trust, and Core Freeze preservation. Production activation still requires manual operator review and explicit project trust.
 
 ## Accepted skill candidates
 

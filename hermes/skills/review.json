@@ -4,7 +4,8 @@
   "production_activation": {
     "project_skill_trust_required": true,
     "manual_review_required_before_production": true,
-    "repo_config_auto_trusts_project_skills": false
+    "repo_config_auto_trusts_project_skills": false,
+    "status": "REQUIRES_MANUAL_OPERATOR_REVIEW_AND_EXPLICIT_TRUST"
   },
   "skills": [
     {
@@ -48,5 +49,14 @@
     "skills must not contain executable helper scripts",
     "skills must not bypass typed readiness gates, Core Freeze, runtime governance, or Agent-Aware QA ownership",
     "production operator must manually review and explicitly trust the repository before enabling project skills"
-  ]
+  ],
+  "implementation_acceptance": {
+    "state": "PASS",
+    "ci_run": 37460533649,
+    "accepted_head_sha": "611e2f2417bbf298e940f9c243c84dddd21de8e2",
+    "exact_pinned_hermes_discovery": "PASS",
+    "security_scan": "PASS",
+    "native_skill_view": "PASS",
+    "linked_references": "PASS"
+  }
 }
