@@ -378,18 +378,20 @@ def _repair_benchmark(
             out_dir / f"repair_{scene_graph.scene_id}.mp4",
             profile=render_profile,
         )
+        qa_report = _scene_qa_report(
+            patch_result.scene_graph,
+            new_layout,
+            compiled,
+            new_artifact,
+            profile,
+        )
         pixel_changed = new_artifact.frame_digest != original_artifacts[index].frame_digest
         unrelated_unchanged = all(
             original_digests[row["scene_id"]] == row["frame_digest"]
             for row in base_run["scenes"]
             if row["scene_id"] != scene_graph.scene_id
         )
-        qa_pass = (
-            preflight.frame_overflow_count == 0
-            and preflight.content_clipping_count == 0
-            and preflight.safe_zone_violation_count == 0
-            and not detect_box_collisions(new_layout)
-        )
+        qa_pass = qa_report.passed
         success = changed_scene_hash and pixel_changed and qa_pass and unrelated_unchanged
         cases.append(
             {
@@ -399,6 +401,7 @@ def _repair_benchmark(
                 "scene_hash_changed": changed_scene_hash,
                 "pixel_changed": pixel_changed,
                 "qa_pass": qa_pass,
+                "qa_issue_codes": [issue.code.value for issue in qa_report.issues],
                 "unrelated_scene_digests_unchanged": unrelated_unchanged,
                 "success": success,
             }
