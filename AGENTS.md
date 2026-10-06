@@ -44,7 +44,7 @@ Do not implement the LearnFlow Hermes plugin, research agents, pedagogy agents, 
 
 ## H-01 smoke safety
 
-The H-01 live smoke must be read-only. It may read `hermes/h01/smoke_fixture.txt` and return the expected sentinel, but it must not edit repository files.
+The H-01 live smoke must be read-only. It may read `hermes/h01/smoke_fixture.txt` and return the expected sentinel, but it must not edit repository files. Use `openai/gpt-6-luna` as the primary model; the only accepted no-credit fallback for H-01 is `nvidia/nemotron-3.5-lightning:free`, and the result must record which model actually passed.
 
 Never commit API keys or copy them into logs. `OPENROUTER_API_KEY` belongs only in the local ignored `.env` file or process environment.
 
