@@ -5,7 +5,7 @@ $Pin = "f97608f178d1ffeca59860195ab7da295f7c8e5f"
 $Runtime = Join-Path $Root ".hermes_runtime"
 $InstallDir = Join-Path $Runtime "hermes-agent"
 $HermesHome = Join-Path $Runtime "home"
-$Installer = Join-Path $Runtime "install-hermes-h01.ps1"
+$Installer = Join-Path $Runtime "install-hermes-bootstrap.ps1"
 
 New-Item -ItemType Directory -Force -Path $Runtime | Out-Null
 
@@ -16,14 +16,14 @@ powershell -ExecutionPolicy Bypass -File $Installer -Commit $Pin -ForceCommit -S
 
 $Actual = (git -C $InstallDir rev-parse HEAD).Trim()
 if ($Actual -ne $Pin) {
-    throw "H01_INSTALL=FAIL expected=$Pin actual=$Actual"
+    throw "HERMES_BOOTSTRAP_INSTALL=FAIL expected=$Pin actual=$Actual"
 }
 
 New-Item -ItemType Directory -Force -Path $HermesHome | Out-Null
-Copy-Item (Join-Path $Root "hermes\h01\config.yaml") (Join-Path $HermesHome "config.yaml") -Force
+Copy-Item (Join-Path $Root "hermes\bootstrap\config.yaml") (Join-Path $HermesHome "config.yaml") -Force
 
-Write-Host "H01_INSTALL=PASS"
+Write-Host "HERMES_BOOTSTRAP_INSTALL=PASS"
 Write-Host "Hermes commit: $Actual"
 Write-Host "Hermes home:   $HermesHome"
 Write-Host "Next: put OPENROUTER_API_KEY in $Root\.env, then run:"
-Write-Host "  python scripts/run_hermes_h01_smoke.py"
+Write-Host "  python scripts\run_hermes_bootstrap_smoke.py"

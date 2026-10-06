@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""H-01 Hermes bootstrap smoke runner."""
+"""Hermes bootstrap smoke runner."""
 
 from __future__ import annotations
 
@@ -13,25 +13,25 @@ import sys
 from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
-PIN_PATH = ROOT / "hermes" / "h01" / "pin.json"
-CONFIG_TEMPLATE = ROOT / "hermes" / "h01" / "config.yaml"
+STATUS_PATH = ROOT / "hermes" / "bootstrap" / "status.json"
+CONFIG_TEMPLATE = ROOT / "hermes" / "bootstrap" / "config.yaml"
 RUNTIME = ROOT / ".hermes_runtime"
 HERMES_HOME = RUNTIME / "home"
 INSTALL_DIR = RUNTIME / "hermes-agent"
-H01_DIR = RUNTIME / "h01"
+BOOTSTRAP_RESULT_DIR = RUNTIME / "bootstrap"
 
 PRIMARY_MODEL = "openai/gpt-6-luna"
 FREE_FALLBACK_MODEL = "nvidia/nemotron-3.5-lightning:free"
 ALLOWED_LIVE_MODELS = (PRIMARY_MODEL, FREE_FALLBACK_MODEL)
-EXPECTED_SENTINEL = "HERMES_H01_OK:LEARNFLOW-H01-FIXTURE-v1"
+EXPECTED_SENTINEL = "HERMES_BOOTSTRAP_OK:LEARNFLOW-BOOTSTRAP-FIXTURE-v1"
 
 
 class SmokeValidationError(RuntimeError):
     pass
 
 
-def load_pin() -> dict[str, Any]:
-    return json.loads(PIN_PATH.read_text(encoding="utf-8"))
+def load_status() -> dict[str, Any]:
+    return json.loads(STATUS_PATH.read_text(encoding="utf-8"))
 
 
 def load_project_openrouter_key(env: dict[str, str]) -> None:
@@ -163,11 +163,11 @@ def detect_hermes_binary() -> str:
             return str(candidate)
     raise SmokeValidationError(
         "Pinned project-local Hermes binary not found. Run "
-        "scripts/install_hermes_h01.sh or scripts/install_hermes_h01.ps1 first."
+        "scripts/install_hermes_bootstrap.sh or scripts/install_hermes_bootstrap.ps1 first."
     )
 
 
-def verify_installed_pin(pin: dict[str, Any]) -> str:
+def verify_installed_pin(status: dict[str, Any]) -> str:
     if not (INSTALL_DIR / ".git").exists():
         raise SmokeValidationError(
             f"project-local Hermes checkout missing: {INSTALL_DIR}"
@@ -183,7 +183,7 @@ def verify_installed_pin(pin: dict[str, Any]) -> str:
             f"cannot read Hermes checkout HEAD: {proc.stderr.strip()}"
         )
     actual = proc.stdout.strip()
-    expected = pin["hermes"]["commit"]
+    expected = status["hermes"]["commit"]
     if actual != expected:
         raise SmokeValidationError(
             f"Hermes checkout is not pinned: expected {expected}, got {actual}"
@@ -199,8 +199,8 @@ def ensure_runtime_config() -> None:
 def export_trajectory(
     hermes_bin: str, env: dict[str, str], session_id: str
 ) -> Path:
-    H01_DIR.mkdir(parents=True, exist_ok=True)
-    path = H01_DIR / "trajectory.jsonl"
+    BOOTSTRAP_RESULT_DIR.mkdir(parents=True, exist_ok=True)
+    path = BOOTSTRAP_RESULT_DIR / "trajectory.jsonl"
     if path.exists():
         path.unlink()
     proc = subprocess.run(
@@ -233,8 +233,8 @@ def export_trajectory(
 
 def smoke_prompt() -> str:
     return (
-        "LearnFlow H-01 read-only smoke test. "
-        "Use a file-reading tool to read hermes/h01/smoke_fixture.txt. "
+        "LearnFlow Hermes Bootstrap read-only smoke test. "
+        "Use a file-reading tool to read hermes/bootstrap/tool_read_fixture.txt. "
         "Do not edit or create repository files. "
         "After the tool succeeds, answer exactly "
         f"{EXPECTED_SENTINEL}"
@@ -296,28 +296,28 @@ def safe_failure_note(
 
 
 def run_live(selected_model: str | None = None) -> int:
-    pin = load_pin()
+    status = load_status()
     env = os.environ.copy()
     load_project_openrouter_key(env)
     if not env.get("OPENROUTER_API_KEY"):
         print(
-            "H01_LIVE=BLOCKED reason=OPENROUTER_API_KEY missing; "
+            "HERMES_BOOTSTRAP_LIVE=BLOCKED reason=OPENROUTER_API_KEY missing; "
             "set it in the ignored .env or process environment",
             file=sys.stderr,
         )
         return 2
 
-    verify_installed_pin(pin)
+    verify_installed_pin(status)
     ensure_runtime_config()
     hermes_bin = detect_hermes_binary()
 
-    H01_DIR.mkdir(parents=True, exist_ok=True)
+    BOOTSTRAP_RESULT_DIR.mkdir(parents=True, exist_ok=True)
     env["HERMES_HOME"] = str(HERMES_HOME)
 
     if selected_model is not None:
         if selected_model not in ALLOWED_LIVE_MODELS:
             print(
-                "H01_LIVE=BLOCKED reason=model is outside the H-01 allowlist",
+                "HERMES_BOOTSTRAP_LIVE=BLOCKED reason=model is outside the Hermes Bootstrap allowlist",
                 file=sys.stderr,
             )
             return 2
@@ -347,25 +347,25 @@ def run_live(selected_model: str | None = None) -> int:
             passed_model = model
             break
         print(
-            f"H01_MODEL_ATTEMPT=FAIL model={model} "
+            f"HERMES_BOOTSTRAP_MODEL_ATTEMPT=FAIL model={model} "
             f"reason={attempts[-1]['failure']}",
             file=sys.stderr,
         )
 
     if passed_proc is None or passed_summary is None or passed_model is None:
-        print("H01_LIVE=FAIL reason=all allowed model attempts failed", file=sys.stderr)
+        print("HERMES_BOOTSTRAP_LIVE=FAIL reason=all allowed model attempts failed", file=sys.stderr)
         return 1
 
-    stream_path = H01_DIR / "smoke_stream.jsonl"
+    stream_path = BOOTSTRAP_RESULT_DIR / "smoke_stream.jsonl"
     stream_path.write_text(passed_proc.stdout, encoding="utf-8")
 
     trajectory_path = export_trajectory(
         hermes_bin, env, passed_summary["session_id"]
     )
     result = {
-        "checkpoint": "H-01",
+        "stage": "hermes-bootstrap",
         "state": "PASS",
-        "hermes_commit": pin["hermes"]["commit"],
+        "hermes_commit": status["hermes"]["commit"],
         "provider": "openrouter",
         "model": passed_model,
         "fallback_used": passed_model == FREE_FALLBACK_MODEL,
@@ -377,11 +377,11 @@ def run_live(selected_model: str | None = None) -> int:
         "stream_path": str(stream_path.relative_to(ROOT)),
         "trajectory_path": str(trajectory_path.relative_to(ROOT)),
     }
-    result_path = H01_DIR / "result.json"
+    result_path = BOOTSTRAP_RESULT_DIR / "result.json"
     result_path.write_text(
         json.dumps(result, indent=2) + "\n", encoding="utf-8"
     )
-    print("H01_LIVE=PASS")
+    print("HERMES_BOOTSTRAP_LIVE=PASS")
     print(json.dumps(result, indent=2))
     return 0
 
@@ -393,9 +393,9 @@ def run_offline(path: Path, expected_model: str) -> int:
             expected_model,
         )
     except (OSError, SmokeValidationError) as exc:
-        print(f"H01_OFFLINE=FAIL reason={exc}", file=sys.stderr)
+        print(f"HERMES_BOOTSTRAP_OFFLINE=FAIL reason={exc}", file=sys.stderr)
         return 1
-    print("H01_OFFLINE=PASS")
+    print("HERMES_BOOTSTRAP_OFFLINE=PASS")
     print(json.dumps(summary, indent=2))
     return 0
 
@@ -411,7 +411,7 @@ def main() -> int:
         "--model",
         choices=ALLOWED_LIVE_MODELS,
         help=(
-            "run only one accepted H-01 model; default live mode tries Luna "
+            "run only one accepted Hermes Bootstrap model; default live mode tries Luna "
             "then the pinned free fallback"
         ),
     )

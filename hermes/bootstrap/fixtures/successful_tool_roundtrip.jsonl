@@ -1,0 +1,5 @@
+{"type":"system","subtype":"init","model":"openai/gpt-6-luna","session_id":"offline-hermes-bootstrap","timestamp":1}
+{"type":"tool_use","name":"read_file","tool_call_id":"bootstrap-tool-1","input":{"path":"hermes/bootstrap/tool_read_fixture.txt"},"timestamp":2}
+{"type":"tool_result","name":"read_file","tool_call_id":"bootstrap-tool-1","output":"LEARNFLOW-BOOTSTRAP-FIXTURE-v1\n","duration_ms":1,"is_error":false,"timestamp":3}
+{"type":"text","text":"HERMES_BOOTSTRAP_OK:LEARNFLOW-BOOTSTRAP-FIXTURE-v1","timestamp":4}
+{"type":"result","session_id":"offline-hermes-bootstrap","exit_code":0,"text":"HERMES_BOOTSTRAP_OK:LEARNFLOW-BOOTSTRAP-FIXTURE-v1","tokens":{"input":10,"output":5,"total":15,"cache_read":0,"cache_write":0},"duration_ms":2,"timestamp":5}

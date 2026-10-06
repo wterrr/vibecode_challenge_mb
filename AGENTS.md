@@ -25,37 +25,64 @@ python scripts/verify_v2_core_freeze.py
 
 Do not modify files protected by the Core Freeze manifest during routine Hermes work. A genuine Core change requires the explicit CORE UNFREEZE → regression → Core Gate → evidence freeze → new Core Freeze cycle.
 
-## Hermes checkpoint discipline
+## Hermes stage discipline
 
-Work one Hermes checkpoint at a time in the order defined by `PLAN_V2.md`.
+Work one named Hermes stage at a time in the order defined by `PLAN_V2.md`. Names in source control, runtime paths, CI, logs, status files, tests, and documentation must describe their purpose. Do not introduce opaque ordinal checkpoint codes.
 
-Current checkpoint: H-01 Hermes bootstrap.
+Accepted stages:
 
-H-01 is limited to:
+- **Hermes Bootstrap — PASS.** The live OpenRouter smoke passed on 2026-10-06. The primary model was attempted first; the accepted free fallback `nvidia/nemotron-3.5-lightning:free` completed the read-tool round-trip. Offline verification and the Core Freeze guard also passed.
+- **LearnFlow Capability Plugin — PASS.** The exact pinned Hermes runtime discovers the project plugin and dispatches `learnflow_create → learnflow_run → learnflow_render`. Integration verification renders a real MP4 and preserves the Core Freeze boundary.
 
-- pinned Hermes runtime metadata;
-- OpenRouter/model configuration;
-- project context;
-- structured one-shot smoke testing;
-- trajectory/session export;
-- bootstrap documentation and tests.
+Next authorized stage: **Agent Contracts**. It has not started yet.
 
-Do not implement the LearnFlow Hermes plugin, research agents, pedagogy agents, Script Agent, Visual Director, QA routing, Skills, or Kanban in H-01.
+Do not implement Research Orchestration, Fact Verification, Pedagogy Agent, Script Agent, Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability until their named stage is active.
 
-## H-01 smoke safety
+## LearnFlow Capability Plugin safety
 
-The H-01 live smoke must be read-only. It may read `hermes/h01/smoke_fixture.txt` and return the expected sentinel, but it must not edit repository files. Use `openai/gpt-6-luna` as the primary model; the only accepted no-credit fallback for H-01 is `nvidia/nemotron-3.5-lightning:free`, and the result must record which model actually passed.
+The project-local plugin lives at `.hermes/plugins/learnflow/` and exposes exactly:
+
+- `learnflow_create`
+- `learnflow_run`
+- `learnflow_render`
+
+The model-facing surface is semantic only. It must not accept arbitrary output paths, pixel coordinates, absolute font sizes, renderer code, FFmpeg expressions, FPS/CRF/preset overrides, or renderer objects.
+
+`learnflow_render` must call the public `learnflow_v2.render.render_scene_video` facade. The plugin must not import `learnflow_v2.render.backend` or instantiate `DeterministicPillowRenderer` directly.
+
+Controlled artifacts belong under `.hermes_runtime/learnflow-plugin/runs/`. `LEARNFLOW_PLUGIN_RUNTIME_ROOT` is an operator/test override and is not a model-facing tool argument.
+
+Project plugins are trusted-code opt-in. Enable project-plugin discovery only for this trusted repository with `HERMES_ENABLE_PROJECT_PLUGINS=true`.
+
+## Hermes Bootstrap safety
+
+The live smoke is read-only. It may read `hermes/bootstrap/tool_read_fixture.txt` and return the expected sentinel, but it must not edit repository files.
+
+Use `openai/gpt-6-luna` as the primary model and `nvidia/nemotron-3.5-lightning:free` as the accepted no-credit fallback. Record which model actually passed.
 
 Never commit API keys or copy them into logs. `OPENROUTER_API_KEY` belongs only in the local ignored `.env` file or process environment.
 
 ## Verification
 
-For H-01 offline verification:
+Hermes Bootstrap:
 
 ```bash
-python scripts/run_hermes_h01_smoke.py --offline-fixture hermes/h01/fixtures/stream_success.jsonl
-pytest -q --confcutdir=tests/hermes tests/hermes/test_h01_bootstrap.py
+python scripts/run_hermes_bootstrap_smoke.py --offline-fixture hermes/bootstrap/fixtures/successful_tool_roundtrip.jsonl
+pytest -q --confcutdir=tests/hermes tests/hermes/test_bootstrap.py
 python scripts/verify_v2_core_freeze.py
 ```
 
-A checkpoint is not considered H-01 PASS until the real OpenRouter smoke returns `H01_LIVE=PASS`.
+LearnFlow Capability Plugin:
+
+```bash
+pytest -q --confcutdir=tests/hermes tests/hermes/test_learnflow_plugin.py
+python scripts/verify_v2_core_freeze.py
+```
+
+Pinned-runtime discovery and execution:
+
+```bash
+HERMES_ENABLE_PROJECT_PLUGINS=true \
+  .hermes_runtime/hermes-agent/venv/bin/python \
+  scripts/verify_learnflow_plugin.py
+```

@@ -1,0 +1,14 @@
+name: learnflow
+version: "0.1.0"
+description: "LearnFlow capability boundary: create semantic scene runs, compile through frozen Core V2, and render without exposing renderer internals."
+manifest_version: 2
+api_version: 1
+kind: backend
+provides_tools:
+  - learnflow_create
+  - learnflow_run
+  - learnflow_render
+python_dependencies:
+  - "pydantic>=2"
+  - "pillow"
+  - "kiwisolver==1.5.1"

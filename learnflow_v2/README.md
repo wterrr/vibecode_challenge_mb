@@ -23,8 +23,10 @@ V2-14  Video Critic                         PASS
 V2 Renderer + A/V Assembly                  PASS
 Frozen V2 End-to-End Benchmark v2           PASS
 CORE GATE                                   PASS
-CORE FREEZE                                 NEXT
-Hermes / V2D                                NOT YET AUTHORIZED
+CORE FREEZE                                 PASS
+Hermes Bootstrap                            PASS
+LearnFlow Capability Plugin                 PASS
+Agent Contracts                             NEXT
 ```
 
 ## Official Core Gate evidence
@@ -134,9 +136,11 @@ CORE GATE PASS
       ↓
 CORE FREEZE COMPLETE
       ↓
-V2D / Hermes
+Hermes Bootstrap PASS
       ↓
-H-01 — Hermes bootstrap
+LearnFlow Capability Plugin PASS
+      ↓
+Agent Contracts NEXT
 ```
 
 The Core is no longer an open implementation surface for routine Hermes work.
