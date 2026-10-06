@@ -179,6 +179,40 @@ def main() -> int:
         tool_call_id="tool.metric",
     )
     manager.invoke_hook(
+        "post_api_request",
+        model="gpt-4o",
+        provider="openai",
+        base_url="https://api.openai.com/v1",
+        usage={
+            "input_tokens": 1000,
+            "output_tokens": 100,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "reasoning_tokens": 0,
+            "request_count": 1,
+            "total_tokens": 1100,
+        },
+        api_duration=0.25,
+        session_id="session.pinned",
+        task_id="task.pinned",
+        turn_id="turn.pinned",
+        api_request_id="api.pinned",
+    )
+    manager.invoke_hook(
+        "api_request_error",
+        model="gpt-4o",
+        provider="openai",
+        retry_count=1,
+        max_retries=2,
+        retryable=True,
+        status_code=429,
+        session_id="session.pinned",
+        task_id="task.pinned",
+        turn_id="turn.pinned",
+        api_request_id="api.retry",
+    )
+
+    manager.invoke_hook(
         "on_session_start",
         session_id="session.pinned",
         model="nvidia/nemotron-3.5-lightning:free",
@@ -224,6 +258,8 @@ def main() -> int:
     required = {
         "pre_tool_call",
         "post_tool_call",
+        "post_api_request",
+        "api_request_error",
         "session_start",
         "session_end",
         "subagent_start",
@@ -233,6 +269,17 @@ def main() -> int:
         raise SystemExit(
             f"HERMES_RUNTIME_GOVERNANCE=FAIL missing events={sorted(required-kinds)!r}"
         )
+    api_rows = [item for item in lines if item["event"] == "post_api_request"]
+    if len(api_rows) != 1:
+        raise SystemExit("HERMES_RUNTIME_GOVERNANCE=FAIL post_api_request event missing")
+    api_row = api_rows[0]
+    if api_row.get("total_tokens") != 1100:
+        raise SystemExit("HERMES_RUNTIME_GOVERNANCE=FAIL normalized token metrics missing")
+    if api_row.get("estimated_cost_usd") is None:
+        raise SystemExit("HERMES_RUNTIME_GOVERNANCE=FAIL pinned cost estimate missing")
+    retry_rows = [item for item in lines if item["event"] == "api_request_error"]
+    if len(retry_rows) != 1 or retry_rows[0].get("retry_count") != 1:
+        raise SystemExit("HERMES_RUNTIME_GOVERNANCE=FAIL retry metrics missing")
     raw = EVENTS.read_text(encoding="utf-8")
     for secret in (
         "secret-path-not-persisted",
@@ -250,6 +297,8 @@ def main() -> int:
     print("tool_budget_block=PASS")
     print("authorized_publication=PASS")
     print("post_tool_metrics=PASS")
+    print("post_api_cost_metrics=PASS")
+    print("api_retry_metrics=PASS")
     print("session_lifecycle=PASS")
     print("subagent_lifecycle=PASS")
     print("sensitive_payload_not_persisted=PASS")
