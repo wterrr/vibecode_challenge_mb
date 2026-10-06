@@ -153,7 +153,7 @@ def _stack_in_zone(
         slot = Rect(x=zone.x, y=round(y, 4), width=zone.width, height=round(slot_h, 4))
         preferred_width = max(
             measurement.minimum_readable_width + 20.0,
-            min(measurement.width + 28.0, slot.width * 0.90),
+            min(measurement.width + 40.0, max(24.0, slot.width - 16.0)),
         )
         preferred_width = min(preferred_width, max(24.0, slot.width - 16.0))
         required_height = _wrapped_text_height(measurement, preferred_width) + 16.0
