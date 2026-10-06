@@ -357,3 +357,26 @@ def test_fact_report_can_be_stricter_than_baseline_gate():
     result = validate(plan, brief, pack, graph, stricter)
     assert PedagogyIssue.BLOCKED_CLAIM_REFERENCE in result.issues
     assert result.blocked_claim_ids == ("C1",)
+
+
+def test_hermes_task_rejects_forged_fact_approval_before_context_exposure():
+    brief, pack, graph, _ = fixture()
+    forged = FactVerificationReport(
+        report_id="fact.forged-for-context",
+        research_pack_id=pack.pack_id,
+        evidence_graph_id=graph.graph_id,
+        claims=(
+            ClaimVerification(
+                claim_id="C1",
+                grounded_source_ids=("S1",),
+                support_edge_ids=("E1",),
+            ),
+            ClaimVerification(
+                claim_id="C2",
+                grounded_source_ids=("S1",),
+                support_edge_ids=("E2",),
+            ),
+        ),
+    )
+    with pytest.raises(AgentContractError, match="approves claims blocked"):
+        build_pedagogy_agent_task(brief, pack, graph, forged)
