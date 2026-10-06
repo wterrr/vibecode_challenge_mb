@@ -142,11 +142,14 @@ def _stack_in_zone(
     specs: list[tuple[SceneNode, float, float]] = []
     for node in ordered:
         measurement = measurements[node.id]
+        # _fit_rect() already reserves 8px on each side. Do not subtract
+        # those margins here a second time; use the full candidate zone width
+        # for wrapping so one-line readable text is not needlessly wrapped.
         preferred_width = max(
             measurement.minimum_readable_width + 20.0,
-            min(measurement.width + 40.0, max(24.0, zone.width - 16.0)),
+            min(measurement.width + 40.0, zone.width),
         )
-        preferred_width = min(preferred_width, max(24.0, zone.width - 16.0))
+        preferred_width = min(preferred_width, zone.width)
         required_height = _wrapped_text_height(measurement, preferred_width) + 16.0
         specs.append((node, preferred_width, required_height))
 
