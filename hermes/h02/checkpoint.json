@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "checkpoint": "H-02",
+  "name": "LearnFlow plugin",
+  "state": "IMPLEMENTED_AWAITING_CI_AND_H01_LIVE",
+  "depends_on": {
+    "checkpoint": "H-01",
+    "required_state": "PASS",
+    "current_known_state": "IMPLEMENTED_AWAITING_LIVE_SMOKE"
+  },
+  "surface": {
+    "plugin_path": ".hermes/plugins/learnflow",
+    "toolset": "learnflow",
+    "tools": [
+      "learnflow_create",
+      "learnflow_run",
+      "learnflow_render"
+    ]
+  },
+  "acceptance": {
+    "hermes_discovers_project_plugin": true,
+    "create_run": true,
+    "compile_run": true,
+    "render_real_mp4": true,
+    "renderer_internals_exposed": false,
+    "agent_controlled_output_paths": false,
+    "agent_controlled_pixel_geometry": false,
+    "core_freeze_must_remain_complete": true
+  },
+  "notes": [
+    "H-02 implementation may be validated while H-01 live OpenRouter smoke is still pending, but the sequential Hermes milestone is not closed until H-01 passes.",
+    "H-02 deliberately implements only a bounded single-scene capability adapter. Agent contracts and Visual Director behavior belong to later checkpoints."
+  ]
+}
