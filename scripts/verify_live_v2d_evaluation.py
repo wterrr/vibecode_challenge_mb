@@ -23,8 +23,8 @@ def main() -> int:
     brief = build_pilot_brief()
     if brief.brief_id != f"live-eval:{PILOT_TOPIC_ID}":
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL pilot topic binding")
-    if DEFAULT_LIVE_MODEL != "nvidia/nemotron-3.5-lightning:free":
-        raise SystemExit("LIVE_V2D_CONTRACT=FAIL pilot must default to accepted free model")
+    if DEFAULT_LIVE_MODEL != "qwen/qwen3.8-27b:free":
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL pilot must default to Qwen structured-agent candidate")
 
     runtime = ROOT / ".hermes_runtime" / "live-v2d-contract"
     state = initialize_governance_state(runtime / "state.json")

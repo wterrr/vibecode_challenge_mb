@@ -24,7 +24,7 @@ from .hermes_runner import LiveHermesStructuredRunner
 
 ROOT = Path(__file__).resolve().parents[1]
 PILOT_TOPIC_ID = "lfb-001-cs"
-DEFAULT_LIVE_MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
+DEFAULT_LIVE_MODEL = "qwen/qwen3.8-27b:free"
 
 
 def _load_capability_plugin():
