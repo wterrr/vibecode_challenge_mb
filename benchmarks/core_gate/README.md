@@ -16,7 +16,7 @@ Current engine commit under evaluation:
 ca20c79c0e17f990ebfb4ed06f9b8988dbe74305
 ```
 
-Current known state is **BLOCKED**, because the repository has no V2 renderer/integration capable of producing end-to-end V2 render evidence, no frozen V2 end-to-end benchmark result, and no agreed V1-vs-V2 static-quality metric artifact.
+Current known state is **BLOCKED**. The deterministic V2 renderer baseline now exists, but there is still no frozen V2 end-to-end benchmark result and no agreed V1-vs-V2 static-quality metric artifact. The checked-in evidence manifest is intentionally still bound to the pre-renderer CP2.14 engine commit until a new reproducible benchmark run refreshes it.
 
 Run:
 

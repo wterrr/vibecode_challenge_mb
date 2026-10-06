@@ -144,7 +144,7 @@ def test_cli_fails_closed_for_current_repository():
     proc = subprocess.run([sys.executable, "scripts/evaluate_v2_core_gate.py"], capture_output=True, text=True, check=False)
     assert proc.returncode == 2
     assert "Decision: BLOCKED" in proc.stdout
-    assert "V2 renderer package/integration is missing" in proc.stdout
+    assert "No frozen V2 end-to-end benchmark baseline/results exist" in proc.stdout
 
 
 def test_model_construct_cannot_bypass_evidence_validation():
