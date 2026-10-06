@@ -31,8 +31,8 @@ def test_unknown_pilot_topic_fails_closed():
         build_pilot_brief("not-in-frozen-corpus")
 
 
-def test_default_live_model_is_accepted_free_fallback():
-    assert DEFAULT_LIVE_MODEL == "nvidia/nemotron-3.5-lightning:free"
+def test_default_live_model_is_primary_structured_agent_candidate():
+    assert DEFAULT_LIVE_MODEL == "nvidia/nemotron-3-super-120b-a12b:free"
 
 
 def test_governance_state_is_fail_closed(tmp_path):

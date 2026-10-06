@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
-      LEARNFLOW_LIVE_MODEL: nvidia/nemotron-3.5-lightning:free
+      LEARNFLOW_LIVE_MODEL: nvidia/nemotron-3-super-120b-a12b:free
       LEARNFLOW_LIVE_TOPIC_ID: lfb-001-cs
     steps:
       - uses: actions/checkout@v4
