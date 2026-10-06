@@ -6,6 +6,9 @@ from pathlib import Path
 from app.domain.lesson import LessonPlan
 from learnflow_v2.layout import compile_scene_layout, create_frame_profile_16_9, validate_layout_graph
 from learnflow_v2.scenegraph import adapt_v1_lesson_plan
+from learnflow_v2.qa import CriticPatchOp, CriticPatchSuggestion, CriticTargetKind, CriticTargetRef
+from learnflow_v2.repair import apply_safe_scenegraph_patches
+from learnflow_v2.scenegraph.enums import PreferredRegion
 
 
 FIXTURES = Path("benchmarks/fixtures/v1")
@@ -44,3 +47,24 @@ def test_frozen_v1_corpus_compiles_through_production_layout_router():
     assert "DIRECTED_GRAPH" in strategies
     assert "COMPARISON" in strategies
     assert "CONCEPT_CARD" in strategies
+
+
+def test_set_region_repair_changes_production_layout_geometry():
+    profile = create_frame_profile_16_9(640.0, 360.0)
+    fixture = FIXTURES / "photosynthesis.json"
+    plan = LessonPlan.model_validate(json.loads(fixture.read_text(encoding="utf-8")))
+    scene = adapt_v1_lesson_plan(plan).scene_graphs[0]
+    target = sorted(scene.nodes, key=lambda node: node.id)[0]
+    before = compile_scene_layout(scene, profile=profile)
+    patch = CriticPatchSuggestion(
+        patch_id="region-right",
+        op=CriticPatchOp.SET_REGION,
+        targets=(CriticTargetRef(kind=CriticTargetKind.NODE, target_id=target.id),),
+        region=PreferredRegion.RIGHT,
+    )
+    repaired = apply_safe_scenegraph_patches(scene, (patch,))
+    after = compile_scene_layout(repaired.scene_graph, profile=profile)
+    before_box = next(box.rect for box in before.boxes if box.node_id == target.id)
+    after_box = next(box.rect for box in after.boxes if box.node_id == target.id)
+    assert repaired.original_scene_hash != repaired.repaired_scene_hash
+    assert after_box != before_box
