@@ -22,3 +22,13 @@ This stage uses Hermes to turn a validated `PedagogyPlan` into a claim-preservin
 ## Boundary
 
 Script Agent writes narrative structure only. It must not create SceneGraph objects, choose geometry/layout/motion/camera/typography, call renderers, emit FFmpeg commands, or implement Visual Director.
+
+## Verification
+
+Run the deterministic gate and regression suite:
+
+    python scripts/verify_script_agent.py
+    pytest -q --confcutdir=tests/hermes tests/hermes/test_script_agent.py
+    python scripts/verify_v2_core_freeze.py
+
+Exact pinned Hermes schema compatibility is verified by `scripts/verify_hermes_script_agent.py` in the Script Agent workflow.
