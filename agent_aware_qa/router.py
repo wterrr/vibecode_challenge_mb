@@ -11,13 +11,18 @@ from agent_contracts import (
     PedagogyPlan,
     ResearchPack,
 )
-from learnflow_v2.qa import CriticTargetKind, QAIssueSeverity
+from learnflow_v2.qa import (
+    CriticGateState,
+    CriticTargetKind,
+    QAIssueSeverity,
+)
 from learnflow_v2.repair import (
     RepairChangeKind,
     RepairLevel,
     build_repair_plan,
 )
 from learnflow_v2.videoqa import (
+    VideoCriticGateState,
     VideoCriticStatus,
     VideoRecommendationOp,
 )
@@ -26,11 +31,14 @@ from visual_director import VisualDirectorOutput
 from .models import (
     AgentAwareQAReport,
     AgentAwareRoutingPlan,
+    QABlocker,
+    QABlockerKind,
     QARoutingContext,
     RepairActionKind,
     RepairIntent,
     RepairOwner,
     RepairSourceKind,
+    SceneObjectScope,
     SemanticFindingKind,
     SemanticQAFinding,
 )
@@ -98,6 +106,22 @@ _VIDEO_ROUTE = {
     ),
 }
 
+_SCENE_CRITIC_FAILURES = {
+    CriticGateState.UNAVAILABLE,
+    CriticGateState.TIMEOUT,
+    CriticGateState.QUOTA_EXCEEDED,
+    CriticGateState.PROVIDER_ERROR,
+    CriticGateState.INVALID_RESPONSE,
+}
+
+_VIDEO_CRITIC_FAILURES = {
+    VideoCriticGateState.UNAVAILABLE,
+    VideoCriticGateState.TIMEOUT,
+    VideoCriticGateState.QUOTA_EXCEEDED,
+    VideoCriticGateState.PROVIDER_ERROR,
+    VideoCriticGateState.INVALID_RESPONSE,
+}
+
 
 def build_routing_context(
     *,
@@ -106,13 +130,29 @@ def build_routing_context(
     script: LessonScript,
     visual: VisualDirectorOutput,
 ) -> QARoutingContext:
+    graphs = {graph.scene_id: graph for graph in visual.scenegraphs}
+    scene_ids = tuple(scene.scene_id for scene in visual.storyboard.scenes)
+    if set(graphs) != set(scene_ids):
+        raise AgentContractError(
+            "Agent-Aware QA requires exact Storyboard/SceneGraph scene coverage"
+        )
+    scopes = tuple(
+        SceneObjectScope(
+            scene_id=scene_id,
+            node_ids=tuple(node.id for node in graphs[scene_id].nodes),
+            relation_ids=tuple(relation.id for relation in graphs[scene_id].relations),
+            group_ids=tuple(group.id for group in graphs[scene_id].groups),
+        )
+        for scene_id in scene_ids
+    )
     return QARoutingContext(
-        scene_ids=tuple(scene.scene_id for scene in visual.storyboard.scenes),
+        scene_ids=scene_ids,
         claim_ids=tuple(claim.claim_id for claim in pack.claims),
         segment_ids=tuple(segment.segment_id for segment in script.segments),
         objective_ids=tuple(
             objective.objective_id for objective in pedagogy.learning_objectives
         ),
+        scene_objects=scopes,
     )
 
 
@@ -132,13 +172,46 @@ def _validate_semantic_finding(
     _require_known(finding.objective_ids, context.objective_ids, "objective_ids")
 
 
+def _scene_scope(context: QARoutingContext, scene_id: str) -> SceneObjectScope:
+    for scope in context.scene_objects:
+        if scope.scene_id == scene_id:
+            return scope
+    raise AgentContractError(
+        f"Agent-Aware QA has no object scope for scene {scene_id!r}"
+    )
+
+
+def _validate_critic_targets(scene_id: str, response, context: QARoutingContext) -> None:
+    scope = _scene_scope(context, scene_id)
+    allowed = {
+        CriticTargetKind.NODE: set(scope.node_ids),
+        CriticTargetKind.RELATION: set(scope.relation_ids),
+        CriticTargetKind.GROUP: set(scope.group_ids),
+    }
+    targets = [
+        target
+        for issue in response.issues
+        for target in issue.targets
+    ] + [
+        target
+        for patch in response.patches
+        for target in patch.targets
+    ]
+    for target in targets:
+        if target.kind == CriticTargetKind.SCENE:
+            continue
+        if target.target_id not in allowed[target.kind]:
+            raise AgentContractError(
+                "Agent-Aware QA critic response references unknown "
+                f"{target.kind.value} {target.target_id!r} in scene {scene_id!r}"
+            )
+
+
 def _intent_id(source_kind: RepairSourceKind, scope: str, source_id: str) -> str:
     return f"qa-route:{source_kind.value.lower()}:{scope}:{source_id}"
 
 
-def _semantic_intent(
-    finding: SemanticQAFinding,
-) -> RepairIntent:
+def _semantic_intent(finding: SemanticQAFinding) -> RepairIntent:
     owner, action = _SEMANTIC_ROUTE[finding.kind]
     return RepairIntent(
         intent_id=_intent_id(
@@ -161,7 +234,9 @@ def _matching_critic_reason(response, patch) -> str:
     reasons: list[str] = []
     for issue in response.issues:
         issue_targets = {(target.kind, target.target_id) for target in issue.targets}
-        scene_scope = any(kind == CriticTargetKind.SCENE for kind, _ in patch_targets)
+        scene_scope = any(
+            kind == CriticTargetKind.SCENE for kind, _ in patch_targets
+        )
         if scene_scope or not patch_targets.isdisjoint(issue_targets):
             reasons.append(issue.reason)
     if reasons:
@@ -183,31 +258,38 @@ def _stable_plan_id(report: AgentAwareQAReport, context: QARoutingContext) -> st
     return "qa-routing:" + hashlib.sha256(raw).hexdigest()[:16]
 
 
+def _failure_reason(warnings: tuple[str, ...], fallback: str) -> str:
+    return " | ".join(warnings) if warnings else fallback
+
+
 def route_agent_aware_qa(
     report: AgentAwareQAReport,
     *,
     context: QARoutingContext,
 ) -> AgentAwareRoutingPlan:
-    """Route QA failures to the layer that is allowed to repair them."""
+    """Route validated QA failures to the layer that is allowed to repair them."""
 
     report = AgentAwareQAReport.model_validate(report.model_dump(mode="json"))
     context = QARoutingContext.model_validate(context.model_dump(mode="json"))
     intents: list[RepairIntent] = []
+    blockers: list[QABlocker] = []
 
     for finding in report.semantic_findings:
         _validate_semantic_finding(finding, context)
         intents.append(_semantic_intent(finding))
 
-    for deterministic in report.deterministic_reports:
-        _require_known((deterministic.scene_id,), context.scene_ids, "scene_ids")
-        for issue in deterministic.issues:
+    for quality in report.scene_quality_results:
+        _require_known((quality.scene_id,), context.scene_ids, "scene_ids")
+
+        error_count_before = len(intents)
+        for issue in quality.deterministic_report.issues:
             if issue.severity != QAIssueSeverity.ERROR:
                 continue
             intents.append(
                 RepairIntent(
                     intent_id=_intent_id(
                         RepairSourceKind.DETERMINISTIC_QA,
-                        deterministic.scene_id,
+                        quality.scene_id,
                         issue.issue_id,
                     ),
                     source_kind=RepairSourceKind.DETERMINISTIC_QA,
@@ -215,60 +297,116 @@ def route_agent_aware_qa(
                     owner=RepairOwner.CORE_REPAIR,
                     action=RepairActionKind.CORE_DETERMINISTIC_REPAIR,
                     reason=issue.message,
-                    scene_ids=(deterministic.scene_id,),
+                    scene_ids=(quality.scene_id,),
                     object_ids=issue.object_ids,
                 )
             )
 
-    for scene_report in report.scene_critic_repairs:
-        _require_known((scene_report.scene_id,), context.scene_ids, "scene_ids")
-        repair_plan = build_repair_plan(scene_report.scene_id, scene_report.response)
-        for action in repair_plan.actions:
-            semantic_regeneration = (
-                action.change_kind == RepairChangeKind.SCENEGRAPH_STRUCTURE
-                or action.level >= RepairLevel.SCENE_REGENERATION_REQUEST
+        if not quality.deterministic_report.passed:
+            if len(intents) == error_count_before:
+                blockers.append(
+                    QABlocker(
+                        blocker_id=f"qa-blocker:scene:{quality.scene_id}:deterministic",
+                        kind=QABlockerKind.SCENE_QUALITY_GATE,
+                        state="DETERMINISTIC_FAIL",
+                        reason="Deterministic QA failed without a routable ERROR issue.",
+                        scene_ids=(quality.scene_id,),
+                    )
+                )
+            continue
+
+        if quality.critic_state == CriticGateState.REPAIR_REQUIRED:
+            assert quality.critic_response is not None
+            _validate_critic_targets(
+                quality.scene_id, quality.critic_response, context
             )
-            if semantic_regeneration:
-                owner = RepairOwner.VISUAL_DIRECTOR
-                route_action = RepairActionKind.VISUAL_SEMANTIC_REGENERATION
-                core_patch_ids: tuple[str, ...] = ()
-            else:
-                owner = RepairOwner.CORE_REPAIR
-                route_action = RepairActionKind.CORE_SELECTIVE_REPAIR
-                core_patch_ids = (action.patch_id,)
-            intents.append(
-                RepairIntent(
-                    intent_id=_intent_id(
-                        RepairSourceKind.SCENE_CRITIC,
-                        scene_report.scene_id,
-                        action.patch_id,
+            repair_plan = build_repair_plan(
+                quality.scene_id, quality.critic_response
+            )
+            for action in repair_plan.actions:
+                semantic_regeneration = (
+                    action.change_kind == RepairChangeKind.SCENEGRAPH_STRUCTURE
+                    or action.level >= RepairLevel.SCENE_REGENERATION_REQUEST
+                )
+                if semantic_regeneration:
+                    owner = RepairOwner.VISUAL_DIRECTOR
+                    route_action = RepairActionKind.VISUAL_SEMANTIC_REGENERATION
+                    core_patch_ids: tuple[str, ...] = ()
+                else:
+                    owner = RepairOwner.CORE_REPAIR
+                    route_action = RepairActionKind.CORE_SELECTIVE_REPAIR
+                    core_patch_ids = (action.patch_id,)
+                intents.append(
+                    RepairIntent(
+                        intent_id=_intent_id(
+                            RepairSourceKind.SCENE_CRITIC,
+                            quality.scene_id,
+                            action.patch_id,
+                        ),
+                        source_kind=RepairSourceKind.SCENE_CRITIC,
+                        source_id=action.patch_id,
+                        owner=owner,
+                        action=route_action,
+                        reason=_matching_critic_reason(
+                            quality.critic_response, action.patch
+                        ),
+                        scene_ids=(quality.scene_id,),
+                        object_ids=action.target_ids,
+                        core_patch_ids=core_patch_ids,
+                    )
+                )
+        elif (
+            not quality.approved
+            and quality.critic_state in _SCENE_CRITIC_FAILURES
+        ):
+            blockers.append(
+                QABlocker(
+                    blocker_id=(
+                        f"qa-blocker:scene:{quality.scene_id}:"
+                        f"{quality.critic_state.value.lower()}"
                     ),
-                    source_kind=RepairSourceKind.SCENE_CRITIC,
-                    source_id=action.patch_id,
-                    owner=owner,
-                    action=route_action,
-                    reason=_matching_critic_reason(
-                        scene_report.response, action.patch
+                    kind=QABlockerKind.SCENE_QUALITY_GATE,
+                    state=quality.critic_state.value,
+                    reason=_failure_reason(
+                        quality.warnings,
+                        "Strict scene critic failure blocks publication.",
                     ),
-                    scene_ids=(scene_report.scene_id,),
-                    object_ids=action.target_ids,
-                    core_patch_ids=core_patch_ids,
+                    scene_ids=(quality.scene_id,),
                 )
             )
 
-    video_response = report.video_critic_response
-    if video_response is not None:
-        if video_response.status == VideoCriticStatus.REVIEW_REQUIRED:
+    video_result = report.video_critic_result
+    if video_result is not None:
+        request_scene_ids = tuple(scene.scene_id for scene in video_result.request.scenes)
+        if set(request_scene_ids) != set(context.scene_ids):
+            raise AgentContractError(
+                "Agent-Aware QA VideoCriticResult scene scope does not match current lesson"
+            )
+        if set(video_result.request.lesson_objective_ids) != set(context.objective_ids):
+            raise AgentContractError(
+                "Agent-Aware QA VideoCriticResult objective scope does not match current lesson"
+            )
+
+        if video_result.state == VideoCriticGateState.REVIEW_REQUIRED:
+            assert video_result.response is not None
+            response = video_result.response
+            if response.status != VideoCriticStatus.REVIEW_REQUIRED:
+                raise AgentContractError(
+                    "video critic REVIEW_REQUIRED state must carry review response"
+                )
             issue_reasons = {
                 scene_id: []
-                for issue in video_response.issues
+                for issue in response.issues
                 for scene_id in issue.scene_ids
             }
-            for issue in video_response.issues:
+            for issue in response.issues:
+                _require_known(issue.scene_ids, context.scene_ids, "scene_ids")
                 for scene_id in issue.scene_ids:
                     issue_reasons.setdefault(scene_id, []).append(issue.reason)
-            for recommendation in video_response.recommendations:
-                _require_known(recommendation.scene_ids, context.scene_ids, "scene_ids")
+            for recommendation in response.recommendations:
+                _require_known(
+                    recommendation.scene_ids, context.scene_ids, "scene_ids"
+                )
                 owner, route_action = _VIDEO_ROUTE[recommendation.op]
                 reasons = [
                     reason
@@ -293,10 +431,30 @@ def route_agent_aware_qa(
                         scene_ids=recommendation.scene_ids,
                     )
                 )
+        elif (
+            not video_result.approved
+            and video_result.state in _VIDEO_CRITIC_FAILURES
+        ):
+            blockers.append(
+                QABlocker(
+                    blocker_id=(
+                        "qa-blocker:video:"
+                        f"{video_result.state.value.lower()}"
+                    ),
+                    kind=QABlockerKind.VIDEO_QUALITY_GATE,
+                    state=video_result.state.value,
+                    reason=_failure_reason(
+                        video_result.warnings,
+                        "Strict video critic failure blocks publication.",
+                    ),
+                    scene_ids=context.scene_ids,
+                )
+            )
 
     return AgentAwareRoutingPlan(
         plan_id=_stable_plan_id(report, context),
         report_id=report.report_id,
         intents=tuple(intents),
-        publication_blocked=bool(intents),
+        blockers=tuple(blockers),
+        publication_blocked=bool(intents or blockers),
     )
