@@ -135,7 +135,7 @@ def build_chain():
             ),
         ),
     )
-    pedagogy.validate_against_evidence(evidence)
+    pedagogy.validate_against(brief, pack, evidence)
 
     script = LessonScript(
         script_id="script.gradient-descent",
