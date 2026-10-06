@@ -11,7 +11,8 @@ This directory implements the first Hermes checkpoint from `PLAN_V2.md`.
 | Package version | `0.21.5` |
 | Commit | `f97608f178d1ffeca59860195ab7da295f7c8e5f` |
 | Provider | `openrouter` |
-| Model | `openai/gpt-6-luna` |
+| Primary model | `openai/gpt-6-luna` |
+| Free fallback | `nvidia/nemotron-3.5-lightning:free` |
 | Programmatic protocol | `--format stream-json` |
 
 The release tag resolves to the exact commit above. Do not install from Hermes `main` for this checkpoint.
@@ -61,7 +62,7 @@ From the repository root:
 python scripts/run_hermes_h01_smoke.py
 ```
 
-The smoke launches Hermes with provider `openrouter`, model `openai/gpt-6-luna`, file tools only, `--format stream-json`, and a read-only request that must read `hermes/h01/smoke_fixture.txt`.
+The smoke launches Hermes with provider `openrouter`, file tools only, `--format stream-json`, and a read-only request that must read `hermes/h01/smoke_fixture.txt`. It tries `openai/gpt-6-luna` first; if that attempt does not satisfy H-01 (for example because the key has no paid credit or the primary endpoint is unavailable), it retries once with `nvidia/nemotron-3.5-lightning:free`. The result records the model that actually passed.
 
 Pass criteria:
 
@@ -74,7 +75,7 @@ system/init event exists
 → session trajectory exports successfully with --redact
 ```
 
-On success the script prints `H01_LIVE=PASS`.
+On success the script prints `H01_LIVE=PASS` and records `model` plus `fallback_used` in `.hermes_runtime/h01/result.json`. The free fallback is for non-sensitive smoke/evaluation only; do not send confidential or personal data through it.
 
 Local artifacts are written under the ignored path:
 
