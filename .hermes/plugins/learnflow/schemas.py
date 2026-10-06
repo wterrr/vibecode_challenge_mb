@@ -1,9 +1,9 @@
-"""Model-facing schemas for the H-02 LearnFlow Hermes plugin."""
+"""Model-facing schemas for the LearnFlow Capability Plugin LearnFlow Hermes plugin."""
 
 RUN_ID = {
     "type": "string",
     "pattern": "^[0-9a-f]{16}$",
-    "description": "Deterministic LearnFlow H-02 run identifier returned by learnflow_create.",
+    "description": "Deterministic LearnFlow LearnFlow Capability Plugin run identifier returned by learnflow_create.",
 }
 
 LEARNFLOW_CREATE_SCHEMA = {
@@ -22,7 +22,7 @@ LEARNFLOW_CREATE_SCHEMA = {
             "motion_plan": {
                 "type": "object",
                 "description": (
-                    "Optional schema-valid Tier-1 MotionPlan. H-02 accepts only untriggered motion; "
+                    "Optional schema-valid Tier-1 MotionPlan. LearnFlow Capability Plugin accepts only untriggered motion; "
                     "narration beat orchestration arrives in later checkpoints."
                 ),
             },
@@ -55,7 +55,7 @@ LEARNFLOW_RUN_SCHEMA = {
 LEARNFLOW_RENDER_SCHEMA = {
     "name": "learnflow_render",
     "description": (
-        "Render a compiled LearnFlow H-02 run through the frozen public render_scene_video facade. "
+        "Render a compiled LearnFlow LearnFlow Capability Plugin run through the frozen public render_scene_video facade. "
         "The output path and render profile are controlled by LearnFlow and cannot be selected by the agent."
     ),
     "parameters": {

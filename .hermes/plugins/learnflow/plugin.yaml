@@ -1,6 +1,6 @@
 name: learnflow
 version: "0.1.0"
-description: "LearnFlow H-02 capability boundary: create semantic scene runs, compile through frozen Core V2, and render without exposing renderer internals."
+description: "LearnFlow capability boundary: create semantic scene runs, compile through frozen Core V2, and render without exposing renderer internals."
 manifest_version: 2
 api_version: 1
 kind: backend

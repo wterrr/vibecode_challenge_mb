@@ -21,7 +21,7 @@ class FakeContext:
 
 
 def _load_plugin():
-    package_name = "learnflow_h02_test_plugin"
+    package_name = "learnflow_plugin_test_package"
     for key in list(sys.modules):
         if key == package_name or key.startswith(package_name + "."):
             sys.modules.pop(key, None)
@@ -46,7 +46,7 @@ def _decode(raw: str) -> dict:
 def _scene_payload() -> dict:
     return {
         "schema_version": "2.1",
-        "scene_id": "h02_smoke",
+        "scene_id": "learnflow_plugin_smoke",
         "purpose": "EXPLAIN",
         "concept": "Gradient descent",
         "nodes": [
@@ -115,7 +115,7 @@ def test_plugin_does_not_import_renderer_internals_or_execute_arbitrary_code():
 def test_create_rejects_agent_geometry_without_writing_runtime(monkeypatch, tmp_path):
     plugin = _load_plugin()
     runtime = tmp_path / "runtime"
-    monkeypatch.setenv("LEARNFLOW_H02_RUNTIME_ROOT", str(runtime))
+    monkeypatch.setenv("LEARNFLOW_PLUGIN_RUNTIME_ROOT", str(runtime))
 
     scene = _scene_payload()
     scene["nodes"][0]["x"] = 123
@@ -129,24 +129,24 @@ def test_create_rejects_agent_geometry_without_writing_runtime(monkeypatch, tmp_
     )
 
     assert result["success"] is False
-    assert result["error"]["code"] == "H02_BOUNDARY_VIOLATION"
+    assert result["error"]["code"] == "LEARNFLOW_PLUGIN_BOUNDARY_VIOLATION"
     assert "$.scene_graph.nodes[0].x" in result["forbidden_paths"]
     assert not runtime.exists()
 
 
 def test_render_rejects_agent_renderer_controls(monkeypatch, tmp_path):
     plugin = _load_plugin()
-    monkeypatch.setenv("LEARNFLOW_H02_RUNTIME_ROOT", str(tmp_path / "runtime"))
+    monkeypatch.setenv("LEARNFLOW_PLUGIN_RUNTIME_ROOT", str(tmp_path / "runtime"))
     result = _decode(plugin.handle_render({"run_id": "0" * 16, "fps": 120}))
     assert result["success"] is False
-    assert result["error"]["code"] == "H02_UNEXPECTED_ARGUMENT"
+    assert result["error"]["code"] == "LEARNFLOW_PLUGIN_UNEXPECTED_ARGUMENT"
 
 
-@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg is required for real H-02 render")
+@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg is required for real LearnFlow Capability Plugin render")
 def test_create_run_render_real_mp4(monkeypatch, tmp_path):
     plugin = _load_plugin()
     runtime = tmp_path / "runtime"
-    monkeypatch.setenv("LEARNFLOW_H02_RUNTIME_ROOT", str(runtime))
+    monkeypatch.setenv("LEARNFLOW_PLUGIN_RUNTIME_ROOT", str(runtime))
 
     created = _decode(
         plugin.handle_create(
@@ -168,7 +168,7 @@ def test_create_run_render_real_mp4(monkeypatch, tmp_path):
     rendered = _decode(plugin.handle_render({"run_id": run_id}))
     assert rendered["success"] is True
     assert rendered["stage"] == "RENDERED"
-    assert rendered["output"] == f".hermes_runtime/h02/runs/{run_id}/render/scene.mp4"
+    assert rendered["output"] == f".hermes_runtime/learnflow-plugin/runs/{run_id}/render/scene.mp4"
     assert rendered["frame_count"] == 6
     assert rendered["fps"] == 30
 

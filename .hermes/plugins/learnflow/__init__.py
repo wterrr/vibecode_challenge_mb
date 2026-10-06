@@ -1,4 +1,4 @@
-"""Hermes project plugin exposing the bounded LearnFlow H-02 capability surface."""
+"""Hermes project plugin exposing the bounded LearnFlow LearnFlow Capability Plugin capability surface."""
 
 from .schemas import (
     LEARNFLOW_CREATE_SCHEMA,
@@ -9,7 +9,7 @@ from .tools import handle_create, handle_render, handle_run
 
 
 def register(ctx) -> None:
-    """Register exactly the three H-02 capability tools under one toolset."""
+    """Register exactly the three LearnFlow Capability Plugin capability tools under one toolset."""
     ctx.register_tool(
         name="learnflow_create",
         toolset="learnflow",

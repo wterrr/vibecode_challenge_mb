@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify H-02 through the real pinned Hermes plugin registry and handlers."""
+"""Verify the LearnFlow Capability Plugin through the real pinned Hermes plugin registry and handlers."""
 
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ import shutil
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_VERIFY_HOME = ROOT / ".hermes_runtime" / "h02" / "verify-home"
-SMOKE_RUNTIME = ROOT / ".hermes_runtime" / "h02" / "registry-smoke-runs"
+DEFAULT_VERIFY_HOME = ROOT / ".hermes_runtime" / "learnflow-plugin" / "verify-home"
+SMOKE_RUNTIME = ROOT / ".hermes_runtime" / "learnflow-plugin" / "registry-smoke-runs"
 EXPECTED_TOOLS = {"learnflow_create", "learnflow_run", "learnflow_render"}
 
 
@@ -33,7 +33,7 @@ def _require_success(name: str, raw) -> dict:
 def _smoke_scene() -> dict:
     return {
         "schema_version": "2.1",
-        "scene_id": "h02_pinned_registry_smoke",
+        "scene_id": "learnflow_plugin_registry_smoke",
         "purpose": "EXPLAIN",
         "concept": "Gradient descent",
         "nodes": [
@@ -56,12 +56,12 @@ def _smoke_scene() -> dict:
 
 
 def _prepare_home_if_needed(home: Path) -> None:
-    """Create the isolated H-02 Hermes profile from the pinned H-01 template."""
+    """Create the isolated LearnFlow Capability Plugin Hermes profile from the pinned H-01 template."""
     config_path = home / "config.yaml"
     if config_path.exists():
         return
     home.mkdir(parents=True, exist_ok=True)
-    base_config = (ROOT / "hermes" / "h01" / "config.yaml").read_text(encoding="utf-8").rstrip()
+    base_config = (ROOT / "hermes" / "bootstrap" / "config.yaml").read_text(encoding="utf-8").rstrip()
     config_path.write_text(base_config + "\n", encoding="utf-8")
 
 
@@ -87,9 +87,9 @@ def _enable_project_plugin_and_install_deps(home: Path) -> None:
     outcome = install_for_plugin_dir(ROOT / ".hermes" / "plugins" / "learnflow")
     if outcome.status not in {"installed", "none"}:
         raise RuntimeError(
-            f"H-02 dependency install failed: status={outcome.status} message={outcome.message}"
+            f"LearnFlow Capability Plugin dependency install failed: status={outcome.status} message={outcome.message}"
         )
-    print(f"H02_PLUGIN_DEPS={outcome.status.upper()} specs={list(outcome.specs)}")
+    print(f"LEARNFLOW_PLUGIN_PLUGIN_DEPS={outcome.status.upper()} specs={list(outcome.specs)}")
 
 
 def main() -> int:
@@ -99,7 +99,7 @@ def main() -> int:
 
     os.environ["HERMES_HOME"] = str(home)
     os.environ["HERMES_ENABLE_PROJECT_PLUGINS"] = "true"
-    os.environ["LEARNFLOW_H02_RUNTIME_ROOT"] = str(SMOKE_RUNTIME)
+    os.environ["LEARNFLOW_PLUGIN_RUNTIME_ROOT"] = str(SMOKE_RUNTIME)
     shutil.rmtree(SMOKE_RUNTIME, ignore_errors=True)
 
     _enable_project_plugin_and_install_deps(home)
@@ -111,7 +111,7 @@ def main() -> int:
     rows = get_plugin_manager().list_plugins()
     matches = [row for row in rows if row.get("name") == "learnflow"]
     if len(matches) != 1:
-        raise SystemExit(f"H02_PLUGIN_DISCOVERY=FAIL expected one learnflow plugin, got {matches!r}")
+        raise SystemExit(f"LEARNFLOW_PLUGIN_PLUGIN_DISCOVERY=FAIL expected one learnflow plugin, got {matches!r}")
 
     row = matches[0]
     failures = []
@@ -129,9 +129,9 @@ def main() -> int:
         failures.append(f"registered_tools={sorted(registered)!r}")
 
     if failures:
-        raise SystemExit("H02_PLUGIN_DISCOVERY=FAIL " + " ".join(failures))
+        raise SystemExit("LEARNFLOW_PLUGIN_PLUGIN_DISCOVERY=FAIL " + " ".join(failures))
 
-    print("H02_PLUGIN_DISCOVERY=PASS")
+    print("LEARNFLOW_PLUGIN_PLUGIN_DISCOVERY=PASS")
     print("plugin=learnflow source=project enabled=true tools=3")
 
     created = _require_success(
@@ -153,13 +153,13 @@ def main() -> int:
 
     output = SMOKE_RUNTIME / run_id / "render" / "scene.mp4"
     if not output.is_file() or output.stat().st_size <= 0:
-        raise SystemExit("H02_PINNED_RUNTIME=FAIL real MP4 missing or empty")
+        raise SystemExit("LEARNFLOW_PLUGIN_PINNED_RUNTIME=FAIL real MP4 missing or empty")
     if compiled.get("stage") != "COMPILED" or rendered.get("stage") != "RENDERED":
         raise SystemExit(
-            f"H02_PINNED_RUNTIME=FAIL stages compile={compiled.get('stage')} render={rendered.get('stage')}"
+            f"LEARNFLOW_PLUGIN_PINNED_RUNTIME=FAIL stages compile={compiled.get('stage')} render={rendered.get('stage')}"
         )
 
-    print("H02_PINNED_RUNTIME=PASS")
+    print("LEARNFLOW_PLUGIN_PINNED_RUNTIME=PASS")
     print(f"run_id={run_id} frame_count={rendered['frame_count']} fps={rendered['fps']}")
     return 0
 
