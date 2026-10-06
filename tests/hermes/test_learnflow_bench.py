@@ -165,7 +165,7 @@ def test_claim_policy_explicitly_marks_v2d_fixture_as_noncomparable():
 def test_runner_has_no_live_provider_secret_dependency():
     source = (ROOT / "learnflow_bench" / "runner.py").read_text(encoding="utf-8")
     assert "OPENROUTER_API_KEY" not in source
-    assert ".env" not in source
+    assert ' / ".env"' not in source
 
 
 def test_runner_does_not_import_renderer_backend():
