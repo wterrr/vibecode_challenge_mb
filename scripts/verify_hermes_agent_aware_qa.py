@@ -62,6 +62,7 @@ def main() -> int:
     print("runtime=exact pinned Hermes")
     print("research_repair_schema=PASS")
     print("script_repair_schema=PASS")
+    print("pedagogy_repair_schema=PASS")
     print("visual_repair_schema=PASS")
     print("core_delegation_blocked=PASS")
     return 0
