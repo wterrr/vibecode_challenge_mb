@@ -1,0 +1,177 @@
+from __future__ import annotations
+
+from pathlib import Path
+import shutil
+
+import pytest
+
+from learnflow_v2.layout.schema import (
+    GraphBackendKind, LayoutBox, LayoutGraph, LayoutStrategy, Point, Rect,
+    RoutedEdge, RoutingStyle,
+)
+from learnflow_v2.motion.compiler import (
+    CompiledMotionArtifact, CompiledMotionEvent, PropertyKeyframe, PropertyTrack,
+    PropertyTrackKind,
+)
+from learnflow_v2.motion.enums import MotionStyle, MotionTargetKind, MotionVerb
+from learnflow_v2.render import (
+    DeterministicPillowRenderer, RenderArtifactKind, RenderInvalidInputError,
+    RenderProfile, assemble_video, render_scene_video, render_transition_video,
+)
+from learnflow_v2.scenegraph.enums import LayoutIntent, NodeKind, RelationKind
+from learnflow_v2.scenegraph.schema import (
+    LayoutIntentSpec, SceneGraph, SceneNode, SceneRelation,
+)
+from learnflow_v2.transitions.schema import (
+    InterSceneTransitionPlan, PersistentObjectTransition, TransitionOperation,
+)
+
+
+def _scene(scene_id: str, *, suffix: str = "") -> SceneGraph:
+    return SceneGraph(
+        scene_id=scene_id,
+        nodes=[
+            SceneNode(id=f"a{suffix}", kind=NodeKind.CONCEPT, label="Input"),
+            SceneNode(id=f"b{suffix}", kind=NodeKind.CONCEPT, label="Output"),
+        ],
+        relations=[
+            SceneRelation(id=f"r{suffix}", source=f"a{suffix}", target=f"b{suffix}", kind=RelationKind.FLOW)
+        ],
+        layout_intent=LayoutIntentSpec(type=LayoutIntent.PROCESS),
+    )
+
+
+def _layout(scene_id: str, *, suffix: str = "", shift: float = 0.0, feasible: bool = True) -> LayoutGraph:
+    return LayoutGraph(
+        scene_id=scene_id,
+        frame_profile_id="test-320x180",
+        frame_width=320,
+        frame_height=180,
+        boxes=[
+            LayoutBox(node_id=f"a{suffix}", rect=Rect(x=25+shift, y=55, width=90, height=60), zone="CONTENT"),
+            LayoutBox(node_id=f"b{suffix}", rect=Rect(x=205+shift, y=55, width=90, height=60), zone="CONTENT"),
+        ],
+        routed_edges=[
+            RoutedEdge(
+                edge_id=f"r{suffix}", source=f"a{suffix}", target=f"b{suffix}",
+                points=[Point(x=115+shift, y=85), Point(x=205+shift, y=85)],
+                routing_style=RoutingStyle.ORTHOGONAL, backend=GraphBackendKind.GRAPHVIZ,
+            )
+        ],
+        strategy=LayoutStrategy.DIRECTED_GRAPH,
+        feasible=feasible,
+    )
+
+
+def _static_motion(scene_id: str, duration: float = 0.5) -> CompiledMotionArtifact:
+    return CompiledMotionArtifact(scene_id=scene_id, scene_duration=duration, events=(), tracks=())
+
+
+def _fade_motion(scene_id: str) -> CompiledMotionArtifact:
+    track = PropertyTrack(
+        track_id="enter__opacity", target="a", target_kind=MotionTargetKind.NODE,
+        property_kind=PropertyTrackKind.OPACITY, start_time=0.0, end_time=0.4,
+        keyframes=(
+            PropertyKeyframe(offset=0.0, time=0.0, value=0.0, easing="linear"),
+            PropertyKeyframe(offset=1.0, time=0.4, value=1.0, easing="linear"),
+        ),
+        metadata={"transition":"fade_in"},
+    )
+    event = CompiledMotionEvent(
+        event_id="enter", target="a", target_kind=MotionTargetKind.NODE,
+        verb=MotionVerb.ENTER, style=MotionStyle.FADE,
+        start_time=0.0, end_time=0.4, tracks=(track,),
+    )
+    return CompiledMotionArtifact(scene_id=scene_id, scene_duration=0.5, events=(event,), tracks=(track,))
+
+
+def test_render_frame_is_deterministic():
+    renderer = DeterministicPillowRenderer()
+    scene, layout, motion = _scene("s1"), _layout("s1"), _fade_motion("s1")
+    a = renderer.render_frame(scene, layout, motion, 0.2).tobytes()
+    b = renderer.render_frame(scene, layout, motion, 0.2).tobytes()
+    assert a == b
+
+
+def test_enter_fade_changes_pixels_over_time():
+    renderer = DeterministicPillowRenderer()
+    scene, layout, motion = _scene("s1"), _layout("s1"), _fade_motion("s1")
+    before = renderer.render_frame(scene, layout, motion, 0.0).tobytes()
+    after = renderer.render_frame(scene, layout, motion, 0.4).tobytes()
+    assert before != after
+
+
+def test_renderer_rejects_infeasible_layout():
+    with pytest.raises(RenderInvalidInputError):
+        DeterministicPillowRenderer().render_frame(_scene("s1"), _layout("s1", feasible=False), _static_motion("s1"), 0.0)
+
+
+def test_renderer_rejects_scene_identity_mismatch():
+    with pytest.raises(RenderInvalidInputError):
+        DeterministicPillowRenderer().render_frame(_scene("s1"), _layout("s2"), _static_motion("s1"), 0.0)
+
+
+@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg required")
+def test_render_scene_video_produces_real_mp4_and_stable_frame_digest(tmp_path: Path):
+    profile = RenderProfile(profile_id="test", fps=5, preset="ultrafast")
+    scene, layout, motion = _scene("s1"), _layout("s1"), _fade_motion("s1")
+    first = render_scene_video(scene, layout, motion, tmp_path/"a.mp4", profile=profile)
+    second = render_scene_video(scene, layout, motion, tmp_path/"b.mp4", profile=profile)
+    assert first.kind == RenderArtifactKind.SCENE
+    assert Path(first.path).stat().st_size > 1000
+    assert first.frame_digest == second.frame_digest
+    assert first.source_hash == second.source_hash
+    assert first.frame_count == second.frame_count
+
+
+def _transition() -> InterSceneTransitionPlan:
+    return InterSceneTransitionPlan(
+        transition_id="t12", from_scene="s1", to_scene="s2", duration=0.4,
+        persistent_objects=(
+            PersistentObjectTransition(
+                semantic_key="concept:a", concept_id="c_a",
+                from_node_id="a", to_node_id="a2",
+                requested_operation=TransitionOperation.MOVE,
+                effective_operation=TransitionOperation.MOVE,
+                source_rect=Rect(x=25, y=55, width=90, height=60),
+                target_rect=Rect(x=45, y=55, width=90, height=60),
+                source_frame_width=320, source_frame_height=180,
+                target_frame_width=320, target_frame_height=180,
+                source_zone="CONTENT", target_zone="CONTENT",
+            ),
+        ),
+        departing_node_ids=("b",), entering_node_ids=("b2",),
+    )
+
+
+@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg required")
+def test_render_transition_move_and_assembly(tmp_path: Path):
+    profile = RenderProfile(profile_id="test", fps=5, preset="ultrafast")
+    s1, l1 = _scene("s1"), _layout("s1")
+    s2, l2 = _scene("s2", suffix="2"), _layout("s2", suffix="2", shift=20)
+    m1, m2 = _static_motion("s1"), _static_motion("s2")
+    a1 = render_scene_video(s1, l1, m1, tmp_path/"s1.mp4", profile=profile)
+    transition = render_transition_video(s1, l1, s2, l2, _transition(), tmp_path/"t.mp4", profile=profile)
+    a2 = render_scene_video(s2, l2, m2, tmp_path/"s2.mp4", profile=profile)
+    final = assemble_video((a1, transition, a2), tmp_path/"final.mp4")
+    assert transition.kind == RenderArtifactKind.TRANSITION
+    assert final.kind == RenderArtifactKind.VIDEO
+    assert Path(final.path).stat().st_size > 1000
+    assert final.frame_count == a1.frame_count + transition.frame_count + a2.frame_count
+
+
+def test_transition_renderer_rejects_wrong_endpoints(tmp_path: Path):
+    bad = _transition().model_copy(update={"from_scene": "wrong"})
+    with pytest.raises(RenderInvalidInputError):
+        render_transition_video(_scene("s1"), _layout("s1"), _scene("s2", suffix="2"), _layout("s2", suffix="2", shift=20), bad, tmp_path/"bad.mp4", profile=RenderProfile(profile_id="test",fps=2,preset="ultrafast"))
+
+
+def test_source_artifacts_are_not_mutated_by_frame_render():
+    scene, layout, motion = _scene("s1"), _layout("s1"), _fade_motion("s1")
+    scene_before = scene.model_dump_json()
+    layout_before = layout.model_dump_json()
+    motion_before = motion.to_canonical_json()
+    DeterministicPillowRenderer().render_frame(scene, layout, motion, 0.2)
+    assert scene.model_dump_json() == scene_before
+    assert layout.model_dump_json() == layout_before
+    assert motion.to_canonical_json() == motion_before
