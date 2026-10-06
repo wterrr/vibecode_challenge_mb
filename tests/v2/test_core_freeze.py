@@ -42,3 +42,12 @@ def test_git_blob_hash_matches_frozen_known_blob():
     data = json.loads(MANIFEST.read_text(encoding="utf-8"))
     path = Path("benchmarks/baselines/v1/baseline.json")
     assert git_blob_sha(path) == data["rollback"]["baseline_git_blob_sha"]
+
+
+def test_control_plane_dependencies_can_be_added_without_core_unfreeze():
+    data = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    assert "requirements.txt" not in data["protected_exact_paths"]
+    assert "package.json" not in data["protected_exact_paths"]
+    assert "package-lock.json" not in data["protected_exact_paths"]
+    assert "kiwisolver==1.5.1" in data["required_core_dependencies"]["python_requirements"]
+    assert data["required_core_dependencies"]["node_dependencies"]["elkjs"] == "0.12.0"

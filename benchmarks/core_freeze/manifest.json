@@ -42,10 +42,7 @@
     "benchmarks/specs/v2_core_gate_v2.json",
     "benchmarks/v2/static_quality.py",
     "scripts/capture_v1_baseline.py",
-    "scripts/run_v2_core_benchmark.py",
-    "requirements.txt",
-    "package.json",
-    "package-lock.json"
+    "scripts/run_v2_core_benchmark.py"
   ],
   "protected_files": {
     "benchmarks/baselines/v1/baseline.json": "b7da44db1653e81276a272fe84996665b5d4e410",
@@ -126,9 +123,6 @@
     "learnflow_v2/videoqa/critic.py": "6b37364b1f95f741734a3f2f7225b1b9aa62436a",
     "learnflow_v2/videoqa/errors.py": "c150db3187c033b1ad98751824530386928c2945",
     "learnflow_v2/videoqa/schema.py": "086c9b938945d6e3a7e7ffcb8f549baa9b6b9383",
-    "package-lock.json": "415fd85a32a4bae71ca82475f79a8f3d908cef5c",
-    "package.json": "d0b56c308775625740ff71fbdcbf8765bab7d27a",
-    "requirements.txt": "ebc1ee20fe038704c34cd9d8010829dc75a3da1b",
     "scripts/capture_v1_baseline.py": "98633678689b78d1d5d99c88bf71df720c0f3240",
     "scripts/run_v2_core_benchmark.py": "93f5e05b83d4457a659fc04cf5176e0ded84c254"
   },
@@ -169,5 +163,16 @@
     "The frozen three-lesson Core Gate corpus does not exercise persistent-object MOVE end-to-end.",
     "The benchmark preserves V1's deterministic 40-character subtitle truncation parity contract; production subtitle UX is not claimed complete.",
     "Python transitive dependencies are not represented by a lockfile in this freeze; the declaration files are protected, but environment reproducibility beyond the official CI evidence is not overclaimed."
-  ]
+  ],
+  "required_core_dependencies": {
+    "python_requirements": [
+      "pydantic>=2",
+      "pillow",
+      "kiwisolver==1.5.1"
+    ],
+    "node_dependencies": {
+      "elkjs": "0.12.0"
+    },
+    "policy": "Core dependency contracts are minimum retained constraints. V2D/Hermes may add control-plane dependencies without unfreezing Core, but removing or changing these Core requirements fails the freeze guard."
+  }
 }

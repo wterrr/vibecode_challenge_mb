@@ -69,6 +69,33 @@ def verify() -> list[str]:
     if manifest.get("rollback", {}).get("v1_freeze_commit") != EXPECTED_V1_FREEZE_COMMIT:
         errors.append("V1 rollback commit changed")
 
+    required_deps = manifest.get("required_core_dependencies", {})
+    req_path = ROOT / "requirements.txt"
+    if not req_path.is_file():
+        errors.append("requirements.txt is missing")
+    else:
+        requirement_lines = {
+            line.strip()
+            for line in req_path.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        }
+        for requirement in required_deps.get("python_requirements", []):
+            if requirement not in requirement_lines:
+                errors.append(f"required Core Python dependency changed or missing: {requirement}")
+
+    package_path = ROOT / "package.json"
+    if not package_path.is_file():
+        errors.append("package.json is missing")
+    else:
+        package = json.loads(package_path.read_text(encoding="utf-8"))
+        dependencies = package.get("dependencies", {})
+        for name, expected_version in required_deps.get("node_dependencies", {}).items():
+            if dependencies.get(name) != expected_version:
+                errors.append(
+                    f"required Core Node dependency changed or missing: "
+                    f"{name}={expected_version}"
+                )
+
     protected = manifest.get("protected_files", {})
     expected_paths = set(protected)
     actual_paths: set[str] = set(manifest.get("protected_exact_paths", []))

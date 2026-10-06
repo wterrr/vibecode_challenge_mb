@@ -23,8 +23,8 @@ The manifest pins Git blob identities for the accepted Core implementation under
 `concepts`, `core`, `core_gate`, `layout`, `motion`, `qa`, `render`,
 `repair`, `scenegraph`, `transitions`, and `videoqa`.
 
-It also freezes the corrected benchmark contract/runner, the V1 baseline capture contract,
-and the dependency declaration files used by the accepted engine.
+It also freezes the corrected benchmark contract/runner and the V1 baseline capture contract.
+Core dependency requirements are retained as minimum contracts rather than whole-file hashes, so Hermes may add its own dependencies without mutating Core.
 
 The official compact Core Gate evidence is independently pinned so historical evidence cannot
 silently drift after Hermes work starts.
