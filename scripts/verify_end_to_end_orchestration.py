@@ -68,7 +68,7 @@ class FixtureHermesRunner:
 
 
 def build_fixture_runner():
-    brief, pack, graph, _report, pedagogy = build_fixture()
+    brief, pack, evidence_graph, _report, pedagogy = build_fixture()
     script = build_script(pedagogy)
     registry = build_visual_concept_registry(pedagogy)
     visual = build_visual_output(script, registry)
@@ -78,18 +78,18 @@ def build_fixture_runner():
     # acceptance fixture must exercise the currently supported Core surface
     # without weakening the Visual Director schema.
     graphs = []
-    for graph in visual.scenegraphs:
+    for scene_graph in visual.scenegraphs:
         nodes = [
             node.model_copy(update={"kind": NodeKind.CALLOUT})
             if node.kind == NodeKind.SHAPE
             else node
-            for node in graph.nodes
+            for node in scene_graph.nodes
         ]
         # Core Freeze currently proves CONCEPT_CARD as the stable generic
         # production fallback for these smoke scenes. This avoids making the
         # E2E checkpoint depend on an unrelated Graphviz text-box tolerance.
         graphs.append(
-            graph.model_copy(
+            scene_graph.model_copy(
                 update={
                     "nodes": nodes,
                     "layout_intent": LayoutIntentSpec(
@@ -102,7 +102,7 @@ def build_fixture_runner():
 
     research = ResearchOrchestrationResult(
         research_pack=pack,
-        evidence_graph=graph,
+        evidence_graph=evidence_graph,
         specialist_roles=(
             ResearchRole.CONCEPT,
             ResearchRole.EVIDENCE,
