@@ -1,106 +1,133 @@
 # LearnFlow V2.1 Experimental Implementation
 
-Source of truth:
-`PLAN_V2.md`
+Source of truth: `PLAN_V2.md`.
 
-## Status
-- Implemented checkpoints:
-  - V2-00: Freeze V1 & Establish V2 Baseline ✅
-  - V2-01: ConceptRegistry + SceneGraph Semantic IR ✅
-  - V2-02: Intrinsic Measurement ✅
-  - V2-03: Simple Constraint Layout (Kiwi/Cassowary) ✅
-  - V2-04: Graph Layout (ELK / Graphviz) ✅
-  - V2-05: Collision Repair & Multi-Candidate Optimization ✅
-  - V2-06: Cross-Scene Semantic Continuity & Displacement Minimization ✅
-- Not production-wired (V1 production path remains frozen under `app/`).
+## Current status
 
-## Capabilities Implemented (through V2-06)
-- Safe frame profiles (16:9, 9:16) with scale-aware definitions.
-- Named safe layout zones (SAFE_EDGE, SAFE_TITLE/TITLE, SAFE_CONTENT/CONTENT, SAFE_CAPTION/CAPTION, BOTTOM_UI_SAFE) derived deterministically from insets and proportions.
-- Lightweight deterministic layout grid specification.
-- Kiwi (Cassowary) linear constraint layout backend (`learnflow_v2.layout.backends.kiwi`).
-- Hard feasibility-first constraints (STRENGTH_REQUIRED) taking absolute precedence over soft aesthetic preferences.
-- Simple layout strategies:
-  - CONCEPT_CARD (centered in content zone, protected title/caption)
-  - COMPARISON (two-column non-overlap, positive gutter, mirror symmetry around center, equal width preference)
-  - IMAGE_TEXT (16:9 side-by-side, 9:16 aspect-aware stacked)
-  - QUOTE (centered, bounded maximum width, optional attribution below)
-- Strict preflight validator (`learnflow_v2.layout.preflight`) enforcing zero frame overflow, zero safe-zone violations, zero content clipping, and zero invalid geometry.
-- Canonical, deterministic LayoutGraph serialization via `canonical_json`.
-- Graph layout backend (ELK Layered via local `elkjs` bridge, Graphviz `dot -Tjson0` fallback/baseline).
-- Directed graph nodes, ports, orthogonal routed edges with routed-edge artifact schema.
-- V2-05 Collision Repair & Optimization:
-  - Pure node collision detection (`detect_box_collisions`)
-  - Deterministic linear separation constraints (`choose_separation_constraint`)
-  - Real Kiwi collision re-solve (`repair_layout_collisions`) without manual coordinate mutation
-  - Bounded iteration budget: `MAX_LAYOUT_SOLVES = 5`
-  - Hard feasibility gate (`evaluate_feasibility`) evaluating clipping, overflow, overlap, safe-zone, and minimum readability
-  - Multi-objective soft score ($J_{soft}$) components: edge penalty, typography placeholder penalty, balance penalty, whitespace penalty
-  - Deterministic candidate ranking (`choose_best_candidate`)
-  - Topological fallback variants: COMPARISON stacked fallback, IMAGE_TEXT stacked fallback
-  - Dense fixture corpus with category-specific assertions (`no_collision`, `repairable`, `fallback_required`, `impossible`)
-- V2-06 Semantic Continuity & Displacement Minimization:
-  - Cross-scene semantic identity matching via `SceneNode.semantic_key` (`build_continuity_context`)
-  - Normalized anchor mapping (`ContinuityAnchor`) projecting from previous semantic zone to current legal zone across arbitrary aspect ratios (16:9, 9:16)
-  - Solver-based soft stay constraints (`ContinuityConstraint`) generated for Kiwi without post-hoc geometry mutation
-  - Feasibility dominance: safe zones, role boundaries, and collision separation constraints (STRENGTH_REQUIRED) strictly dominate continuity preferences
-  - Auditable spatial displacement metrics (`ContinuityMetrics`: matched, new, removed, total, mean, and max displacement)
-  - Multi-objective soft score extension with `continuity_penalty` and `continuity_weight`
-  - Complete backwards compatibility: omitting continuity context matches V2-05 behavior with zero penalty
-  - Graph stable ordering (`derive_stable_graph_order`) and ELK layered model order stability (`NODES_AND_EDGES`)
-  - Dense continuity fixture corpus (`benchmarks/fixtures/v2/continuity_cases.json`) and comprehensive test suite
+Implemented and reviewed checkpoints:
 
-## Explicitly Not Implemented Yet
-- adaptive typography shrink
-- content splitting
-- motion planning & motion timeline
-- rendering subsystem (V2 renderer, Canvas, SVG, Manim)
-- VLM repair / Hermes multimodal critique
-- OpenRouter runtime / LLM agent runtime
-- production V2 integration (V1 remains frozen production path)
+```text
+V2-00  Freeze V1 + baseline                 PASS
+V2-01  ConceptRegistry + SceneGraph         PASS
+V2-02  Intrinsic measurement                PASS
+V2-03  Layout zones + Kiwi constraints      PASS
+V2-04  Graph layout                         PASS
+V2-05  Collision + optimization             PASS
+V2-06  Continuity layout                    PASS
+V2-07  Motion Grammar Tier 1                PASS
+V2-08  Narration Beat Alignment             PASS
+V2-09  Motion Scheduler + Compiler          PASS
+V2-10  Persistent Inter-Scene Transitions   PASS
+V2-11  Deterministic QA                     PASS
+V2-12  Optional VLM Critic                  PASS
+V2-13  Repair + Dependency Invalidation     PASS
+V2-14  Video Critic                         PASS
+```
 
-## Current Modules
-- `learnflow_v2.core`: Canonical serialization, structured error hierarchy.
-- `learnflow_v2.concepts`: Deterministic ConceptRegistry, canonical concept IDs, alias normalization, cross-namespace collision checking, strict JSON-safe metadata.
-- `learnflow_v2.scenegraph`: Semantic SceneGraph IR (zero pixel geometry), relation taxonomy, layout hints, symbolic style refs, V1 adapter.
-- `learnflow_v2.layout`:
-  - `measurement.py`: Intrinsic content measurement using real font metrics (Pillow) and local image inspection.
-  - `schema.py`: Strict, immutable Pydantic models for Rect, FrameProfile, LayoutZone, LayoutBox, LayoutGraph.
-  - `profiles.py`: Deterministic 16:9 and 9:16 frame profiles with named safe regions and grid spec.
-  - `constraints.py`: Compiler from items + measurements into linear constraints for simple templates, including `semantic_key` pass-through.
-  - `preflight.py`: Hard gate validation against clipping, overflow, and invalid geometry.
-  - `backends/kiwi.py`: Real Kiwisolver (Cassowary) linear constraint solver wrapper.
-  - `backends/elk.py`: Local `elkjs` bridge for deterministic layered graph layout.
-  - `backends/graphviz.py`: Deterministic Graphviz fallback backend.
-  - `graph.py`: Directed graph layout orchestration and routed edge schemas.
-  - `collision.py`: Pure box collision detection and deterministic separation constraint generation.
-  - `score.py`: Hard feasibility gating and multi-objective soft scoring ($J_{soft}$) with `continuity_penalty` and `continuity_weight`.
-  - `optimization.py`: Iterative collision repair engine, multi-candidate optimization pass, and continuity integration.
-  - `continuity.py`: Auditable cross-scene semantic continuity context, normalized anchors, soft Kiwi stay constraints, displacement metrics, and graph stable ordering.
+The V2C component checkpoints are complete, but **Core Gate is not yet passed**.
 
-## Future Module Map
-- `motion`        → V2-07+
-- `render`        → V2-09+
-- `verification`  → V2-11+
-- `agents`        → V2D
+Current Core Gate decision for engine commit
+`ca20c79c0e17f990ebfb4ed06f9b8988dbe74305` is:
 
-Future modules do not exist yet and must not be implemented until their respective checkpoints.
+```text
+BLOCKED
+```
 
-## V2 milestone status
+Run the fail-closed evaluator with:
 
-- V2-00 ✅ V1 freeze + benchmark
-- V2-01 ✅ ConceptRegistry and SceneGraph semantic IR
-- V2-02 ✅ intrinsic measurement
-- V2-03 ✅ FrameProfile, safe zones, grid, Kiwi constraints, LayoutGraph preflight
-- V2-04 ✅ graph layout (ELK + Graphviz)
-- V2-05 ✅ collision + optimization
-- V2-06 ✅ cross-scene semantic continuity & displacement minimization
+```bash
+python scripts/evaluate_v2_core_gate.py
+```
 
-Still NOT implemented:
-- adaptive typography shrink
-- content splitting
-- motion
-- renderer
-- VLM repair
-- Hermes
-- production V2 integration
+See `benchmarks/core_gate/README.md`.
+
+## Why Core Gate is currently blocked
+
+The repository still lacks evidence required by `PLAN_V2.md` for the following reasons:
+
+1. **No V2 renderer/production integration exists.** The V2 packages compile semantics, layout, motion, transitions, QA, critic and repair artifacts, but there is no `learnflow_v2.render` end-to-end pixel/video path to benchmark.
+2. **No frozen V2 end-to-end benchmark result exists** comparable to the frozen V1 baseline under `benchmarks/baselines/v1/`.
+3. **No agreed V1-vs-V2 static-quality metric artifact exists**, so `V2 static quality > V1 baseline` cannot be claimed scientifically yet.
+
+Missing evidence is treated as `BLOCKED`, never as an implicit PASS. Hermes/V2D must not start until Core Gate is actually satisfied.
+
+## Architectural boundary
+
+```text
+LLM / agents decide meaning
+        ↓
+ConceptRegistry + SceneGraph
+        ↓
+deterministic Layout Engine
+        ↓
+Motion Grammar + Scheduler/Compiler
+        ↓
+InterSceneTransitionPlan
+        ↓
+renderer (still missing in V2)
+        ↓
+Deterministic QA
+        ↓
+optional VLM Critic
+        ↓
+typed Repair Engine + invalidation
+        ↓
+Video Critic
+```
+
+Non-negotiable rules:
+
+- no arbitrary generated rendering code;
+- no LLM-generated pixel coordinates;
+- semantic identity is canonical through `ConceptRegistry`;
+- cross-scene continuity is a typed transition artifact;
+- VLM may diagnose and propose typed patches but does not own geometry/pixels;
+- deterministic QA cannot be overridden by the critic;
+- local repair must invalidate only affected downstream artifacts;
+- deterministic artifacts are hash/provenance tracked;
+- V1 remains the production rollback baseline until Core Gate passes.
+
+## Current modules
+
+- `learnflow_v2.core` — canonical serialization, JSON-safe values, structured errors.
+- `learnflow_v2.concepts` — canonical lesson-level semantic identity.
+- `learnflow_v2.scenegraph` — semantic visual IR and V1 adapter.
+- `learnflow_v2.layout` — intrinsic measurement, safe zones, Kiwi/ELK/Graphviz layout, collision repair, feasibility scoring and continuity.
+- `learnflow_v2.motion` — Tier-1 semantic motion grammar, narration beats, scheduling and property-track compilation.
+- `learnflow_v2.transitions` — semantic cross-scene persistence and renderer capability negotiation.
+- `learnflow_v2.qa` — deterministic scene QA plus optional structured VLM critic.
+- `learnflow_v2.repair` — typed repair planning, artifact provenance/cache reuse, dependency invalidation and deterministic re-check binding.
+- `learnflow_v2.videoqa` — structured whole-video critic for visual variety, continuity, style, pacing and pedagogical alignment.
+- `learnflow_v2.core_gate` — fail-closed Core Gate evidence schema and evaluator.
+
+## V1 baseline
+
+V1 remains frozen under `app/` and has deterministic benchmark fixtures/results under:
+
+```text
+benchmarks/fixtures/v1/
+benchmarks/baselines/v1/baseline.json
+scripts/capture_v1_baseline.py
+```
+
+This is the comparison baseline. Do not replace it while evaluating V2.
+
+## Next engineering work
+
+The next work is **not Hermes**. It is to close Core Gate evidence gaps:
+
+```text
+V2 renderer / integration
+        ↓
+frozen V2 end-to-end benchmark
+        ↓
+agreed V1↔V2 static-quality metric
+        ↓
+measure all Core Gate criteria
+        ↓
+CORE GATE PASS
+        ↓
+CORE FREEZE
+        ↓
+V2D / Hermes
+```

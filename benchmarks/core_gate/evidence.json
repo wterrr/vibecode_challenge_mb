@@ -1,0 +1,28 @@
+{
+  "schema_version": "2.1",
+  "repo_commit": "ca20c79c0e17f990ebfb4ed06f9b8988dbe74305",
+  "evidence": [
+    {
+      "metric": "VLM_UNAVAILABLE_DETERMINISTIC_OK",
+      "kind": "CONTRACT_TEST",
+      "value": true,
+      "source": [
+        "tests/v2/test_vlm_critic_v2_12_gate.py"
+      ],
+      "sample_count": null,
+      "benchmark_id": null,
+      "notes": "CP2.12 contract: deterministic mode makes zero critic calls; critic outage policy cannot override deterministic QA."
+    },
+    {
+      "metric": "LOCAL_REPAIR_SCOPE_OK",
+      "kind": "CONTRACT_TEST",
+      "value": true,
+      "source": [
+        "tests/v2/test_repair_v2_13_invalidation.py"
+      ],
+      "sample_count": null,
+      "benchmark_id": null,
+      "notes": "CP2.13 contract: local geometry repair invalidates only affected scene/downstream transitions/assembly and preserves unrelated scene/audio artifacts."
+    }
+  ]
+}
