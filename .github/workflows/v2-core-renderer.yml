@@ -1,0 +1,57 @@
+name: V2 Core Renderer Benchmark
+
+on:
+  pull_request:
+    paths:
+      - 'learnflow_v2/**'
+      - 'benchmarks/**'
+      - 'scripts/run_v2_core_benchmark.py'
+      - 'tests/v2/**'
+      - '.github/workflows/v2-core-renderer.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'learnflow_v2/**'
+      - 'benchmarks/**'
+      - 'scripts/run_v2_core_benchmark.py'
+      - 'tests/v2/**'
+      - '.github/workflows/v2-core-renderer.yml'
+  workflow_dispatch:
+
+jobs:
+  v2-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg graphviz fonts-dejavu-core
+      - name: Install project dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          npm ci
+      - name: V2 graph preflight
+        run: python scripts/preflight_v2_graph.py
+      - name: Full V2 regression suite
+        run: pytest -q --confcutdir=tests/v2 tests/v2
+      - name: Run V2 Core benchmark
+        run: python scripts/run_v2_core_benchmark.py --output-json core_benchmark.json
+      - name: Upload benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-core-benchmark-${{ github.sha }}
+          path: core_benchmark.json
+          if-no-files-found: error

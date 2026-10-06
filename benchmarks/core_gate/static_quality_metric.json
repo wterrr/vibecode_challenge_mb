@@ -1,0 +1,18 @@
+{
+  "metric_id": "static_text_integrity_scene_rate_v1",
+  "version": "1.0",
+  "frozen_before_v2_core_benchmark": true,
+  "scope": "The three frozen V1 benchmark lessons at 640x360 and 12 fps.",
+  "scene_pass_definition": {
+    "v1": "The real V1 scene renderer succeeds and emits no unique warning beginning with 'Text truncated:' and no warning containing 'omitted due to canvas overflow'.",
+    "v2": "The real V2 scene renderer succeeds, deterministic QA passes, and every TextRenderEvidence.truncated flag is false."
+  },
+  "aggregate": "clean_scene_count / total_scene_count",
+  "core_gate_delta": "v2_rate - v1_rate",
+  "pass_condition": "delta > 0",
+  "limitations": [
+    "This is an objective static text-integrity proxy, not an aesthetics or pedagogy score.",
+    "It is intentionally renderer-level and does not use a VLM judge.",
+    "A later full benchmark may add human/VLM aesthetic metrics without changing this frozen Core Gate proxy post hoc."
+  ]
+}
