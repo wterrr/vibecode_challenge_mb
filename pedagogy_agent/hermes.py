@@ -7,6 +7,8 @@ import json
 from agent_contracts import EvidenceGraph, LearningBrief, PedagogyPlan, ResearchPack
 from fact_verification import FactVerificationReport
 
+from .gate import approved_claim_ids_from_safe_report
+
 
 def _approved_research_view(
     pack: ResearchPack,
@@ -41,6 +43,12 @@ def build_pedagogy_agent_task(
     fact_report: FactVerificationReport,
 ) -> dict:
     """Give Hermes only fact-approved claim material for pedagogy planning."""
+
+    approved_claim_ids_from_safe_report(
+        pack=pack,
+        graph=graph,
+        fact_report=fact_report,
+    )
 
     payload = {
         "learning_brief": json.loads(brief.to_canonical_json()),
