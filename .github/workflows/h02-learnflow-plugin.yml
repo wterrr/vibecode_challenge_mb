@@ -52,23 +52,14 @@ jobs:
           sudo apt-get install -y ffmpeg
       - name: Install exact pinned H-01 Hermes runtime
         run: bash scripts/install_hermes_h01.sh
-      - name: Enable LearnFlow plugin and install declared dependencies
+      - name: Prepare isolated H-02 Hermes profile
         shell: bash
         run: |
           VERIFY_HOME="$PWD/.hermes_runtime/h02/verify-home"
           rm -rf "$VERIFY_HOME"
           mkdir -p "$VERIFY_HOME"
           cp hermes/h01/config.yaml "$VERIFY_HOME/config.yaml"
-          if [[ -x ".hermes_runtime/hermes-agent/venv/bin/hermes" ]]; then
-            HERMES=".hermes_runtime/hermes-agent/venv/bin/hermes"
-          elif [[ -x ".hermes_runtime/hermes-agent/.venv/bin/hermes" ]]; then
-            HERMES=".hermes_runtime/hermes-agent/.venv/bin/hermes"
-          else
-            echo "Pinned Hermes executable not found" >&2
-            exit 1
-          fi
-          HERMES_HOME="$VERIFY_HOME" HERMES_ENABLE_PROJECT_PLUGINS=true "$HERMES" plugins enable learnflow
-      - name: Discover and execute LearnFlow through pinned Hermes registry
+      - name: Install dependencies, discover, and execute through pinned Hermes registry
         shell: bash
         run: |
           VERIFY_HOME="$PWD/.hermes_runtime/h02/verify-home"
