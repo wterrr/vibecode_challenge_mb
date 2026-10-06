@@ -27,7 +27,7 @@ Do not modify files protected by the Core Freeze manifest during routine Hermes 
 
 ## Hermes stage discipline
 
-Work one named Hermes stage at a time in the order defined by `PLAN_V2.md`. Names in source control, runtime paths, CI, logs, status files, tests, and documentation must describe their purpose. Do not introduce opaque ordinal labels such as `H-01`, `H02`, or similar codes.
+Work one named Hermes stage at a time in the order defined by `PLAN_V2.md`. Names in source control, runtime paths, CI, logs, status files, tests, and documentation must describe their purpose. Do not introduce opaque ordinal checkpoint codes.
 
 Accepted stages:
 
