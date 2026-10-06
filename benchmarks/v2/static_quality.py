@@ -8,13 +8,11 @@ proxy for static composition/readability, not a human aesthetic score.
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
 from pathlib import Path
 import subprocess
 from typing import Iterable
 
-from PIL import Image
-import numpy as np
+from PIL import Image, ImageStat
 
 
 @dataclass(frozen=True)
@@ -45,41 +43,54 @@ def extract_frame(video_path: Path, timestamp: float, output_path: Path) -> Path
     return output_path
 
 
-def _background_rgb(rgb: np.ndarray) -> np.ndarray:
-    h, w, _ = rgb.shape
-    ph = max(1, int(round(h * 0.05)))
+def _background_rgb(image: Image.Image) -> tuple[float, float, float]:
+    w, h = image.size
     pw = max(1, int(round(w * 0.05)))
-    patches = np.concatenate([
-        rgb[:ph, :pw].reshape(-1, 3),
-        rgb[:ph, -pw:].reshape(-1, 3),
-        rgb[-ph:, :pw].reshape(-1, 3),
-        rgb[-ph:, -pw:].reshape(-1, 3),
-    ], axis=0)
-    return np.median(patches, axis=0)
+    ph = max(1, int(round(h * 0.05)))
+    patches = [
+        image.crop((0, 0, pw, ph)),
+        image.crop((w - pw, 0, w, ph)),
+        image.crop((0, h - ph, pw, h)),
+        image.crop((w - pw, h - ph, w, h)),
+    ]
+    pixels: list[tuple[int, int, int]] = []
+    for patch in patches:
+        pixels.extend(list(patch.getdata()))
+    channels = [sorted(pixel[index] for pixel in pixels) for index in range(3)]
+    mid = len(pixels) // 2
+    return tuple(float(channel[mid]) for channel in channels)  # type: ignore[return-value]
 
 
 def score_frame(path: Path) -> StaticFrameScore:
-    with Image.open(path) as im:
-        rgb = np.asarray(im.convert("RGB"), dtype=np.float64)
-    bg = _background_rgb(rgb)
-    distance = np.sqrt(np.sum((rgb - bg) ** 2, axis=2))
-    foreground = distance > 24.0
-    foreground_fraction = float(np.mean(foreground))
+    with Image.open(path) as src:
+        image = src.convert("RGB")
+        w, h = image.size
+        bg = _background_rgb(image)
+        pixels = list(image.getdata())
 
-    luma = 0.2126 * rgb[:, :, 0] + 0.7152 * rgb[:, :, 1] + 0.0722 * rgb[:, :, 2]
-    contrast = _clip01(float(np.std(luma)) / 64.0)
-    occupancy = _clip01(1.0 - abs(foreground_fraction - 0.30) / 0.30)
+        foreground_flags: list[bool] = []
+        for r, g, b in pixels:
+            distance_sq = (r - bg[0]) ** 2 + (g - bg[1]) ** 2 + (b - bg[2]) ** 2
+            foreground_flags.append(distance_sq > 24.0 ** 2)
+        foreground_fraction = sum(foreground_flags) / len(foreground_flags)
 
-    h, w = foreground.shape
-    mh = max(1, int(round(h * 0.04)))
-    mw = max(1, int(round(w * 0.04)))
-    margin_mask = np.zeros_like(foreground, dtype=bool)
-    margin_mask[:mh, :] = True
-    margin_mask[-mh:, :] = True
-    margin_mask[:, :mw] = True
-    margin_mask[:, -mw:] = True
-    margin_foreground = float(np.mean(foreground[margin_mask])) if np.any(margin_mask) else 0.0
-    safe_margin = 1.0 - _clip01(margin_foreground / 0.08)
+        luma = image.convert("L")
+        contrast = _clip01(float(ImageStat.Stat(luma).stddev[0]) / 64.0)
+        occupancy = _clip01(1.0 - abs(foreground_fraction - 0.30) / 0.30)
+
+        mh = max(1, int(round(h * 0.04)))
+        mw = max(1, int(round(w * 0.04)))
+        margin_count = 0
+        margin_foreground = 0
+        for y in range(h):
+            row = y * w
+            for x in range(w):
+                if y < mh or y >= h - mh or x < mw or x >= w - mw:
+                    margin_count += 1
+                    if foreground_flags[row + x]:
+                        margin_foreground += 1
+        margin_fraction = margin_foreground / margin_count if margin_count else 0.0
+        safe_margin = 1.0 - _clip01(margin_fraction / 0.08)
 
     total = 100.0 * (0.40 * contrast + 0.35 * occupancy + 0.25 * safe_margin)
     return StaticFrameScore(
@@ -94,7 +105,10 @@ def aggregate_static_quality(paths: Iterable[Path]) -> dict:
     scores = [score_frame(path) for path in paths]
     if not scores:
         raise ValueError("static quality requires at least one frame")
-    mean = lambda attr: sum(getattr(item, attr) for item in scores) / len(scores)
+
+    def mean(attr: str) -> float:
+        return sum(getattr(item, attr) for item in scores) / len(scores)
+
     return {
         "metric_id": "static_composition_proxy_v1",
         "frame_count": len(scores),
