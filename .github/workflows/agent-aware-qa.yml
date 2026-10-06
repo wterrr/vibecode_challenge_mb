@@ -47,6 +47,19 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install exact pinned Hermes runtime
         run: bash scripts/install_hermes_bootstrap.sh
+      - name: Install LearnFlow QA dependency in pinned runtime
+        shell: bash
+        run: |
+          if [[ -x ".hermes_runtime/hermes-agent/venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/venv/bin/python"
+          elif [[ -x ".hermes_runtime/hermes-agent/.venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/.venv/bin/python"
+          else
+            echo "Pinned Hermes Python not found" >&2
+            exit 1
+          fi
+          "$HPY" -m pip install "kiwisolver==1.5.1"
+
       - name: Prepare isolated Agent-Aware QA profile
         shell: bash
         run: |
