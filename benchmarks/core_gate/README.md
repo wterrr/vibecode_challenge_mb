@@ -10,13 +10,23 @@ This directory contains **evidence**, not optimistic status flags.
 - any measured threshold violation → `FAIL`;
 - repository-level prerequisites can block the gate even when supplied metrics pass.
 
-Current engine commit under evaluation:
+Official engine commit under evaluation:
 
 ```text
-ca20c79c0e17f990ebfb4ed06f9b8988dbe74305
+25c27da43e6645d2e9ac704958d619e3c96aa4b2
 ```
 
-Current known state is **BLOCKED**. The deterministic V2 renderer baseline now exists, but there is still no frozen V2 end-to-end benchmark result and no agreed V1-vs-V2 static-quality metric artifact. The checked-in evidence manifest is intentionally still bound to the pre-renderer CP2.14 engine commit until a new reproducible benchmark run refreshes it.
+Official frozen benchmark:
+
+```text
+benchmark_id: v2-core-gate-v1
+GitHub Actions run: 37404184018
+artifact id: 11386363669
+artifact digest: sha256:155be2d732cad1d85cc020f3cbe897d40fef346a148df82f44096f5bce15e59b
+spec SHA-256: 03e5506a4d90f057e3131cc99734b5e0c113d727f76894887348a3a4a303eeed
+```
+
+Current decision: **CORE GATE PASS**.
 
 Run:
 
@@ -26,19 +36,33 @@ python scripts/evaluate_v2_core_gate.py
 
 The command exits `0` only for a full Core Gate PASS; `2` means FAIL/BLOCKED.
 
-## Core Gate metrics
+## Official measured results
 
-| Metric | Requirement | Evidence class |
-|---|---|---|
-| Render success | `>= 98%` | Benchmark |
-| Fatal clipping | `= 0` | Benchmark |
-| Fatal overlap | plan says `~= 0`; evaluator conservatively requires `0` | Benchmark |
-| Invalid MotionPlan | `= 0` | Benchmark |
-| Selective repair success | `>= 90%` | Benchmark |
-| Reproducibility | `100%` deterministic scenes | Benchmark |
-| V1→V2 critical regression | `= 0` | Benchmark |
-| V2 static quality delta | `> 0` vs V1 on agreed metric | Benchmark |
-| VLM unavailable | deterministic mode still works | Contract test or benchmark |
-| Local repair scope | unrelated scenes are not rebuilt | Contract test or benchmark |
+| Metric | Requirement | Result |
+|---|---:|---:|
+| Render success | `>= 98%` | **100% (3/3)** |
+| Fatal clipping | `= 0` | **0 / 9 scenes** |
+| Fatal overlap | conservative `= 0` | **0 / 9 scenes** |
+| Invalid MotionPlan | `= 0` | **0 / 9 scenes** |
+| Selective repair success | `>= 90%` | **100% (9/9)** |
+| Reproducibility | `100%` | **100% (3/3 lessons, two runs each)** |
+| V1→V2 critical regression | `= 0` | **0 / 3 lessons** |
+| V2 static quality delta | `> 0` | **+5.54192634** |
+| VLM unavailable | deterministic mode still works | **PASS** |
+| Local repair scope | unrelated scenes are not rebuilt | **PASS** |
 
-Do not add a benchmark evidence record until the referenced run actually exists and is reproducible.
+The static-quality result uses the frozen `static_composition_proxy_v1` metric:
+V1 = **69.1192536**, V2 = **74.66117994**.
+
+This proxy measures deterministic static composition characteristics only. It is **not** a human aesthetic score and does not justify a claim of 3Blue1Brown-level quality.
+
+Persistent evidence lives under:
+
+```text
+benchmarks/baselines/v2/result.json
+benchmarks/baselines/v2/core_gate_evidence.json
+benchmarks/baselines/v2/core_gate_report.json
+benchmarks/core_gate/static_quality_metric.json
+```
+
+The full videos, representative frames, repair clips, and raw result remain in the official GitHub Actions artifact. Binary media are intentionally not committed to the repository.
