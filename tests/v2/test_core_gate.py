@@ -128,23 +128,36 @@ def test_canonical_roundtrip_deterministic():
     assert CoreGateEvidenceBundle.from_canonical_json(bundle.to_canonical_json()) == bundle
 
 
-def test_current_repository_evidence_is_explicitly_blocked():
+def test_current_repository_frozen_evidence_passes_core_gate():
     payload = json.loads(Path("benchmarks/core_gate/evidence.json").read_text(encoding="utf-8"))
     bundle = CoreGateEvidenceBundle.model_validate(payload)
     report = evaluate_core_gate(bundle)
-    assert report.state == CoreGateState.BLOCKED
-    passed = {item.metric for item in report.criteria if item.state == CriterionState.PASS}
-    assert passed == {
-        CoreGateMetric.VLM_UNAVAILABLE_DETERMINISTIC_OK,
-        CoreGateMetric.LOCAL_REPAIR_SCOPE_OK,
-    }
+    assert report.state == CoreGateState.PASS
+    assert len(report.criteria) == 10
+    assert all(item.state == CriterionState.PASS for item in report.criteria)
+    assert bundle.repo_commit == "25c27da43e6645d2e9ac704958d619e3c96aa4b2"
 
 
-def test_cli_fails_closed_for_current_repository():
+def test_cli_passes_for_frozen_repository_evidence():
     proc = subprocess.run([sys.executable, "scripts/evaluate_v2_core_gate.py"], capture_output=True, text=True, check=False)
-    assert proc.returncode == 2
-    assert "Decision: BLOCKED" in proc.stdout
-    assert "No frozen V2 end-to-end benchmark baseline/results exist" in proc.stdout
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "Decision: PASS" in proc.stdout
+    assert "Repository blockers:" not in proc.stdout
+
+
+def test_frozen_baseline_provenance_matches_official_run():
+    result = json.loads(Path("benchmarks/baselines/v2/result.json").read_text(encoding="utf-8"))
+    report = json.loads(Path("benchmarks/baselines/v2/core_gate_report.json").read_text(encoding="utf-8"))
+    metric = json.loads(Path("benchmarks/core_gate/static_quality_metric.json").read_text(encoding="utf-8"))
+    assert result["repo_commit"] == "25c27da43e6645d2e9ac704958d619e3c96aa4b2"
+    assert result["official_workflow_run_id"] == 37404184018
+    assert result["official_artifact_id"] == 11386363669
+    assert result["official_artifact_digest"] == "sha256:155be2d732cad1d85cc020f3cbe897d40fef346a148df82f44096f5bce15e59b"
+    assert result["raw_result_sha256"] == "7e566aedea34120c52d0a2b8796ac32d9bc20b40b17974c90f84bf79cbb38c5f"
+    assert result["spec_sha256"] == metric["frozen_spec_sha256"]
+    assert report["state"] == "PASS"
+    assert result["summary"]["selective_repair_successes"] == 9
+    assert result["summary"]["selective_repair_cases"] == 9
 
 
 def test_model_construct_cannot_bypass_evidence_validation():
