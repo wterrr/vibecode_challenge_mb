@@ -1,4 +1,4 @@
-"""Deterministic Core V2 handoff through the accepted LearnFlow capability surface."""
+"""Deterministic Core V2 handoff for the accepted LearnFlow Lesson Pipeline."""
 
 from __future__ import annotations
 

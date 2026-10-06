@@ -1,4 +1,4 @@
-"""Typed result contracts for End-to-End Orchestration."""
+"""Typed result contracts for the accepted LearnFlow Lesson Pipeline."""
 
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ class SceneRenderReceipt(ContractModel):
     source_hash: str = Field(..., min_length=1)
 
 
-class EndToEndResult(ContractModel):
+class LessonPipelineResult(ContractModel):
     run_id: str = Field(..., min_length=1)
     learning_brief: LearningBrief
     research_pack: ResearchPack
@@ -54,3 +54,7 @@ class EndToEndResult(ContractModel):
     @classmethod
     def _tuples(cls, value: Any):
         return _tupleize(value)
+
+
+# Backward-compatible type alias for historical artifacts/tests outside this repo.
+EndToEndResult = LessonPipelineResult

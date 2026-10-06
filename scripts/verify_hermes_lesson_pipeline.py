@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the E2E structured task chain against the exact pinned Hermes runtime."""
+"""Verify the Lesson Pipeline structured task chain against the exact pinned Hermes runtime."""
 
 from __future__ import annotations
 
@@ -22,10 +22,10 @@ def _require_schema(name: str, task: dict) -> None:
     schema, error = coerce_output_schema(task["output_schema"])
     if error or schema is None:
         raise SystemExit(
-            f"HERMES_END_TO_END=FAIL {name} schema incompatible: {error!r}"
+            f"HERMES_LESSON_PIPELINE=FAIL {name} schema incompatible: {error!r}"
         )
     if schema.get("type") != "object":
-        raise SystemExit(f"HERMES_END_TO_END=FAIL {name} schema is not an object")
+        raise SystemExit(f"HERMES_LESSON_PIPELINE=FAIL {name} schema is not an object")
 
 
 def main() -> int:
@@ -53,14 +53,14 @@ def main() -> int:
 
     research_context = research_task["context"]
     if "delegate_task" not in research_context:
-        raise SystemExit("HERMES_END_TO_END=FAIL research native delegation missing")
+        raise SystemExit("HERMES_LESSON_PIPELINE=FAIL research native delegation missing")
 
     visual_context = visual_task["context"].lower()
     if "never output x/y coordinates" not in visual_context:
-        raise SystemExit("HERMES_END_TO_END=FAIL visual geometry boundary missing")
+        raise SystemExit("HERMES_LESSON_PIPELINE=FAIL visual geometry boundary missing")
     if "ffmpeg commands" not in visual_context:
-        raise SystemExit("HERMES_END_TO_END=FAIL renderer boundary missing")
-    print("HERMES_END_TO_END=PASS")
+        raise SystemExit("HERMES_LESSON_PIPELINE=FAIL renderer boundary missing")
+    print("HERMES_LESSON_PIPELINE=PASS")
     print("runtime=exact pinned Hermes")
     print("research_output_schema=PASS")
     print("pedagogy_output_schema=PASS")

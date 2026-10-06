@@ -5,7 +5,7 @@
   "state": "PASS",
   "depends_on": [
     {
-      "stage": "end-to-end-orchestration",
+      "stage": "lesson-pipeline",
       "required_state": "PASS",
       "current_state": "PASS"
     },

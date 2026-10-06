@@ -1,4 +1,4 @@
-# End-to-End Orchestration
+# Lesson Pipeline
 
 This stage connects the already accepted LearnFlow Hermes stages into one bounded typed pipeline and hands validated semantic scenes to frozen Core V2 through the accepted LearnFlow capability surface.
 
@@ -30,7 +30,7 @@ Status: PASS. Accepted CI run `37439945446` proves the typed gate sequence, real
 - Visual Director remains semantic-only;
 - Core capability calls receive SceneGraph plus host-owned duration only;
 - output paths, renderer settings, geometry, pixels, codec controls, timeline implementation, and assembly remain deterministic host/Core responsibilities;
-- Agent-Aware QA, Hooks + Budget, Skills, and Kanban Durability are intentionally out of scope.
+- Agent-Aware QA, Hooks + Budget, Skills, and Kanban Durability were intentionally out of scope of this synchronous pipeline stage and are layered above it.
 
 ## Replayable artifacts
 
@@ -38,8 +38,12 @@ Each successful run writes a controlled directory containing the typed chain, Sc
 
 ## Verification
 
-    python scripts/verify_end_to_end_orchestration.py
-    pytest -q --confcutdir=tests/hermes tests/hermes/test_end_to_end_orchestration.py
+    python scripts/verify_lesson_pipeline.py
+    pytest -q --confcutdir=tests/hermes tests/hermes/test_lesson_pipeline.py
     python scripts/verify_v2_core_freeze.py
 
-Exact pinned Hermes schema compatibility and project-plugin discovery are verified in the End-to-End Orchestration workflow.
+Exact pinned Hermes schema compatibility and project-plugin discovery are verified in the Lesson Pipeline workflow.
+
+## Semantic source name
+
+The Python package is `lesson_pipeline/`. Historical acceptance evidence from the original stage name is retained in this status lineage, but new code, tests, CI, and runtime paths use the semantic Lesson Pipeline name.

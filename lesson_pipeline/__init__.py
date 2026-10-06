@@ -1,8 +1,11 @@
-"""Bounded end-to-end orchestration for accepted LearnFlow Hermes stages."""
+"""Accepted LearnFlow lesson pipeline for accepted LearnFlow Hermes stages."""
 
-from .coordinator import STAGE_ORDER, StructuredAgentRunner, run_end_to_end
+from .coordinator import STAGE_ORDER, StructuredAgentRunner, run_lesson_pipeline
 from .core import CapabilityCoreGateway, SceneDurationResolver, default_scene_duration
-from .models import EndToEndResult, SceneRenderReceipt
+from .models import LessonPipelineResult, SceneRenderReceipt
+
+run_end_to_end = run_lesson_pipeline
+EndToEndResult = LessonPipelineResult
 
 __all__ = [
     "CapabilityCoreGateway",

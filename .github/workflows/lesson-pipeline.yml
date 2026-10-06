@@ -1,27 +1,27 @@
-name: End-to-End Orchestration
+name: Lesson Pipeline
 
 on:
   pull_request:
     paths:
-      - "end_to_end_orchestration/**"
-      - "hermes/end-to-end-orchestration/**"
-      - "scripts/verify_end_to_end_orchestration.py"
-      - "scripts/verify_hermes_end_to_end_orchestration.py"
-      - "tests/hermes/test_end_to_end_orchestration.py"
-      - ".github/workflows/end-to-end-orchestration.yml"
+      - "lesson_pipeline/**"
+      - "hermes/lesson-pipeline/**"
+      - "scripts/verify_lesson_pipeline.py"
+      - "scripts/verify_hermes_lesson_pipeline.py"
+      - "tests/hermes/test_lesson_pipeline.py"
+      - ".github/workflows/lesson-pipeline.yml"
   push:
     branches:
       - main
     paths:
-      - "end_to_end_orchestration/**"
-      - "hermes/end-to-end-orchestration/**"
-      - "scripts/verify_end_to_end_orchestration.py"
-      - "scripts/verify_hermes_end_to_end_orchestration.py"
-      - "tests/hermes/test_end_to_end_orchestration.py"
-      - ".github/workflows/end-to-end-orchestration.yml"
+      - "lesson_pipeline/**"
+      - "hermes/lesson-pipeline/**"
+      - "scripts/verify_lesson_pipeline.py"
+      - "scripts/verify_hermes_lesson_pipeline.py"
+      - "tests/hermes/test_lesson_pipeline.py"
+      - ".github/workflows/lesson-pipeline.yml"
 
 jobs:
-  end-to-end-contract:
+  lesson-pipeline-contract:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -36,9 +36,9 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install "pydantic>=2" pillow "kiwisolver==1.5.1" pytest
       - name: Verify real typed query-to-video pipeline
-        run: python scripts/verify_end_to_end_orchestration.py
-      - name: End-to-End Orchestration tests
-        run: pytest -q --confcutdir=tests/hermes tests/hermes/test_end_to_end_orchestration.py
+        run: python scripts/verify_lesson_pipeline.py
+      - name: Lesson Pipeline tests
+        run: pytest -q --confcutdir=tests/hermes tests/hermes/test_lesson_pipeline.py
       - name: Core Freeze guard
         run: python scripts/verify_v2_core_freeze.py
 
@@ -56,14 +56,14 @@ jobs:
       - name: Prepare isolated End-to-End profile
         shell: bash
         run: |
-          VERIFY_HOME="$PWD/.hermes_runtime/end-to-end-orchestration/verify-home"
+          VERIFY_HOME="$PWD/.hermes_runtime/lesson-pipeline/verify-home"
           rm -rf "$VERIFY_HOME"
           mkdir -p "$VERIFY_HOME"
           cp hermes/bootstrap/config.yaml "$VERIFY_HOME/config.yaml"
       - name: Verify structured stage chain and plugin discovery
         shell: bash
         run: |
-          VERIFY_HOME="$PWD/.hermes_runtime/end-to-end-orchestration/verify-home"
+          VERIFY_HOME="$PWD/.hermes_runtime/lesson-pipeline/verify-home"
           if [[ -x ".hermes_runtime/hermes-agent/venv/bin/python" ]]; then
             HPY=".hermes_runtime/hermes-agent/venv/bin/python"
           elif [[ -x ".hermes_runtime/hermes-agent/.venv/bin/python" ]]; then
@@ -72,5 +72,5 @@ jobs:
             echo "Pinned Hermes Python not found" >&2
             exit 1
           fi
-          HERMES_HOME="$VERIFY_HOME" "$HPY" scripts/verify_hermes_end_to_end_orchestration.py
+          HERMES_HOME="$VERIFY_HOME" "$HPY" scripts/verify_hermes_lesson_pipeline.py
           HERMES_HOME="$VERIFY_HOME" HERMES_ENABLE_PROJECT_PLUGINS=true "$HPY" scripts/verify_learnflow_plugin.py

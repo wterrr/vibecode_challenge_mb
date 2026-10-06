@@ -40,7 +40,7 @@ from visual_director import (
 
 from .artifacts import write_artifact_bundle
 from .core import CapabilityCoreGateway
-from .models import EndToEndResult
+from .models import LessonPipelineResult
 
 
 STAGE_ORDER = (
@@ -88,13 +88,13 @@ def _semantic_run_id(*artifacts: BaseModel) -> str:
     return hashlib.sha256(raw).hexdigest()[:16]
 
 
-def run_end_to_end(
+def run_lesson_pipeline(
     brief: LearningBrief,
     *,
     runner: StructuredAgentRunner,
     core_gateway: CapabilityCoreGateway,
     runtime_root: str | Path,
-) -> EndToEndResult:
+) -> LessonPipelineResult:
     """Execute the accepted typed pipeline and fail closed at every boundary."""
 
     research = _execute(
@@ -188,9 +188,9 @@ def run_end_to_end(
         output_path=final_path,
     )
     if not final_path.is_file() or final_path.stat().st_size <= 0:
-        raise AgentContractError("End-to-End Orchestration did not produce final.mp4")
+        raise AgentContractError("Lesson Pipeline did not produce final.mp4")
 
-    result = EndToEndResult(
+    result = LessonPipelineResult(
         run_id=run_id,
         learning_brief=brief,
         research_pack=research.research_pack,
@@ -208,3 +208,7 @@ def run_end_to_end(
     )
     write_artifact_bundle(result, run_dir)
     return result
+
+
+# Compatibility alias while callers migrate to the semantic name.
+run_end_to_end = run_lesson_pipeline

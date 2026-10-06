@@ -1,0 +1,88 @@
+{
+  "schema_version": "1.0",
+  "template_id": "learnflow-lesson-job",
+  "version": "1.0.0",
+  "tasks": [
+    {
+      "key": "research-evidence",
+      "title": "Research and verify lesson evidence",
+      "role": "research",
+      "body": "Run the accepted Research Orchestration and deterministic Fact Verification stages for the lesson brief already stored in the shared job workspace. Preserve provenance and blocked-claim semantics. Write research_pack.json, evidence_graph.json, and fact_verification.json to the shared workspace. Do not write narration, visual geometry, or publication policy.",
+      "parents": [],
+      "priority": 100,
+      "max_runtime_seconds": 3600,
+      "max_retries": 2,
+      "skills": [
+        "investigate-lesson-facts"
+      ]
+    },
+    {
+      "key": "pedagogy",
+      "title": "Build the approved pedagogy plan",
+      "role": "production",
+      "body": "Consume only the accepted research_pack.json, evidence_graph.json, and fact_verification.json from the shared workspace. Run the existing Pedagogy Agent task/gate and write pedagogy_plan.json. Do not rerun research merely because this card restarted; upstream research is a completed parent and remains authoritative unless a routed repair creates new work.",
+      "parents": [
+        "research-evidence"
+      ],
+      "priority": 90,
+      "max_runtime_seconds": 1800,
+      "max_retries": 2,
+      "skills": []
+    },
+    {
+      "key": "script",
+      "title": "Write the verified lesson script",
+      "role": "production",
+      "body": "Consume the accepted pedagogy_plan.json plus approved factual artifacts. Run the existing Script Agent task/gate and write script.json. Preserve exact approved claim IDs and objective coverage. Do not introduce visual coordinates or renderer implementation.",
+      "parents": [
+        "pedagogy"
+      ],
+      "priority": 80,
+      "max_runtime_seconds": 1800,
+      "max_retries": 2,
+      "skills": []
+    },
+    {
+      "key": "visual-direction",
+      "title": "Create semantic lesson visuals",
+      "role": "production",
+      "body": "Consume the accepted script.json and pedagogy artifacts. Run the existing Visual Director with the deterministic ConceptRegistry and write storyboard.json, concept_registry.json, and scenegraphs/. Keep output semantic-only and require Core readiness.",
+      "parents": [
+        "script"
+      ],
+      "priority": 70,
+      "max_runtime_seconds": 1800,
+      "max_retries": 2,
+      "skills": []
+    },
+    {
+      "key": "render",
+      "title": "Render the accepted lesson pipeline",
+      "role": "production",
+      "body": "Consume Core-ready semantic artifacts from the shared workspace and execute the accepted Lesson Pipeline Core handoff through learnflow_create, learnflow_run, learnflow_render, and deterministic final assembly. Produce final.mp4 and render/artifact manifests. Do not change frozen Core implementation or invent renderer controls.",
+      "parents": [
+        "visual-direction"
+      ],
+      "priority": 60,
+      "max_runtime_seconds": 3600,
+      "max_retries": 2,
+      "skills": []
+    },
+    {
+      "key": "review",
+      "title": "Review lesson quality and publication readiness",
+      "role": "review",
+      "body": "Consume the rendered lesson and typed artifact chain. Run authoritative scene/video QA, Agent-Aware QA ownership routing when needed, and the reviewed pre-publication readiness procedure. Do not self-authorize publication. If a repair is required, create/route only the owner-specific follow-up work permitted by Agent-Aware QA and re-review affected outputs.",
+      "parents": [
+        "render"
+      ],
+      "priority": 50,
+      "max_runtime_seconds": 2400,
+      "max_retries": 2,
+      "skills": [
+        "review-lesson-before-publication",
+        "repair-failed-lesson"
+      ]
+    }
+  ]
+}

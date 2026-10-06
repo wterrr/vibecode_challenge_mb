@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "stage": "kanban-durability",
+  "name": "Kanban Durability",
+  "state": "IMPLEMENTED_AWAITING_CI",
+  "depends_on": [
+    {
+      "stage": "lesson-pipeline",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "runtime-governance",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "skills",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
+  ],
+  "acceptance": {
+    "native_hermes_kanban_only": true,
+    "idempotent_job_seed": true,
+    "dependency_gating": true,
+    "restart_state_persistence": true,
+    "native_reclaim_resume": true,
+    "completed_work_not_repeated": true,
+    "bounded_task_retries": true,
+    "shared_durable_workspace": true,
+    "three_worker_profiles": true,
+    "synchronous_lesson_pipeline_remains_source_of_truth": true,
+    "project_skills_not_auto_trusted": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "next_stage": "Full Benchmark",
+  "evidence": {
+    "accepted_ci_run": null,
+    "accepted_head_sha": null,
+    "durable_jobs_verifier": "PENDING",
+    "pytest": "PENDING",
+    "pinned_hermes_kanban": "PENDING",
+    "restart_resume": "PENDING",
+    "core_freeze": "PENDING"
+  }
+}

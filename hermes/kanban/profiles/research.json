@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "role": "research",
+  "profile_name": "learnflow-research",
+  "description": "Durable LearnFlow worker for evidence collection and deterministic factual verification.",
+  "always_load_skills": [
+    "investigate-lesson-facts"
+  ],
+  "max_in_progress": 1
+}
