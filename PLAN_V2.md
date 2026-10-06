@@ -3356,7 +3356,7 @@ required before script.
 
 ## Script Agent
 
-**Status: NEXT / NOT STARTED**
+**Status: IMPLEMENTED / VERIFYING**
 
 Acceptance:
 
