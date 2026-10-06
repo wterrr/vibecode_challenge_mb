@@ -515,8 +515,8 @@ async def main() -> int:
 
     benchmark_id = spec["benchmark_id"]
     evidence_records = [
-        CoreGateEvidence(metric=CoreGateMetric.RENDER_SUCCESS_RATE, kind=EvidenceKind.BENCHMARK, value=render_success_rate, source=("benchmark_output/result.json",), sample_count=lesson_count, benchmark_id=benchmark_id),
-        CoreGateEvidence(metric=CoreGateMetric.V1_V2_CRITICAL_REGRESSION_COUNT, kind=EvidenceKind.BENCHMARK, value=critical_regressions, source=("benchmark_output/result.json",), sample_count=lesson_count, benchmark_id=benchmark_id),
+        CoreGateEvidence(metric=CoreGateMetric.RENDER_SUCCESS_RATE, kind=EvidenceKind.BENCHMARK, value=render_success_rate, source=("benchmarks/baselines/v2/result.json",), sample_count=lesson_count, benchmark_id=benchmark_id),
+        CoreGateEvidence(metric=CoreGateMetric.V1_V2_CRITICAL_REGRESSION_COUNT, kind=EvidenceKind.BENCHMARK, value=critical_regressions, source=("benchmarks/baselines/v2/result.json",), sample_count=lesson_count, benchmark_id=benchmark_id),
         CoreGateEvidence(metric=CoreGateMetric.VLM_UNAVAILABLE_DETERMINISTIC_OK, kind=EvidenceKind.CONTRACT_TEST, value=True, source=("tests/v2/test_vlm_critic_v2_12_gate.py",)),
         CoreGateEvidence(metric=CoreGateMetric.LOCAL_REPAIR_SCOPE_OK, kind=EvidenceKind.CONTRACT_TEST, value=True, source=("tests/v2/test_repair_v2_13_invalidation.py",)),
     ]
@@ -524,18 +524,18 @@ async def main() -> int:
     # fabricated when any lesson failed before producing the full corpus.
     if total_render_success == lesson_count:
         evidence_records.extend([
-            CoreGateEvidence(metric=CoreGateMetric.FATAL_CLIPPING_COUNT, kind=EvidenceKind.BENCHMARK, value=fatal_clipping, source=("benchmark_output/result.json",), sample_count=lesson_count * 3, benchmark_id=benchmark_id),
-            CoreGateEvidence(metric=CoreGateMetric.FATAL_OVERLAP_COUNT, kind=EvidenceKind.BENCHMARK, value=fatal_overlap, source=("benchmark_output/result.json",), sample_count=lesson_count * 3, benchmark_id=benchmark_id),
-            CoreGateEvidence(metric=CoreGateMetric.INVALID_MOTION_PLAN_COUNT, kind=EvidenceKind.BENCHMARK, value=invalid_motion, source=("benchmark_output/result.json",), sample_count=lesson_count * 3, benchmark_id=benchmark_id),
-            CoreGateEvidence(metric=CoreGateMetric.REPRODUCIBILITY_RATE, kind=EvidenceKind.BENCHMARK, value=reproducibility_rate, source=("benchmark_output/result.json",), sample_count=lesson_count, benchmark_id=benchmark_id),
+            CoreGateEvidence(metric=CoreGateMetric.FATAL_CLIPPING_COUNT, kind=EvidenceKind.BENCHMARK, value=fatal_clipping, source=("benchmarks/baselines/v2/result.json",), sample_count=lesson_count * 3, benchmark_id=benchmark_id),
+            CoreGateEvidence(metric=CoreGateMetric.FATAL_OVERLAP_COUNT, kind=EvidenceKind.BENCHMARK, value=fatal_overlap, source=("benchmarks/baselines/v2/result.json",), sample_count=lesson_count * 3, benchmark_id=benchmark_id),
+            CoreGateEvidence(metric=CoreGateMetric.INVALID_MOTION_PLAN_COUNT, kind=EvidenceKind.BENCHMARK, value=invalid_motion, source=("benchmarks/baselines/v2/result.json",), sample_count=lesson_count * 3, benchmark_id=benchmark_id),
+            CoreGateEvidence(metric=CoreGateMetric.REPRODUCIBILITY_RATE, kind=EvidenceKind.BENCHMARK, value=reproducibility_rate, source=("benchmarks/baselines/v2/result.json",), sample_count=lesson_count, benchmark_id=benchmark_id),
         ])
     if len(repair_cases) == int(spec["repair_cases"]["expected_case_count"]):
         evidence_records.append(
-            CoreGateEvidence(metric=CoreGateMetric.SELECTIVE_REPAIR_SUCCESS_RATE, kind=EvidenceKind.BENCHMARK, value=repair_rate, source=("benchmark_output/result.json",), sample_count=len(repair_cases), benchmark_id=benchmark_id)
+            CoreGateEvidence(metric=CoreGateMetric.SELECTIVE_REPAIR_SUCCESS_RATE, kind=EvidenceKind.BENCHMARK, value=repair_rate, source=("benchmarks/baselines/v2/result.json",), sample_count=len(repair_cases), benchmark_id=benchmark_id)
         )
     if len(v2_frame_paths) == lesson_count * 3:
         evidence_records.append(
-            CoreGateEvidence(metric=CoreGateMetric.V2_STATIC_QUALITY_DELTA, kind=EvidenceKind.BENCHMARK, value=static_delta, source=("benchmark_output/result.json",), sample_count=len(v2_frame_paths), benchmark_id=benchmark_id)
+            CoreGateEvidence(metric=CoreGateMetric.V2_STATIC_QUALITY_DELTA, kind=EvidenceKind.BENCHMARK, value=static_delta, source=("benchmarks/baselines/v2/result.json",), sample_count=len(v2_frame_paths), benchmark_id=benchmark_id)
         )
     bundle = CoreGateEvidenceBundle(repo_commit=commit, evidence=tuple(evidence_records))
     report = evaluate_core_gate(bundle)
