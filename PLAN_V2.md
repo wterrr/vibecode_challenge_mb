@@ -3440,7 +3440,7 @@ Routing này rất quan trọng để lỗi được sửa ở đúng layer.
 
 ## Hooks + Budget
 
-**Status: NEXT / NOT STARTED**
+**Status: PASS**
 
 Implement:
 
@@ -3461,6 +3461,8 @@ illegal publication blocked
 ---
 
 ## Skills
+
+**Status: NEXT / NOT STARTED**
 
 Tạo stable procedures.
 

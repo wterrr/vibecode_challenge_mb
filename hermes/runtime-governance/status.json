@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "stage": "runtime-governance",
+  "name": "Hooks + Budget",
+  "state": "PASS",
+  "depends_on": [
+    {
+      "stage": "agent-aware-qa",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "agent-contracts",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "hermes-bootstrap",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
+  ],
+  "acceptance": {
+    "native_pre_tool_policy": true,
+    "post_tool_metrics": true,
+    "agent_lifecycle_tracing": true,
+    "cost_observation": true,
+    "hard_host_budget_reservation": true,
+    "retry_and_provider_attempt_limits": true,
+    "illegal_publication_blocked": true,
+    "raw_prompt_and_tool_payloads_not_persisted": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "next_stage": "Skills",
+  "evidence": {
+    "accepted_ci_run": 37448402550,
+    "accepted_head_sha": "f4b908f311c1445d5845c8ad9f056e1d06e812fd",
+    "runtime_governance_verifier": "PASS",
+    "pytest": "16 passed",
+    "agent_contracts": "11 passed",
+    "pinned_hermes_hook_dispatch": "PASS",
+    "plugin_discovery": "PASS",
+    "native_pre_tool_call_block": "PASS",
+    "budget_cannot_be_exceeded": "PASS",
+    "hard_usd_reservation": "PASS",
+    "tool_budget_block": "PASS",
+    "retry_quota": "PASS",
+    "illegal_publication_blocked": "PASS",
+    "authorized_publication": "PASS",
+    "post_tool_metrics": "PASS",
+    "post_api_cost_metrics": "PASS",
+    "api_retry_metrics": "PASS",
+    "session_lifecycle": "PASS",
+    "subagent_lifecycle": "PASS",
+    "sensitive_payload_not_persisted": "PASS",
+    "core_freeze": "PASS"
+  }
+}

@@ -1,0 +1,77 @@
+name: Hooks + Budget
+
+on:
+  pull_request:
+    paths:
+      - "runtime_governance/**"
+      - ".hermes/plugins/learnflow-governance/**"
+      - "hermes/runtime-governance/**"
+      - "agent_contracts/runtime.py"
+      - "scripts/verify_runtime_governance.py"
+      - "scripts/verify_hermes_runtime_governance.py"
+      - "tests/hermes/test_runtime_governance.py"
+      - ".github/workflows/runtime-governance.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "runtime_governance/**"
+      - ".hermes/plugins/learnflow-governance/**"
+      - "hermes/runtime-governance/**"
+      - "agent_contracts/runtime.py"
+      - "scripts/verify_runtime_governance.py"
+      - "scripts/verify_hermes_runtime_governance.py"
+      - "tests/hermes/test_runtime_governance.py"
+      - ".github/workflows/runtime-governance.yml"
+
+jobs:
+  governance-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "pydantic>=2" pytest
+      - name: Verify hard budget and publication policy
+        run: python scripts/verify_runtime_governance.py
+      - name: Runtime governance regressions
+        run: pytest -q --confcutdir=tests/hermes tests/hermes/test_runtime_governance.py
+      - name: Agent Contracts compatibility
+        run: |
+          python scripts/verify_agent_contracts.py
+          pytest -q --confcutdir=tests/hermes tests/hermes/test_agent_contracts.py
+      - name: Core Freeze guard
+        run: python scripts/verify_v2_core_freeze.py
+
+  pinned-hermes-hooks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install exact pinned Hermes runtime
+        run: bash scripts/install_hermes_bootstrap.sh
+      - name: Prepare isolated governance profile
+        shell: bash
+        run: |
+          VERIFY_HOME="$PWD/.hermes_runtime/runtime-governance/verify-home"
+          rm -rf "$VERIFY_HOME"
+          mkdir -p "$VERIFY_HOME"
+          cp hermes/bootstrap/config.yaml "$VERIFY_HOME/config.yaml"
+      - name: Verify native Hermes hook dispatch
+        shell: bash
+        run: |
+          VERIFY_HOME="$PWD/.hermes_runtime/runtime-governance/verify-home"
+          if [[ -x ".hermes_runtime/hermes-agent/venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/venv/bin/python"
+          elif [[ -x ".hermes_runtime/hermes-agent/.venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/.venv/bin/python"
+          else
+            echo "Pinned Hermes Python not found" >&2
+            exit 1
+          fi
+          HERMES_HOME="$VERIFY_HOME" HERMES_ENABLE_PROJECT_PLUGINS=true             "$HPY" scripts/verify_hermes_runtime_governance.py

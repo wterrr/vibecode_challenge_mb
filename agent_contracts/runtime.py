@@ -165,12 +165,28 @@ class BudgetLimits(ContractModel):
     subagent_calls: int = Field(default=0, ge=0)
     vlm_repairs: int = Field(default=0, ge=0)
     image_generations: int = Field(default=0, ge=0)
+    tool_calls: int = Field(default=0, ge=0)
+    provider_attempts: int = Field(default=0, ge=0)
+    retries: int = Field(default=0, ge=0)
 
 
 class BudgetUsage(ContractModel):
     subagent_calls: int = Field(default=0, ge=0)
     vlm_repairs: int = Field(default=0, ge=0)
     image_generations: int = Field(default=0, ge=0)
+    tool_calls: int = Field(default=0, ge=0)
+    provider_attempts: int = Field(default=0, ge=0)
+    retries: int = Field(default=0, ge=0)
+
+
+_BUDGET_COUNTER_FIELDS = (
+    "subagent_calls",
+    "vlm_repairs",
+    "image_generations",
+    "tool_calls",
+    "provider_attempts",
+    "retries",
+)
 
 
 class BudgetLedger(ContractModel):
@@ -196,7 +212,7 @@ class BudgetLedger(ContractModel):
             raise AgentContractError(
                 f"BudgetLedger overspent: spent={self.spent.total_usd} max={self.max_usd}"
             )
-        for name in ("subagent_calls", "vlm_repairs", "image_generations"):
+        for name in _BUDGET_COUNTER_FIELDS:
             used = getattr(self.usage, name)
             limit = getattr(self.limits, name)
             if used > limit:
