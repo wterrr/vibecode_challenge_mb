@@ -2,7 +2,7 @@
 """Run the frozen LearnFlow V2 Core Gate benchmark against the frozen V1 lessons.
 
 The benchmark specification is immutable after the first execution:
-benchmarks/specs/v2_core_gate_v1.json
+benchmarks/specs/v2_core_gate_v2.json
 
 This runner intentionally reports failures instead of substituting benchmark-only
 fallbacks. The same frozen V1 LessonPlan fixtures feed V1 and V2.
@@ -20,6 +20,8 @@ import sys
 import tempfile
 import time
 from typing import Any
+
+from PIL import ImageStat
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -40,20 +42,34 @@ from learnflow_v2.motion import MotionEvent, MotionPlan, MotionStyle, MotionVerb
 from learnflow_v2.motion.compiler import compile_motion_schedule
 from learnflow_v2.motion.scheduler import schedule_motion_plan
 from learnflow_v2.qa import (
+    AudioProbe,
     CriticPatchOp,
     CriticPatchSuggestion,
     CriticTargetKind,
     CriticTargetRef,
+    DeterministicQAConfig,
+    FrameProbe,
+    RenderedSceneProbe,
+    TextElementProbe,
+    analyze_deterministic_qa,
 )
 from learnflow_v2.repair import apply_safe_scenegraph_patches
-from learnflow_v2.render import RenderProfile, assemble_video, mux_audio_track, render_scene_video, render_transition_video
+from learnflow_v2.render import (
+    DEFAULT_TEXT_FONT_SIZE_PX,
+    DeterministicPillowRenderer,
+    RenderProfile,
+    assemble_video,
+    mux_audio_track,
+    render_scene_video,
+    render_transition_video,
+)
 from learnflow_v2.scenegraph import adapt_v1_lesson_plan
 from learnflow_v2.scenegraph.enums import PreferredRegion
 from learnflow_v2.transitions import compile_inter_scene_transition
 from scripts.capture_v1_baseline import run_benchmark_lesson
 
 
-SPEC_PATH = REPO_ROOT / "benchmarks" / "specs" / "v2_core_gate_v1.json"
+SPEC_PATH = REPO_ROOT / "benchmarks" / "specs" / "v2_core_gate_v2.json"
 V1_BASELINE_PATH = REPO_ROOT / "benchmarks" / "baselines" / "v1" / "baseline.json"
 V1_FIXTURES = REPO_ROOT / "benchmarks" / "fixtures" / "v1"
 
@@ -98,6 +114,50 @@ def _video_streams(path: Path) -> tuple[dict[str, Any] | None, dict[str, Any] | 
     audio = next((item for item in streams if item.get("codec_type") == "audio"), None)
     duration = float(data.get("format", {}).get("duration") or 0.0)
     return video, audio, duration
+
+
+def _frame_probe(renderer: DeterministicPillowRenderer, scene_graph, layout, compiled, timestamp: float) -> FrameProbe:
+    image = renderer.render_frame(scene_graph, layout, compiled, timestamp).convert("RGB")
+    luma = image.convert("L")
+    mean_luma = float(ImageStat.Stat(luma).mean[0])
+    values = list(luma.getdata())
+    non_black_fraction = sum(1 for value in values if value > 2) / len(values)
+    return FrameProbe(
+        timestamp=timestamp,
+        mean_luma=mean_luma,
+        non_black_fraction=non_black_fraction,
+        expected_blank=False,
+    )
+
+
+def _scene_qa_report(scene_graph, layout, compiled, artifact, profile):
+    renderer = DeterministicPillowRenderer()
+    timestamp = min(compiled.scene_duration / 2.0, artifact.duration)
+    probe = RenderedSceneProbe(
+        scene_id=scene_graph.scene_id,
+        expected_duration=compiled.scene_duration,
+        rendered_duration=artifact.duration,
+        text_elements=tuple(
+            TextElementProbe(
+                element_id=node.id,
+                font_size_px=float(DEFAULT_TEXT_FONT_SIZE_PX),
+                alpha=1.0,
+            )
+            for node in scene_graph.nodes
+        ),
+        visual_elements=(),
+        assets=(),
+        frames=(_frame_probe(renderer, scene_graph, layout, compiled, timestamp),),
+        audio=AudioProbe(duration=artifact.duration, rms_windows=(), expected_audio=False),
+        subtitles=(),
+    )
+    return analyze_deterministic_qa(
+        layout,
+        probe,
+        expected_node_ids={node.id for node in scene_graph.nodes},
+        config=DeterministicQAConfig(min_font_size_px=float(DEFAULT_TEXT_FONT_SIZE_PX)),
+        profile=profile,
+    )
 
 
 def _build_motion(scene_graph, scene_duration: float):
@@ -176,6 +236,12 @@ def _run_v2_once(
             scene_dir / f"{scene_graph.scene_id}.mp4",
             profile=render_profile,
         )
+        qa_report = _scene_qa_report(scene_graph, layout, compiled, artifact, profile)
+        if not qa_report.passed:
+            raise RuntimeError(
+                f"Deterministic rendered-scene QA failed for {scene_graph.scene_id}: "
+                f"{[issue.code.value for issue in qa_report.issues]}"
+            )
         layouts.append(layout)
         compiled_motion.append(compiled)
         scene_artifacts.append(artifact)
@@ -194,7 +260,8 @@ def _run_v2_once(
                 "motion_event_count": len(motion_plan.events),
                 "frame_digest": artifact.frame_digest,
                 "source_hash": artifact.source_hash,
-                "render_seconds": round(time.perf_counter() - t0, 6),
+                "deterministic_qa_pass": qa_report.passed,
+                "deterministic_qa_issue_codes": [issue.code.value for issue in qa_report.issues],
             }
         )
 
@@ -388,6 +455,7 @@ async def main() -> int:
             baseline_spec,
             v1_baseline["media_invariants"],
             retain_final_to=v1_final,
+            retain_scenes_to=lesson_dir / "v1" / "scenes",
         )
 
         v2_runs = []
@@ -468,21 +536,28 @@ async def main() -> int:
                 "error": error,
             }
 
-        # V1 benchmark speech is frozen at exactly 2 seconds per scene.
-        for index in range(int(baseline_spec["scene_count"])):
-            timestamp = scene_duration * index + scene_duration / 2.0
-            out = lesson_dir / "static_frames" / f"v1_scene_{index+1}.png"
-            extract_frame(v1_final, timestamp, out)
+        # Static-quality comparison must use the same visual layer on both sides:
+        # pre-subtitle scene clips for V1 and pre-mux scene clips for V2.
+        retained_scene_paths = [Path(path) for path in v1_result.get("retained_scene_paths", ())]
+        if len(retained_scene_paths) != int(baseline_spec["scene_count"]):
+            raise RuntimeError(
+                f"Expected {baseline_spec['scene_count']} retained V1 scene clips, got {len(retained_scene_paths)}"
+            )
+        for index, scene_path in enumerate(retained_scene_paths, 1):
+            out = lesson_dir / "static_frames" / f"v1_scene_{index}.png"
+            extract_frame(scene_path, scene_duration / 2.0, out)
             v1_frame_paths.append(out)
 
         result["lessons"][lesson_key] = lesson_result
 
     v1_quality = aggregate_static_quality(v1_frame_paths)
+    v1_quality["metric_id"] = spec["static_quality_metric"]["metric_id"]
     v2_quality = aggregate_static_quality(v2_frame_paths) if v2_frame_paths else {
         "metric_id": "static_composition_proxy_v1",
         "frame_count": 0,
         "score": 0.0,
     }
+    v2_quality["metric_id"] = spec["static_quality_metric"]["metric_id"]
     static_delta = round(float(v2_quality["score"]) - float(v1_quality["score"]), 8)
 
     repair_cases = result["repair_cases"]
