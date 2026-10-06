@@ -3338,7 +3338,7 @@ contradictions flagged
 
 ## Pedagogy Agent
 
-**Status: IMPLEMENTED / VERIFYING**
+**Status: PASS**
 
 Acceptance:
 
@@ -3355,6 +3355,8 @@ required before script.
 ---
 
 ## Script Agent
+
+**Status: NEXT / NOT STARTED**
 
 Acceptance:
 
