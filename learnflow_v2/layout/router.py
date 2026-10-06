@@ -524,7 +524,10 @@ def _compile_comparison(
         members = _column_members(scene_graph, column.id)
         column_width = min(col_zone.width - 16.0, measurements[column.id].width + 24.0)
         column_required_h = _wrapped_text_height(measurements[column.id], column_width) + 16.0
-        col_title_h = min(max(38.0, column_required_h + 4.0), col_zone.height * 0.30)
+        # Use the measured readable height directly. The old +4 heuristic and
+        # a second _fit_rect vertical inset consumed content space while still
+        # shrinking the actual header below its measured text requirement.
+        col_title_h = min(max(38.0, column_required_h), col_zone.height * 0.30)
         if column_required_h > col_title_h + 1e-6:
             raise LayoutUnsatisfiableError(
                 f"Comparison column '{column.id}' title cannot fit readable text"
@@ -538,6 +541,7 @@ def _compile_comparison(
                     preferred_width=column_width,
                     preferred_height=column_required_h,
                     preferred_region=column.layout_hint.preferred_region if column.layout_hint else None,
+                    margin_y=0.0,
                 ),
                 zone="CONTENT",
                 strategy_role="comparison_column",
