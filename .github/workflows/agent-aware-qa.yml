@@ -58,6 +58,7 @@ jobs:
             echo "Pinned Hermes Python not found" >&2
             exit 1
           fi
+          "$HPY" -m ensurepip --upgrade
           "$HPY" -m pip install "kiwisolver==1.5.1"
 
       - name: Prepare isolated Agent-Aware QA profile
