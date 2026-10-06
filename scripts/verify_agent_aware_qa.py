@@ -155,6 +155,12 @@ def build_acceptance():
                 claim_ids=(pack.claims[0].claim_id,),
                 segment_ids=(script.segments[0].segment_id,),
             ),
+            SemanticQAFinding(
+                finding_id="pedagogy-structure",
+                kind=SemanticFindingKind.PEDAGOGICAL_STRUCTURE,
+                reason="The learning objective needs a clearer progression.",
+                objective_ids=(pedagogy.learning_objectives[0].objective_id,),
+            ),
         ),
         deterministic_reports=(deterministic,),
         scene_critic_repairs=(
@@ -172,6 +178,7 @@ def main() -> int:
     required = {
         RepairOwner.RESEARCH_ORCHESTRATION,
         RepairOwner.SCRIPT_AGENT,
+        RepairOwner.PEDAGOGY_AGENT,
         RepairOwner.VISUAL_DIRECTOR,
         RepairOwner.CORE_REPAIR,
     }
@@ -210,6 +217,7 @@ def main() -> int:
     print("AGENT_AWARE_QA=PASS")
     print("factual_evidence_to_research=PASS")
     print("factual_narration_to_script=PASS")
+    print("pedagogical_structure_to_pedagogy=PASS")
     print("semantic_visual_to_visual_director=PASS")
     print("deterministic_geometry_to_core=PASS")
     print("video_narration_to_script=PASS")
