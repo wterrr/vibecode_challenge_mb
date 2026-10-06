@@ -1,6 +1,6 @@
 """Deterministic pixel/video renderer for LearnFlow V2."""
 
-from learnflow_v2.render.assembly import assemble_video, mux_audio_track
+from learnflow_v2.render.assembly import assemble_video, burn_subtitles, mux_audio_track
 from learnflow_v2.render.backend import (
     DEFAULT_TEXT_FONT_SIZE_PX,
     DeterministicPillowRenderer,
@@ -12,6 +12,7 @@ from learnflow_v2.render.schema import (
     RenderArtifactKind,
     RenderProfile,
     RenderedArtifact,
+    SubtitleRenderCue,
     V2_RENDER_SCHEMA_VERSION,
 )
 
@@ -24,8 +25,10 @@ __all__ = [
     "RenderInvalidInputError",
     "RenderProfile",
     "RenderedArtifact",
+    "SubtitleRenderCue",
     "V2_RENDER_SCHEMA_VERSION",
     "assemble_video",
+    "burn_subtitles",
     "mux_audio_track",
     "render_scene_video",
     "render_transition_video",
