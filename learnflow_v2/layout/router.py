@@ -26,7 +26,7 @@ from learnflow_v2.layout.schema import (
     RoutedEdge,
     RoutingStyle,
 )
-from learnflow_v2.scenegraph.enums import LayoutIntent, NodeKind, RelationKind
+from learnflow_v2.scenegraph.enums import LayoutIntent, NodeKind, PreferredRegion, RelationKind
 from learnflow_v2.scenegraph.schema import SceneGraph, SceneNode
 
 
@@ -68,17 +68,37 @@ def _fit_rect(
     *,
     preferred_width: float,
     preferred_height: float,
+    preferred_region: PreferredRegion | None = None,
     margin_x: float = 8.0,
     margin_y: float = 4.0,
 ) -> Rect:
+    """Fit within one semantic zone while honoring abstract region intent.
+
+    preferred_region remains semantic. This function alone converts LEFT/RIGHT/
+    TOP/BOTTOM into deterministic geometry inside the already-authorized zone.
+    """
     width = min(max(24.0, preferred_width), max(24.0, zone.width - margin_x * 2.0))
     height = min(max(20.0, preferred_height), max(20.0, zone.height - margin_y * 2.0))
-    return Rect(
-        x=round(zone.x + (zone.width - width) / 2.0, 4),
-        y=round(zone.y + (zone.height - height) / 2.0, 4),
-        width=round(width, 4),
-        height=round(height, 4),
-    )
+    left_regions = {PreferredRegion.LEFT, PreferredRegion.TOP_LEFT, PreferredRegion.BOTTOM_LEFT}
+    right_regions = {PreferredRegion.RIGHT, PreferredRegion.TOP_RIGHT, PreferredRegion.BOTTOM_RIGHT}
+    top_regions = {PreferredRegion.TOP, PreferredRegion.TOP_LEFT, PreferredRegion.TOP_RIGHT}
+    bottom_regions = {PreferredRegion.BOTTOM, PreferredRegion.BOTTOM_LEFT, PreferredRegion.BOTTOM_RIGHT}
+
+    if preferred_region in left_regions:
+        x = zone.x + margin_x
+    elif preferred_region in right_regions:
+        x = zone.right - width - margin_x
+    else:
+        x = zone.x + (zone.width - width) / 2.0
+
+    if preferred_region in top_regions:
+        y = zone.y + margin_y
+    elif preferred_region in bottom_regions:
+        y = zone.bottom - height - margin_y
+    else:
+        y = zone.y + (zone.height - height) / 2.0
+
+    return Rect(x=round(x, 4), y=round(y, 4), width=round(width, 4), height=round(height, 4))
 
 
 def _stack_in_zone(
@@ -108,8 +128,12 @@ def _stack_in_zone(
         slot = Rect(x=zone.x, y=round(y, 4), width=zone.width, height=round(slot_h, 4))
         rect = _fit_rect(
             slot,
-            preferred_width=min(measurement.width + 28.0, slot.width),
+            preferred_width=max(
+                measurement.minimum_readable_width,
+                min(measurement.width + 28.0, slot.width * 0.86),
+            ),
             preferred_height=max(measurement.minimum_readable_height + 12.0, min(measurement.height + 12.0, slot.height)),
+            preferred_region=node.layout_hint.preferred_region if node.layout_hint else None,
         )
         boxes.append(
             LayoutBox(
@@ -145,6 +169,7 @@ def _compile_concept_card(
             title_zone,
             preferred_width=min(title_zone.width, title_m.width + 36.0),
             preferred_height=min(title_zone.height, max(26.0, title_m.height + 14.0)),
+            preferred_region=primary_node.layout_hint.preferred_region if primary_node.layout_hint else None,
         ),
         zone="TITLE",
         strategy_role="title",
@@ -303,8 +328,9 @@ def _compile_process_compact(
                 node_id=node.id,
                 rect=_fit_rect(
                     slot,
-                    preferred_width=max(measurement.minimum_readable_width, min(slot.width, measurement.width + 18.0)),
+                    preferred_width=max(measurement.minimum_readable_width, min(slot.width * 0.86, measurement.width + 18.0)),
                     preferred_height=max(measurement.minimum_readable_height, min(slot.height, measurement.height + 12.0)),
+                    preferred_region=node.layout_hint.preferred_region if node.layout_hint else None,
                 ),
                 zone="CONTENT",
                 strategy_role="process_actor",
@@ -323,8 +349,9 @@ def _compile_process_compact(
                 node_id=node.id,
                 rect=_fit_rect(
                     slot,
-                    preferred_width=max(measurement.minimum_readable_width, min(slot.width, measurement.width + 18.0)),
+                    preferred_width=max(measurement.minimum_readable_width, min(slot.width * 0.86, measurement.width + 18.0)),
                     preferred_height=max(measurement.minimum_readable_height, min(slot.height, measurement.height + 18.0)),
+                    preferred_region=node.layout_hint.preferred_region if node.layout_hint else None,
                 ),
                 zone="CONTENT",
                 strategy_role="process_step",
@@ -398,6 +425,7 @@ def _compile_comparison(
                 title_zone,
                 preferred_width=min(title_zone.width, title_m.width + 36.0),
                 preferred_height=min(title_zone.height, max(26.0, title_m.height + 14.0)),
+                preferred_region=title.layout_hint.preferred_region if title.layout_hint else None,
             ),
             zone="TITLE",
             strategy_role="title",
@@ -419,6 +447,7 @@ def _compile_comparison(
                     title_slot,
                     preferred_width=min(col_zone.width, measurements[column.id].width + 20.0),
                     preferred_height=min(col_title_h, measurements[column.id].height + 12.0),
+                    preferred_region=column.layout_hint.preferred_region if column.layout_hint else None,
                 ),
                 zone="CONTENT",
                 strategy_role="comparison_column",
