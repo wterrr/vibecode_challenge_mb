@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "stage": "fact-verification",
+  "name": "Fact Verification",
+  "state": "PASS",
+  "depends_on": [
+    {
+      "stage": "research-orchestration",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "agent-contracts",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
+  ],
+  "authority": {
+    "hermes": "semantic evidence judgment",
+    "deterministic_gate": "final narration eligibility"
+  },
+  "acceptance": {
+    "every_factual_narration_maps_to_claim_id": true,
+    "unsupported_claim_blocked": true,
+    "contradictions_flagged": true,
+    "claim_only_cycles_not_grounded": true,
+    "source_grounding_required": true,
+    "hermes_supported_cannot_override_missing_evidence": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "next_stage": "Pedagogy Agent",
+  "evidence": {
+    "accepted_ci_run": 37430356926,
+    "accepted_head_sha": "c5d41a14147c4346ed71f44896707812585f4342",
+    "deterministic_fact_gate": "PASS",
+    "pytest": "13 passed",
+    "source_grounded_support": "PASS",
+    "claim_only_cycle_blocked": "PASS",
+    "contradiction_flagged": "PASS",
+    "unsupported_claim_blocked": "PASS",
+    "factual_narration_claim_gate": "PASS",
+    "pinned_hermes_review_contract": "PASS",
+    "structured_semantic_review_schema": "PASS",
+    "deterministic_gate_final_authority": "PASS",
+    "core_freeze": "PASS"
+  }
+}
