@@ -67,7 +67,11 @@ class ContractModel(BaseModel):
         return value
 
     def to_canonical_json(self) -> str:
-        payload = self.model_dump(mode="json", exclude_none=True)
+        payload = self.model_dump(
+            mode="json",
+            exclude_none=True,
+            exclude_computed_fields=True,
+        )
         return json.dumps(
             payload,
             ensure_ascii=False,
