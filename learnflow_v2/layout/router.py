@@ -32,7 +32,7 @@ from learnflow_v2.scenegraph.schema import SceneGraph, SceneNode
 
 _DEFAULT_POLICY = MeasurementPolicy(
     preferred_font_size=18.0,
-    minimum_font_size=14.0,
+    minimum_font_size=18.0,
     candidate_max_widths=[120.0, 180.0, 240.0, 320.0, 480.0],
 )
 
@@ -61,6 +61,30 @@ def measure_scene_nodes(
 ) -> dict[str, TextMeasurement]:
     policy = policy or _DEFAULT_POLICY
     return {node.id: _measure(node, policy) for node in scene_graph.nodes}
+
+
+def _wrapped_text_height(measurement: TextMeasurement, outer_width: float, *, horizontal_padding: float = 20.0) -> float:
+    """Conservative wrapped text height at the actual renderer width.
+
+    Layout and renderer share 18px text semantics. Candidate width is chosen at
+    or below the available inner width so height is never underestimated.
+    """
+    inner_width = max(1.0, float(outer_width) - horizontal_padding)
+    candidates = sorted(measurement.wrap_candidates, key=lambda item: item.max_width)
+    if not candidates:
+        return measurement.height
+    eligible = [item for item in candidates if item.max_width <= inner_width + 1e-6]
+    candidate = eligible[-1] if eligible else candidates[0]
+    if candidate.had_overflow_token or candidate.width > inner_width + 1e-6:
+        raise LayoutUnsatisfiableError(
+            "Text cannot fit readable width without overflow",
+            {
+                "inner_width": inner_width,
+                "candidate_width": candidate.width,
+                "candidate_max_width": candidate.max_width,
+            },
+        )
+    return float(candidate.height)
 
 
 def _fit_rect(
@@ -126,13 +150,21 @@ def _stack_in_zone(
             )
         y = zone.y + index * (slot_h + gap)
         slot = Rect(x=zone.x, y=round(y, 4), width=zone.width, height=round(slot_h, 4))
+        preferred_width = max(
+            measurement.minimum_readable_width + 20.0,
+            min(measurement.width + 28.0, slot.width * 0.90),
+        )
+        preferred_width = min(preferred_width, max(24.0, slot.width - 16.0))
+        required_height = _wrapped_text_height(measurement, preferred_width) + 16.0
+        if required_height > slot.height - 8.0 + 1e-6:
+            raise LayoutUnsatisfiableError(
+                f"Node '{node.id}' wrapped readable text does not fit specialized layout slot",
+                {"required_height": required_height, "slot_height": slot.height, "preferred_width": preferred_width},
+            )
         rect = _fit_rect(
             slot,
-            preferred_width=max(
-                measurement.minimum_readable_width,
-                min(measurement.width + 28.0, slot.width * 0.86),
-            ),
-            preferred_height=max(measurement.minimum_readable_height + 12.0, min(measurement.height + 12.0, slot.height)),
+            preferred_width=preferred_width,
+            preferred_height=max(measurement.minimum_readable_height + 16.0, required_height),
             preferred_region=node.layout_hint.preferred_region if node.layout_hint else None,
         )
         boxes.append(
@@ -323,13 +355,22 @@ def _compile_process_compact(
             raise LayoutUnsatisfiableError(
                 f"Actor '{node.id}' cannot fit minimum readable geometry in compact PROCESS lane"
             )
+        preferred_width = min(
+            max(measurement.minimum_readable_width + 20.0, min(slot.width * 0.90, measurement.width + 20.0)),
+            max(24.0, slot.width - 16.0),
+        )
+        required_height = _wrapped_text_height(measurement, preferred_width) + 16.0
+        if required_height > slot.height - 8.0 + 1e-6:
+            raise LayoutUnsatisfiableError(
+                f"Actor '{node.id}' wrapped readable text does not fit compact PROCESS lane"
+            )
         boxes.append(
             LayoutBox(
                 node_id=node.id,
                 rect=_fit_rect(
                     slot,
-                    preferred_width=max(measurement.minimum_readable_width, min(slot.width * 0.86, measurement.width + 18.0)),
-                    preferred_height=max(measurement.minimum_readable_height, min(slot.height, measurement.height + 12.0)),
+                    preferred_width=preferred_width,
+                    preferred_height=required_height,
                     preferred_region=node.layout_hint.preferred_region if node.layout_hint else None,
                 ),
                 zone="CONTENT",
@@ -344,13 +385,22 @@ def _compile_process_compact(
             raise LayoutUnsatisfiableError(
                 f"Step '{node.id}' cannot fit minimum readable geometry in compact PROCESS lane"
             )
+        preferred_width = min(
+            max(measurement.minimum_readable_width + 20.0, min(slot.width * 0.90, measurement.width + 20.0)),
+            max(24.0, slot.width - 16.0),
+        )
+        required_height = _wrapped_text_height(measurement, preferred_width) + 16.0
+        if required_height > slot.height - 8.0 + 1e-6:
+            raise LayoutUnsatisfiableError(
+                f"Step '{node.id}' wrapped readable text does not fit compact PROCESS lane"
+            )
         boxes.append(
             LayoutBox(
                 node_id=node.id,
                 rect=_fit_rect(
                     slot,
-                    preferred_width=max(measurement.minimum_readable_width, min(slot.width * 0.86, measurement.width + 18.0)),
-                    preferred_height=max(measurement.minimum_readable_height, min(slot.height, measurement.height + 18.0)),
+                    preferred_width=preferred_width,
+                    preferred_height=required_height,
                     preferred_region=node.layout_hint.preferred_region if node.layout_hint else None,
                 ),
                 zone="CONTENT",
