@@ -322,9 +322,13 @@ def scene_repair(scene_id, node_id, *, semantic=False):
 
 def test_supported_scene_critic_patch_stays_in_core():
     *_, visual, context = fixture()
-    gate = scene_repair(
-        context.scene_ids[0], visual.scenegraphs[0].nodes[0].id, semantic=False
+    scene_id = context.scene_ids[0]
+    node_id = next(
+        scope.node_ids[0]
+        for scope in context.scene_objects
+        if scope.scene_id == scene_id
     )
+    gate = scene_repair(scene_id, node_id, semantic=False)
     plan = route(
         AgentAwareQAReport(report_id="r", scene_quality_results=(gate,)),
         context,
@@ -336,9 +340,13 @@ def test_supported_scene_critic_patch_stays_in_core():
 
 def test_semantic_scene_regeneration_routes_to_visual_director():
     *_, visual, context = fixture()
-    gate = scene_repair(
-        context.scene_ids[0], visual.scenegraphs[0].nodes[0].id, semantic=True
+    scene_id = context.scene_ids[0]
+    node_id = next(
+        scope.node_ids[0]
+        for scope in context.scene_objects
+        if scope.scene_id == scene_id
     )
+    gate = scene_repair(scene_id, node_id, semantic=True)
     plan = route(
         AgentAwareQAReport(report_id="r", scene_quality_results=(gate,)),
         context,
