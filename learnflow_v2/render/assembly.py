@@ -71,3 +71,59 @@ def assemble_video(
         frame_digest=frame_digest,
         source_hash=source_hash,
     )
+
+
+def mux_audio_track(
+    video_artifact: RenderedArtifact,
+    audio_path: str | Path,
+    output_path: str | Path,
+) -> RenderedArtifact:
+    """Mux one explicit audio track into an already-rendered VIDEO artifact.
+
+    The renderer never synthesizes audio implicitly. Callers provide a concrete
+    audio artifact; FFmpeg copies deterministic video bytes and encodes AAC.
+    """
+    video = RenderedArtifact.model_validate(video_artifact.model_dump(mode="json"))
+    if video.kind != RenderArtifactKind.VIDEO:
+        raise RenderInvalidInputError("audio mux requires a VIDEO artifact")
+    video_path = Path(video.path)
+    audio = Path(audio_path)
+    if not video_path.exists() or video_path.stat().st_size <= 0:
+        raise RenderInvalidInputError("video artifact path does not exist")
+    if not audio.exists() or audio.stat().st_size <= 0:
+        raise RenderInvalidInputError("audio path does not exist")
+
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    cmd = [
+        "ffmpeg", "-y", "-loglevel", "error",
+        "-i", str(video_path),
+        "-i", str(audio),
+        "-map", "0:v:0", "-map", "1:a:0",
+        "-c:v", "copy",
+        "-c:a", "aac", "-b:a", "128k",
+        "-shortest", "-map_metadata", "-1",
+        str(output),
+    ]
+    try:
+        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False, text=True)
+    except OSError as exc:
+        raise RenderBackendError(f"failed to start ffmpeg audio mux: {exc}") from exc
+    if proc.returncode != 0:
+        raise RenderBackendError(f"ffmpeg audio mux failed: {proc.stderr[-1000:]}")
+    if not output.exists() or output.stat().st_size <= 0:
+        raise RenderBackendError("audio mux produced no output")
+
+    audio_digest = hashlib.sha256()
+    with audio.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            audio_digest.update(chunk)
+    source_hash = hashlib.sha256(
+        f"{video.source_hash}\n{audio_digest.hexdigest()}\naac-128k".encode("utf-8")
+    ).hexdigest()
+    return video.model_copy(
+        update={
+            "path": str(output),
+            "source_hash": source_hash,
+        }
+    )
