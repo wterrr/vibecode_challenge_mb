@@ -35,6 +35,7 @@ Accepted stages:
 - **LearnFlow Capability Plugin — PASS.** The exact pinned Hermes runtime discovers the project plugin and dispatches `learnflow_create → learnflow_run → learnflow_render`. Integration verification renders a real MP4 and preserves the Core Freeze boundary.
 - **Agent Contracts — PASS.** `LearningBrief`, `ResearchPack`, `EvidenceGraph`, `PedagogyPlan`, `LessonScript`, `Storyboard`, `AgentRun`, and `BudgetLedger` are strict, versioned, canonically serializable artifacts with cross-artifact integrity checks.
 - **Fact Verification — PASS.** A deterministic source-grounding/contradiction gate controls factual narration eligibility; Hermes semantic verdicts are structured but cannot override missing evidence.
+- **Pedagogy Agent — PASS.** Hermes produces structured pedagogy from approved claims only; deterministic checks require researched concept progression, objective assessment coverage, and Script readiness.
 
 Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifier, 11 contract regressions, and Core Freeze guard passed.
 
@@ -42,9 +43,9 @@ Accepted stage: **Research Orchestration — PASS.** Hermes native nested delega
 
 Accepted stage: **Fact Verification — PASS.** Source-grounded evidence, cycle-safe provenance, contradiction signaling, unsupported-claim blocking, factual narration claim gating, and pinned Hermes semantic-review compatibility are verified.
 
-Current stage: **Pedagogy Agent — IMPLEMENTED / VERIFYING**. Hermes proposes the teaching plan from fact-approved research only; deterministic validation decides whether the plan is ready for Script Agent.
+Accepted stage: **Pedagogy Agent — PASS.** Hermes receives fact-approved research only, unsafe/forged approvals are rejected before context exposure, and deterministic validation enforces concept provenance, assessment coverage, examples, and Script readiness. Next authorized stage: **Script Agent**, which has not started yet.
 
-During Pedagogy Agent, implement only objectives, prerequisites, concept progression, worked examples/analogies, misconceptions, and assessment probes over fact-verified claims. Do not implement Script Agent, Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
+During Script Agent, implement only claim-preserving lesson narration/segments with a teaching function per segment and no visual coordinates/code. Do not implement Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
 
 ## LearnFlow Capability Plugin safety
 
