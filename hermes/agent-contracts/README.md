@@ -2,6 +2,8 @@
 
 This stage defines the typed control-plane artifacts that connect Hermes reasoning stages without moving geometry, rendering code, or execution policy into the model layer.
 
+**Status: PASS.** Accepted CI proves the coherent artifact-chain verifier, 11 contract regressions, and the Core Freeze guard.
+
 ## Public architecture contracts
 
 The package `agent_contracts/` exports the eight artifacts required by `PLAN_V2.md`:
