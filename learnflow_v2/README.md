@@ -22,16 +22,18 @@ V2-11  Deterministic QA                     PASS
 V2-12  Optional VLM Critic                  PASS
 V2-13  Repair + Dependency Invalidation     PASS
 V2-14  Video Critic                         PASS
+V2 Renderer + Assembly                      PASS
+Frozen V2 End-to-End Benchmark              PASS
+CORE GATE                                   PASS
 ```
 
-The V2C component checkpoints are complete, but **Core Gate is not yet passed**.
-
-Current Core Gate decision for engine commit
-`ca20c79c0e17f990ebfb4ed06f9b8988dbe74305` is:
+Official Core Gate engine commit:
 
 ```text
-BLOCKED
+25c27da43e6645d2e9ac704958d619e3c96aa4b2
 ```
+
+Official benchmark run: `37404184018`.
 
 Run the fail-closed evaluator with:
 
@@ -39,19 +41,41 @@ Run the fail-closed evaluator with:
 python scripts/evaluate_v2_core_gate.py
 ```
 
-See `benchmarks/core_gate/README.md`.
+See `benchmarks/core_gate/README.md` and `benchmarks/baselines/v2/`.
 
-## Why Core Gate is currently blocked
+## Core Gate evidence
 
-The deterministic V2 renderer/assembly baseline is now implemented under `learnflow_v2.render`, so the original "renderer missing" prerequisite is closed.
+The frozen `v2-core-gate-v1` benchmark reuses exactly the three frozen V1 lessons:
 
-The repository still lacks evidence required by `PLAN_V2.md` for the following reasons:
+- `photosynthesis`
+- `ram_vs_ssd`
+- `tcp_three_way_handshake`
 
-1. **No frozen V2 end-to-end benchmark result exists** comparable to the frozen V1 baseline under `benchmarks/baselines/v1/`.
-2. **No agreed V1-vs-V2 static-quality metric artifact exists**, so `V2 static quality > V1 baseline` cannot be claimed scientifically yet.
-3. **Production/API integration and audio mux are not yet benchmarked as a V2 publish path.** The renderer can create deterministic scene/transition MP4 clips and assemble a video-only draft, but this is not yet evidence for the full product path.
+Official results:
 
-Missing evidence is treated as `BLOCKED`, never as an implicit PASS. Hermes/V2D must not start until Core Gate is actually satisfied.
+```text
+render success                 100% (3/3)
+fatal clipping                 0 / 9 scenes
+fatal overlap                  0 / 9 scenes
+invalid MotionPlan             0 / 9 scenes
+selective repair success       100% (9/9)
+deterministic reproducibility  100% (3/3)
+V1→V2 critical regression      0 / 3
+static composition delta       +5.54192634
+VLM unavailable contract       PASS
+local repair isolation         PASS
+```
+
+All three V2 final videos preserve the frozen V1 media contract:
+
+```text
+video codec: H.264
+audio codec: AAC
+resolution: 640x360
+duration: 7.0s
+```
+
+The static-composition score is a narrow deterministic proxy, not a human aesthetic score.
 
 ## Architectural boundary
 
@@ -66,7 +90,7 @@ Motion Grammar + Scheduler/Compiler
         ↓
 InterSceneTransitionPlan
         ↓
-deterministic V2 renderer + assembly
+deterministic V2 renderer + AAC mux + assembly
         ↓
 Deterministic QA
         ↓
@@ -87,50 +111,40 @@ Non-negotiable rules:
 - deterministic QA cannot be overridden by the critic;
 - local repair must invalidate only affected downstream artifacts;
 - deterministic artifacts are hash/provenance tracked;
-- V1 remains the production rollback baseline until Core Gate passes.
+- V1 remains the rollback baseline until V2 Core Freeze is completed.
 
 ## Current modules
 
 - `learnflow_v2.core` — canonical serialization, JSON-safe values, structured errors.
 - `learnflow_v2.concepts` — canonical lesson-level semantic identity.
 - `learnflow_v2.scenegraph` — semantic visual IR and V1 adapter.
-- `learnflow_v2.layout` — intrinsic measurement, safe zones, Kiwi/ELK/Graphviz layout, collision repair, feasibility scoring and continuity.
+- `learnflow_v2.layout` — measurement, safe zones, constraints, graph/specialized layout, production LayoutRouter, collision/preflight and continuity.
 - `learnflow_v2.motion` — Tier-1 semantic motion grammar, narration beats, scheduling and property-track compilation.
 - `learnflow_v2.transitions` — semantic cross-scene persistence and renderer capability negotiation.
 - `learnflow_v2.qa` — deterministic scene QA plus optional structured VLM critic.
 - `learnflow_v2.repair` — typed repair planning, artifact provenance/cache reuse, dependency invalidation and deterministic re-check binding.
 - `learnflow_v2.videoqa` — structured whole-video critic for visual variety, continuity, style, pacing and pedagogical alignment.
-- `learnflow_v2.render` — deterministic Pillow/FFmpeg pixel renderer, Tier-1 motion playback, persistent MOVE transitions and video assembly.
+- `learnflow_v2.render` — deterministic Pillow/FFmpeg renderer, Tier-1 motion playback, persistent MOVE transitions, AAC mux and video assembly.
 - `learnflow_v2.core_gate` — fail-closed Core Gate evidence schema and evaluator.
 
-## V1 baseline
+## V1 and V2 baselines
 
-V1 remains frozen under `app/` and has deterministic benchmark fixtures/results under:
+V1 remains frozen under:
 
 ```text
 benchmarks/fixtures/v1/
 benchmarks/baselines/v1/baseline.json
-scripts/capture_v1_baseline.py
 ```
 
-This is the comparison baseline. Do not replace it while evaluating V2.
-
-## Next engineering work
-
-The next work is **not Hermes**. It is to close Core Gate evidence gaps:
+V2 Core Gate evidence is frozen under:
 
 ```text
-deterministic renderer baseline ✅
-        ↓
-frozen V2 end-to-end benchmark
-        ↓
-agreed V1↔V2 static-quality metric
-        ↓
-measure all Core Gate criteria
-        ↓
-CORE GATE PASS
-        ↓
-CORE FREEZE
-        ↓
-V2D / Hermes
+benchmarks/specs/v2_core_gate_v1.json
+benchmarks/baselines/v2/
 ```
+
+## Next engineering step
+
+Core Gate is now satisfied. The next step from `PLAN_V2.md` is **CORE FREEZE**.
+
+Do not start Hermes/V2D until Core Freeze explicitly records the accepted engine commit, benchmark evidence, rollback boundary and frozen contracts.
