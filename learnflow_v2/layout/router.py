@@ -188,6 +188,10 @@ def _stack_in_zone(
             preferred_height=required_height,
             preferred_region=node.layout_hint.preferred_region if node.layout_hint else None,
             margin_x=outer_margin_x,
+            # required_height already includes renderer vertical text padding,
+            # while `gap` owns inter-card separation. A second slot inset here
+            # would shrink a proven-readable box below its measured contract.
+            margin_y=0.0,
         )
         boxes.append(
             LayoutBox(
