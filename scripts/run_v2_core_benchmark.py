@@ -322,6 +322,8 @@ def _run_v2_once(
         "video_codec": video.get("codec_name"),
         "audio_codec": audio.get("codec_name") if audio else None,
         "audio_present": audio is not None,
+        # Current V2 render/assembly path muxes audio but does not yet burn structured subtitles.
+        "subtitles_integrated": False,
         "width": video.get("width"),
         "height": video.get("height"),
         "duration_seconds": round(duration, 6),
@@ -503,6 +505,9 @@ async def main() -> int:
                 regression_reasons.append(f"resolution:{base['width']}x{base['height']}!={width}x{height}")
             if Path(base["final_path"]).name != required_name:
                 regression_reasons.append("final_artifact_name")
+            if "burned subtitles derived from lesson narration" in spec.get("product_parity", {}).get("required_from_v1", []):
+                if not base.get("subtitles_integrated", False):
+                    regression_reasons.append("subtitles_not_integrated")
             if regression_reasons:
                 critical_regressions += 1
 
