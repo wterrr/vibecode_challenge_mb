@@ -208,8 +208,19 @@ class DeterministicPillowRenderer:
             raise RenderInvalidInputError(
                 f"LayoutGraph must exactly cover SceneGraph nodes; missing={sorted(node_ids-box_ids)}, extra={sorted(box_ids-node_ids)}"
             )
-        relation_ids = {rel.id for rel in scene_graph.relations}
+        relation_map = {rel.id: rel for rel in scene_graph.relations}
+        relation_ids = set(relation_map)
         routed_edge_ids = {edge.edge_id for edge in layout_graph.routed_edges}
+        for edge in layout_graph.routed_edges:
+            relation = relation_map.get(edge.edge_id)
+            if relation is None:
+                raise RenderInvalidInputError(
+                    f"routed edge '{edge.edge_id}' has no matching semantic relation"
+                )
+            if edge.source != relation.source or edge.target != relation.target:
+                raise RenderInvalidInputError(
+                    f"routed edge '{edge.edge_id}' endpoints contradict semantic relation"
+                )
         if motion is not None:
             for track in motion.tracks:
                 if track.target_kind == MotionTargetKind.NODE and track.target not in node_ids:
@@ -232,7 +243,13 @@ class DeterministicPillowRenderer:
         *,
         hidden_node_ids: frozenset[str] = frozenset(),
     ) -> Image.Image:
+        if not isinstance(hidden_node_ids, frozenset):
+            raise RenderInvalidInputError("hidden_node_ids must be a frozenset")
         scene_graph, layout_graph, motion = self.validate_scene_inputs(scene_graph, layout_graph, motion)
+        node_ids = {node.id for node in scene_graph.nodes}
+        unknown_hidden = set(hidden_node_ids) - node_ids
+        if unknown_hidden:
+            raise RenderInvalidInputError(f"hidden_node_ids contains unknown nodes {sorted(unknown_hidden)}")
         duration = motion.scene_duration if motion is not None else max(0.0, time_s)
         if not math.isfinite(time_s) or time_s < 0.0 or (motion is not None and time_s > duration + 1e-6):
             raise RenderInvalidInputError("frame timestamp outside scene duration")
