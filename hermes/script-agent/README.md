@@ -2,6 +2,8 @@
 
 This stage uses Hermes to turn a validated `PedagogyPlan` into a claim-preserving `LessonScript`, then applies a deterministic Visual-Director readiness gate.
 
+**Status: PASS.** Accepted CI proves exact claim-set preservation, objective coverage, fact-bearing segment claim binding, 18 regressions, pinned Hermes LessonScript schema compatibility, Script/Visual separation, and Core Freeze preservation.
+
 ## Hermes responsibilities
 
 - write natural spoken narration and subtitle text;
