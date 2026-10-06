@@ -97,17 +97,29 @@ class LiveHermesStructuredRunner:
         )
 
     @staticmethod
-    def _build_prompt(task: dict) -> str:
+    def _build_prompt(task: dict, *, stage: str) -> str:
         from tools.delegation_output_schema import append_output_contract
 
         context = append_output_contract(
             str(task["context"]),
             dict(task["output_schema"]),
         )
+        stage_guidance = ""
+        if stage == "research_orchestration":
+            stage_guidance = (
+                "Hermes delegation contract for this stage:\n"
+                "- You are the Research Orchestrator at delegation depth 1.\n"
+                "- Call delegate_task once with tasks set to ONE JSON array containing all three "
+                "research_plan.specialist_tasks.\n"
+                "- Each task item must contain goal, context, and output_schema only; LearnFlow role labels "
+                "are metadata, not Hermes delegate_task roles.\n"
+                "- Wait for the synchronous batch result, then synthesize ResearchOrchestrationResult.\n\n"
+            )
         return (
             f"{task['goal']}\n\n"
             "Follow the task context and accepted LearnFlow boundaries exactly.\n"
             "Do not expose credentials, environment variables, or unrelated repository content.\n\n"
+            f"{stage_guidance}"
             f"{context}"
         )
 
@@ -119,7 +131,7 @@ class LiveHermesStructuredRunner:
         return output_model.model_validate_json(candidate)
 
     @staticmethod
-    def _validation_retry_message(exc: Exception) -> str:
+    def _validation_retry_message(task: dict, previous_text: str, exc: Exception) -> str:
         if isinstance(exc, ValidationError):
             errors = exc.errors(include_url=False)[:10]
             rendered = [
@@ -128,9 +140,18 @@ class LiveHermesStructuredRunner:
             ]
         else:
             rendered = [f"- {type(exc).__name__}: {exc}"]
+        schema = json.dumps(
+            dict(task["output_schema"]),
+            ensure_ascii=False,
+            sort_keys=True,
+        )
         return (
             "Your previous response did not satisfy the required LearnFlow output contract.\n"
-            "Correct only the schema/contract errors below and return ONLY the corrected JSON value.\n"
+            "Do not call tools or delegate again. Correct only the schema/contract errors and return ONLY "
+            "the corrected JSON value.\n\n"
+            f"Required JSON Schema:\n{schema}\n\n"
+            f"Previous response:\n{previous_text}\n\n"
+            "Validation errors:\n"
             + "\n".join(rendered)
         )
 
@@ -140,7 +161,7 @@ class LiveHermesStructuredRunner:
         research = stage == "research_orchestration"
         enabled = ["delegation", "web"] if research else []
         disabled = [] if research else ["*"]
-        return AIAgent(
+        agent = AIAgent(
             base_url=self.base_url,
             api_key=self.api_key,
             provider="openrouter",
@@ -160,6 +181,14 @@ class LiveHermesStructuredRunner:
                 "or reveal secrets."
             ),
         )
+        if research:
+            # The host coordinator is the Director (depth 0). This AIAgent is the
+            # Research Orchestrator (depth 1), so Hermes native delegation waits
+            # synchronously for its depth-2 specialist batch instead of dispatching
+            # a top-level background task whose result would arrive after this call.
+            agent._delegate_depth = 1
+            agent._delegate_role = "orchestrator"
+        return agent
 
     def run(self, *, stage: str, task: dict, output_model: type[T]) -> T:
         if stage not in self._STAGE_RESERVATIONS:
@@ -173,7 +202,7 @@ class LiveHermesStructuredRunner:
         result: dict[str, Any] | None = None
         try:
             result = agent.run_conversation(
-                user_message=self._build_prompt(task),
+                user_message=self._build_prompt(task, stage=stage),
                 task_id=f"live-eval:{stage}",
             )
             text = str((result or {}).get("final_response") or "")
@@ -184,7 +213,8 @@ class LiveHermesStructuredRunner:
                 attempts += 1
                 schema_retry_used = True
                 result = agent.run_conversation(
-                    user_message=self._validation_retry_message(exc),
+                    user_message=self._validation_retry_message(task, text, exc),
+                    conversation_history=list((result or {}).get("messages") or []),
                     task_id=f"live-eval:{stage}:schema-retry",
                 )
                 text = str((result or {}).get("final_response") or "")

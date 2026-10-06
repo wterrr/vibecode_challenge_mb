@@ -107,3 +107,32 @@ def test_workflow_scopes_secret_to_live_job():
 def test_research_iteration_budget_is_128_only_for_research():
     source = (ROOT / "live_evaluation" / "hermes_runner.py").read_text(encoding="utf-8")
     assert "max_iterations=128 if research else 3" in source
+
+
+def test_research_agent_is_depth_one_orchestrator_for_sync_native_fanout():
+    source = (ROOT / "live_evaluation" / "hermes_runner.py").read_text(encoding="utf-8")
+    assert "agent._delegate_depth = 1" in source
+    assert 'agent._delegate_role = "orchestrator"' in source
+    assert "ONE JSON array containing all three" in source
+
+
+def test_schema_retry_restates_schema_previous_output_and_history():
+    task = {"output_schema": {"type": "object", "required": ["research_pack"]}}
+    message = LiveHermesStructuredRunner._validation_retry_message(
+        task,
+        '{"status":"ok"}',
+        ValueError("bad schema"),
+    )
+    assert '"required": ["research_pack"]' in message
+    assert '{"status":"ok"}' in message
+    assert "Do not call tools or delegate again" in message
+
+    source = (ROOT / "live_evaluation" / "hermes_runner.py").read_text(encoding="utf-8")
+    assert 'conversation_history=list((result or {}).get("messages") or [])' in source
+
+
+def test_live_provider_waits_for_contract_job_before_spending_provider_quota():
+    workflow = (ROOT / ".github" / "workflows" / "live-v2d-evaluation.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "live-provider-pilot:\n    needs: live-eval-contract" in workflow

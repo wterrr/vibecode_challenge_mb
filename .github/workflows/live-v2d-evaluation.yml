@@ -40,6 +40,7 @@ jobs:
         run: python scripts/verify_v2_core_freeze.py
 
   live-provider-pilot:
+    needs: live-eval-contract
     if: github.event_name == 'push' && github.ref == 'refs/heads/chatgpt/live-v2d-evaluation'
     runs-on: ubuntu-latest
     timeout-minutes: 40
