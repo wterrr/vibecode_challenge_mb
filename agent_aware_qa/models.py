@@ -8,8 +8,8 @@ from typing import Any
 from pydantic import Field, field_validator, model_validator
 
 from agent_contracts import AgentContractError, ContractModel
-from learnflow_v2.qa import CriticResponse, CriticStatus, DeterministicQAReport
-from learnflow_v2.videoqa import VideoCriticResponse
+from learnflow_v2.qa import QualityGateResult
+from learnflow_v2.videoqa import VideoCriticResult
 
 
 def _tupleize(value: Any):
@@ -65,6 +65,11 @@ class RepairSourceKind(str, Enum):
     VIDEO_CRITIC = "VIDEO_CRITIC"
 
 
+class QABlockerKind(str, Enum):
+    SCENE_QUALITY_GATE = "SCENE_QUALITY_GATE"
+    VIDEO_QUALITY_GATE = "VIDEO_QUALITY_GATE"
+
+
 class SemanticQAFinding(ContractModel):
     finding_id: str = Field(..., min_length=1)
     kind: SemanticFindingKind
@@ -112,9 +117,11 @@ class SemanticQAFinding(ContractModel):
         return self
 
 
-class SceneCriticRepairReport(ContractModel):
+class SceneObjectScope(ContractModel):
     scene_id: str = Field(..., min_length=1)
-    response: CriticResponse
+    node_ids: tuple[str, ...] = Field(default_factory=tuple)
+    relation_ids: tuple[str, ...] = Field(default_factory=tuple)
+    group_ids: tuple[str, ...] = Field(default_factory=tuple)
 
     @field_validator("scene_id")
     @classmethod
@@ -124,30 +131,19 @@ class SceneCriticRepairReport(ContractModel):
             raise AgentContractError("scene_id cannot be blank")
         return value
 
-    @model_validator(mode="after")
-    def _repair_only(self) -> "SceneCriticRepairReport":
-        response = CriticResponse.model_validate(self.response.model_dump(mode="json"))
-        if response.status != CriticStatus.REPAIR:
-            raise AgentContractError(
-                "SceneCriticRepairReport requires a CriticResponse with status=REPAIR"
-            )
-        object.__setattr__(self, "response", response)
-        return self
+    @field_validator("node_ids", "relation_ids", "group_ids", mode="before")
+    @classmethod
+    def _object_ids(cls, value: Any, info):
+        return _clean_ids(value, info.field_name or "object_ids")
 
 
 class AgentAwareQAReport(ContractModel):
     report_id: str = Field(..., min_length=1)
     semantic_findings: tuple[SemanticQAFinding, ...] = Field(default_factory=tuple)
-    deterministic_reports: tuple[DeterministicQAReport, ...] = Field(default_factory=tuple)
-    scene_critic_repairs: tuple[SceneCriticRepairReport, ...] = Field(default_factory=tuple)
-    video_critic_response: VideoCriticResponse | None = None
+    scene_quality_results: tuple[QualityGateResult, ...] = Field(default_factory=tuple)
+    video_critic_result: VideoCriticResult | None = None
 
-    @field_validator(
-        "semantic_findings",
-        "deterministic_reports",
-        "scene_critic_repairs",
-        mode="before",
-    )
+    @field_validator("semantic_findings", "scene_quality_results", mode="before")
     @classmethod
     def _tuples(cls, value: Any):
         return _tupleize(value)
@@ -165,12 +161,11 @@ class AgentAwareQAReport(ContractModel):
         finding_ids = [item.finding_id for item in self.semantic_findings]
         if len(finding_ids) != len(set(finding_ids)):
             raise AgentContractError("semantic finding IDs must be unique")
-        deterministic_scene_ids = [item.scene_id for item in self.deterministic_reports]
-        if len(deterministic_scene_ids) != len(set(deterministic_scene_ids)):
-            raise AgentContractError("deterministic QA reports must have unique scene_ids")
-        critic_scene_ids = [item.scene_id for item in self.scene_critic_repairs]
-        if len(critic_scene_ids) != len(set(critic_scene_ids)):
-            raise AgentContractError("scene critic repair reports must have unique scene_ids")
+        quality_scene_ids = [item.scene_id for item in self.scene_quality_results]
+        if len(quality_scene_ids) != len(set(quality_scene_ids)):
+            raise AgentContractError(
+                "scene quality results must have unique scene_ids"
+            )
         return self
 
 
@@ -179,11 +174,39 @@ class QARoutingContext(ContractModel):
     claim_ids: tuple[str, ...] = Field(default_factory=tuple)
     segment_ids: tuple[str, ...] = Field(default_factory=tuple)
     objective_ids: tuple[str, ...] = Field(default_factory=tuple)
+    scene_objects: tuple[SceneObjectScope, ...] = Field(..., min_length=1)
 
-    @field_validator("scene_ids", "claim_ids", "segment_ids", "objective_ids", mode="before")
+    @field_validator(
+        "scene_ids",
+        "claim_ids",
+        "segment_ids",
+        "objective_ids",
+        mode="before",
+    )
     @classmethod
     def _ids(cls, value: Any, info):
         return _clean_ids(value, info.field_name or "ids")
+
+    @field_validator("scene_objects", mode="before")
+    @classmethod
+    def _scene_objects_tuple(cls, value: Any):
+        return _tupleize(value)
+
+    @model_validator(mode="after")
+    def _scene_object_coverage(self) -> "QARoutingContext":
+        scoped = [item.scene_id for item in self.scene_objects]
+        if len(scoped) != len(set(scoped)):
+            raise AgentContractError("scene object scopes must have unique scene_ids")
+        if set(scoped) != set(self.scene_ids):
+            raise AgentContractError(
+                "scene object scopes must exactly cover routing scene_ids"
+            )
+        object.__setattr__(
+            self,
+            "scene_objects",
+            tuple(sorted(self.scene_objects, key=lambda item: item.scene_id)),
+        )
+        return self
 
 
 class RepairIntent(ContractModel):
@@ -247,23 +270,50 @@ class RepairIntent(ContractModel):
             raise AgentContractError(
                 f"repair action {self.action.value} does not belong to owner {self.owner.value}"
             )
-        if self.owner == RepairOwner.CORE_REPAIR and self.action == RepairActionKind.CORE_SELECTIVE_REPAIR:
-            if not self.core_patch_ids:
-                raise AgentContractError("Core selective repair requires core_patch_ids")
+        if (
+            self.owner == RepairOwner.CORE_REPAIR
+            and self.action == RepairActionKind.CORE_SELECTIVE_REPAIR
+            and not self.core_patch_ids
+        ):
+            raise AgentContractError("Core selective repair requires core_patch_ids")
         if self.owner != RepairOwner.CORE_REPAIR and self.core_patch_ids:
-            raise AgentContractError("agent-owned repair intent cannot carry Core patch IDs")
+            raise AgentContractError(
+                "agent-owned repair intent cannot carry Core patch IDs"
+            )
         return self
+
+
+class QABlocker(ContractModel):
+    blocker_id: str = Field(..., min_length=1)
+    kind: QABlockerKind
+    state: str = Field(..., min_length=1)
+    reason: str = Field(..., min_length=1, max_length=4000)
+    scene_ids: tuple[str, ...] = Field(default_factory=tuple)
+
+    @field_validator("blocker_id", "state", "reason")
+    @classmethod
+    def _text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise AgentContractError("QA blocker text cannot be blank")
+        return value
+
+    @field_validator("scene_ids", mode="before")
+    @classmethod
+    def _scene_ids(cls, value: Any):
+        return _clean_ids(value, "scene_ids")
 
 
 class AgentAwareRoutingPlan(ContractModel):
     plan_id: str = Field(..., min_length=1)
     report_id: str = Field(..., min_length=1)
     intents: tuple[RepairIntent, ...] = Field(default_factory=tuple)
+    blockers: tuple[QABlocker, ...] = Field(default_factory=tuple)
     publication_blocked: bool
 
-    @field_validator("intents", mode="before")
+    @field_validator("intents", "blockers", mode="before")
     @classmethod
-    def _tuple_intents(cls, value: Any):
+    def _tuples(cls, value: Any):
         return _tupleize(value)
 
     @field_validator("publication_blocked", mode="before")
@@ -275,15 +325,21 @@ class AgentAwareRoutingPlan(ContractModel):
 
     @model_validator(mode="after")
     def _integrity(self) -> "AgentAwareRoutingPlan":
-        ids = [item.intent_id for item in self.intents]
-        if len(ids) != len(set(ids)):
+        intent_ids = [item.intent_id for item in self.intents]
+        blocker_ids = [item.blocker_id for item in self.blockers]
+        if len(intent_ids) != len(set(intent_ids)):
             raise AgentContractError("repair intent IDs must be unique")
-        expected = bool(self.intents)
+        if len(blocker_ids) != len(set(blocker_ids)):
+            raise AgentContractError("QA blocker IDs must be unique")
+        expected = bool(self.intents or self.blockers)
         if self.publication_blocked != expected:
             raise AgentContractError(
-                "publication_blocked must be true exactly when repair intents exist"
+                "publication_blocked must reflect repair intents or unresolved QA blockers"
             )
-        ordered = tuple(sorted(self.intents, key=lambda item: item.intent_id))
-        if ordered != self.intents:
-            object.__setattr__(self, "intents", ordered)
+        object.__setattr__(
+            self, "intents", tuple(sorted(self.intents, key=lambda item: item.intent_id))
+        )
+        object.__setattr__(
+            self, "blockers", tuple(sorted(self.blockers, key=lambda item: item.blocker_id))
+        )
         return self
