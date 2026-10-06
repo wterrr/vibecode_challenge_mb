@@ -26,7 +26,7 @@ Use the accepted Research Orchestration and Fact Verification stages. Do not cre
 3. Preserve source IDs, source locators, claim IDs, and claim-to-source/claim-to-claim provenance.
 4. Merge specialist outputs only through the accepted research contract.
 5. Run deterministic Fact Verification on the resulting `ResearchPack` and `EvidenceGraph`.
-6. Treat deterministic missing evidence as blocking even if an LLM semantic reviewer says `SUPPORTED`.
+6. Treat deterministic missing evidence as blocking. A semantic `SUPPORTED` verdict does not override missing deterministic evidence.
 7. Treat contradiction or unresolved semantic uncertainty as blocking.
 8. Return the typed research/evidence/fact-verification artifacts. Do not write lesson narration in this skill.
 9. When this skill is invoked for a routed repair, modify only the affected claims/evidence and preserve unrelated research.
