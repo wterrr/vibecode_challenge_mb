@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "stage": "agent-contracts",
   "name": "Agent Contracts",
-  "state": "IMPLEMENTED_AWAITING_CI",
+  "state": "PASS",
   "depends_on": [
     {
       "stage": "hermes-bootstrap",
@@ -38,5 +38,12 @@
     "budget_overspend_representable": false,
     "core_freeze_must_remain_complete": true
   },
-  "next_stage": "Research Orchestration"
+  "next_stage": "Research Orchestration",
+  "evidence": {
+    "accepted_ci_run": 37425620986,
+    "accepted_head_sha": "3b2f288aa4d424717a775147a58f6684fd044d3e",
+    "coherent_chain_verifier": "PASS",
+    "pytest": "11 passed",
+    "core_freeze": "PASS"
+  }
 }
