@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "role": "production",
+  "profile_name": "learnflow-production",
+  "description": "Durable LearnFlow worker for accepted pedagogy, script, semantic visual direction, and Core handoff tasks after parent gates are done.",
+  "always_load_skills": [],
+  "max_in_progress": 1
+}

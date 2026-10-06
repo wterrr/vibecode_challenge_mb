@@ -3388,7 +3388,7 @@ no pixel coordinates
 
 ---
 
-## End-to-End Orchestration
+## Lesson Pipeline
 
 **Status: PASS**
 
@@ -3472,7 +3472,7 @@ Skills được review thủ công trước khi production dùng.
 
 ## Kanban Durability
 
-**Status: NEXT / NOT STARTED**
+**Status: PASS**
 
 Chỉ làm sau khi synchronous orchestration chạy ổn.
 
@@ -3489,6 +3489,8 @@ cho long-running production.
 ---
 
 # 59. Benchmark
+
+**Status: NEXT / NOT STARTED — Full Benchmark / LearnFlowBench**
 
 Mình sẽ không gọi LearnFlow là “SOTA” nếu chưa có benchmark.
 
@@ -3947,7 +3949,7 @@ script
 Visual Director
 agent QA routing
 budget / skills
-Kanban later
+Kanban durability
    ↓
 
 Full benchmark

@@ -38,10 +38,11 @@ Accepted stages:
 - **Pedagogy Agent — PASS.** Hermes produces structured pedagogy from approved claims only; deterministic checks require researched concept progression, objective assessment coverage, and Script readiness.
 - **Script Agent — PASS.** Hermes produces `LessonScript` narration with exact PedagogyPlan claim preservation, objective coverage, required teaching functions, and no visual implementation fields.
 - **Visual Director — PASS.** Hermes produces semantic `Storyboard` + schema-valid `SceneGraph[]`, reuses a deterministic lesson `ConceptRegistry`, preserves Script coverage/order, and emits no geometry or renderer controls.
-- **End-to-End Orchestration — PASS.** The accepted typed pipeline runs Research → Fact Verification → Pedagogy → Script → Visual Director → LearnFlow capability tools → frozen Core V2 → assembled video, failing closed at every deterministic gate.
+- **Lesson Pipeline — PASS.** The accepted typed pipeline runs Research → Fact Verification → Pedagogy → Script → Visual Director → LearnFlow capability tools → frozen Core V2 → assembled video, failing closed at every deterministic gate.
 - **Agent-Aware QA — PASS.** Authoritative QA/VLM results are routed to the only layer allowed to repair them: evidence → Research, narration → Script, pedagogy → Pedagogy Agent, semantic visuals → Visual Director, and geometry/temporal/selective patches → deterministic Core repair.
 - **Hooks + Budget — PASS.** Exact pinned Hermes native hooks enforce publication/tool policy and record privacy-minimized metrics/lifecycle evidence, while deterministic host-side conservative reservations hard-cap USD/provider/retry usage before governed agent dispatch.
 - **Skills — PASS.** Four native project-local Hermes procedures package the accepted lesson build, fact investigation, selective repair, and pre-publication review workflows without adding executable helpers, a second orchestrator, or production auto-trust.
+- **Kanban Durability — PASS.** Native Hermes Kanban persists a six-card lesson DAG with idempotent seeding, parent gating, claims/reclaim, bounded task retries, one shared durable workspace, and research/production/review worker profiles; the synchronous Lesson Pipeline remains the execution source of truth.
 
 Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifier, 11 contract regressions, and Core Freeze guard passed.
 
@@ -55,15 +56,17 @@ Accepted stage: **Script Agent — PASS.** Hermes writes structured narration on
 
 Accepted stage: **Visual Director — PASS.** CI run `37437560550` verifies exact Script coverage/order, deterministic ConceptRegistry identity, semantic-only SceneGraph V2.1 output, 18 regressions, exact pinned Hermes structured-output compatibility, and Core Freeze preservation.
 
-Accepted stage: **End-to-End Orchestration — PASS.** CI run `37439945446` verifies the typed stage order, deterministic gates between agents, Hermes-native Research delegation, capability-based Core handoff, a real five-scene assembled `final.mp4`, 14 fail-closed regressions, pinned Hermes schema compatibility, plugin discovery, replayable artifacts, and Core Freeze preservation.
+Accepted stage: **Lesson Pipeline — PASS.** CI run `37439945446` verifies the typed stage order, deterministic gates between agents, Hermes-native Research delegation, capability-based Core handoff, a real five-scene assembled `final.mp4`, 14 fail-closed regressions, pinned Hermes schema compatibility, plugin discovery, replayable artifacts, and Core Freeze preservation.
 
 Accepted stage: **Agent-Aware QA — PASS.** CI run `37445667469` verifies authoritative scene/video QA ingestion, typed fail-closed ownership routing, 25 regressions, exact pinned Hermes repair-task schemas for Research/Script/Pedagogy/Visual, strict critic outage blockers, Core-only geometry/temporal/selective repair, scope validation, and Core Freeze preservation.
 
 Accepted stage: **Hooks + Budget — PASS.** CI run `37448402550` verifies hard host-side USD/tool/retry reservations, fail-closed publication policy, 16 governance regressions, 11 Agent Contracts regressions, exact pinned Hermes project-plugin discovery and native hook dispatch, post-tool metrics, post-API cost metrics, retry metrics, session/subagent lifecycle tracing, sensitive-payload non-persistence, and Core Freeze preservation.
 
-Accepted stage: **Skills — PASS.** CI run `37460533649` verifies four native project-local procedures, 21 boundary regressions, exact pinned Hermes trusted-project discovery, project-skill security-scan acceptance, native skill listing/viewing, linked-reference resolution, no executable helpers, no repository auto-trust, and Core Freeze preservation. Production use still requires manual operator review plus explicit project trust. Next authorized stage: **Kanban Durability**, which has not started yet.
+Accepted stage: **Skills — PASS.** CI run `37460533649` verifies four native project-local procedures, 21 boundary regressions, exact pinned Hermes trusted-project discovery, project-skill security-scan acceptance, native skill listing/viewing, linked-reference resolution, no executable helpers, no repository auto-trust, and Core Freeze preservation. Production use still requires manual operator review plus explicit project trust.
 
-During Kanban Durability, add only the durable long-running execution profiles and persistence required by the PLAN. Do not weaken synchronous orchestration, Skills trust/review, Runtime Governance, Agent-Aware QA, or Core Freeze boundaries.
+Accepted stage: **Kanban Durability — PASS.** CI run `37464205774` verifies 21 durability regressions, exact pinned Hermes native SQLite persistence, idempotent six-card lesson seeding, dependency gating, restart-state persistence, native reclaim/resume, completed-work preservation, bounded task retries, shared durable workspace, three worker profiles, and Core Freeze preservation. Lesson Pipeline rename verification passed separately in CI run `37464205749`. Next authorized stage: **Full Benchmark / LearnFlowBench**, which has not started yet.
+
+During Full Benchmark, measure the frozen V1/V2A/V2B/V2C/V2D systems on fixed fixtures and report structural, visual, temporal, semantic, pedagogy, learning-outcome, and cost metrics. Do not change benchmark fixtures between compared candidates.
 
 ## LearnFlow Capability Plugin safety
 
@@ -180,9 +183,9 @@ Storyboard concept_refs, continuity_keys, and SceneGraph node concept_ref/semant
 Visual Director may choose semantic nodes, relations, groups, symbolic style tokens, layout intent, reading direction, ports, and semantic LayoutHint preferences. It must not choose x/y coordinates, pixel dimensions, absolute font sizes, CSS positioning, motion paths, camera, timeline arithmetic, renderer code, FFmpeg commands, or pixels.
 
 
-## End-to-End Orchestration boundary
+## Lesson Pipeline boundary
 
-End-to-End Orchestration composes the already accepted task builders and deterministic gates in a fixed sequence. It must not introduce a second agent runtime, message bus, recursive scheduler, or alternative research delegation implementation.
+Lesson Pipeline composes the already accepted task builders and deterministic gates in a fixed sequence. It must not introduce a second agent runtime, message bus, recursive scheduler, or alternative research delegation implementation.
 
 Research remains Hermes-native nested delegation. Fact Verification remains deterministic. Pedagogy, Script, and Visual Director are invoked only after the preceding deterministic gate passes, and blocked factual claims must never be reintroduced downstream.
 
@@ -230,3 +233,20 @@ Project-local skill discovery is trust-gated by Hermes and each skill is securit
 A skill cannot make a blocked artifact valid by instruction, reassign a Core repair to Hermes, self-authorize publication, bypass a hard budget, generate renderer implementation, or silently introduce durable Kanban execution.
 
 The next stage is Kanban Durability. It may add durable long-running execution only after the accepted synchronous workflow remains the source of truth.
+
+
+## Kanban Durability boundary
+
+Kanban Durability uses the native pinned Hermes Kanban implementation as the sole mutable durable task-state authority. LearnFlow must not implement a second SQLite task database, message bus, scheduler, claim system, or retry state machine.
+
+The reviewed lesson job is a six-card DAG: research-evidence → pedagogy → script → visual-direction → render → review. Cards use native parent gating, idempotency keys, claim/run identity, bounded task retries, and one shared durable workspace. Re-seeding the same semantic job must not duplicate cards.
+
+Exactly three semantic worker profiles are reviewed for long-running production: `learnflow-research`, `learnflow-production`, and `learnflow-review`. Profiles must not copy secrets. Project-local Skills remain untrusted by default and may be enabled only through explicit operator trust after manual review.
+
+The synchronous `lesson_pipeline/` remains the source of truth for accepted stage execution and deterministic gates. Kanban decides what durable work is eligible to run or resume; it does not re-decide factual eligibility, pedagogy, script validity, semantic visual correctness, Core geometry, Agent-Aware repair ownership, budget policy, or publication authorization.
+
+Kanban `max_retries` is the task/worker failure breaker. Runtime Governance remains authoritative for provider/tool cost accounting and provider retry limits. A reclaimed task must resume through the same accepted stage boundaries rather than bypassing them.
+
+Native Hermes recovery semantics are authoritative: dependency promotion, atomic claim, persistent runs/events, stale/crashed-worker recovery, operator reclaim, and restart-safe state. Stable LearnFlow job manifests may store semantic task-ID mappings but must not mirror mutable task statuses.
+
+The next authorized work is Full Benchmark / LearnFlowBench. Do not change the frozen benchmark inputs merely to improve one candidate's score.

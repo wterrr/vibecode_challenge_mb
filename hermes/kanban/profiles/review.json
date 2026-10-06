@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "role": "review",
+  "profile_name": "learnflow-review",
+  "description": "Durable LearnFlow worker for authoritative QA, owner-aware repair routing, and governed publication-readiness review.",
+  "always_load_skills": [
+    "review-lesson-before-publication",
+    "repair-failed-lesson"
+  ],
+  "max_in_progress": 1
+}

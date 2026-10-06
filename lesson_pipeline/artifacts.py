@@ -1,4 +1,4 @@
-"""Replayable artifact bundle persistence for End-to-End Orchestration."""
+"""Replayable artifact bundle persistence for the LearnFlow Lesson Pipeline."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from .models import EndToEndResult
+from .models import LessonPipelineResult
 
 
 def _jsonable(value: Any) -> Any:
@@ -37,7 +37,7 @@ def _atomic_write_json(path: Path, value: Any) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def write_artifact_bundle(result: EndToEndResult, run_dir: str | Path) -> dict:
+def write_artifact_bundle(result: LessonPipelineResult, run_dir: str | Path) -> dict:
     """Persist the typed semantic chain plus render manifest."""
 
     root = Path(run_dir)
@@ -70,7 +70,7 @@ def write_artifact_bundle(result: EndToEndResult, run_dir: str | Path) -> dict:
         hashes[relative] = _atomic_write_json(root / relative, graph)
 
     manifest = {
-        "schema_version": "end-to-end-artifact-manifest-v1",
+        "schema_version": "lesson-pipeline-artifact-manifest-v1",
         "run_id": result.run_id,
         "artifacts": [
             {"path": path, "sha256": digest}

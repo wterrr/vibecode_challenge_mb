@@ -11,10 +11,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from agent_contracts import AgentContractError, PedagogyExample, Storyboard
-from end_to_end_orchestration import STAGE_ORDER, run_end_to_end
-from end_to_end_orchestration.core import _parse_response
+from lesson_pipeline import STAGE_ORDER, run_lesson_pipeline
+from lesson_pipeline.core import _parse_response
 from research_orchestration import ResearchOrchestrationResult, ResearchRole
-from scripts.verify_end_to_end_orchestration import build_fixture_runner
+from scripts.verify_lesson_pipeline import build_fixture_runner
 from scripts.verify_script_agent import build_fixture, build_script
 from scripts.verify_visual_director import build_visual_output
 from visual_director import build_visual_concept_registry
@@ -26,7 +26,7 @@ class FakeCoreGateway:
         self.calls = 0
 
     def render_lesson(self, *, scenegraphs, storyboard_scenes, script, output_path):
-        from end_to_end_orchestration.models import SceneRenderReceipt
+        from lesson_pipeline.models import SceneRenderReceipt
         from learnflow_v2.render import RenderArtifactKind, RenderedArtifact
 
         self.calls += 1
@@ -60,10 +60,10 @@ class FakeCoreGateway:
 
 
 def test_acceptance_verifier_is_wired():
-    text = (ROOT / "scripts" / "verify_end_to_end_orchestration.py").read_text(
+    text = (ROOT / "scripts" / "verify_lesson_pipeline.py").read_text(
         encoding="utf-8"
     )
-    assert "END_TO_END_ORCHESTRATION=PASS" in text
+    assert "LESSON_PIPELINE=PASS" in text
     assert "learnflow_capability_pipeline=PASS" in text
 
 
@@ -82,7 +82,7 @@ def test_stage_order_is_explicit_and_complete():
 def test_good_chain_reaches_core_and_writes_bundle(tmp_path):
     brief, runner = build_fixture_runner()
     core = FakeCoreGateway(tmp_path)
-    result = run_end_to_end(
+    result = run_lesson_pipeline(
         brief,
         runner=runner,
         core_gateway=core,
@@ -104,13 +104,13 @@ def test_good_chain_reaches_core_and_writes_bundle(tmp_path):
 def test_same_semantic_chain_has_stable_run_id(tmp_path):
     brief1, runner1 = build_fixture_runner()
     brief2, runner2 = build_fixture_runner()
-    one = run_end_to_end(
+    one = run_lesson_pipeline(
         brief1,
         runner=runner1,
         core_gateway=FakeCoreGateway(tmp_path),
         runtime_root=tmp_path / "a",
     )
-    two = run_end_to_end(
+    two = run_lesson_pipeline(
         brief2,
         runner=runner2,
         core_gateway=FakeCoreGateway(tmp_path),
@@ -156,7 +156,7 @@ def test_invalid_pedagogy_stops_before_script_visual_and_core(tmp_path):
     runner = Runner()
     core = FakeCoreGateway(tmp_path)
     with pytest.raises(AgentContractError, match="not ready"):
-        run_end_to_end(
+        run_lesson_pipeline(
             brief,
             runner=runner,
             core_gateway=core,
@@ -178,7 +178,7 @@ def test_invalid_script_stops_before_visual_and_core(tmp_path):
     )
     core = FakeCoreGateway(tmp_path)
     with pytest.raises(AgentContractError, match="not ready"):
-        run_end_to_end(
+        run_lesson_pipeline(
             brief,
             runner=runner,
             core_gateway=core,
@@ -208,7 +208,7 @@ def test_invalid_visual_stops_before_core(tmp_path):
     )
     core = FakeCoreGateway(tmp_path)
     with pytest.raises(AgentContractError, match="not Core-ready"):
-        run_end_to_end(
+        run_lesson_pipeline(
             brief,
             runner=runner,
             core_gateway=core,
@@ -230,7 +230,7 @@ def test_fact_verification_occurs_before_pedagogy_context(tmp_path):
         return original(stage=stage, task=task, output_model=output_model)
 
     runner.run = run
-    run_end_to_end(
+    run_lesson_pipeline(
         brief,
         runner=runner,
         core_gateway=FakeCoreGateway(tmp_path),
@@ -240,7 +240,7 @@ def test_fact_verification_occurs_before_pedagogy_context(tmp_path):
 
 def test_visual_task_is_created_only_after_script_gate(tmp_path):
     brief, runner = build_fixture_runner()
-    run_end_to_end(
+    run_lesson_pipeline(
         brief,
         runner=runner,
         core_gateway=FakeCoreGateway(tmp_path),
@@ -262,7 +262,7 @@ def test_core_receives_exact_visual_scene_order(tmp_path):
                 output_path=output_path,
             )
 
-    run_end_to_end(
+    run_lesson_pipeline(
         brief,
         runner=runner,
         core_gateway=InspectCore(tmp_path),
@@ -285,7 +285,7 @@ def test_capability_failure_is_fail_closed():
 
 def test_artifact_manifest_hashes_typed_files(tmp_path):
     brief, runner = build_fixture_runner()
-    result = run_end_to_end(
+    result = run_lesson_pipeline(
         brief,
         runner=runner,
         core_gateway=FakeCoreGateway(tmp_path),
@@ -304,8 +304,8 @@ def test_artifact_manifest_hashes_typed_files(tmp_path):
 
 def test_orchestration_surface_does_not_import_renderer_backend():
     files = [
-        ROOT / "end_to_end_orchestration" / "coordinator.py",
-        ROOT / "end_to_end_orchestration" / "core.py",
+        ROOT / "lesson_pipeline" / "coordinator.py",
+        ROOT / "lesson_pipeline" / "core.py",
     ]
     source = "\n".join(path.read_text(encoding="utf-8") for path in files).lower()
     assert "learnflow_v2.render.backend" not in source
@@ -313,8 +313,8 @@ def test_orchestration_surface_does_not_import_renderer_backend():
     assert ".hermes.plugins.learnflow" not in source
 
 
-def test_no_later_stage_implementation_leaks_into_this_checkpoint():
-    files = list((ROOT / "end_to_end_orchestration").glob("*.py"))
+def test_lesson_pipeline_does_not_own_durable_job_scheduling():
+    files = list((ROOT / "lesson_pipeline").glob("*.py"))
     source = "\n".join(path.read_text(encoding="utf-8") for path in files).lower()
     for forbidden in (
         "agent-aware qa",

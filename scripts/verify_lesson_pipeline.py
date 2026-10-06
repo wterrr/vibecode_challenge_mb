@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Acceptance verifier for LearnFlow End-to-End Orchestration."""
+"""Acceptance verifier for LearnFlow Lesson Pipeline."""
 
 from __future__ import annotations
 
@@ -19,16 +19,16 @@ from scripts.verify_script_agent import build_fixture, build_script
 from scripts.verify_visual_director import build_visual_output
 from visual_director import build_visual_concept_registry
 
-from end_to_end_orchestration import (
+from lesson_pipeline import (
     CapabilityCoreGateway,
     STAGE_ORDER,
-    run_end_to_end,
+    run_lesson_pipeline,
 )
 
 
 def _load_plugin():
     plugin_dir = ROOT / ".hermes" / "plugins" / "learnflow"
-    package_name = "learnflow_end_to_end_plugin"
+    package_name = "learnflow_lesson_pipeline_plugin"
     for name in list(sys.modules):
         if name == package_name or name.startswith(package_name + "."):
             del sys.modules[name]
@@ -132,7 +132,7 @@ def main() -> int:
         repo_root=ROOT,
         duration_resolver=lambda _scene, _script: 0.2,
     )
-    result = run_end_to_end(
+    result = run_lesson_pipeline(
         brief,
         runner=runner,
         core_gateway=gateway,
@@ -146,14 +146,14 @@ def main() -> int:
         "visual_director",
     ]
     if [item["stage"] for item in runner.calls] != expected_agent_calls:
-        raise SystemExit("END_TO_END_ORCHESTRATION=FAIL agent stage order")
+        raise SystemExit("LESSON_PIPELINE=FAIL agent stage order")
     if result.stage_order != STAGE_ORDER:
-        raise SystemExit("END_TO_END_ORCHESTRATION=FAIL full stage order")
+        raise SystemExit("LESSON_PIPELINE=FAIL full stage order")
     if len(result.scene_renders) != len(result.scenegraphs):
-        raise SystemExit("END_TO_END_ORCHESTRATION=FAIL scene render coverage")
+        raise SystemExit("LESSON_PIPELINE=FAIL scene render coverage")
     final_path = Path(result.final_video.path)
     if not final_path.is_file() or final_path.stat().st_size <= 0:
-        raise SystemExit("END_TO_END_ORCHESTRATION=FAIL final video missing")
+        raise SystemExit("LESSON_PIPELINE=FAIL final video missing")
 
     run_dir = Path(result.artifact_root)
     required = {
@@ -170,12 +170,12 @@ def main() -> int:
         "final.mp4",
     }
     if not required.issubset({p.name for p in run_dir.iterdir()}):
-        raise SystemExit("END_TO_END_ORCHESTRATION=FAIL artifact bundle incomplete")
+        raise SystemExit("LESSON_PIPELINE=FAIL artifact bundle incomplete")
     scene_files = sorted((run_dir / "scenegraphs").glob("*.json"))
     if len(scene_files) != len(result.scenegraphs):
-        raise SystemExit("END_TO_END_ORCHESTRATION=FAIL SceneGraph bundle incomplete")
+        raise SystemExit("LESSON_PIPELINE=FAIL SceneGraph bundle incomplete")
 
-    print("END_TO_END_ORCHESTRATION=PASS")
+    print("LESSON_PIPELINE=PASS")
     print("typed_stage_order=PASS")
     print("research_native_delegation_contract=PASS")
     print("fact_verification_gate=PASS")
