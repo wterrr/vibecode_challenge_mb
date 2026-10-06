@@ -134,38 +134,46 @@ def _stack_in_zone(
     gap: float,
     zone_name: str,
 ) -> list[LayoutBox]:
+    """Stack cards using their actual wrapped readable heights, not equal-height slots."""
     ordered = list(nodes)
     if not ordered:
         return []
-    available = zone.height - gap * (len(ordered) - 1)
-    if available <= 0:
-        raise LayoutUnsatisfiableError("Not enough vertical space for stacked layout")
-    slot_h = available / len(ordered)
-    boxes: list[LayoutBox] = []
-    for index, node in enumerate(ordered):
+
+    specs: list[tuple[SceneNode, float, float]] = []
+    for node in ordered:
         measurement = measurements[node.id]
-        if measurement.minimum_readable_height > slot_h + 1e-6:
-            raise LayoutUnsatisfiableError(
-                f"Node '{node.id}' minimum readable height does not fit specialized layout",
-                {"minimum_height": measurement.minimum_readable_height, "slot_height": slot_h},
-            )
-        y = zone.y + index * (slot_h + gap)
-        slot = Rect(x=zone.x, y=round(y, 4), width=zone.width, height=round(slot_h, 4))
         preferred_width = max(
             measurement.minimum_readable_width + 20.0,
-            min(measurement.width + 40.0, max(24.0, slot.width - 16.0)),
+            min(measurement.width + 40.0, max(24.0, zone.width - 16.0)),
         )
-        preferred_width = min(preferred_width, max(24.0, slot.width - 16.0))
-        required_height = _wrapped_text_height(measurement, preferred_width) + 16.0
-        if required_height > slot.height - 8.0 + 1e-6:
-            raise LayoutUnsatisfiableError(
-                f"Node '{node.id}' wrapped readable text does not fit specialized layout slot",
-                {"required_height": required_height, "slot_height": slot.height, "preferred_width": preferred_width},
-            )
+        preferred_width = min(preferred_width, max(24.0, zone.width - 16.0))
+        required_height = max(
+            measurement.minimum_readable_height + 16.0,
+            _wrapped_text_height(measurement, preferred_width) + 16.0,
+        )
+        specs.append((node, preferred_width, required_height))
+
+    required_total = sum(item[2] for item in specs) + gap * (len(specs) - 1)
+    if required_total > zone.height + 1e-6:
+        raise LayoutUnsatisfiableError(
+            "Readable stacked content does not fit specialized layout zone",
+            {
+                "required_height": required_total,
+                "zone_height": zone.height,
+                "node_ids": [node.id for node, _, _ in specs],
+            },
+        )
+
+    extra_per_slot = max(0.0, zone.height - required_total) / len(specs)
+    boxes: list[LayoutBox] = []
+    y = zone.y
+    for node, preferred_width, required_height in specs:
+        slot_h = required_height + extra_per_slot
+        slot = Rect(x=zone.x, y=round(y, 4), width=zone.width, height=round(slot_h, 4))
         rect = _fit_rect(
             slot,
             preferred_width=preferred_width,
-            preferred_height=max(measurement.minimum_readable_height + 16.0, required_height),
+            preferred_height=required_height,
             preferred_region=node.layout_hint.preferred_region if node.layout_hint else None,
         )
         boxes.append(
@@ -177,8 +185,8 @@ def _stack_in_zone(
                 semantic_key=node.semantic_key,
             )
         )
+        y += slot_h + gap
     return boxes
-
 
 def _compile_concept_card(
     scene_graph: SceneGraph,
