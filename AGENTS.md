@@ -40,7 +40,9 @@ Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifi
 
 Accepted stage: **Research Orchestration — PASS.** Hermes native nested delegation, isolated child contexts, bounded depth/concurrency, leaf recursion blocking, structured child outputs, and provenance-preserving merge are all verified.
 
-Accepted stage: **Fact Verification — PASS.** Source-grounded evidence, cycle-safe provenance, contradiction signaling, unsupported-claim blocking, factual narration claim gating, and pinned Hermes semantic-review compatibility are verified. Next authorized stage: **Pedagogy Agent**, which has not started yet.
+Accepted stage: **Fact Verification — PASS.** Source-grounded evidence, cycle-safe provenance, contradiction signaling, unsupported-claim blocking, factual narration claim gating, and pinned Hermes semantic-review compatibility are verified.
+
+Current stage: **Pedagogy Agent — IMPLEMENTED / VERIFYING**. Hermes proposes the teaching plan from fact-approved research only; deterministic validation decides whether the plan is ready for Script Agent.
 
 During Pedagogy Agent, implement only objectives, prerequisites, concept progression, worked examples/analogies, misconceptions, and assessment probes over fact-verified claims. Do not implement Script Agent, Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
 
@@ -128,3 +130,11 @@ Claim-to-claim cycles must not self-ground. Use fixed-point source provenance so
 Hermes semantic review is advisory in the positive direction: `SUPPORTED` cannot override missing deterministic evidence. `CONTRADICTED` or `UNCERTAIN` must fail closed.
 
 Every factual narration must carry one or more approved `claim_id` values. Pedagogy and Script stages must consume this gate rather than re-deciding evidence validity.
+
+## Pedagogy Agent boundary
+
+Pedagogy Agent consumes `LearningBrief`, `ResearchPack`, `EvidenceGraph`, and `FactVerificationReport`. Its model-facing research context must exclude blocked factual claims.
+
+A plan may use only fact-approved `claim_id` values in worked examples, analogies, and misconceptions. Concept progression may use only researched concepts. Every learning objective must have at least one assessment probe, and at least one worked example or analogy is required before Script Agent.
+
+Pedagogy Agent must not write narration, instantiate `LessonScript`/`ScriptSegment`, produce visual coordinates, create SceneGraph objects, render video, or implement later QA/budget/scheduling stages.
