@@ -3462,7 +3462,7 @@ illegal publication blocked
 
 ## Skills
 
-**Status: NEXT / NOT STARTED**
+**Status: PASS**
 
 Tạo stable procedures.
 
@@ -3471,6 +3471,8 @@ Skills được review thủ công trước khi production dùng.
 ---
 
 ## Kanban Durability
+
+**Status: NEXT / NOT STARTED**
 
 Chỉ làm sau khi synchronous orchestration chạy ổn.
 

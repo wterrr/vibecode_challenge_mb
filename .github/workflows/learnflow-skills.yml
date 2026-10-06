@@ -1,0 +1,70 @@
+name: LearnFlow Skills
+
+on:
+  pull_request:
+    paths:
+      - ".hermes/skills/**"
+      - "hermes/skills/**"
+      - "scripts/verify_learnflow_skills.py"
+      - "scripts/verify_hermes_learnflow_skills.py"
+      - "tests/hermes/test_learnflow_skills.py"
+      - ".github/workflows/learnflow-skills.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - ".hermes/skills/**"
+      - "hermes/skills/**"
+      - "scripts/verify_learnflow_skills.py"
+      - "scripts/verify_hermes_learnflow_skills.py"
+      - "tests/hermes/test_learnflow_skills.py"
+      - ".github/workflows/learnflow-skills.yml"
+
+jobs:
+  skills-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml pytest
+      - name: Verify stable skill procedures
+        run: python scripts/verify_learnflow_skills.py
+      - name: LearnFlow skill regressions
+        run: pytest -q --confcutdir=tests/hermes tests/hermes/test_learnflow_skills.py
+      - name: Core Freeze guard
+        run: python scripts/verify_v2_core_freeze.py
+
+  pinned-hermes-project-skills:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install exact pinned Hermes runtime
+        run: bash scripts/install_hermes_bootstrap.sh
+      - name: Prepare isolated skill profile
+        shell: bash
+        run: |
+          VERIFY_HOME="$PWD/.hermes_runtime/learnflow-skills/verify-home"
+          rm -rf "$VERIFY_HOME"
+          mkdir -p "$VERIFY_HOME"
+          cp hermes/bootstrap/config.yaml "$VERIFY_HOME/config.yaml"
+      - name: Verify native project-skill discovery and references
+        shell: bash
+        run: |
+          VERIFY_HOME="$PWD/.hermes_runtime/learnflow-skills/verify-home"
+          if [[ -x ".hermes_runtime/hermes-agent/venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/venv/bin/python"
+          elif [[ -x ".hermes_runtime/hermes-agent/.venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/.venv/bin/python"
+          else
+            echo "Pinned Hermes Python not found" >&2
+            exit 1
+          fi
+          HERMES_HOME="$VERIFY_HOME" HERMES_ENABLE_PROJECT_PLUGINS=true \
+            "$HPY" scripts/verify_hermes_learnflow_skills.py
