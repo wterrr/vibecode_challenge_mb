@@ -43,7 +43,9 @@ Accepted stage: **Research Orchestration — PASS.** Hermes native nested delega
 
 Accepted stage: **Fact Verification — PASS.** Source-grounded evidence, cycle-safe provenance, contradiction signaling, unsupported-claim blocking, factual narration claim gating, and pinned Hermes semantic-review compatibility are verified.
 
-Accepted stage: **Pedagogy Agent — PASS.** Hermes receives fact-approved research only, unsafe/forged approvals are rejected before context exposure, and deterministic validation enforces concept provenance, assessment coverage, examples, and Script readiness. Next authorized stage: **Script Agent**, which has not started yet.
+Accepted stage: **Pedagogy Agent — PASS.** Hermes receives fact-approved research only, unsafe/forged approvals are rejected before context exposure, and deterministic validation enforces concept provenance, assessment coverage, examples, and Script readiness.
+
+Current stage: **Script Agent — IMPLEMENTED / VERIFYING**. Hermes writes structured narration only; deterministic validation preserves the PedagogyPlan claim set, objective coverage, factual claim binding, and the Script/Visual boundary.
 
 During Script Agent, implement only claim-preserving lesson narration/segments with a teaching function per segment and no visual coordinates/code. Do not implement Visual Director, Agent-Aware QA, Hooks + Budget, Skills, or Kanban Durability yet.
 
@@ -139,3 +141,13 @@ Pedagogy Agent consumes `LearningBrief`, `ResearchPack`, `EvidenceGraph`, and `F
 A plan may use only fact-approved `claim_id` values in worked examples, analogies, and misconceptions. Concept progression may use only researched concepts. Every learning objective must have at least one assessment probe, and at least one worked example or analogy is required before Script Agent.
 
 Pedagogy Agent must not write narration, instantiate `LessonScript`/`ScriptSegment`, produce visual coordinates, create SceneGraph objects, render video, or implement later QA/budget/scheduling stages.
+
+## Script Agent boundary
+
+Script Agent consumes only a Script-ready `PedagogyPlan` plus the exact factual claims selected by that plan. It must not see or reintroduce blocked/unselected claims.
+
+The union of `claim_ids` in the produced `LessonScript` must equal the union of claim IDs selected by the PedagogyPlan. Repeating a preserved claim across multiple segments is allowed; dropping a selected claim or adding another claim is not.
+
+Every PedagogyPlan learning objective must appear in at least one script segment. EXPLAIN, COMPARE, DEMONSTRATE, and SUMMARIZE segments must carry claim IDs when the plan contains factual claims.
+
+Script Agent may write spoken/subtitle narration and choose `TeachingFunction`. It must not create SceneGraph objects, pixel coordinates, layout/motion/camera/typography instructions, renderer calls, FFmpeg commands, or implementation code.
