@@ -9,8 +9,9 @@ Status: IMPLEMENTED_AWAITING_CI.
 - evidence unsupported / contradicted / uncertain → Research Orchestration;
 - narration factual mismatch → Script Agent;
 - pedagogical structure / concept progression → Pedagogy Agent;
-- semantic visual intent / modality / continuity → Visual Director;
+- semantic visual intent / modality → Visual Director;
 - deterministic geometry/render issues → Core Repair;
+- video pacing and transition-continuity mechanics → deterministic Core temporal/transition repair;
 - scene-critic patches already supported by the deterministic Repair Engine stay in Core;
 - scene-level `CHANGE_VISUAL_INTENT` and other SceneGraph-regeneration requests return to Visual Director.
 
