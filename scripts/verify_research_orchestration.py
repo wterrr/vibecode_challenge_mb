@@ -90,20 +90,44 @@ def main() -> int:
             ),
         ),
     )
+    misconception_source = SourceRecord(
+        source_id="misconception.source.guide",
+        source_type=SourceType.DOCUMENT,
+        title="Teaching guide",
+        locator="document:gradient-descent:misconceptions",
+    )
     misconceptions = MisconceptionResearchFindings(
+        sources=(misconception_source,),
+        claims=(
+            ResearchClaim(
+                claim_id="misconception.C001",
+                statement="For minimization, updates move locally against the gradient.",
+                source_ids=(misconception_source.source_id,),
+                confidence=0.95,
+            ),
+        ),
+        evidence_edges=(
+            EvidenceEdge(
+                edge_id="misconception.E001",
+                from_kind=EvidenceNodeKind.SOURCE,
+                from_id=misconception_source.source_id,
+                to_claim_id="misconception.C001",
+                relation=EvidenceRelation.SUPPORTS,
+            ),
+        ),
         misconceptions=(
             ResearchMisconception(
                 misconception_id="M001",
                 statement="Minimization moves with the gradient.",
                 correction="Minimization moves against the gradient locally.",
-                claim_ids=("C001",),
+                claim_ids=("misconception.C001",),
             ),
         ),
         examples=(
             ResearchExample(
                 example_id="X001",
                 description="A downhill slope analogy.",
-                claim_ids=("C001",),
+                claim_ids=("misconception.C001",),
             ),
         ),
     )
@@ -120,8 +144,10 @@ def main() -> int:
         raise SystemExit("RESEARCH_ORCHESTRATION=FAIL source locator changed")
     if merged.research_pack.claims[0].source_ids != ("source.textbook",):
         raise SystemExit("RESEARCH_ORCHESTRATION=FAIL source provenance changed")
-    if merged.evidence_graph.claim_ids != ("C001",):
+    if merged.evidence_graph.claim_ids != ("C001", "misconception.C001"):
         raise SystemExit("RESEARCH_ORCHESTRATION=FAIL claim IDs changed")
+    if merged.research_pack.sources[1].locator != misconception_source.locator:
+        raise SystemExit("RESEARCH_ORCHESTRATION=FAIL sibling provenance changed")
 
     print("RESEARCH_ORCHESTRATION=PASS")
     print("tree=Director -> Research Orchestrator -> 3 specialist researchers")
