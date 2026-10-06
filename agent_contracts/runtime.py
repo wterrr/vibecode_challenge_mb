@@ -115,7 +115,9 @@ class AgentRun(ContractModel):
             [f"{item.artifact_type}:{item.artifact_id}" for item in self.artifacts],
             label="AgentRun artifact refs",
         )
-        known_artifacts = {item.artifact_id for item in self.artifacts}
+        artifact_ids = [item.artifact_id for item in self.artifacts]
+        require_unique(artifact_ids, label="AgentRun artifact_ids")
+        known_artifacts = set(artifact_ids)
         for stage in self.stages:
             unknown = sorted(
                 (set(stage.input_artifact_ids) | set(stage.output_artifact_ids))
@@ -126,6 +128,18 @@ class AgentRun(ContractModel):
                     f"AgentStageRecord {stage.step_id!r} references unregistered artifacts "
                     f"{unknown!r}"
                 )
+
+        stage_statuses = [stage.status for stage in self.stages]
+        if self.status == AgentRunStatus.SUCCEEDED and any(
+            status != AgentRunStatus.SUCCEEDED for status in stage_statuses
+        ):
+            raise AgentContractError(
+                "SUCCEEDED AgentRun cannot contain non-SUCCEEDED stage records"
+            )
+        if self.status == AgentRunStatus.FAILED and AgentRunStatus.FAILED not in stage_statuses:
+            raise AgentContractError("FAILED AgentRun requires at least one FAILED stage record")
+        if self.status == AgentRunStatus.BLOCKED and AgentRunStatus.BLOCKED not in stage_statuses:
+            raise AgentContractError("BLOCKED AgentRun requires at least one BLOCKED stage record")
         return self
 
 
