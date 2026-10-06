@@ -268,3 +268,5 @@ class VideoTransitionSummary(BaseModel):
         if self.from_scene_id == self.to_scene_id:
             raise VideoCriticInvalidInputError("transition endpoints must be different scenes")
         return self
+
+
