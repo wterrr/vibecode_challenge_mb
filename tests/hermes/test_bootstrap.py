@@ -56,6 +56,8 @@ def test_runner_pins_project_local_binary_before_global_install():
     text = (ROOT / "scripts" / "run_hermes_bootstrap_smoke.py").read_text(encoding="utf-8")
     assert 'INSTALL_DIR / "venv" / "bin" / "hermes"' in text
     assert "shutil.which" not in text
+    assert "def verify_installed_pin(status: dict[str, Any])" in text
+    assert 'expected = status["hermes"]["commit"]' in text
 
 
 def test_runner_declares_primary_and_free_fallback():
