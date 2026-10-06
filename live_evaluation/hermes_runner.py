@@ -253,6 +253,12 @@ class LiveHermesStructuredRunner:
         research = stage == "research_orchestration"
         enabled = ["delegation", "web"] if research else []
         disabled = [] if research else ["*"]
+        request_overrides: dict[str, Any] = {
+            "response_format": {"type": "json_object"},
+        }
+        if self.model.startswith("nvidia/nemotron-3-super-"):
+            request_overrides["reasoning_effort"] = "medium"
+
         agent = AIAgent(
             base_url=self.base_url,
             api_key=self.api_key,
@@ -266,9 +272,7 @@ class LiveHermesStructuredRunner:
             enabled_toolsets=enabled,
             disabled_toolsets=disabled,
             max_iterations=128 if research else 3,
-            request_overrides={
-                "response_format": {"type": "json_object"},
-            },
+            request_overrides=request_overrides,
             ephemeral_system_prompt=(
                 "You are a bounded LearnFlow evaluation agent. "
                 "Follow the supplied typed output contract exactly. "

@@ -81,8 +81,8 @@ def main() -> int:
         '"tools": [',
         '"type": "json_object"',
         '"require_parameters": True',
-        '"max_tokens": 256',
-        'payload["reasoning_effort"] = "none"',
+        '"max_tokens": 4096',
+        'payload["reasoning_effort"] = "medium"',
     ):
         if required not in probe_source:
             raise SystemExit("LIVE_V2D_CONTRACT=FAIL model capability probe")
@@ -98,6 +98,10 @@ def main() -> int:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL research iteration budget")
     if '"response_format": {"type": "json_object"}' not in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL json_object wire constraint")
+    if 'request_overrides["reasoning_effort"] = "medium"' not in source:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL Nemotron reasoning must stay enabled")
+    if '"max_tokens"' in source:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL live runner must not impose a low token cap")
     if "assemble_specialist_delegation_results(" not in source:
         raise SystemExit(
             "LIVE_V2D_CONTRACT=FAIL deterministic research assembly missing"
@@ -110,7 +114,7 @@ def main() -> int:
     print("LIVE_V2D_CONTRACT=PASS")
     print(f"pilot_topic={PILOT_TOPIC_ID}")
     print(f"default_model={DEFAULT_LIVE_MODEL}")
-    print("model_probe=tools+json_object+host_shape_validation+bounded_no_reasoning_smoke")
+    print("model_probe=tools+json_object+host_shape_validation+reasoning_medium")
     print("usd_cap=none")
     print("publication_authorized=false")
     print("live_secret_step_scope=PASS")

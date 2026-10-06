@@ -88,7 +88,7 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
                 ),
             }
         ],
-        "max_tokens": 256,
+        "max_tokens": 4096,
         "temperature": 0,
         "tools": [
             {
@@ -110,10 +110,9 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
         "provider": {"require_parameters": True},
     }
     if model.startswith("nvidia/nemotron-3-super-"):
-        # The Super model supports extended thinking. Disable reasoning only for
-        # this tiny capability probe so reasoning tokens cannot consume the
-        # completion budget before the required JSON object is finished.
-        payload["reasoning_effort"] = "none"
+        # Keep the capability probe representative of the real live runner:
+        # Nemotron reasons during both probe and production evaluation.
+        payload["reasoning_effort"] = "medium"
     request = Request(
         OPENROUTER_CHAT_COMPLETIONS,
         data=json.dumps(payload).encode("utf-8"),

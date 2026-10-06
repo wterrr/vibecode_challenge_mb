@@ -193,17 +193,27 @@ def test_runner_uses_json_object_wire_constraint():
     source = (
         ROOT / "live_evaluation" / "hermes_runner.py"
     ).read_text(encoding="utf-8")
-    assert 'request_overrides={' in source
+    assert 'request_overrides: dict[str, Any]' in source
     assert '"response_format": {"type": "json_object"}' in source
 
 
 
-def test_probe_gives_nemotron_room_to_finish_json_without_reasoning():
+def test_probe_gives_nemotron_room_to_finish_json_with_reasoning_enabled():
     source = (
         ROOT / "live_evaluation" / "model_probe.py"
     ).read_text(encoding="utf-8")
-    assert '"max_tokens": 256' in source
+    assert '"max_tokens": 4096' in source
     assert 'model.startswith("nvidia/nemotron-3-super-")' in source
-    assert 'payload["reasoning_effort"] = "none"' in source
+    assert 'payload["reasoning_effort"] = "medium"' in source
     assert "finish_reason=" in source
     assert "response_prefix=" in source
+
+
+
+def test_nemotron_live_runner_keeps_reasoning_enabled():
+    source = (
+        ROOT / "live_evaluation" / "hermes_runner.py"
+    ).read_text(encoding="utf-8")
+    assert 'self.model.startswith("nvidia/nemotron-3-super-")' in source
+    assert 'request_overrides["reasoning_effort"] = "medium"' in source
+    assert '"max_tokens"' not in source
