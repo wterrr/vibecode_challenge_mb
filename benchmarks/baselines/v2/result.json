@@ -90,76 +90,103 @@
   },
   "repair_cases": [
     {
-      "case_index": 1,
-      "success": true,
-      "qa_pass": true,
-      "pixel_changed": true,
+      "case_id": "photosynthesis::s01_concept",
+      "target_node_id": "s_1_concept",
+      "requested_region": "RIGHT",
       "scene_hash_changed": true,
-      "unrelated_scene_digests_unchanged": true
+      "pixel_changed": true,
+      "qa_pass": true,
+      "qa_issue_codes": [],
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
     },
     {
-      "case_index": 2,
-      "success": true,
-      "qa_pass": true,
-      "pixel_changed": true,
+      "case_id": "photosynthesis::s02_steps",
+      "target_node_id": "s_2_act_calvin",
+      "requested_region": "RIGHT",
       "scene_hash_changed": true,
-      "unrelated_scene_digests_unchanged": true
+      "pixel_changed": true,
+      "qa_pass": true,
+      "qa_issue_codes": [],
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
     },
     {
-      "case_index": 3,
-      "success": true,
-      "qa_pass": true,
-      "pixel_changed": true,
+      "case_id": "photosynthesis::s03_comparison",
+      "target_node_id": "s_3_c1_pt_1",
+      "requested_region": "RIGHT",
       "scene_hash_changed": true,
-      "unrelated_scene_digests_unchanged": true
+      "pixel_changed": true,
+      "qa_pass": true,
+      "qa_issue_codes": [],
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
     },
     {
-      "case_index": 4,
-      "success": true,
-      "qa_pass": true,
-      "pixel_changed": true,
+      "case_id": "ram_vs_ssd::s01_intro",
+      "target_node_id": "s_1_concept",
+      "requested_region": "RIGHT",
       "scene_hash_changed": true,
-      "unrelated_scene_digests_unchanged": true
+      "pixel_changed": true,
+      "qa_pass": true,
+      "qa_issue_codes": [],
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
     },
     {
-      "case_index": 5,
-      "success": true,
-      "qa_pass": true,
-      "pixel_changed": true,
+      "case_id": "ram_vs_ssd::s02_flow",
+      "target_node_id": "s_2_act_cpu",
+      "requested_region": "RIGHT",
       "scene_hash_changed": true,
-      "unrelated_scene_digests_unchanged": true
+      "pixel_changed": true,
+      "qa_pass": true,
+      "qa_issue_codes": [],
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
     },
     {
-      "case_index": 6,
-      "success": true,
-      "qa_pass": true,
-      "pixel_changed": true,
+      "case_id": "ram_vs_ssd::s03_comparison",
+      "target_node_id": "s_3_c1_pt_1",
+      "requested_region": "RIGHT",
       "scene_hash_changed": true,
-      "unrelated_scene_digests_unchanged": true
+      "pixel_changed": true,
+      "qa_pass": true,
+      "qa_issue_codes": [],
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
     },
     {
-      "case_index": 7,
-      "success": true,
-      "qa_pass": true,
-      "pixel_changed": true,
+      "case_id": "tcp_three_way_handshake::s01_intro",
+      "target_node_id": "s_1_concept",
+      "requested_region": "RIGHT",
       "scene_hash_changed": true,
-      "unrelated_scene_digests_unchanged": true
+      "pixel_changed": true,
+      "qa_pass": true,
+      "qa_issue_codes": [],
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
     },
     {
-      "case_index": 8,
-      "success": true,
-      "qa_pass": true,
-      "pixel_changed": true,
+      "case_id": "tcp_three_way_handshake::s02_steps",
+      "target_node_id": "s_2_act_client",
+      "requested_region": "RIGHT",
       "scene_hash_changed": true,
-      "unrelated_scene_digests_unchanged": true
+      "pixel_changed": true,
+      "qa_pass": true,
+      "qa_issue_codes": [],
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
     },
     {
-      "case_index": 9,
-      "success": true,
-      "qa_pass": true,
-      "pixel_changed": true,
+      "case_id": "tcp_three_way_handshake::s03_comparison",
+      "target_node_id": "s_3_c1_pt_1",
+      "requested_region": "RIGHT",
       "scene_hash_changed": true,
-      "unrelated_scene_digests_unchanged": true
+      "pixel_changed": true,
+      "qa_pass": true,
+      "qa_issue_codes": [],
+      "unrelated_scene_digests_unchanged": true,
+      "success": true
     }
   ]
 }
