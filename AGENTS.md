@@ -152,3 +152,14 @@ The union of `claim_ids` in the produced `LessonScript` must equal the union of 
 Every PedagogyPlan learning objective must appear in at least one script segment. EXPLAIN, COMPARE, DEMONSTRATE, and SUMMARIZE segments must carry claim IDs when the plan contains factual claims.
 
 Script Agent may write spoken/subtitle narration and choose `TeachingFunction`. It must not create SceneGraph objects, pixel coordinates, layout/motion/camera/typography instructions, renderer calls, FFmpeg commands, or implementation code.
+
+
+## Visual Director boundary
+
+Visual Director consumes only a deterministically Visual-Director-ready LessonScript plus the approved PedagogyPlan concept progression. Before Hermes runs, LearnFlow builds a lesson-wide ConceptRegistry deterministically; Hermes must reuse those concept IDs and canonical semantic keys rather than inventing scene-local identities.
+
+The output is a semantic Storyboard plus exactly one SceneGraph per storyboard scene. Every LessonScript segment must be covered exactly once and in order. Scene teaching functions must agree with mapped script segments, and SceneGraph semantic purpose must remain compatible with that teaching function.
+
+Storyboard concept_refs, continuity_keys, and SceneGraph node concept_ref/semantic_key pairs must agree with the deterministic ConceptRegistry. SceneGraphs must pass the existing V2.1 schema and registry-aware semantic validation.
+
+Visual Director may choose semantic nodes, relations, groups, symbolic style tokens, layout intent, reading direction, ports, and semantic LayoutHint preferences. It must not choose x/y coordinates, pixel dimensions, absolute font sizes, CSS positioning, motion paths, camera, timeline arithmetic, renderer code, FFmpeg commands, or pixels.

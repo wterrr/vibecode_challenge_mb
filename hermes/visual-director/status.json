@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "stage": "visual-director",
+  "name": "Visual Director",
+  "state": "IMPLEMENTED_AWAITING_CI",
+  "depends_on": [
+    {
+      "stage": "script-agent",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "agent-contracts",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
+  ],
+  "acceptance": {
+    "scenegraphs_schema_valid": true,
+    "storyboard_script_coverage": true,
+    "semantic_layout_hints_only": true,
+    "no_pixel_coordinates": true,
+    "deterministic_concept_registry": true,
+    "registry_identity_validation": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "next_stage": "End-to-End Orchestration",
+  "evidence": {
+    "accepted_ci_run": null,
+    "accepted_head_sha": null,
+    "visual_director_acceptance_verifier": "PENDING",
+    "pytest": "PENDING",
+    "pinned_hermes_visual_schema": "PENDING",
+    "core_freeze": "PENDING"
+  }
+}
