@@ -7,8 +7,11 @@ import json
 import os
 import shutil
 from pathlib import Path
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 DEFAULT_HOME = ROOT / ".hermes_runtime" / "runtime-governance" / "verify-home"
 STATE = ROOT / ".hermes_runtime" / "runtime-governance" / "verify-state.json"
 EVENTS = ROOT / ".hermes_runtime" / "runtime-governance" / "verify-events.jsonl"
