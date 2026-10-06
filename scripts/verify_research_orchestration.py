@@ -58,6 +58,14 @@ def main() -> int:
     director_context = json.loads(director_task["context"])
     if len(director_context["research_plan"]["specialist_tasks"]) != 3:
         raise SystemExit("RESEARCH_ORCHESTRATION=FAIL specialist fan-out")
+    for specialist in director_context["research_plan"]["specialist_tasks"]:
+        encoded_schema = json.dumps(specialist["output_schema"], sort_keys=True)
+        if "$defs" in encoded_schema or "schema_version" in encoded_schema:
+            raise SystemExit("RESEARCH_ORCHESTRATION=FAIL specialist wire schema too coupled")
+    for specialist in director_context["research_plan"]["specialist_tasks"][1:]:
+        specialist_context = json.loads(specialist["context"])
+        if "MUST use the available web tool" not in specialist_context.get("tool_rule", ""):
+            raise SystemExit("RESEARCH_ORCHESTRATION=FAIL source research tool rule")
 
     concept = ConceptResearchFindings(
         concepts=("loss", "gradient", "learning rate"),
@@ -154,6 +162,8 @@ def main() -> int:
     print("max_delegation_depth=2")
     print("max_specialists=3")
     print("provenance=preserved")
+    print("specialist_wire_schema=compact")
+    print("source_research=web_required")
     return 0
 
 

@@ -19,8 +19,143 @@ from .models import (
 )
 
 
-def _schema(model_type) -> dict:
-    return model_type.model_json_schema()
+def _string_array(*, min_items: int = 0) -> dict:
+    schema = {
+        "type": "array",
+        "items": {"type": "string", "minLength": 1},
+    }
+    if min_items:
+        schema["minItems"] = min_items
+    return schema
+
+
+def _source_wire_schema(prefix: str) -> dict:
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "source_id": {"type": "string", "pattern": f"^{prefix}\\."},
+            "source_type": {
+                "type": "string",
+                "enum": ["WEB", "PAPER", "BOOK", "DATASET", "DOCUMENT", "OTHER"],
+            },
+            "title": {"type": "string", "minLength": 1},
+            "locator": {"type": "string", "minLength": 1},
+            "publisher": {"type": ["string", "null"]},
+            "authors": _string_array(),
+        },
+        "required": ["source_id", "title", "locator"],
+    }
+
+
+def _claim_wire_schema(prefix: str) -> dict:
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "claim_id": {"type": "string", "pattern": f"^{prefix}\\."},
+            "statement": {"type": "string", "minLength": 1},
+            "source_ids": _string_array(min_items=1),
+            "confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+            "concept_ids": _string_array(),
+        },
+        "required": ["claim_id", "statement", "source_ids", "confidence"],
+    }
+
+
+def _edge_wire_schema(prefix: str) -> dict:
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "edge_id": {"type": "string", "pattern": f"^{prefix}\\."},
+            "from_kind": {"type": "string", "enum": ["SOURCE", "CLAIM"]},
+            "from_id": {"type": "string", "minLength": 1},
+            "to_claim_id": {"type": "string", "minLength": 1},
+            "relation": {
+                "type": "string",
+                "enum": ["SUPPORTS", "CONTRADICTS", "DERIVES"],
+            },
+        },
+        "required": ["edge_id", "from_kind", "from_id", "to_claim_id", "relation"],
+    }
+
+
+def _concept_wire_schema() -> dict:
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "concepts": _string_array(min_items=1),
+            "open_questions": _string_array(),
+        },
+        "required": ["concepts"],
+    }
+
+
+def _evidence_wire_schema() -> dict:
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "sources": {"type": "array", "minItems": 1, "items": _source_wire_schema("evidence")},
+            "claims": {"type": "array", "minItems": 1, "items": _claim_wire_schema("evidence")},
+            "evidence_edges": {"type": "array", "minItems": 1, "items": _edge_wire_schema("evidence")},
+        },
+        "required": ["sources", "claims", "evidence_edges"],
+    }
+
+
+def _misconception_wire_schema() -> dict:
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "sources": {"type": "array", "minItems": 1, "items": _source_wire_schema("misconception")},
+            "claims": {"type": "array", "minItems": 1, "items": _claim_wire_schema("misconception")},
+            "evidence_edges": {"type": "array", "minItems": 1, "items": _edge_wire_schema("misconception")},
+            "misconceptions": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "properties": {
+                        "misconception_id": {"type": "string", "minLength": 1},
+                        "statement": {"type": "string", "minLength": 1},
+                        "correction": {"type": "string", "minLength": 1},
+                        "claim_ids": _string_array(min_items=1),
+                    },
+                    "required": ["misconception_id", "statement", "correction", "claim_ids"],
+                },
+            },
+            "examples": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "properties": {
+                        "example_id": {"type": "string", "minLength": 1},
+                        "description": {"type": "string", "minLength": 1},
+                        "claim_ids": _string_array(min_items=1),
+                    },
+                    "required": ["example_id", "description", "claim_ids"],
+                },
+            },
+        },
+        "required": ["sources", "claims", "evidence_edges", "misconceptions", "examples"],
+    }
+
+
+def _wire_schema(model_type) -> dict:
+    if model_type is ConceptResearchFindings:
+        return _concept_wire_schema()
+    if model_type is EvidenceResearchFindings:
+        return _evidence_wire_schema()
+    if model_type is MisconceptionResearchFindings:
+        return _misconception_wire_schema()
+    raise TypeError(f"unsupported research specialist model: {model_type!r}")
 
 
 def build_research_orchestration_plan(brief: LearningBrief) -> ResearchOrchestrationPlan:
@@ -53,7 +188,7 @@ def build_research_orchestration_plan(brief: LearningBrief) -> ResearchOrchestra
                 ensure_ascii=False,
                 sort_keys=True,
             ),
-            output_schema=_schema(ConceptResearchFindings),
+            output_schema=_wire_schema(ConceptResearchFindings),
         ),
         SpecialistTask(
             role=ResearchRole.EVIDENCE,
@@ -66,11 +201,20 @@ def build_research_orchestration_plan(brief: LearningBrief) -> ResearchOrchestra
                         "Every claim must reference declared source_ids; every source keeps its original locator. "
                         "Namespace source_id and claim_id values with the prefix 'evidence.' so sibling outputs cannot collide."
                     ),
+                    "tool_rule": (
+                        "Before the final JSON, you MUST use the available web tool to find real authoritative sources. "
+                        "Copy stable locators from tool results exactly. Never fabricate a source or use example.com."
+                    ),
+                    "output_shape_hint": {
+                        "sources": ["source objects"],
+                        "claims": ["claim objects"],
+                        "evidence_edges": ["edge objects"],
+                    },
                 },
                 ensure_ascii=False,
                 sort_keys=True,
             ),
-            output_schema=_schema(EvidenceResearchFindings),
+            output_schema=_wire_schema(EvidenceResearchFindings),
         ),
         SpecialistTask(
             role=ResearchRole.MISCONCEPTION,
@@ -87,11 +231,23 @@ def build_research_orchestration_plan(brief: LearningBrief) -> ResearchOrchestra
                         "backed by your own sources; namespace them with prefix 'misconception.'. "
                         "Misconceptions/examples may reference only those local claim_ids."
                     ),
+                    "tool_rule": (
+                        "Before the final JSON, you MUST use the available web tool to find real sources supporting "
+                        "the correction claims. Copy stable locators from tool results exactly. Never fabricate a "
+                        "source or use example.com."
+                    ),
+                    "output_shape_hint": {
+                        "sources": ["source objects"],
+                        "claims": ["claim objects"],
+                        "evidence_edges": ["edge objects"],
+                        "misconceptions": ["misconception objects"],
+                        "examples": ["example objects"],
+                    },
                 },
                 ensure_ascii=False,
                 sort_keys=True,
             ),
-            output_schema=_schema(MisconceptionResearchFindings),
+            output_schema=_wire_schema(MisconceptionResearchFindings),
         ),
     )
 

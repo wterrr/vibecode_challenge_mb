@@ -424,3 +424,23 @@ def test_host_assembly_fails_closed_on_missing_or_invalid_specialist(
                 "results": mutation(payload["results"])
             },
         )
+
+
+
+def test_specialist_wire_schemas_are_compact_and_definition_free():
+    plan = build_research_orchestration_plan(_brief())
+    for task in plan.specialist_tasks:
+        encoded = json.dumps(task.output_schema, sort_keys=True)
+        assert "$defs" not in encoded
+        assert "schema_version" not in encoded
+        assert len(encoded) < 5000
+
+
+def test_evidence_specialists_require_real_web_sources():
+    plan = build_research_orchestration_plan(_brief())
+    evidence_context = json.loads(plan.specialist_tasks[1].context)
+    misconception_context = json.loads(plan.specialist_tasks[2].context)
+    for context in (evidence_context, misconception_context):
+        assert "MUST use the available web tool" in context["tool_rule"]
+        assert "Never fabricate" in context["tool_rule"]
+        assert "example.com" in context["tool_rule"]
