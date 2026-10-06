@@ -3295,7 +3295,7 @@ BudgetLedger
 
 ## Research Orchestration
 
-**Status: NEXT / NOT STARTED**
+**Status: IMPLEMENTED / VERIFYING**
 
 Implement:
 
