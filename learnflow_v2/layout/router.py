@@ -142,14 +142,15 @@ def _stack_in_zone(
     specs: list[tuple[SceneNode, float, float]] = []
     for node in ordered:
         measurement = measurements[node.id]
-        # _fit_rect() already reserves 8px on each side. Do not subtract
-        # those margins here a second time; use the full candidate zone width
-        # for wrapping so one-line readable text is not needlessly wrapped.
+        # Stacked comparison/content cards use a compact 4px outer margin.
+        # Measure against the exact maximum outer width that _fit_rect() will
+        # actually return so Layout and Renderer cannot disagree about wrapping.
+        max_outer_width = max(24.0, zone.width - 8.0)
         preferred_width = max(
             measurement.minimum_readable_width + 20.0,
-            min(measurement.width + 40.0, zone.width),
+            min(measurement.width + 40.0, max_outer_width),
         )
-        preferred_width = min(preferred_width, zone.width)
+        preferred_width = min(preferred_width, max_outer_width)
         required_height = _wrapped_text_height(measurement, preferred_width) + 16.0
         specs.append((node, preferred_width, required_height))
 
@@ -175,6 +176,7 @@ def _stack_in_zone(
             preferred_width=preferred_width,
             preferred_height=required_height,
             preferred_region=node.layout_hint.preferred_region if node.layout_hint else None,
+            margin_x=4.0,
         )
         boxes.append(
             LayoutBox(
