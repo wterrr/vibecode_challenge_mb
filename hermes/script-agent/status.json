@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "stage": "script-agent",
+  "name": "Script Agent",
+  "state": "IMPLEMENTED_AWAITING_CI",
+  "depends_on": [
+    {
+      "stage": "pedagogy-agent",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "fact-verification",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    },
+    {
+      "stage": "agent-contracts",
+      "required_state": "PASS",
+      "current_state": "PASS"
+    }
+  ],
+  "acceptance": {
+    "claim_ids_preserved": true,
+    "teaching_function_per_segment": true,
+    "pedagogy_objectives_covered": true,
+    "factual_segments_claim_bound": true,
+    "no_visual_coordinates_or_implementation_code": true,
+    "visual_director_readiness_gate": true,
+    "core_freeze_must_remain_complete": true
+  },
+  "next_stage": "Visual Director"
+}
