@@ -33,6 +33,7 @@ from learnflow_v2.core_gate import (
     CoreGateEvidence,
     CoreGateEvidenceBundle,
     CoreGateMetric,
+    CoreGateState,
     EvidenceKind,
     evaluate_core_gate,
 )
@@ -649,7 +650,9 @@ async def main() -> int:
 
     print(json.dumps(result["summary"], indent=2))
     print(f"CORE_GATE={report.state.value}")
-    return 0
+    # The benchmark artifact is written regardless of decision so failed gates
+    # remain auditable, but CI must never report success for FAIL/BLOCKED.
+    return 0 if report.state == CoreGateState.PASS else 2
 
 
 if __name__ == "__main__":
