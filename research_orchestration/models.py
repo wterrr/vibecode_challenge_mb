@@ -94,13 +94,61 @@ class EvidenceResearchFindings(ContractModel):
 
 
 class MisconceptionResearchFindings(ContractModel):
+    """Independent misconception research with its own source-grounded claim namespace."""
+
+    sources: tuple[SourceRecord, ...] = Field(default_factory=tuple)
+    claims: tuple[ResearchClaim, ...] = Field(default_factory=tuple)
+    evidence_edges: tuple[EvidenceEdge, ...] = Field(default_factory=tuple)
     misconceptions: tuple[ResearchMisconception, ...] = Field(default_factory=tuple)
     examples: tuple[ResearchExample, ...] = Field(default_factory=tuple)
 
-    @field_validator("misconceptions", "examples", mode="before")
+    @field_validator(
+        "sources", "claims", "evidence_edges", "misconceptions", "examples",
+        mode="before",
+    )
     @classmethod
     def _tuples(cls, value: Any):
         return _tupleize(value)
+
+    @model_validator(mode="after")
+    def _independent_provenance(self) -> "MisconceptionResearchFindings":
+        source_ids = [item.source_id for item in self.sources]
+        claim_ids = [item.claim_id for item in self.claims]
+        if len(source_ids) != len(set(source_ids)):
+            raise AgentContractError("MisconceptionResearchFindings source_ids must be unique")
+        if len(claim_ids) != len(set(claim_ids)):
+            raise AgentContractError("MisconceptionResearchFindings claim_ids must be unique")
+        source_set = set(source_ids)
+        claim_set = set(claim_ids)
+        for claim in self.claims:
+            unknown = sorted(set(claim.source_ids) - source_set)
+            if unknown:
+                raise AgentContractError(
+                    f"misconception claim {claim.claim_id!r} references unknown sources {unknown!r}"
+                )
+        for edge in self.evidence_edges:
+            if edge.to_claim_id not in claim_set:
+                raise AgentContractError(
+                    f"misconception evidence edge {edge.edge_id!r} targets unknown claim "
+                    f"{edge.to_claim_id!r}"
+                )
+            allowed = source_set if edge.from_kind.value == "SOURCE" else claim_set
+            if edge.from_id not in allowed:
+                raise AgentContractError(
+                    f"misconception evidence edge {edge.edge_id!r} references unknown "
+                    f"{edge.from_kind.value.lower()} {edge.from_id!r}"
+                )
+        for item in (*self.misconceptions, *self.examples):
+            unknown = sorted(set(item.claim_ids) - claim_set)
+            if unknown:
+                raise AgentContractError(
+                    f"misconception/example output references unknown local claims {unknown!r}"
+                )
+        if (self.misconceptions or self.examples) and not self.claims:
+            raise AgentContractError(
+                "misconception/example findings require locally sourced claims"
+            )
+        return self
 
 
 class SpecialistTask(ContractModel):
