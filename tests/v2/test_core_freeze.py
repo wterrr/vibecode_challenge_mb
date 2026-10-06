@@ -34,3 +34,11 @@ def test_hermes_is_outside_frozen_core_namespaces():
     data = json.loads(MANIFEST.read_text(encoding="utf-8"))
     assert all("hermes" not in prefix.lower() for prefix in data["protected_namespaces"])
     assert "outside protected Core namespaces" in data["change_policy"]["hermes_allowed"]
+
+
+def test_git_blob_hash_matches_frozen_known_blob():
+    from scripts.verify_v2_core_freeze import git_blob_sha
+
+    data = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    path = Path("benchmarks/baselines/v1/baseline.json")
+    assert git_blob_sha(path) == data["rollback"]["baseline_git_blob_sha"]
