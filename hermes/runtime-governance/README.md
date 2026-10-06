@@ -2,7 +2,7 @@
 
 This stage binds LearnFlow policy/accounting to the exact pinned Hermes hook surface while keeping enforcement deterministic.
 
-Status: IMPLEMENTED_AWAITING_CI.
+Status: PASS. Accepted CI run `37448402550` proves deterministic hard USD/tool/retry enforcement, fail-closed publication policy, 16 governance regressions, 11 Agent Contracts regressions, exact pinned Hermes project-plugin discovery and native hook dispatch, token/cost and retry metrics, lifecycle tracing, privacy-minimized event persistence, and Core Freeze preservation.
 
 ## Native Hermes hooks
 

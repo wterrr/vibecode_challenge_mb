@@ -40,6 +40,7 @@ Accepted stages:
 - **Visual Director — PASS.** Hermes produces semantic `Storyboard` + schema-valid `SceneGraph[]`, reuses a deterministic lesson `ConceptRegistry`, preserves Script coverage/order, and emits no geometry or renderer controls.
 - **End-to-End Orchestration — PASS.** The accepted typed pipeline runs Research → Fact Verification → Pedagogy → Script → Visual Director → LearnFlow capability tools → frozen Core V2 → assembled video, failing closed at every deterministic gate.
 - **Agent-Aware QA — PASS.** Authoritative QA/VLM results are routed to the only layer allowed to repair them: evidence → Research, narration → Script, pedagogy → Pedagogy Agent, semantic visuals → Visual Director, and geometry/temporal/selective patches → deterministic Core repair.
+- **Hooks + Budget — PASS.** Exact pinned Hermes native hooks enforce publication/tool policy and record privacy-minimized metrics/lifecycle evidence, while deterministic host-side conservative reservations hard-cap USD/provider/retry usage before governed agent dispatch.
 
 Accepted stage: **Agent Contracts — PASS.** The coherent artifact-chain verifier, 11 contract regressions, and Core Freeze guard passed.
 
@@ -55,9 +56,11 @@ Accepted stage: **Visual Director — PASS.** CI run `37437560550` verifies exac
 
 Accepted stage: **End-to-End Orchestration — PASS.** CI run `37439945446` verifies the typed stage order, deterministic gates between agents, Hermes-native Research delegation, capability-based Core handoff, a real five-scene assembled `final.mp4`, 14 fail-closed regressions, pinned Hermes schema compatibility, plugin discovery, replayable artifacts, and Core Freeze preservation.
 
-Accepted stage: **Agent-Aware QA — PASS.** CI run `37445667469` verifies authoritative scene/video QA ingestion, typed fail-closed ownership routing, 25 regressions, exact pinned Hermes repair-task schemas for Research/Script/Pedagogy/Visual, strict critic outage blockers, Core-only geometry/temporal/selective repair, scope validation, and Core Freeze preservation. Next authorized stage: **Hooks + Budget**, which has not started yet.
+Accepted stage: **Agent-Aware QA — PASS.** CI run `37445667469` verifies authoritative scene/video QA ingestion, typed fail-closed ownership routing, 25 regressions, exact pinned Hermes repair-task schemas for Research/Script/Pedagogy/Visual, strict critic outage blockers, Core-only geometry/temporal/selective repair, scope validation, and Core Freeze preservation.
 
-During Hooks + Budget, implement policy hooks, lifecycle tracing/metrics, and hard cost/retry accounting only. Do not implement Skills or Kanban Durability yet.
+Accepted stage: **Hooks + Budget — PASS.** CI run `37448402550` verifies hard host-side USD/tool/retry reservations, fail-closed publication policy, 16 governance regressions, 11 Agent Contracts regressions, exact pinned Hermes project-plugin discovery and native hook dispatch, post-tool metrics, post-API cost metrics, retry metrics, session/subagent lifecycle tracing, sensitive-payload non-persistence, and Core Freeze preservation. Next authorized stage: **Skills**, which has not started yet.
+
+During Skills, package only stable, reviewed procedures that reuse the already accepted typed stages and boundaries. Do not implement Kanban Durability yet.
 
 ## LearnFlow Capability Plugin safety
 
@@ -198,3 +201,16 @@ Strict critic outages or invalid responses block publication without inventing a
 All scene, claim, segment, objective, and typed scene-object references must be validated against the current artifact chain and fail closed when stale or unknown. Agent repair tasks must reuse the accepted task builders and include the current artifact so repair is selective and unaffected content is preserved.
 
 Agent-Aware QA routes ownership only. It does not implement hooks, budget accounting, retry accounting, Skills, Kanban, geometry, renderer code, or a new agent runtime.
+
+
+## Hooks + Budget boundary
+
+Runtime governance uses the exact pinned Hermes lifecycle surface. `pre_tool_call` is the blocking hook for publication and tool/subagent policy. `post_tool_call`, `post_api_request`, `api_request_error`, session hooks, and subagent hooks are observability/lifecycle inputs.
+
+Do not claim that Hermes `pre_api_request` can enforce a hard provider budget: at the accepted pinned runtime it is observer-only. Hard USD/provider-attempt/retry enforcement belongs to deterministic LearnFlow host code before the governed agent stage starts. `HardBudgetController` consumes a conservative reservation before dispatch; a charge that cannot fit must fail before the underlying runner executes.
+
+Publication authorization is operator-owned governance state. Model tool arguments cannot grant publication permission. Rendering is not publication; publishing/releasing/deploying to a public target remains fail-closed without authorization.
+
+Runtime event persistence must remain privacy-minimized. Do not persist raw prompts, raw tool arguments/results, child goals, or child summaries merely for metrics. Cost accounting and retry accounting stay deterministic even when Hermes observes provider usage afterward.
+
+Hooks + Budget does not implement Skills or Kanban Durability. The next stage may package stable procedures, but it must reuse these accepted governance and typed-artifact boundaries rather than bypass them.
