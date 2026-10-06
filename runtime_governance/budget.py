@@ -20,10 +20,20 @@ class BudgetExceededError(AgentContractError):
     """Raised before an operation when its conservative charge cannot fit."""
 
 
+_COUNTER_FIELDS = (
+    "subagent_calls",
+    "vlm_repairs",
+    "image_generations",
+    "tool_calls",
+    "provider_attempts",
+    "retries",
+)
+
+
 def _add_usage(current: BudgetUsage, delta: BudgetUsage) -> dict[str, int]:
     return {
         name: int(getattr(current, name)) + int(getattr(delta, name))
-        for name in BudgetUsage.model_fields
+        for name in _COUNTER_FIELDS
     }
 
 
