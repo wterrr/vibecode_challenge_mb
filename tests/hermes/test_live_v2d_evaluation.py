@@ -33,13 +33,15 @@ def test_unknown_pilot_topic_fails_closed():
         build_pilot_brief("not-in-frozen-corpus")
 
 
-def test_live_model_candidates_are_ordered_and_qwen_free_is_removed():
+def test_live_model_candidates_prioritize_specialist_schema_reliability():
     assert LIVE_MODEL_CANDIDATES == (
-        "nvidia/nemotron-3-super-120b-a12b:free",
+        "google/gemma-4-31b-it:free",
+        "google/gemma-4-26b-a4b-it:free",
         "apodex/apodex-1.1-mini:free",
     )
     assert DEFAULT_LIVE_MODEL == LIVE_MODEL_CANDIDATES[0]
     assert all("qwen/qwen3.8-27b:free" != item for item in LIVE_MODEL_CANDIDATES)
+    assert all("nemotron-3-super" not in item for item in LIVE_MODEL_CANDIDATES)
 
 
 def test_model_probe_matches_actual_hermes_free_endpoint_requirements():
@@ -199,23 +201,28 @@ def test_runner_uses_json_object_wire_constraint():
 
 
 
-def test_probe_gives_nemotron_room_to_finish_json_with_reasoning_enabled():
+def test_probe_uses_specialist_shaped_nested_contract_with_reasoning_enabled():
     source = (
         ROOT / "live_evaluation" / "model_probe.py"
     ).read_text(encoding="utf-8")
     assert '"max_tokens": 4096' in source
-    assert 'model.startswith("nvidia/nemotron-3-super-")' in source
+    assert "_SPECIALIST_PROBE_OBJECT" in source
+    assert '"source_indexes": [0]' in source
+    assert '"claim_indexes": [0]' in source
+    assert 'google/gemma-4-31b-' in source
     assert 'payload["reasoning_effort"] = "medium"' in source
+    assert "parsed != _SPECIALIST_PROBE_OBJECT" in source
     assert "finish_reason=" in source
     assert "response_prefix=" in source
 
 
 
-def test_nemotron_live_runner_keeps_reasoning_enabled():
+def test_gemma_live_runner_keeps_reasoning_enabled_without_low_token_cap():
     source = (
         ROOT / "live_evaluation" / "hermes_runner.py"
     ).read_text(encoding="utf-8")
-    assert 'self.model.startswith("nvidia/nemotron-3-super-")' in source
+    assert 'google/gemma-4-31b-' in source
+    assert 'google/gemma-4-26b-' in source
     assert 'request_overrides["reasoning_effort"] = "medium"' in source
     assert '"max_tokens"' not in source
 

@@ -10,9 +10,39 @@ from urllib.request import Request, urlopen
 
 
 LIVE_MODEL_CANDIDATES = (
-    "nvidia/nemotron-3-super-120b-a12b:free",
+    "google/gemma-4-31b-it:free",
+    "google/gemma-4-26b-a4b-it:free",
     "apodex/apodex-1.1-mini:free",
 )
+
+_SPECIALIST_PROBE_OBJECT = {
+    "sources": [
+        {
+            "title": "OpenRouter",
+            "locator": "https://openrouter.ai/",
+        }
+    ],
+    "claims": [
+        {
+            "statement": "Probe claim.",
+            "source_indexes": [0],
+            "confidence": 1.0,
+        }
+    ],
+    "misconceptions": [
+        {
+            "statement": "Probe misconception.",
+            "correction": "Probe correction.",
+            "claim_indexes": [0],
+        }
+    ],
+    "examples": [
+        {
+            "description": "Probe example.",
+            "claim_indexes": [0],
+        }
+    ],
+}
 
 OPENROUTER_CHAT_COMPLETIONS = "https://openrouter.ai/api/v1/chat/completions"
 
@@ -67,24 +97,20 @@ def _extract_text(message: Any) -> str:
 
 
 def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> ModelProbeResult:
-    schema = {
-        "type": "object",
-        "properties": {
-            "ok": {"type": "boolean", "const": True},
-            "marker": {"type": "string", "const": "live-v2d-probe"},
-        },
-        "required": ["ok", "marker"],
-        "additionalProperties": False,
-    }
     payload = {
         "model": model,
         "messages": [
             {
                 "role": "user",
                 "content": (
-                    "Return only this JSON object exactly: "
-                    "{\"ok\":true,\"marker\":\"live-v2d-probe\"}. "
-                    "Do not call the probe_noop tool."
+                    "Return ONLY the following JSON object exactly, with the same keys, "
+                    "nesting, arrays, indexes, strings, and numbers. Do not call the "
+                    "probe_noop tool. JSON: "
+                    + json.dumps(
+                        _SPECIALIST_PROBE_OBJECT,
+                        ensure_ascii=False,
+                        separators=(",", ":"),
+                    )
                 ),
             }
         ],
@@ -109,9 +135,7 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
         },
         "provider": {"require_parameters": True},
     }
-    if model.startswith("nvidia/nemotron-3-super-"):
-        # Keep the capability probe representative of the real live runner:
-        # Nemotron reasons during both probe and production evaluation.
+    if model.startswith(("google/gemma-4-31b-", "google/gemma-4-26b-")):
         payload["reasoning_effort"] = "medium"
     request = Request(
         OPENROUTER_CHAT_COMPLETIONS,
@@ -173,7 +197,7 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
             ),
         )
 
-    if parsed != {"ok": True, "marker": "live-v2d-probe"}:
+    if parsed != _SPECIALIST_PROBE_OBJECT:
         return ModelProbeResult(
             model=model,
             passed=False,

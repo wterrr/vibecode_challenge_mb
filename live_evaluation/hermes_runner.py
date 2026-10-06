@@ -261,7 +261,7 @@ class LiveHermesStructuredRunner:
         request_overrides: dict[str, Any] = {
             "response_format": {"type": "json_object"},
         }
-        if self.model.startswith("nvidia/nemotron-3-super-"):
+        if self.model.startswith(("google/gemma-4-31b-", "google/gemma-4-26b-")):
             request_overrides["reasoning_effort"] = "medium"
 
         agent = AIAgent(

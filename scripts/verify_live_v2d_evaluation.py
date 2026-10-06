@@ -25,7 +25,8 @@ def main() -> int:
     if brief.brief_id != f"live-eval:{PILOT_TOPIC_ID}":
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL pilot topic binding")
     expected_models = (
-        "nvidia/nemotron-3-super-120b-a12b:free",
+        "google/gemma-4-31b-it:free",
+        "google/gemma-4-26b-a4b-it:free",
         "apodex/apodex-1.1-mini:free",
     )
     if LIVE_MODEL_CANDIDATES != expected_models or DEFAULT_LIVE_MODEL != expected_models[0]:
@@ -83,6 +84,9 @@ def main() -> int:
         '"require_parameters": True',
         '"max_tokens": 4096',
         'payload["reasoning_effort"] = "medium"',
+        "_SPECIALIST_PROBE_OBJECT",
+        '"source_indexes": [0]',
+        '"claim_indexes": [0]',
     ):
         if required not in probe_source:
             raise SystemExit("LIVE_V2D_CONTRACT=FAIL model capability probe")
@@ -105,7 +109,7 @@ def main() -> int:
     if '"response_format": {"type": "json_object"}' not in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL json_object wire constraint")
     if 'request_overrides["reasoning_effort"] = "medium"' not in source:
-        raise SystemExit("LIVE_V2D_CONTRACT=FAIL Nemotron reasoning must stay enabled")
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL Gemma reasoning must stay enabled")
     if '"max_tokens"' in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL live runner must not impose a low token cap")
     if "assemble_specialist_delegation_results(" not in source:
@@ -120,7 +124,7 @@ def main() -> int:
     print("LIVE_V2D_CONTRACT=PASS")
     print(f"pilot_topic={PILOT_TOPIC_ID}")
     print(f"default_model={DEFAULT_LIVE_MODEL}")
-    print("model_probe=tools+json_object+host_shape_validation+reasoning_medium")
+    print("model_probe=nested_specialist_shape+tools+json_object+reasoning_medium")
     print("usd_cap=none")
     print("publication_authorized=false")
     print("live_secret_step_scope=PASS")
