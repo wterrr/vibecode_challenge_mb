@@ -152,6 +152,8 @@ __all__ = [
     "build_continuity_context",
     "compute_continuity_metrics",
     "derive_stable_graph_order",
+    "compile_scene_layout",
+    "measure_scene_nodes",
 ]
 
 from learnflow_v2.layout.continuity import (
@@ -165,3 +167,5 @@ from learnflow_v2.layout.continuity import (
     derive_stable_graph_order,
 )
 from learnflow_v2.layout.graph import GraphLayoutKind, LayoutDirection, layout_directed_graph, build_graph_layout_input
+
+from learnflow_v2.layout.router import compile_scene_layout, measure_scene_nodes
