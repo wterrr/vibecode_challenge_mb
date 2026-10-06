@@ -71,6 +71,12 @@ class EvidenceResearchFindings(ContractModel):
             raise AgentContractError("EvidenceResearchFindings claim_ids must be unique")
         source_set = set(source_ids)
         claim_set = set(claim_ids)
+        if any(not item.startswith("evidence.") for item in source_ids):
+            raise AgentContractError("evidence specialist source_ids must use 'evidence.' namespace")
+        if any(not item.startswith("evidence.") for item in claim_ids):
+            raise AgentContractError("evidence specialist claim_ids must use 'evidence.' namespace")
+        if any(not edge.edge_id.startswith("evidence.") for edge in self.evidence_edges):
+            raise AgentContractError("evidence specialist edge_ids must use 'evidence.' namespace")
         for claim in self.claims:
             unknown = sorted(set(claim.source_ids) - source_set)
             if unknown:
@@ -120,6 +126,18 @@ class MisconceptionResearchFindings(ContractModel):
             raise AgentContractError("MisconceptionResearchFindings claim_ids must be unique")
         source_set = set(source_ids)
         claim_set = set(claim_ids)
+        if any(not item.startswith("misconception.") for item in source_ids):
+            raise AgentContractError(
+                "misconception specialist source_ids must use 'misconception.' namespace"
+            )
+        if any(not item.startswith("misconception.") for item in claim_ids):
+            raise AgentContractError(
+                "misconception specialist claim_ids must use 'misconception.' namespace"
+            )
+        if any(not edge.edge_id.startswith("misconception.") for edge in self.evidence_edges):
+            raise AgentContractError(
+                "misconception specialist edge_ids must use 'misconception.' namespace"
+            )
         for claim in self.claims:
             unknown = sorted(set(claim.source_ids) - source_set)
             if unknown:
