@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import sys
 import traceback
 
@@ -18,9 +19,13 @@ from live_evaluation import (
     LIVE_MODEL_CANDIDATES,
     ModelProbeError,
     PILOT_TOPIC_ID,
+    initialize_governance_state,
     run_live_v2d_pilot,
     select_live_model,
 )
+from agent_contracts import BudgetUsage
+from runtime_governance import BudgetCharge, HardBudgetController, SpendCategory
+from runtime_governance.hermes_plugin import load_state, save_state
 
 
 def _safe_error(exc: BaseException, secret: str) -> str:
@@ -56,6 +61,27 @@ def _retryable_research_provider_failure(exc: BaseException) -> bool:
     )
 
 
+
+def _charge_probe_attempts(count: int) -> None:
+    if count <= 0:
+        return
+    state = load_state()
+    if state.budget is None:
+        raise RuntimeError("live evaluation governance budget is not initialized")
+    controller = HardBudgetController(state.budget)
+    controller.authorize(
+        BudgetCharge(
+            charge_id=f"live-eval:model-probe:{count}",
+            category=SpendCategory.LLM,
+            amount_usd=0.0,
+            usage=BudgetUsage(provider_attempts=count),
+            reason=f"reserve {count} OpenRouter capability probe attempt(s)",
+        )
+    )
+    save_state(
+        state.model_copy(update={"budget": controller.ledger})
+    )
+
 def main() -> int:
     key = os.environ.get("OPENROUTER_API_KEY", "").strip()
     if not key:
@@ -70,6 +96,15 @@ def main() -> int:
     )
     topic_id = os.environ.get("LEARNFLOW_LIVE_TOPIC_ID", PILOT_TOPIC_ID).strip()
     runtime = ROOT / ".hermes_runtime" / "live-v2d-evaluation"
+    governance_root = runtime / "governance"
+    if governance_root.exists():
+        shutil.rmtree(governance_root)
+    state_path = governance_root / "state.json"
+    events_path = governance_root / "events.jsonl"
+    os.environ["LEARNFLOW_GOVERNANCE_STATE"] = str(state_path)
+    os.environ["LEARNFLOW_GOVERNANCE_EVENTS"] = str(events_path)
+    initialize_governance_state(state_path)
+
     selection = None
     probe_rows: list[dict] = []
     runtime_fallbacks: list[dict] = []
@@ -79,7 +114,12 @@ def main() -> int:
 
     try:
         while remaining:
-            selection = select_live_model(api_key=key, candidates=remaining)
+            try:
+                selection = select_live_model(api_key=key, candidates=remaining)
+            except ModelProbeError as probe_exc:
+                _charge_probe_attempts(len(probe_exc.probes))
+                raise
+            _charge_probe_attempts(len(selection.probes))
             probe_rows.extend(item.to_dict() for item in selection.probes)
             model = selection.selected_model
             print(f"LIVE_MODEL_PROBE=PASS selected={model}")
@@ -89,6 +129,7 @@ def main() -> int:
                     model=model,
                     topic_id=topic_id,
                     runtime_root=runtime,
+                    preserve_governance=True,
                 )
                 break
             except BaseException as runtime_exc:
