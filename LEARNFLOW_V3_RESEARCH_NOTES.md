@@ -219,9 +219,23 @@ Primary V3 research targets:
 Secondary references:
 
 - TheoremExplainAgent
-- VisualEDU
+- EduVisBench / EduVisAgent
+- OmniManim / "See Before You Code" (arXiv:2605.15585)
+- SGA: Symbolic Geometric Agent (arXiv:2607.18116)
+- LLM2Manim (arXiv:2604.05266)
+- MINARD / FigTalk (arXiv:2606.12576)
+- TeachMaster (ACL 2026 Industry)
+- ManimTrainer / ManimAgent + ManimBench (arXiv:2604.18364)
+- ManiBench visual-logic benchmark
+- DiagrammerGPT
 - manim-shorts
 - 3Blue1Brown / Manim as human-crafted quality reference, not as a claim that current AI systems equal it.
+
+Research-source status matters:
+
+- Code2Video, ALGOGEN, TeachMaster: published/venue-backed primary references used for system-level comparisons.
+- OmniManim, SGA, LLM2Manim, ManimTrainer/ManimAgent, MINARD: 2026 preprint/recent-conference evidence used as supporting design evidence, not treated as unquestionable ground truth.
+- 3Blue1Brown: human-crafted quality reference only.
 
 ---
 
@@ -1160,6 +1174,411 @@ This complements Code2Video rather than replacing it.
 
 ---
 
+# 12.5 2026 extended evidence — visual planning, geometry, grounding, and visual logic
+
+This section was added after the governed live V2D pilot exposed a concrete visual ceiling in the real LearnFlow renderer.
+
+## 12.5.1 V2 live visual-ceiling evidence — run #156
+
+Artifact evidence from governed live V2D run #156:
+
+```text
+topic: lfb-001-cs
+scene_count: 5
+layout_intents:
+  CONCEPT_CARD: 4
+  PROCESS: 1
+```
+
+The accepted SceneGraphs were not semantically empty. They contained:
+
+- TEXT;
+- CONCEPT;
+- CODE;
+- PROCESS roles;
+- code snippets;
+- analogies;
+- questions;
+- worked-example steps.
+
+However the current deterministic renderer routes all node kinds through the same generic `_draw_node()` family:
+
+```text
+rounded rectangle
++
+centered text
++
+kind-dependent fill color
+```
+
+Therefore:
+
+```text
+CODE != code visualization
+CHART != chart visualization
+EQUATION != mathematical transformation
+IMAGE != image composition
+CONCEPT != visual metaphor
+```
+
+at the actual pixel layer.
+
+The live SceneGraph distribution also confirms an upstream collapse:
+
+```text
+4 / 5 scenes -> CONCEPT_CARD
+CONCEPT_CARD -> one title + vertically stacked support boxes
+```
+
+### Research conclusion
+
+V2 has now demonstrated a distinct failure class:
+
+```text
+semantic-contract success
++
+layout feasibility
++
+motion validity
++
+A/V production success
+!=
+professional visual explanation
+```
+
+This is not primarily a motion bug.
+
+Adding more FADE / SLIDE / REVEAL events to generic cards cannot solve the representation bottleneck.
+
+Status: `EVIDENCE CONFIRMED`
+
+---
+
+## 12.5.2 OmniManim / See Before You Code
+
+Primary source:
+
+- https://arxiv.org/abs/2605.15585
+
+OmniManim explicitly identifies spatial planning as a bottleneck that survives ordinary multi-agent decomposition.
+
+Relevant design:
+
+```text
+Shared Scene State
+-> Scene Agent
+-> Vision Agent
+-> sparse keyframe layout plan
+-> Code Agent
+-> render
+-> structured diagnostics
+-> localized repair
+```
+
+The Vision Agent predicts:
+
+- object-level scene state;
+- coarse semantic spatial priors;
+- refined bounding boxes;
+- sparse keyframes;
+- interpolation-aware safety.
+
+Important reported evidence:
+
+- layout is treated as temporal planning, not only static placement;
+- endpoint-safe layouts can still collide during interpolation;
+- the method explicitly penalizes intermediate-frame collisions;
+- human evaluation reports materially stronger layout/overlap scores than Code2Video;
+- the strongest gains are spatial, not generic style gains.
+
+### LearnFlow decision
+
+`PORT PRINCIPLE / ADAPT ARCHITECTURE`
+
+Do not copy generated Manim coordinates into LearnFlow.
+
+Instead extend the LearnFlow-owned geometry layer:
+
+```text
+Semantic Visual Plan
+-> pattern selection
+-> KeyframeLayoutPlan
+-> deterministic / learned-assisted layout solver
+-> interpolation safety validation
+-> MotionPlan
+```
+
+The LLM still must not own raw x/y geometry.
+
+A learned bounding-box denoiser is `DEFER` until a deterministic pattern/layout baseline is measured.
+
+---
+
+## 12.5.3 SGA — deterministic geometric verification
+
+Primary source:
+
+- https://arxiv.org/abs/2607.18116
+
+SGA constructs symbolic scene geometry from executable animation and computes deterministic spatial-conflict evidence. It introduces MVQS as a rendering-free proxy for spatial integrity and reports improvements when inserted into existing code-centric pipelines.
+
+### LearnFlow comparison
+
+LearnFlow does not need SGA's code-to-scene extraction because it already owns:
+
+```text
+SceneGraph
+LayoutGraph
+stable object IDs
+geometry
+```
+
+The transferable idea is the metric/gate:
+
+```text
+typed object geometry
+-> deterministic conflict descriptors
+-> targeted repair
+```
+
+### Decision
+
+`PORT METRIC PRINCIPLE`
+
+Candidate V3 geometry score must remain decomposable; do not hide overlap, clipping, spacing, and relation violations inside one opaque scalar.
+
+---
+
+## 12.5.4 LLM2Manim — pedagogy and learner evidence
+
+Primary source:
+
+- https://arxiv.org/abs/2604.05266
+
+Relevant mechanisms:
+
+- segmentation;
+- signaling;
+- dual coding;
+- symbol ledger for consistency;
+- selective regeneration;
+- human review.
+
+The reported 100-student within-subject study found higher post-test performance for the animation condition than PowerPoint, alongside higher engagement and lower cognitive load.
+
+### LearnFlow decision
+
+`PORT PEDAGOGICAL PRINCIPLES`
+
+LearnFlow V3 should make these principles machine-checkable where possible:
+
+```text
+segment boundary
+signal / emphasis target
+symbol identity
+visual-verbal pairing
+cognitive-load budget
+```
+
+The symbol-ledger idea generalizes naturally to the existing ConceptRegistry.
+
+Generated Manim code remains `REJECT` as canonical LearnFlow IR.
+
+---
+
+## 12.5.5 EduVisAgent — visual reasoning decomposition
+
+Primary source:
+
+- https://arxiv.org/abs/2505.16832
+
+EduVisAgent separates:
+
+- instructional planning;
+- reasoning decomposition;
+- metacognitive prompting;
+- visualization design.
+
+Its benchmark is explicitly pedagogical rather than only aesthetic.
+
+### Decision
+
+`PORT EVALUATION PRINCIPLE`
+
+The Visual Director should be evaluated on whether the representation supports the reasoning process, not merely whether frames look clean.
+
+This strengthens the need for:
+
+```text
+visual_teaching_goal
+representation_choice
+expected_visible_change
+```
+
+as first-class artifacts.
+
+---
+
+## 12.5.6 DiagrammerGPT — bounded diagram plans and specialized object rendering
+
+Primary source:
+
+- https://arxiv.org/abs/2310.12128
+
+Useful separation:
+
+```text
+diagram plan
+  entities
+  relations
+  layout
+-> renderer
+-> explicit text rendering
+```
+
+DiagrammerGPT also demonstrates that one plan can target multiple vector-capable backends and that icons/assets can be resolved independently from text labels.
+
+### LearnFlow decision
+
+`PORT / ADAPT`
+
+LearnFlow should not use a diffusion diagram renderer as canonical output.
+
+The transferable mechanism is:
+
+```text
+semantic diagram pattern
++
+asset/icon resolution
++
+deterministic labels/relations
++
+backend-independent object plan
+```
+
+This directly motivates specialized visual renderers instead of one generic card renderer.
+
+---
+
+## 12.5.7 MINARD / FigTalk — narration-to-visible-region grounding
+
+Primary source:
+
+- https://arxiv.org/abs/2606.12576
+
+MINARD turns scientific figures into narrated walkthroughs by grounding narration sequentially to figure regions.
+
+### LearnFlow decision
+
+`ADAPT`
+
+Generalize figure-region grounding into:
+
+```text
+narration beat
+-> visual teaching goal
+-> target object / region / relation
+-> expected visible change
+```
+
+This becomes a measurable `BeatVisualCoverage` contract.
+
+A narration beat that introduces an important concept but produces no corresponding visible evidence is a quality failure even when the video renders successfully.
+
+---
+
+## 12.5.8 ManimBench / ManiBench / Renderer-in-the-loop evidence
+
+Relevant sources:
+
+- https://arxiv.org/abs/2604.18364
+- https://github.com/NtrpyDev/manim-bench
+- https://github.com/nabin2004/ManiBench
+
+Important lesson:
+
+```text
+render success != visual logic correctness
+```
+
+ManiBench explicitly separates:
+
+- executability;
+- visual-event alignment;
+- visual coverage;
+- version/API errors.
+
+ManimTrainer/ManimAgent also reports that visual metrics and code metrics are not interchangeable; renderer-in-the-loop feedback improves visual outcomes.
+
+### LearnFlow decision
+
+`PORT METRICS`
+
+Future V3 benchmark must include:
+
+```text
+VisualEventAlignment
+RepresentationCoverage
+BeatVisualCoverage
+TemporalOrderAccuracy
+VisualLogicDrift
+```
+
+in addition to ordinary render success.
+
+---
+
+## 12.5.9 TeachMaster
+
+Primary source:
+
+- https://aclanthology.org/2026.acl-industry.7/
+
+TeachMaster reinforces the high-level-director model:
+
+```text
+educator / planner owns pedagogical intent
+agents own production execution
+```
+
+Decision: `SUPPORTING EVIDENCE`
+
+Its use of code as semantic medium is not adopted because LearnFlow already has typed semantic artifacts.
+
+---
+
+## 12.5.10 Synthesis from newer evidence
+
+The newer evidence changes the strongest V3 hypothesis from:
+
+```text
+better planner
++
+more animation primitives
+```
+
+to:
+
+```text
+Pedagogy Planner
+-> Visual Teaching Plan
+-> bounded representation / visual-pattern choice
+-> specialized semantic visual compiler
+-> keyframe-aware geometry
+-> interpolation-safe motion
+-> specialized renderer
+-> deterministic geometry / visual-logic QA
+-> VLM pedagogical + aesthetic critic
+-> artifact-local repair
+```
+
+This preserves the LearnFlow boundary:
+
+> LLM chooses meaning and representation class.  
+> LearnFlow-owned compilers choose geometry, timing legality, and pixels.
+
+---
+
 # 13. Candidate V3 capability backlog
 
 > These are **research candidates only**. None are authorized implementation checkpoints yet.
@@ -1294,35 +1713,120 @@ why this animation exists pedagogically
 
 ---
 
-## V3-C5 — Advanced Visual Grammar
+## V3-C5 — Advanced Semantic Visual Grammar + Visual Pattern Library
 
-Status: `OPEN`
+Status: `PORT/ADAPT — RESEARCH DIRECTION CLOSED; IMPLEMENTATION NOT YET AUTHORIZED`
 
-Potential additions after evidence:
+The V2 #156 artifact and newer external evidence resolve the previous high-level uncertainty: V3 requires a bounded visual representation layer between semantic planning and rendering.
+
+### Required compile path
+
+```text
+VisualTeachingPlan
+-> RepresentationChoice
+-> VisualPatternSpec
+-> SceneGraph / typed visual objects
+-> KeyframeLayoutPlan
+-> MotionPlan
+-> specialized renderer
+```
+
+The representation choice is semantic; raw geometry is not model-owned.
+
+### Initial bounded visual-pattern taxonomy
+
+The first V3 implementation should cover a small, testable set with explicit eligibility and fallback rules:
+
+```text
+CONCEPT_DIAGRAM
+CODE_WALKTHROUGH
+EQUATION_DERIVATION
+FUNCTION_GRAPH
+DATA_CHART
+PROCESS_FLOW
+CAUSAL_GRAPH
+TIMELINE
+COMPARISON
+STATE_MACHINE
+GEOMETRY_CONSTRUCTION
+WORKED_EXAMPLE_BOARD
+FIGURE_WALKTHROUGH
+QUIZ_REVEAL
+SUMMARY_RECAP
+```
+
+`SUMMARY_RECAP` may legitimately use cards.
+
+Cards must no longer be the universal rendering primitive.
+
+### Specialized renderer requirement
+
+Node kinds and representation patterns must produce materially different pixels:
+
+```text
+CODE -> code panel / syntax-aware lines / line highlight
+EQUATION -> typeset expression / term identity / transform
+CHART -> axes / marks / labels / data-driven transitions
+GRAPH -> nodes / edges / structural emphasis
+TIMELINE -> temporal axis / events / progression
+GEOMETRY -> geometric primitives / construction steps
+FIGURE -> asset / region overlays / grounded highlights
+QUIZ -> prompt / delayed reveal / answer-state transition
+```
+
+A backend may share low-level drawing utilities, but semantic categories may not all collapse to `rounded_rectangle + text`.
+
+### Advanced motion candidates
 
 ```text
 MORPH
 RESIZE
 TRACE_PATH
 semantic transform
-camera choreography
 persistent equation transformation
 graph deformation
 vector projection
 geometry construction
+camera choreography
 ```
 
-Important rule:
-
-Do not add advanced primitives merely because they look impressive.
-
-Each primitive must justify:
+These remain individually gated by:
 
 - pedagogical value;
 - deterministic compilation;
 - testability;
 - fallback behavior;
-- repairability.
+- repairability;
+- benchmark gain.
+
+### Fallback hierarchy
+
+A specialized visual failure should degrade semantically:
+
+```text
+preferred specialized pattern
+-> simpler pattern in same representation family
+-> static but semantically faithful representation
+-> explicit QA failure
+```
+
+It must not silently collapse every failure to CONCEPT_CARD.
+
+### Anti-monotony principle
+
+The benchmark must measure repeated representation collapse.
+
+Candidate metrics:
+
+```text
+scene_archetype_distribution
+max_consecutive_same_archetype
+specialized_representation_coverage
+visual_pattern_entropy
+card_fallback_rate
+```
+
+Thresholds remain empirical and must be preregistered after the first V3 prototype.
 
 ---
 
@@ -1488,7 +1992,71 @@ QA_ERROR
 PUBLISH_BLOCKED
 ```
 
-Exact policy remains an open design question.
+Exact publish thresholds remain empirical, but the state model itself is no longer an open architectural question.
+
+---
+
+## V3-C11 — Keyframe-aware Layout and Interpolation Safety
+
+Status: `PORT PRINCIPLE / ADAPT`
+
+Motivated strongly by OmniManim.
+
+V2 LayoutGraph is primarily scene-static. V3 needs a bounded extension for representations whose visual state changes materially during a scene.
+
+Candidate artifact:
+
+```text
+KeyframeLayoutPlan
+  scene_id
+  keyframes[]
+    beat_ref
+    object_states[]
+      object_id
+      visibility
+      semantic_region
+      layout_constraints
+```
+
+Rules:
+
+- LLM may specify semantic region and relation intent;
+- layout engine owns coordinates;
+- intermediate motion must be checked for collision/occlusion;
+- stable object identity must survive keyframes;
+- static patterns do not need unnecessary keyframes.
+
+A learned visual prior may later assist the solver, but deterministic specialized patterns are the required baseline.
+
+---
+
+## V3-C12 — Beat-to-Visual Grounding and Visual Logic Coverage
+
+Status: `PORT / ADAPT`
+
+Required chain:
+
+```text
+narration beat
+-> semantic claim / learning objective
+-> visual teaching goal
+-> target visual object(s)
+-> expected visible change
+-> rendered evidence
+```
+
+Candidate deterministic / critic metrics:
+
+```text
+BeatVisualCoverage
+VisualEventAlignment
+RepresentationCoverage
+TemporalOrderAccuracy
+ConceptPersistenceAccuracy
+VisualLogicDrift
+```
+
+This prevents a syntactically valid animation from passing when the narration teaches one thing and the learner sees unrelated cards.
 
 ---
 
@@ -1746,35 +2314,90 @@ This should become a permanent regression class.
 
 ---
 
-# 17. Questions still open
+# 17. Research closure status
 
-1. Should `PedagogicalStoryboard` remain one artifact or split into `PedagogyPlan` + `VisualPlan`?
-2. Is `Visual Director` best implemented as:
-   - one LLM role;
-   - deterministic rules + LLM suggestions;
-   - retrieved visual-pattern library + LLM selection?
-3. How should Hero Scene budget be represented?
-4. Which advanced motion primitives have measurable learning value?
-5. Should camera choreography be semantic DSL or renderer policy?
-6. How do we represent mathematical transformations without arbitrary code?
-7. How much of 3Blue1Brown-like quality comes from:
-   - planning;
-   - representation selection;
-   - transitions;
-   - typography/layout;
-   - motion;
-   - narration pacing?
-8. Can a curated visual-pattern library give Code2Video-level expressiveness without code generation?
-9. Should LearnFlow build domain-specific adapters for:
-   - algorithms;
-   - math;
-   - physical systems?
-10. How should VLM critic confidence and outage state affect publish policy?
-11. What is the minimum human benchmark needed before claiming "3B1B-like" polish?
-12. What is the cost ceiling for a normal video vs hero-quality video?
-13. Can advanced animation remain deterministic across renderer versions?
-14. How should visual variety be measured without incentivizing unnecessary motion?
-15. Which Code2Video features survive when arbitrary Manim is removed?
+## 17.1 Architectural questions now provisionally resolved
+
+### Visual Director implementation shape
+
+Current best architecture:
+
+```text
+LLM / Hermes
+-> visual teaching goal + representation choice
+-> bounded pattern library
+-> LearnFlow compiler / solver
+-> deterministic or learned-assisted geometry
+-> renderer
+-> QA / VLM critic
+```
+
+Not:
+
+```text
+LLM -> arbitrary pixels / x,y / Manim code
+```
+
+### Visual-pattern library
+
+Decision: `YES`
+
+A curated bounded library is now the preferred path for gaining expressiveness without making arbitrary executable code the canonical representation.
+
+### Card role
+
+Decision:
+
+```text
+valid for recap / summary / selected concept-card scenes
+not universal fallback
+not dominant lesson representation
+```
+
+### Domain adapters
+
+Decision: `YES, selectively`
+
+- algorithms / data structures -> executable trace adapter;
+- math -> typed equation / graph / geometry adapters;
+- figure-heavy scientific explanation -> figure-region grounding;
+- general conceptual topics -> generic diagram / causal / timeline / metaphor patterns.
+
+### Critic role
+
+Decision:
+
+- deterministic geometry / signal checks first;
+- VLM critic for pedagogical representation, hierarchy, aesthetics, and visual-narration alignment;
+- critic outage never silently becomes PASS.
+
+### Layout ownership
+
+Decision:
+
+- LLM expresses semantic spatial intent;
+- LearnFlow layout system owns final geometry;
+- V3 may use keyframe-aware or learned-assisted priors;
+- raw model-authored coordinates remain rejected.
+
+---
+
+## 17.2 Empirical questions still open
+
+These questions cannot be honestly closed by literature review alone:
+
+1. What is the smallest pattern library that covers >=90% of target LearnFlow topics without excessive fallback?
+2. Does a deterministic pattern compiler reach the desired quality ceiling before a learned layout prior is necessary?
+3. What exact visual-variety thresholds correlate with human preference rather than gratuitous animation?
+4. Which advanced motion primitives improve comprehension after controlling for planner quality?
+5. Is camera choreography necessary outside hero scenes?
+6. What publish threshold should be used for VLM aesthetic/pedagogical critic scores?
+7. How close can bounded semantic rendering get to Code2Video / OmniManim on human preference?
+8. What is the minimum human benchmark before using any "3Blue1Brown-like" wording?
+9. What cost/runtime ceiling is acceptable for normal scenes vs hero scenes?
+10. How stable are keyframe/interpolation constraints across renderer versions?
+
+These are experiment questions, not unresolved architecture placeholders.
 
 ---
 
@@ -1873,18 +2496,21 @@ PLAN_V3.md
 6. Visual Director
 7. Visual Pattern Library
 8. Advanced Semantic Visual Grammar
-9. Advanced Motion Grammar
-10. Artifact Critic
-11. ArtifactRefine
-12. Domain Trace Adapters
+9. Keyframe-aware Layout Compiler
+10. Specialized Renderer Fabric
+11. Advanced Motion Grammar
+12. Beat-to-Visual Grounding
+13. Artifact Critic
+14. ArtifactRefine
+15. Domain Trace Adapters
 
-13. Signal-preservation testing
-14. Fail-closed QA
-15. Benchmark harness
-16. Migration / compatibility
-17. Cost controls
-18. V3 checkpoints
-19. V3 Core Gate
+16. Signal-preservation testing
+17. Fail-closed QA
+18. Benchmark harness
+19. Migration / compatibility
+20. Cost controls
+21. V3 checkpoints
+22. V3 Core Gate
 ```
 
 This structure must be revised after final V2 evidence.
@@ -1959,6 +2585,28 @@ Do not implement V3 features during V2 checkpoints.
 | Trace-generation 99.8% as e2e video success | `REJECT CLAIM` |
 | Semantic signal-preservation testing | `PORT` |
 
+
+## Newer 2026 visual-generation evidence
+
+| Finding | Decision |
+|---|---|
+| OmniManim shared scene state | `PORT PRINCIPLE` |
+| OmniManim explicit sparse keyframe visual planning | `ADAPT` |
+| OmniManim interpolation-aware layout safety | `PORT` |
+| OmniManim learned bbox denoiser as immediate dependency | `DEFER` |
+| SGA symbolic geometry metrics / targeted repair | `PORT METRIC PRINCIPLE` |
+| SGA code-to-geometry extraction | `NOT NEEDED` because LearnFlow already owns typed geometry |
+| LLM2Manim segmentation / signaling / dual coding | `PORT` |
+| LLM2Manim symbol ledger | `ADAPT INTO ConceptRegistry` |
+| LLM2Manim arbitrary Manim as canonical IR | `REJECT` |
+| EduVisAgent reasoning decomposition -> visualization design | `PORT PRINCIPLE` |
+| DiagrammerGPT bounded diagram plan | `ADAPT` |
+| DiagrammerGPT deterministic text + icon/vector rendering | `ADAPT` |
+| MINARD narration-to-region grounding | `ADAPT TO BeatVisualCoverage` |
+| ManimBench / ManiBench visual-event alignment + coverage metrics | `PORT` |
+| Renderer-in-the-loop visual feedback | `PORT PRINCIPLE` |
+| TeachMaster high-level-director paradigm | `SUPPORTING EVIDENCE` |
+
 ---
 
 # 22. Most important research conclusion so far
@@ -2019,6 +2667,38 @@ This hypothesis must be benchmarked after V2 Core.
 ---
 
 # 23. Change log
+
+## 2026-10-07 — Visual-ceiling + extended 2026 research closure
+
+Added:
+
+- governed live V2D #156 visual-ceiling evidence;
+- exact CONCEPT_CARD collapse evidence (4/5 scenes);
+- generic renderer primitive diagnosis;
+- OmniManim / See Before You Code audit;
+- SGA geometry-verification lesson;
+- LLM2Manim pedagogy + symbol-consistency evidence;
+- EduVisAgent pedagogical-visualization evidence;
+- DiagrammerGPT bounded diagram-plan lesson;
+- MINARD narration-region grounding lesson;
+- ManimBench / ManiBench / renderer-in-the-loop metrics;
+- TeachMaster supporting evidence;
+- bounded Visual Pattern Library decision;
+- specialized renderer requirement;
+- keyframe-aware layout / interpolation-safety capability;
+- BeatVisualCoverage / VisualEventAlignment metrics;
+- research-closure vs empirical-question split;
+- updated future PLAN_V3 shape and decision ledger.
+
+Research status after this update:
+
+```text
+major architecture direction: CLOSED ENOUGH FOR PLAN DRAFTING ONCE ENTRY GATES PASS
+exact thresholds / pattern-set size / learned-layout necessity: EMPIRICAL
+V3 implementation: NOT AUTHORIZED UNTIL ENTRY GATE
+```
+
+---
 
 ## 2026-10-05 — Initial canonical version
 
