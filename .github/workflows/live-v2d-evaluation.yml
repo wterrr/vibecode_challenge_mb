@@ -11,6 +11,14 @@ on:
       - chatgpt/live-v2d-evaluation
     paths:
       - "live_evaluation/**"
+      - ".hermes/plugins/learnflow/**"
+      - "learnflow_v2/**"
+      - "lesson_pipeline/**"
+      - "visual_director/**"
+      - "script_agent/**"
+      - "pedagogy_agent/**"
+      - "fact_verification/**"
+      - "research_orchestration/**"
       - "openrouter_policy.py"
       - "runtime_governance/**"
       - ".hermes/plugins/learnflow-governance/**"
