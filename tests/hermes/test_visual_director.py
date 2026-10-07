@@ -574,3 +574,15 @@ def test_concept_card_may_keep_non_directed_annotation_relation():
         concept_order=pedagogy.concept_order,
     )
     assert assembled.scenegraphs[concept_card_index].layout_intent.type == LayoutIntent.CONCEPT_CARD
+
+
+
+def test_visual_task_guides_core_feasible_semantic_topology():
+    brief, pack, evidence_graph, report, pedagogy, script, _, _ = fixture()
+    task = build_visual_director_task(
+        brief, pack, evidence_graph, report, pedagogy, script
+    )
+    instructions = "\n".join(json.loads(task["context"])["instructions"])
+    assert "Keep each SceneGraph semantically minimal" in instructions
+    assert "Prefer CONCEPT_CARD" in instructions
+    assert "frozen Core cannot lay out without scaling" in instructions
