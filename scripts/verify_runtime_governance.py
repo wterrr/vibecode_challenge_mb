@@ -92,6 +92,32 @@ def main() -> int:
     if not second or second.get("action") != "block":
         raise SystemExit("RUNTIME_GOVERNANCE=FAIL tool quota exceeded")
 
+    batch_controller = HardBudgetController(
+        BudgetLedger(
+            ledger_id="budget.batch",
+            max_usd=None,
+            limits=BudgetLimits(tool_calls=1, subagent_calls=3),
+        )
+    )
+    if evaluate_pre_tool_call(
+        "delegate_task",
+        state=GovernanceState(
+            state_id="governance.batch",
+            budget=batch_controller.ledger,
+        ),
+        budget=batch_controller,
+        args={"tasks": [{"goal": "a"}, {"goal": "b"}, {"goal": "c"}]},
+    ) is not None:
+        raise SystemExit("RUNTIME_GOVERNANCE=FAIL three-child batch blocked")
+    if batch_controller.ledger.usage.subagent_calls != 3:
+        raise SystemExit("RUNTIME_GOVERNANCE=FAIL delegated children undercounted")
+
+    bootstrap = (ROOT / "hermes" / "bootstrap" / "config.yaml").read_text(
+        encoding="utf-8"
+    )
+    if "- learnflow-governance" not in bootstrap:
+        raise SystemExit("RUNTIME_GOVERNANCE=FAIL governance plugin not enabled")
+
     retry_controller = HardBudgetController(
         BudgetLedger(
             ledger_id="budget.retry",
@@ -126,6 +152,8 @@ def main() -> int:
     print("hard_usd_reservation=PASS")
     print("tool_quota=PASS")
     print("retry_quota=PASS")
+    print("delegated_child_accounting=PASS")
+    print("governance_plugin_enabled=PASS")
     print("illegal_publication_blocked=PASS")
     print("blocked_operation_not_executed=PASS")
     return 0
