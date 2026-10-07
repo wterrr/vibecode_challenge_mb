@@ -800,3 +800,18 @@ def test_production_transition_text_fit_falls_back_without_weakening_core():
     assert 'if "does not fit solved LayoutGraph box" not in message' in source
     assert "RenderInvalidInputError" in source
     assert "except RenderInvalidInputError" in source
+
+
+def test_visual_director_live_schema_exposes_only_auto_ports():
+    from visual_director.hermes import _visual_wire_schema
+
+    schema = _visual_wire_schema(segment_count=1, concept_count=1)
+    assert schema["$defs"]["PortHint"]["enum"] == ["AUTO"]
+
+
+def test_visual_director_host_negotiates_directed_ports_to_auto():
+    source = (ROOT / "visual_director" / "hermes.py").read_text(encoding="utf-8")
+    assert 'layout_type in {"PROCESS", "HIERARCHY"}' in source
+    assert 'relation["source_port"] = "AUTO"' in source
+    assert 'relation["target_port"] = "AUTO"' in source
+    assert "Graphviz cannot guarantee strict orthogonal fixed-side ports" in source

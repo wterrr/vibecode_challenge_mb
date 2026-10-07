@@ -206,6 +206,13 @@ def _visual_wire_schema(
     reading_direction["enum"] = list(_CORE_READING_DIRECTIONS)
     defs["ReadingDirection"] = reading_direction
 
+    # Frozen live Core uses Graphviz for directed PROCESS/HIERARCHY layouts.
+    # Graphviz cannot guarantee strict orthogonal fixed-side ports, so expose
+    # only the supported AUTO capability to the model.
+    port_hint = dict(defs.get("PortHint") or {})
+    port_hint["enum"] = ["AUTO"]
+    defs["PortHint"] = port_hint
+
     schema["$defs"] = defs
     return schema
 
@@ -369,6 +376,32 @@ def assemble_visual_director_wire(
             nodes.append(node)
 
         graph["nodes"] = nodes
+
+        # Defensive host-side capability negotiation. Port hints are geometric
+        # preferences, not lesson semantics. Canonicalize unsupported fixed-side
+        # hints before the frozen Core layout dry-run so provider variability
+        # cannot request a capability the selected backend does not implement.
+        layout_intent = dict(graph.get("layout_intent") or {})
+        layout_type = str(layout_intent.get("type") or "CONCEPT_CARD").upper()
+        if layout_type in {"PROCESS", "HIERARCHY"}:
+            raw_relations = graph.get("relations")
+            if not isinstance(raw_relations, list):
+                raise AgentContractError(
+                    f"scenegraphs[{position}].relations must be an array"
+                )
+            negotiated_relations: list[dict[str, Any]] = []
+            for relation_position, raw_relation in enumerate(raw_relations):
+                if not isinstance(raw_relation, dict):
+                    raise AgentContractError(
+                        f"scenegraphs[{position}].relations[{relation_position}] "
+                        "must be an object"
+                    )
+                relation = dict(raw_relation)
+                relation["source_port"] = "AUTO"
+                relation["target_port"] = "AUTO"
+                negotiated_relations.append(relation)
+            graph["relations"] = negotiated_relations
+
         graph["scene_id"] = scenes[scene_index]["scene_id"]
         teaching_function = str(scenes[scene_index]["teaching_function"])
         try:
@@ -533,6 +566,11 @@ def build_visual_director_task(
                 "content. Use label only as an optional short semantic label. Never put a "
                 "type name such as string/int/float in content when the learner should see "
                 "the code expression itself."
+            ),
+            (
+                "For SceneRelation ports, always use AUTO. Frozen live Core's "
+                "Graphviz backend does not support strict fixed-side directional ports. "
+                "Express direction using source/target and reading_direction instead."
             ),
             (
                 "Use only frozen-Core-supported layout intents: CONCEPT_CARD, PROCESS, "

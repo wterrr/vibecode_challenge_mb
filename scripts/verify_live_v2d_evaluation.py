@@ -127,6 +127,19 @@ def main() -> int:
         if required not in pilot_source:
             raise SystemExit("LIVE_V2D_CONTRACT=FAIL production media gate wiring missing")
 
+    visual_source = (ROOT / "visual_director" / "hermes.py").read_text(
+        encoding="utf-8"
+    )
+    for required in (
+        'port_hint["enum"] = ["AUTO"]',
+        'relation["source_port"] = "AUTO"',
+        'relation["target_port"] = "AUTO"',
+    ):
+        if required not in visual_source:
+            raise SystemExit(
+                "LIVE_V2D_CONTRACT=FAIL directed-port capability negotiation missing"
+            )
+
     production_source = (ROOT / "lesson_pipeline" / "production.py").read_text(
         encoding="utf-8"
     )
