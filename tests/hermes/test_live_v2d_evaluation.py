@@ -165,7 +165,7 @@ def test_live_provider_waits_for_contract_job_before_spending_provider_quota():
 
 def test_live_script_selects_model_via_probe_before_pilot():
     source = (ROOT / "scripts" / "run_live_v2d_pilot.py").read_text(encoding="utf-8")
-    assert "select_live_model(api_key=key, candidates=candidates)" in source
+    assert "select_live_model(api_key=key, candidates=remaining)" in source
     assert "LIVE_MODEL_PROBE=PASS" in source
     assert "model_probe.json" in source
 
