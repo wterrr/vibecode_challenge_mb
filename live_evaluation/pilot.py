@@ -97,7 +97,9 @@ def _governance_event_summary(path: Path) -> dict[str, Any]:
             "event_count": 0,
             "post_api_requests": 0,
             "api_errors": 0,
+            "provider_attempts": 0,
             "tool_calls": 0,
+            "blocked_tool_calls": 0,
             "subagent_starts": 0,
             "input_tokens": 0,
             "output_tokens": 0,
@@ -109,11 +111,15 @@ def _governance_event_summary(path: Path) -> dict[str, Any]:
         if line.strip()
     ]
     api = [row for row in rows if row.get("event") == "post_api_request"]
+    api_errors = [row for row in rows if row.get("event") == "api_request_error"]
+    tool_attempts = [row for row in rows if row.get("event") == "pre_tool_call"]
     return {
         "event_count": len(rows),
         "post_api_requests": len(api),
-        "api_errors": sum(row.get("event") == "api_request_error" for row in rows),
-        "tool_calls": sum(row.get("event") == "pre_tool_call" for row in rows),
+        "api_errors": len(api_errors),
+        "provider_attempts": len(api) + len(api_errors),
+        "tool_calls": sum(not bool(row.get("blocked")) for row in tool_attempts),
+        "blocked_tool_calls": sum(bool(row.get("blocked")) for row in tool_attempts),
         "subagent_starts": sum(row.get("event") == "subagent_start" for row in rows),
         "input_tokens": sum(int(row.get("input_tokens") or 0) for row in api),
         "output_tokens": sum(int(row.get("output_tokens") or 0) for row in api),
