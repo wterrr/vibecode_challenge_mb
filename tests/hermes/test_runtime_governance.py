@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import sys
 
@@ -24,7 +25,7 @@ from runtime_governance import (
     is_publication_tool,
 )
 from runtime_governance.events import append_event
-from runtime_governance.hermes_plugin import on_post_tool_call, on_subagent_start
+from runtime_governance.hermes_plugin import on_post_tool_call, on_pre_tool_call, on_subagent_start
 
 
 def ledger(**limits):
@@ -116,16 +117,27 @@ def test_tool_call_limit_fails_closed():
     assert decision["action"] == "block"
 
 
-def test_subagent_limit_is_charged_by_delegate_task():
-    controller = HardBudgetController(ledger(tool_calls=2, subagent_calls=1))
+def test_subagent_limit_counts_children_in_delegate_batch():
+    controller = HardBudgetController(ledger(tool_calls=2, subagent_calls=3))
     state = GovernanceState(
         state_id="state.subagents",
         budget=controller.ledger,
     )
-    assert evaluate_pre_tool_call("delegate_task", state=state, budget=controller) is None
-    assert controller.ledger.usage.subagent_calls == 1
-    decision = evaluate_pre_tool_call("delegate_task", state=state, budget=controller)
-    assert decision["action"] == "block"
+    decision = evaluate_pre_tool_call(
+        "delegate_task",
+        state=state,
+        budget=controller,
+        args={"tasks": [{"goal": "a"}, {"goal": "b"}, {"goal": "c"}]},
+    )
+    assert decision is None
+    assert controller.ledger.usage.subagent_calls == 3
+    second = evaluate_pre_tool_call(
+        "delegate_task",
+        state=state,
+        budget=controller,
+        args={"goal": "extra"},
+    )
+    assert second["action"] == "block"
 
 
 def test_publication_is_blocked_without_operator_authorization():
@@ -284,3 +296,44 @@ def test_no_skills_or_kanban_implementation_leaks_into_checkpoint():
     ).lower()
     assert "kanban_task_" not in source
     assert "skill_manage" not in source
+
+
+
+def test_concurrent_pre_tool_hooks_do_not_lose_budget_updates(tmp_path, monkeypatch):
+    state_path = tmp_path / "state.json"
+    events_path = tmp_path / "events.jsonl"
+    state = GovernanceState(
+        state_id="state.concurrent",
+        budget=BudgetLedger(
+            ledger_id="budget.concurrent",
+            max_usd=None,
+            limits=BudgetLimits(tool_calls=8),
+        ),
+    )
+    state_path.write_text(state.to_canonical_json(), encoding="utf-8")
+    monkeypatch.setenv("LEARNFLOW_GOVERNANCE_STATE", str(state_path))
+    monkeypatch.setenv("LEARNFLOW_GOVERNANCE_EVENTS", str(events_path))
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = list(
+            pool.map(
+                lambda _: on_pre_tool_call("web_search", args={"q": "x"}),
+                range(8),
+            )
+        )
+
+    assert results == [None] * 8
+    persisted = GovernanceState.model_validate_json(
+        state_path.read_text(encoding="utf-8")
+    )
+    assert persisted.budget is not None
+    assert persisted.budget.usage.tool_calls == 8
+
+
+def test_live_governance_plugin_is_explicitly_enabled():
+    config = (ROOT / "hermes" / "bootstrap" / "config.yaml").read_text(
+        encoding="utf-8"
+    )
+    assert "plugins:" in config
+    assert "enabled:" in config
+    assert "- learnflow-governance" in config
