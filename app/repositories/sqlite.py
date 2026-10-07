@@ -11,10 +11,7 @@ from app.domain.errors import JobError
 from app.domain.jobs import Job
 from app.domain.lesson import LessonPlan
 from app.repositories.base import JobRepository
-
-
-class DuplicateJobError(Exception):
-    """Raised when attempting to insert a job with an existing ID."""
+from app.repositories.errors import DuplicateJobError
 
 
 def _dt_to_str(value: datetime) -> str:
