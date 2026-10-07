@@ -25,7 +25,13 @@ from runtime_governance import (
     is_publication_tool,
 )
 from runtime_governance.events import append_event
-from runtime_governance.hermes_plugin import on_post_tool_call, on_pre_tool_call, on_subagent_start
+from runtime_governance.hermes_plugin import (
+    on_post_tool_call,
+    on_pre_tool_call,
+    on_session_end,
+    on_session_start,
+    on_subagent_start,
+)
 
 
 def ledger(**limits):
@@ -337,3 +343,55 @@ def test_live_governance_plugin_is_explicitly_enabled():
     assert "plugins:" in config
     assert "enabled:" in config
     assert "- learnflow-governance" in config
+
+
+
+def test_subagent_session_hooks_are_not_duplicated(tmp_path, monkeypatch):
+    events = tmp_path / "events.jsonl"
+    monkeypatch.setenv("LEARNFLOW_GOVERNANCE_EVENTS", str(events))
+
+    on_session_start(
+        session_id="child-session",
+        model="free-model:free",
+        platform="subagent",
+    )
+    on_session_end(
+        session_id="child-session",
+        platform="subagent",
+        completed=True,
+    )
+    assert not events.exists()
+
+    on_subagent_start(
+        parent_session_id="parent",
+        child_session_id="child-session",
+        child_subagent_id="child-id",
+        child_role="leaf",
+    )
+    rows = [
+        json.loads(line)
+        for line in events.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert [row["event"] for row in rows] == ["subagent_start"]
+
+
+def test_parent_session_hooks_remain_recorded(tmp_path, monkeypatch):
+    events = tmp_path / "events.jsonl"
+    monkeypatch.setenv("LEARNFLOW_GOVERNANCE_EVENTS", str(events))
+    on_session_start(
+        session_id="parent-session",
+        model="free-model:free",
+        platform="cli",
+    )
+    on_session_end(
+        session_id="parent-session",
+        platform="cli",
+        completed=True,
+    )
+    rows = [
+        json.loads(line)
+        for line in events.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert [row["event"] for row in rows] == ["session_start", "session_end"]
