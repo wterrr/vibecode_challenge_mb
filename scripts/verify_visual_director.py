@@ -229,7 +229,7 @@ def build_visual_output(script, registry) -> VisualDirectorOutput:
                     id="rel.summary.1",
                     source="gradient",
                     target="learning_rate",
-                    kind=RelationKind.GROUP_WITH,
+                    kind=RelationKind.FLOW,
                 ),
                 SceneRelation(
                     id="rel.summary.2",
