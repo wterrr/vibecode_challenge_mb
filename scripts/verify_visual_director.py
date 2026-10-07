@@ -28,6 +28,7 @@ from learnflow_v2.scenegraph import (
 from scripts.verify_script_agent import build_fixture, build_script
 from visual_director import (
     VisualDirectorOutput,
+    assemble_visual_director_wire,
     build_visual_concept_registry,
     build_visual_director_task,
     require_core_ready,
@@ -251,6 +252,41 @@ def build_visual_output(script, registry) -> VisualDirectorOutput:
     )
 
 
+def _wire_payload(output, script, registry, concept_order):
+    payload = output.model_dump(mode="json")
+    segment_indexes = {
+        segment.segment_id: index
+        for index, segment in enumerate(script.segments)
+    }
+    concept_entries = tuple(registry.resolve(item) for item in concept_order)
+    concept_indexes = {
+        entry.concept_id: index
+        for index, entry in enumerate(concept_entries)
+    }
+
+    storyboard = payload["storyboard"]
+    storyboard.pop("script_id", None)
+    for scene in storyboard["scenes"]:
+        scene["script_segment_indexes"] = [
+            segment_indexes[item] for item in scene.pop("script_segment_ids")
+        ]
+        scene.pop("concept_refs", None)
+        scene.pop("continuity_keys", None)
+
+    scene_indexes = {
+        scene["scene_id"]: index
+        for index, scene in enumerate(storyboard["scenes"])
+    }
+    for graph in payload["scenegraphs"]:
+        graph["scene_index"] = scene_indexes[graph.pop("scene_id")]
+        for node in graph["nodes"]:
+            ref = node.pop("concept_ref", None)
+            node.pop("semantic_key", None)
+            if ref is not None:
+                node["concept_index"] = concept_indexes[ref]
+    return payload
+
+
 def main() -> int:
     brief, pack, evidence_graph, report, pedagogy = build_fixture()
     script = build_script(pedagogy)
@@ -268,9 +304,32 @@ def main() -> int:
         raise SystemExit("VISUAL_DIRECTOR=FAIL script binding")
     if len(context["concept_registry"]["concepts"]) != len(pedagogy.concept_order):
         raise SystemExit("VISUAL_DIRECTOR=FAIL deterministic concept registry")
+    if len(context["concept_catalog"]) != len(pedagogy.concept_order):
+        raise SystemExit("VISUAL_DIRECTOR=FAIL concept index catalog")
+    if len(context["script_segment_catalog"]) != len(script.segments):
+        raise SystemExit("VISUAL_DIRECTOR=FAIL script segment index catalog")
+
+    wire_schema = task["output_schema"]
+    scene_props = wire_schema["$defs"]["StoryboardScene"]["properties"]
+    graph_props = wire_schema["$defs"]["SceneGraph"]["properties"]
+    node_props = wire_schema["$defs"]["SceneNode"]["properties"]
+    if "script_segment_indexes" not in scene_props or "script_segment_ids" in scene_props:
+        raise SystemExit("VISUAL_DIRECTOR=FAIL script refs are not host-owned")
+    if "scene_index" not in graph_props or "scene_id" in graph_props:
+        raise SystemExit("VISUAL_DIRECTOR=FAIL scene refs are not host-owned")
+    if "concept_index" not in node_props or "concept_ref" in node_props:
+        raise SystemExit("VISUAL_DIRECTOR=FAIL concept refs are not host-owned")
 
     registry = build_visual_concept_registry(pedagogy)
     output = build_visual_output(script, registry)
+    assembled = assemble_visual_director_wire(
+        _wire_payload(output, script, registry, pedagogy.concept_order),
+        script=script,
+        registry=registry,
+        concept_order=pedagogy.concept_order,
+    )
+    if assembled.to_canonical_json() != output.to_canonical_json():
+        raise SystemExit("VISUAL_DIRECTOR=FAIL host wire assembly changed semantics")
     validation = validate_visual_director_output(
         output,
         script=script,
@@ -284,6 +343,7 @@ def main() -> int:
     print("scenegraphs_schema_valid=PASS")
     print("storyboard_script_coverage=PASS")
     print("deterministic_concept_registry=PASS")
+    print("host_owned_dynamic_refs=PASS")
     print("registry_identity_validation=PASS")
     print("semantic_layout_hints_only=PASS")
     print("no_pixel_coordinates=PASS")
