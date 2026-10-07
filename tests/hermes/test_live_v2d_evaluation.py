@@ -423,3 +423,30 @@ def test_probe_http_error_detail_redacts_account_metadata():
     assert "private-account-id" not in detail
     assert "Authorization" not in detail
     assert "secret" not in detail
+
+
+
+def test_paid_openrouter_models_fail_closed_before_request(tmp_path):
+    from openrouter_policy import require_free_openrouter_model
+    from live_evaluation.model_probe import select_live_model
+
+    with pytest.raises(ValueError, match="Paid OpenRouter model is forbidden"):
+        require_free_openrouter_model("openai/gpt-6-luna")
+
+    with pytest.raises(ValueError, match="Paid OpenRouter model is forbidden"):
+        select_live_model(
+            api_key="not-used-because-policy-blocks-first",
+            candidates=("openai/gpt-6-luna",),
+        )
+
+    with pytest.raises(ValueError, match="Paid OpenRouter model is forbidden"):
+        LiveHermesStructuredRunner(
+            model="openai/gpt-6-luna",
+            api_key="not-used",
+            repo_root=tmp_path,
+        )
+
+
+def test_all_default_live_models_are_free_variants():
+    assert LIVE_MODEL_CANDIDATES
+    assert all(model.endswith(":free") for model in LIVE_MODEL_CANDIDATES)
