@@ -206,6 +206,12 @@ def on_api_request_error(
 
 
 def on_session_start(session_id: str = "", model: str = "", platform: str = "", **_: Any) -> None:
+    # Delegated children already have authoritative subagent_start/subagent_stop
+    # lifecycle events. Avoid duplicate bounded on_session_* callbacks for
+    # concurrent subagents; pinned Hermes keys these callbacks coarsely and can
+    # suppress siblings while one callback is still running.
+    if str(platform or "").strip().lower() == "subagent":
+        return
     _event(
         "session_start",
         session_id=str(session_id or ""),
@@ -215,6 +221,8 @@ def on_session_start(session_id: str = "", model: str = "", platform: str = "", 
 
 
 def on_session_end(session_id: str = "", **kwargs: Any) -> None:
+    if str(kwargs.get("platform") or "").strip().lower() == "subagent":
+        return
     _event(
         "session_end",
         session_id=str(session_id or ""),
