@@ -14,7 +14,7 @@ LearnFlow AI transforms educational questions and learning topics into concise, 
   - V2 is completely isolated from production runtime and FastAPI until the V2 Core Gate passes.
 - **Implemented Milestones**:
   - **CP0**: Runtime configuration, capability detection, preflight diagnostics, and healthz.
-  - **CP1**: SQLite schema, Job entity lifecycle, atomic repository, and transactional storage.
+  - **CP1**: Job entity lifecycle and transactional repository storage; production persistence now uses PostgreSQL via `DATABASE_URL`, with SQLite retained only for local/test.
   - **CP2**: Job creation API, async queue worker, Web UI, and artifact storage using `FakePipeline`.
   - **CP3**: Structured lesson planning via Gemini Interactions API, JSON schema validation, and repair loops.
   - **CP4**: Edge TTS voice synthesis, audio metadata extraction, and audio-first timeline synchronization.
@@ -91,7 +91,9 @@ LearnFlow AI rendering and video assembly require FFmpeg and ffprobe binaries on
 3. Configure environment:
    ```bash
    cp .env.example .env
-   # Set GEMINI_API_KEY if running in REAL mode, or set LEARNFLOW_PIPELINE_MODE=demo
+   # Local development may use SQLite.
+   # Production/Vibehost must set ENVIRONMENT=production and DATABASE_URL=<postgres connection string>.
+   # Set GEMINI_API_KEY if running in REAL mode, or set LEARNFLOW_PIPELINE_MODE=demo.
    ```
 
 4. Run the development server with live reload:
@@ -126,7 +128,8 @@ curl http://127.0.0.1:8000/healthz
 |---|---|---|
 | `PORT` | `8000` | Port for production server binding |
 | `LEARNFLOW_PIPELINE_MODE` | `real` | Runtime pipeline mode (`real`, `demo`, `fake`) |
-| `LEARNFLOW_DB_PATH` | `learnflow.db` | Path to SQLite database file |
+| `DATABASE_URL` | `""` | PostgreSQL connection string. Required when `ENVIRONMENT=production`; Vibehost should provide/set this value. |
+| `LEARNFLOW_DB_PATH` | `learnflow.db` | SQLite path used only when `DATABASE_URL` is absent in local/test environments. |
 | `ARTIFACTS_DIR` | `artifacts` | Directory for storing job artifacts and video outputs |
 | `GEMINI_API_KEY` | `""` | Google Gemini API key for structured lesson planning |
 | `GEMINI_PLANNER_MODEL` | `gemini-3.8-flash` | Gemini model for lesson planning |
@@ -144,7 +147,7 @@ Run the local environment diagnostics:
 ```bash
 python scripts/preflight.py
 ```
-Preflight validates Python runtime, required packages, FFmpeg, ffprobe, libx264, writable artifacts directory, SQLite operations, and Vietnamese font rendering using clean isolated probes. It never makes automated paid API calls or network calls.
+Preflight validates Python runtime, required packages, FFmpeg, ffprobe, libx264, writable artifacts directory, the configured database backend, and Vietnamese font rendering. In production it requires and probes PostgreSQL through `DATABASE_URL`; SQLite is only probed for local/test fallback. It never makes automated paid API calls or network calls.
 
 Optional manual Gemini connectivity check (only when key is set):
 ```bash
@@ -176,7 +179,7 @@ The following checklist must be validated on the deployed VibeHost instance post
 - [ ] `NOT VERIFIED`: libx264 available?
 - [ ] `NOT VERIFIED`: Gemini outbound HTTPS works?
 - [ ] `NOT VERIFIED`: Edge TTS outbound HTTPS works?
-- [ ] `NOT VERIFIED`: SQLite survives restart?
+- [ ] `NOT VERIFIED`: managed PostgreSQL connection and persistence survive app restart?
 - [ ] `NOT VERIFIED`: artifacts survive restart?
 - [ ] `NOT VERIFIED`: background worker survives a full ~60-second lesson?
 - [ ] `NOT VERIFIED`: real final.mp4 plays/downloads?
