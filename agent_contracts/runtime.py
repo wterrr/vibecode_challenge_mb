@@ -191,7 +191,7 @@ _BUDGET_COUNTER_FIELDS = (
 
 class BudgetLedger(ContractModel):
     ledger_id: str
-    max_usd: float = Field(..., ge=0.0)
+    max_usd: float | None = Field(default=None, ge=0.0)
     spent: BudgetSpend = Field(default_factory=BudgetSpend)
     limits: BudgetLimits = Field(default_factory=BudgetLimits)
     usage: BudgetUsage = Field(default_factory=BudgetUsage)
@@ -203,12 +203,14 @@ class BudgetLedger(ContractModel):
 
     @field_validator("max_usd", mode="before")
     @classmethod
-    def _max_usd(cls, value: Any) -> float:
+    def _max_usd(cls, value: Any) -> float | None:
+        if value is None:
+            return None
         return finite_nonnegative(value, field_name="max_usd")
 
     @model_validator(mode="after")
     def _budget_bounds(self) -> "BudgetLedger":
-        if self.spent.total_usd > self.max_usd + 1e-9:
+        if self.max_usd is not None and self.spent.total_usd > self.max_usd + 1e-9:
             raise AgentContractError(
                 f"BudgetLedger overspent: spent={self.spent.total_usd} max={self.max_usd}"
             )
@@ -223,5 +225,7 @@ class BudgetLedger(ContractModel):
 
     @computed_field
     @property
-    def remaining_usd(self) -> float:
+    def remaining_usd(self) -> float | None:
+        if self.max_usd is None:
+            return None
         return round(max(0.0, self.max_usd - self.spent.total_usd), 10)

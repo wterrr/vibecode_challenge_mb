@@ -79,17 +79,29 @@ def main() -> int:
     required_fields = {
         "learning_objectives",
         "prerequisites",
-        "concept_order",
+        "concept_indexes",
         "worked_examples",
         "analogies",
         "misconceptions",
         "assessment_probes",
     }
     properties = set(schema.get("properties", {}))
+    if "concept_order" in properties:
+        raise SystemExit(
+            "HERMES_PEDAGOGY_AGENT=FAIL model-facing schema still exposes concept_order"
+        )
     if not required_fields.issubset(properties):
         raise SystemExit(
             f"HERMES_PEDAGOGY_AGENT=FAIL missing fields={sorted(required_fields-properties)!r}"
         )
+
+    concept_indexes = schema["properties"]["concept_indexes"]
+    if concept_indexes.get("uniqueItems") is not True:
+        raise SystemExit("HERMES_PEDAGOGY_AGENT=FAIL concept indexes not unique")
+    if concept_indexes.get("items", {}).get("minimum") != 0:
+        raise SystemExit("HERMES_PEDAGOGY_AGENT=FAIL concept index minimum")
+    if concept_indexes.get("items", {}).get("maximum") != 0:
+        raise SystemExit("HERMES_PEDAGOGY_AGENT=FAIL concept index maximum")
 
     context = json.loads(task["context"])
     if [item["claim_id"] for item in context["research"]["claims"]] != ["C1"]:
@@ -102,6 +114,7 @@ def main() -> int:
     print("HERMES_PEDAGOGY_AGENT=PASS")
     print("runtime=exact pinned Hermes")
     print("structured_pedagogy_schema=PASS")
+    print("host_owned_concept_references=PASS")
     print("approved_claim_context_only=PASS")
     print("script_boundary=PASS")
     return 0

@@ -30,6 +30,7 @@ from research_orchestration import (
     ResearchOrchestrationPlan,
     ResearchRole,
     SpecialistTask,
+    assemble_specialist_delegation_results,
     build_director_delegate_task,
     build_research_orchestration_plan,
     merge_specialist_findings,
@@ -258,15 +259,19 @@ def test_bootstrap_config_bounds_hermes_delegation():
     assert "orchestrator_enabled: true" in text
 
 
-def test_sibling_specialists_do_not_depend_on_each_others_ids():
+def test_sibling_specialists_use_indexes_not_model_generated_ids():
     task = build_director_delegate_task(_brief())
     context = json.loads(task["context"])
     specialists = context["research_plan"]["specialist_tasks"]
     evidence_context = json.loads(specialists[1]["context"])
     misconception_context = json.loads(specialists[2]["context"])
-    assert "prefix 'evidence.'" in evidence_context["provenance_rule"]
+    assert "zero-based source_indexes" in evidence_context["provenance_rule"]
     assert "isolated from Evidence Researcher" in misconception_context["provenance_rule"]
-    assert "prefix 'misconception.'" in misconception_context["provenance_rule"]
+    assert "zero-based claim_indexes" in misconception_context["provenance_rule"]
+    for specialist in specialists[1:]:
+        schema_text = json.dumps(specialist["output_schema"], sort_keys=True)
+        for forbidden in ("source_id", "claim_id", "edge_id", "concept_ids"):
+            assert forbidden not in schema_text
     assert any(
         "No specialist may depend on a sibling" in rule
         for rule in context["execution_contract"]
@@ -300,4 +305,220 @@ def test_specialist_id_namespaces_are_schema_enforced():
                     relation=EvidenceRelation.SUPPORTS,
                 ),
             ),
+        )
+
+
+
+def _delegation_payload_for_assembly():
+    summaries = (
+        json.dumps(
+            {
+                "concepts": ["demo"],
+                "open_questions": [],
+            }
+        ),
+        json.dumps(
+            {
+                "sources": [
+                    {
+                        "title": "Evidence source",
+                        "locator": "https://docs.python.org/3/tutorial/",
+                        "source_type": "WEB",
+                    }
+                ],
+                "claims": [
+                    {
+                        "statement": "Supported claim.",
+                        "source_indexes": [0],
+                        "confidence": 0.9,
+                    }
+                ],
+            }
+        ),
+        json.dumps(
+            {
+                "sources": [
+                    {
+                        "title": "Misconception source",
+                        "locator": "https://docs.python.org/3/tutorial/",
+                        "source_type": "WEB",
+                    }
+                ],
+                "claims": [
+                    {
+                        "statement": "Correction claim.",
+                        "source_indexes": [0],
+                        "confidence": 0.9,
+                    }
+                ],
+                "misconceptions": [
+                    {
+                        "statement": "Wrong idea.",
+                        "correction": "Correct idea.",
+                        "claim_indexes": [0],
+                    }
+                ],
+                "examples": [
+                    {
+                        "description": "Example.",
+                        "claim_indexes": [0],
+                    }
+                ],
+            }
+        ),
+    )
+    return {
+        "results": [
+            {
+                "task_index": index,
+                "status": "completed",
+                "truncated": False,
+                "schema_valid": True,
+                "summary": summary,
+            }
+            for index, summary in enumerate(summaries)
+        ]
+    }
+
+
+def test_host_assembly_is_deterministic_when_hermes_result_order_changes():
+    plan = build_research_orchestration_plan(_brief())
+    payload = _delegation_payload_for_assembly()
+    first = assemble_specialist_delegation_results(
+        plan=plan,
+        brief_id="brief.demo",
+        topic="Explain demo.",
+        delegation_payload=payload,
+    )
+    second = assemble_specialist_delegation_results(
+        plan=plan,
+        brief_id="brief.demo",
+        topic="Explain demo.",
+        delegation_payload={
+            "results": list(reversed(payload["results"]))
+        },
+    )
+    assert first.to_canonical_json() == second.to_canonical_json()
+    assert first.evidence_graph.claim_ids == tuple(
+        claim.claim_id
+        for claim in first.research_pack.claims
+    )
+
+
+@pytest.mark.parametrize(
+    "mutation,match",
+    [
+        (
+            lambda rows: rows[:-1],
+            "exactly 3 specialist results",
+        ),
+        (
+            lambda rows: [
+                {
+                    **rows[0],
+                    "schema_valid": False,
+                    "schema_errors": ["bad"],
+                },
+                *rows[1:],
+            ],
+            "failed output schema validation",
+        ),
+        (
+            lambda rows: [
+                {
+                    **rows[0],
+                    "status": "failed",
+                    "error": "provider error",
+                },
+                *rows[1:],
+            ],
+            "provider error",
+        ),
+    ],
+)
+def test_host_assembly_fails_closed_on_missing_or_invalid_specialist(
+    mutation,
+    match,
+):
+    plan = build_research_orchestration_plan(_brief())
+    payload = _delegation_payload_for_assembly()
+    with pytest.raises(AgentContractError, match=match):
+        assemble_specialist_delegation_results(
+            plan=plan,
+            brief_id="brief.demo",
+            topic="Explain demo.",
+            delegation_payload={
+                "results": mutation(payload["results"])
+            },
+        )
+
+
+
+def test_specialist_wire_schemas_are_compact_and_definition_free():
+    plan = build_research_orchestration_plan(_brief())
+    for task in plan.specialist_tasks:
+        encoded = json.dumps(task.output_schema, sort_keys=True)
+        assert "$defs" not in encoded
+        assert "schema_version" not in encoded
+        assert len(encoded) < 5000
+
+
+def test_source_specialists_forbid_placeholder_locators_without_assuming_web_backend():
+    plan = build_research_orchestration_plan(_brief())
+    evidence_context = json.loads(plan.specialist_tasks[1].context)
+    misconception_context = json.loads(plan.specialist_tasks[2].context)
+    for context in (evidence_context, misconception_context):
+        assert "If a web-search capability is actually available" in context["retrieval_rule"]
+        assert "do not fabricate placeholder domains" in context["retrieval_rule"]
+        assert "example.com" in context["retrieval_rule"]
+
+
+
+def test_host_assigns_stable_ids_and_edges_from_indexes():
+    plan = build_research_orchestration_plan(_brief())
+    result = assemble_specialist_delegation_results(
+        plan=plan,
+        brief_id="brief.demo",
+        topic="Explain demo.",
+        delegation_payload=_delegation_payload_for_assembly(),
+    )
+    assert tuple(s.source_id for s in result.research_pack.sources) == (
+        "evidence.S001",
+        "misconception.S001",
+    )
+    assert tuple(c.claim_id for c in result.research_pack.claims) == (
+        "evidence.C001",
+        "misconception.C001",
+    )
+    assert tuple(e.edge_id for e in result.evidence_graph.edges) == (
+        "evidence.E001",
+        "misconception.E001",
+    )
+    assert result.research_pack.claims[0].concept_ids == ()
+
+
+def test_host_rejects_bad_indexes_and_placeholder_locators():
+    plan = build_research_orchestration_plan(_brief())
+    bad_index = _delegation_payload_for_assembly()
+    evidence = json.loads(bad_index["results"][1]["summary"])
+    evidence["claims"][0]["source_indexes"] = [9]
+    bad_index["results"][1]["summary"] = json.dumps(evidence)
+    with pytest.raises(AgentContractError, match="outside"):
+        assemble_specialist_delegation_results(
+            plan=plan,
+            brief_id="brief.demo",
+            topic="Explain demo.",
+            delegation_payload=bad_index,
+        )
+
+    placeholder = _delegation_payload_for_assembly()
+    misconception = json.loads(placeholder["results"][2]["summary"])
+    misconception["sources"][0]["locator"] = "https://example.com/fake"
+    placeholder["results"][2]["summary"] = json.dumps(misconception)
+    with pytest.raises(AgentContractError, match="placeholder source locator"):
+        assemble_specialist_delegation_results(
+            plan=plan,
+            brief_id="brief.demo",
+            topic="Explain demo.",
+            delegation_payload=placeholder,
         )

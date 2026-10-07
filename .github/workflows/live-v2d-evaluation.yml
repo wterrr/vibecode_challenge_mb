@@ -1,0 +1,129 @@
+name: Governed Live V2D Evaluation
+
+concurrency:
+  group: live-v2d-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - chatgpt/live-v2d-evaluation
+    paths:
+      - "live_evaluation/**"
+      - "runtime_governance/**"
+      - ".hermes/plugins/learnflow-governance/**"
+      - "hermes/bootstrap/config.yaml"
+      - "scripts/run_live_v2d_pilot.py"
+      - "scripts/verify_live_v2d_evaluation.py"
+      - "tests/hermes/test_live_v2d_evaluation.py"
+      - ".github/workflows/live-v2d-evaluation.yml"
+  pull_request:
+    paths:
+      - "live_evaluation/**"
+      - "scripts/run_live_v2d_pilot.py"
+      - "scripts/verify_live_v2d_evaluation.py"
+      - "tests/hermes/test_live_v2d_evaluation.py"
+      - ".github/workflows/live-v2d-evaluation.yml"
+  workflow_dispatch:
+
+jobs:
+  live-eval-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install contract dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "pydantic>=2" pyyaml pytest
+      - name: Verify governed live-eval contract
+        run: python scripts/verify_live_v2d_evaluation.py
+      - name: Live-eval regressions
+        run: pytest -q --confcutdir=tests/hermes tests/hermes/test_live_v2d_evaluation.py
+      - name: Core Freeze guard
+        run: python scripts/verify_v2_core_freeze.py
+
+  live-provider-pilot:
+    needs: live-eval-contract
+    if: >-
+      (github.event_name == 'push' &&
+       github.ref == 'refs/heads/chatgpt/live-v2d-evaluation') ||
+      (github.event_name == 'workflow_dispatch' &&
+       github.ref == 'refs/heads/chatgpt/live-v2d-evaluation')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      LEARNFLOW_LIVE_MODEL_CANDIDATES: google/gemma-4-31b-it:free,poolside/laguna-s-2.1:free,nvidia/nemotron-3-ultra-550b-a55b:free,apodex/apodex-1.1-mini:free
+      LEARNFLOW_LIVE_TOPIC_ID: lfb-001-cs
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: System dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg graphviz fonts-dejavu-core
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Node dependencies
+        run: npm ci
+
+      - name: Install exact pinned Hermes runtime
+        run: bash scripts/install_hermes_bootstrap.sh
+
+      - name: Prepare isolated Hermes profile
+        shell: bash
+        run: |
+          LIVE_HOME="$PWD/.hermes_runtime/live-v2d-evaluation/hermes-home"
+          rm -rf "$LIVE_HOME"
+          mkdir -p "$LIVE_HOME"
+          cp hermes/bootstrap/config.yaml "$LIVE_HOME/config.yaml"
+          echo "HERMES_HOME=$LIVE_HOME" >> "$GITHUB_ENV"
+          echo "TERMINAL_CWD=$PWD" >> "$GITHUB_ENV"
+          echo "HERMES_ENABLE_PROJECT_PLUGINS=true" >> "$GITHUB_ENV"
+
+      - name: Install LearnFlow dependencies into pinned Hermes env
+        shell: bash
+        run: |
+          if [[ -x ".hermes_runtime/hermes-agent/venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/venv/bin/python"
+          elif [[ -x ".hermes_runtime/hermes-agent/.venv/bin/python" ]]; then
+            HPY=".hermes_runtime/hermes-agent/.venv/bin/python"
+          else
+            echo "Pinned Hermes Python not found" >&2
+            exit 1
+          fi
+          "$HPY" -m ensurepip --upgrade
+          "$HPY" -m pip install pillow kiwisolver==1.5.1
+          echo "HPY=$HPY" >> "$GITHUB_ENV"
+
+      - name: Run one-topic governed live V2D pilot
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        shell: bash
+        run: |
+          if [[ -z "${OPENROUTER_API_KEY:-}" ]]; then
+            echo "OPENROUTER_API_KEY secret is missing" >&2
+            exit 2
+          fi
+          "$HPY" scripts/run_live_v2d_pilot.py
+
+      - name: Core Freeze guard
+        shell: bash
+        run: |
+          "$HPY" scripts/verify_v2_core_freeze.py
+
+      - name: Upload redacted live-eval evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: governed-live-v2d-pilot
+          path: .hermes_runtime/live-v2d-evaluation
+          if-no-files-found: warn
+          retention-days: 14

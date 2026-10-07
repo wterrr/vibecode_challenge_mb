@@ -34,6 +34,7 @@ from agent_contracts import (
 from fact_verification import verify_facts
 from script_agent import (
     ScriptIssue,
+    assemble_lesson_script_wire,
     build_script_agent_task,
     require_visual_director_ready,
     validate_lesson_script,
@@ -352,6 +353,10 @@ def test_script_task_exposes_only_claims_selected_by_pedagogy():
     task = build_script_agent_task(brief, pack, graph, report, pedagogy)
     context = json.loads(task["context"])
     assert [item["claim_id"] for item in context["selected_fact_claims"]] == ["C1"]
+    assert context["selected_fact_claim_catalog"] == [
+        {"index": 0, "claim_id": "C1", "statement": "Supported."}
+    ]
+    assert [item["objective_id"] for item in context["objective_catalog"]] == ["O1", "O2"]
     assert context["required_ids"]["pedagogy_plan_id"] == pedagogy.plan_id
     assert all(item["claim_id"] != "C2" for item in context["selected_fact_claims"])
 
@@ -407,3 +412,48 @@ def test_script_surface_does_not_import_renderer_or_visual_director():
         "deterministicpillowrenderer(",
     ):
         assert forbidden not in source
+
+
+
+def _wire_script_payload(pedagogy):
+    payload = good_script(pedagogy).model_dump(mode="json")
+    for segment in payload["segments"]:
+        claim_ids = segment.pop("claim_ids")
+        objective_ids = segment.pop("objective_ids")
+        segment["claim_indexes"] = [0] if claim_ids else []
+        segment["objective_indexes"] = [
+            0 if item == "O1" else 1 for item in objective_ids
+        ]
+    return payload
+
+
+def test_host_assembles_script_indexes_and_enforces_full_coverage():
+    _, _, _, _, pedagogy = fixture()
+    script = assemble_lesson_script_wire(
+        _wire_script_payload(pedagogy),
+        claim_ids=("C1",),
+        objective_ids=("O1", "O2"),
+    )
+    assert {cid for s in script.segments for cid in s.claim_ids} == {"C1"}
+    assert {oid for s in script.segments for oid in s.objective_ids} == {"O1", "O2"}
+
+
+def test_host_rejects_missing_selected_claim_before_visual_gate():
+    _, _, _, _, pedagogy = fixture()
+    payload = _wire_script_payload(pedagogy)
+    for segment in payload["segments"]:
+        segment["claim_indexes"] = []
+    with pytest.raises(AgentContractError, match="cover every selected factual claim"):
+        assemble_lesson_script_wire(
+            payload,
+            claim_ids=("C1",),
+            objective_ids=("O1", "O2"),
+        )
+
+
+def test_script_wire_schema_uses_indexes_not_dynamic_ids():
+    brief, pack, graph, report, pedagogy = fixture()
+    task = build_script_agent_task(brief, pack, graph, report, pedagogy)
+    segment = task["output_schema"]["$defs"]["ScriptSegment"]["properties"]
+    assert "claim_indexes" in segment and "objective_indexes" in segment
+    assert "claim_ids" not in segment and "objective_ids" not in segment

@@ -58,6 +58,17 @@ def main() -> int:
     director_context = json.loads(director_task["context"])
     if len(director_context["research_plan"]["specialist_tasks"]) != 3:
         raise SystemExit("RESEARCH_ORCHESTRATION=FAIL specialist fan-out")
+    for specialist in director_context["research_plan"]["specialist_tasks"]:
+        encoded_schema = json.dumps(specialist["output_schema"], sort_keys=True)
+        if "$defs" in encoded_schema or "schema_version" in encoded_schema:
+            raise SystemExit("RESEARCH_ORCHESTRATION=FAIL specialist wire schema too coupled")
+    for specialist in director_context["research_plan"]["specialist_tasks"][1:]:
+        encoded_schema = json.dumps(specialist["output_schema"], sort_keys=True)
+        if any(name in encoded_schema for name in ("source_id", "claim_id", "edge_id", "concept_ids")):
+            raise SystemExit("RESEARCH_ORCHESTRATION=FAIL model still owns stable IDs")
+        specialist_context = json.loads(specialist["context"])
+        if "zero-based" not in specialist_context.get("provenance_rule", ""):
+            raise SystemExit("RESEARCH_ORCHESTRATION=FAIL index provenance rule")
 
     concept = ConceptResearchFindings(
         concepts=("loss", "gradient", "learning rate"),
@@ -154,6 +165,8 @@ def main() -> int:
     print("max_delegation_depth=2")
     print("max_specialists=3")
     print("provenance=preserved")
+    print("specialist_wire_schema=content_plus_indexes")
+    print("stable_ids_and_edges=host_owned")
     return 0
 
 

@@ -29,11 +29,24 @@ def is_publication_tool(tool_name: str, state: GovernanceState) -> bool:
     return name in configured
 
 
+def _delegated_child_count(tool_name: str, args) -> int:
+    if str(tool_name or "").strip() != "delegate_task" or not isinstance(args, dict):
+        return 0
+    action = str(args.get("action") or "spawn").strip().lower()
+    if action not in {"", "spawn"}:
+        return 0
+    tasks = args.get("tasks")
+    if isinstance(tasks, list):
+        return len(tasks)
+    return 1 if str(args.get("goal") or "").strip() else 0
+
+
 def evaluate_pre_tool_call(
     tool_name: str,
     *,
     state: GovernanceState,
     budget: HardBudgetController | None = None,
+    args=None,
 ):
     """Return a Hermes pre_tool_call block directive or None.
 
@@ -56,7 +69,7 @@ def evaluate_pre_tool_call(
 
     usage = BudgetUsage(
         tool_calls=1,
-        subagent_calls=1 if name == "delegate_task" else 0,
+        subagent_calls=_delegated_child_count(name, args),
     )
     try:
         budget.authorize(

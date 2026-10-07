@@ -1,0 +1,113 @@
+name: Docker Deployment
+
+on:
+  pull_request:
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "requirements.txt"
+      - "package.json"
+      - "package-lock.json"
+      - "app/**"
+      - "scripts/preflight.py"
+      - ".github/workflows/docker-deployment.yml"
+  push:
+    branches:
+      - chatgpt/live-v2d-evaluation
+      - main
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "requirements.txt"
+      - "package.json"
+      - "package-lock.json"
+      - "app/**"
+      - "scripts/preflight.py"
+      - ".github/workflows/docker-deployment.yml"
+
+jobs:
+  docker-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: learnflow
+          POSTGRES_PASSWORD: learnflow
+          POSTGRES_DB: learnflow_docker
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U learnflow -d learnflow_docker"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build production image
+        run: docker build --pull -t learnflow-ai:ci .
+
+      - name: Verify image runtime dependencies
+        run: |
+          docker run --rm learnflow-ai:ci ffmpeg -version
+          docker run --rm learnflow-ai:ci ffprobe -version
+          docker run --rm learnflow-ai:ci dot -V
+          docker run --rm learnflow-ai:ci node -e "const p=require('elkjs/package.json'); if (p.version !== '0.12.0') process.exit(1); console.log(p.version)"
+          test "$(docker run --rm learnflow-ai:ci id -u)" = "10001"
+
+      - name: Start production container with PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker rm -f learnflow-docker-smoke >/dev/null 2>&1 || true
+          docker run -d             --name learnflow-docker-smoke             --network host             -e ENVIRONMENT=production             -e LEARNFLOW_PIPELINE_MODE=demo             -e DATABASE_URL=postgresql://learnflow:learnflow@127.0.0.1:5432/learnflow_docker             -e PORT=8080             learnflow-ai:ci
+
+      - name: Wait for health endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:8080/healthz | grep -q '"status":"ok"'; then
+              exit 0
+            fi
+            if ! docker ps --format '{{.Names}}' | grep -qx learnflow-docker-smoke; then
+              docker logs learnflow-docker-smoke || true
+              exit 1
+            fi
+            sleep 2
+          done
+          docker logs learnflow-docker-smoke || true
+          exit 1
+
+      - name: Run production preflight inside container
+        run: docker exec learnflow-docker-smoke python scripts/preflight.py
+
+      - name: Verify Docker healthcheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 20); do
+            status="$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}missing{{end}}' learnflow-docker-smoke)"
+            if [[ "$status" == "healthy" ]]; then
+              exit 0
+            fi
+            if [[ "$status" == "unhealthy" || "$status" == "missing" ]]; then
+              docker inspect learnflow-docker-smoke
+              exit 1
+            fi
+            sleep 2
+          done
+          docker inspect learnflow-docker-smoke
+          exit 1
+
+      - name: Container logs
+        if: always()
+        run: docker logs learnflow-docker-smoke || true
+
+      - name: Stop smoke container
+        if: always()
+        run: docker rm -f learnflow-docker-smoke >/dev/null 2>&1 || true

@@ -261,6 +261,20 @@ def test_budget_ledger_rejects_overspend_and_limit_overrun():
         )
 
 
+
+def test_budget_ledger_can_disable_usd_ceiling_without_disabling_usage_limits():
+    ledger = BudgetLedger(
+        ledger_id="budget.no-usd-cap",
+        max_usd=None,
+        spent=BudgetSpend(llm=123.45),
+        limits=BudgetLimits(provider_attempts=1),
+        usage=BudgetUsage(provider_attempts=1),
+    )
+    assert ledger.max_usd is None
+    assert ledger.remaining_usd is None
+    assert ledger.spent.total_usd == 123.45
+
+
 def test_agent_run_requires_registered_artifact_refs():
     with pytest.raises(ValidationError, match="unregistered artifacts"):
         AgentRun(

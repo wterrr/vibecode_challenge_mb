@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from threading import RLock
 from typing import Any
 
 from agent_contracts import BudgetLedger
@@ -16,6 +17,7 @@ from .policy import evaluate_pre_tool_call
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _DEFAULT_ROOT = _REPO_ROOT / ".hermes_runtime" / "runtime-governance"
+_STATE_LOCK = RLock()
 
 
 def _state_path() -> Path:
@@ -60,18 +62,26 @@ def _event(event: str, **fields: Any) -> None:
 
 
 def on_pre_tool_call(tool_name: str = "", args: Any = None, **kwargs: Any):
-    state = load_state()
-    controller = HardBudgetController(state.budget) if state.budget is not None else None
-    decision = evaluate_pre_tool_call(tool_name, state=state, budget=controller)
-    if controller is not None and decision is None:
-        save_state(
-            GovernanceState(
-                state_id=state.state_id,
-                budget=controller.ledger,
-                publication_authorized=state.publication_authorized,
-                publication_tools=state.publication_tools,
-            )
+    # Research children execute tool calls concurrently. Keep the read-authorize-write
+    # transaction atomic so sibling hooks cannot overwrite each other's counters.
+    with _STATE_LOCK:
+        state = load_state()
+        controller = HardBudgetController(state.budget) if state.budget is not None else None
+        decision = evaluate_pre_tool_call(
+            tool_name,
+            state=state,
+            budget=controller,
+            args=args,
         )
+        if controller is not None and decision is None:
+            save_state(
+                GovernanceState(
+                    state_id=state.state_id,
+                    budget=controller.ledger,
+                    publication_authorized=state.publication_authorized,
+                    publication_tools=state.publication_tools,
+                )
+            )
     _event(
         "pre_tool_call",
         tool_name=str(tool_name or ""),
