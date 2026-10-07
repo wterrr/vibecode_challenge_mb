@@ -610,3 +610,38 @@ def test_research_schema_repair_is_no_tool_and_bounded():
     assert "research_leaf_repair=True" in repair_block
     assert "You have NO tools in this repair pass" in repair_block
     assert "schema repair failed after" in repair_block
+
+
+
+def test_visual_output_preflights_against_frozen_core_layout(monkeypatch):
+    from types import SimpleNamespace
+
+    import learnflow_v2.layout as layout_module
+    from agent_contracts import AgentContractError
+    from learnflow_v2.core.errors import LayoutUnsatisfiableError
+
+    def reject(_graph):
+        raise LayoutUnsatisfiableError(
+            "Graph layout exceeds CONTENT zone without node scaling"
+        )
+
+    monkeypatch.setattr(layout_module, "compile_scene_layout", reject)
+    visual = SimpleNamespace(
+        scenegraphs=(SimpleNamespace(scene_id="scene.dense"),)
+    )
+
+    with pytest.raises(AgentContractError, match="not layout-compatible with frozen Core"):
+        LiveHermesStructuredRunner._require_frozen_core_layout_compatible(visual)
+
+
+def test_visual_parse_runs_core_layout_preflight_before_acceptance():
+    source = (
+        ROOT / "live_evaluation" / "hermes_runner.py"
+    ).read_text(encoding="utf-8")
+    visual_block = source[
+        source.index('if stage == "visual_director":'):
+        source.index("return output_model.model_validate_json(candidate)")
+    ]
+    assert "_require_frozen_core_layout_compatible" in visual_block
+    assert "compile_scene_layout" in source
+    assert "Simplify the semantic topology" in source
