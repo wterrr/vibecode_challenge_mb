@@ -12,6 +12,8 @@ import subprocess
 import sys
 from typing import Any
 
+from openrouter_policy import require_free_openrouter_model
+
 ROOT = Path(__file__).resolve().parent.parent
 STATUS_PATH = ROOT / "hermes" / "bootstrap" / "status.json"
 CONFIG_TEMPLATE = ROOT / "hermes" / "bootstrap" / "config.yaml"
@@ -20,9 +22,14 @@ HERMES_HOME = RUNTIME / "home"
 INSTALL_DIR = RUNTIME / "hermes-agent"
 BOOTSTRAP_RESULT_DIR = RUNTIME / "bootstrap"
 
-PRIMARY_MODEL = "openai/gpt-6-luna"
-FREE_FALLBACK_MODEL = "nvidia/nemotron-3.5-lightning:free"
-ALLOWED_LIVE_MODELS = (PRIMARY_MODEL, FREE_FALLBACK_MODEL)
+PRIMARY_MODEL = "nvidia/nemotron-3.5-lightning:free"
+FREE_FALLBACK_MODELS = (
+    "google/gemma-4-31b-it:free",
+    "poolside/laguna-s-2.1:free",
+    "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "apodex/apodex-1.1-mini:free",
+)
+ALLOWED_LIVE_MODELS = (PRIMARY_MODEL, *FREE_FALLBACK_MODELS)
 EXPECTED_SENTINEL = "HERMES_BOOTSTRAP_OK:LEARNFLOW-BOOTSTRAP-FIXTURE-v1"
 
 
@@ -323,7 +330,7 @@ def run_live(selected_model: str | None = None) -> int:
             return 2
         models = [selected_model]
     else:
-        models = [PRIMARY_MODEL, FREE_FALLBACK_MODEL]
+        models = list(ALLOWED_LIVE_MODELS)
 
     attempts: list[dict[str, Any]] = []
     passed_proc: subprocess.CompletedProcess[str] | None = None
@@ -331,6 +338,7 @@ def run_live(selected_model: str | None = None) -> int:
     passed_model: str | None = None
 
     for model in models:
+        require_free_openrouter_model(model)
         proc, summary, error = run_model_attempt(hermes_bin, env, model)
         attempts.append(
             {
@@ -368,7 +376,7 @@ def run_live(selected_model: str | None = None) -> int:
         "hermes_commit": status["hermes"]["commit"],
         "provider": "openrouter",
         "model": passed_model,
-        "fallback_used": passed_model == FREE_FALLBACK_MODEL,
+        "fallback_used": passed_model != PRIMARY_MODEL,
         "attempted_models": [attempt["model"] for attempt in attempts],
         "session_id": passed_summary["session_id"],
         "tool_name": passed_summary["tool_name"],
@@ -411,8 +419,8 @@ def main() -> int:
         "--model",
         choices=ALLOWED_LIVE_MODELS,
         help=(
-            "run only one accepted Hermes Bootstrap model; default live mode tries Luna "
-            "then the pinned free fallback"
+            "run only one accepted free Hermes Bootstrap model; default live mode tries "
+            "the free-only allowlist in order"
         ),
     )
     args = parser.parse_args()
