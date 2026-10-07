@@ -94,8 +94,10 @@ def main() -> int:
             raise SystemExit("LIVE_V2D_CONTRACT=FAIL model capability probe")
 
     pilot_source = (ROOT / "live_evaluation" / "pilot.py").read_text(encoding="utf-8")
-    if "_reset_runtime_preserving_hermes_home(runtime)" not in pilot_source:
+    if "_reset_runtime_preserving_hermes_home(" not in pilot_source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL Hermes profile preservation missing")
+    if "preserve_governance=preserve_governance" not in pilot_source:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL governance preservation wiring missing")
     if "shutil.rmtree(runtime)" in pilot_source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL pilot deletes active runtime root")
 
