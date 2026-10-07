@@ -43,7 +43,7 @@ def main() -> int:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL subagent cap")
     if state.budget.limits.tool_calls != 32:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL tool cap")
-    if state.budget.limits.provider_attempts != 160:
+    if state.budget.limits.provider_attempts != 1600:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL provider-attempt quota")
     if state.budget.limits.retries != 4:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL retry cap")
@@ -58,7 +58,7 @@ def main() -> int:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL stage reservation order")
     if any(float(item["usd"]) != 0.0 for item in reservations.values()):
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL live stages must not reserve USD")
-    if reservations["research_orchestration"]["provider_attempts"] != 128:
+    if reservations["research_orchestration"]["provider_attempts"] != 384:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL research provider-attempt quota")
     if any(
         reservations[name]["provider_attempts"] != 3
@@ -123,6 +123,27 @@ def main() -> int:
             "LIVE_V2D_CONTRACT=FAIL synchronous native research fan-out missing"
         )
 
+    if 'TemporaryDirectory(prefix="learnflow-research-context-")' not in source:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL isolated research workspace missing")
+    if 'os.environ["TERMINAL_CWD"] = isolated_cwd' not in source:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL research context isolation missing")
+
+    bootstrap = (ROOT / "hermes" / "bootstrap" / "config.yaml").read_text(
+        encoding="utf-8"
+    )
+    if "max_iterations: 128" not in bootstrap:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL delegated research budget mismatch")
+    if "- learnflow-governance" not in bootstrap:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL governance project plugin not enabled")
+
+    live_script = (ROOT / "scripts" / "run_live_v2d_pilot.py").read_text(
+        encoding="utf-8"
+    )
+    if "_charge_probe_attempts" not in live_script:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL model probes outside governance")
+    if "preserve_governance=True" not in live_script:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL fallback resets governance")
+
     print("LIVE_V2D_CONTRACT=PASS")
     print(f"pilot_topic={PILOT_TOPIC_ID}")
     print(f"default_model={DEFAULT_LIVE_MODEL}")
@@ -135,7 +156,8 @@ def main() -> int:
     print("active_hermes_profile_preserved=PASS")
     print("deterministic_research_assembly=PASS")
     print("research_max_iterations=128")
-    print("provider_attempt_quota=160")
+    print("research_fanout_reservation=384")
+    print("provider_attempt_quota=1600")
     return 0
 
 
