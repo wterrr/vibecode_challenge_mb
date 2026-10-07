@@ -482,7 +482,15 @@ def test_model_probe_requires_native_tool_call_roundtrip():
     source = (
         ROOT / "live_evaluation" / "model_probe.py"
     ).read_text(encoding="utf-8")
-    assert '"tool_choice"' in source
+    tool_payload_block = source[
+        source.index("tool_payload: dict[str, Any] = {"):
+        source.index(
+            'if model.startswith("google/gemma-4-"):',
+            source.index("tool_payload: dict[str, Any] = {"),
+        )
+    ]
+    assert '"tools": [tool_definition]' in tool_payload_block
+    assert '"tool_choice"' not in tool_payload_block
     assert 'message["tool_calls"]' in source
     assert '"native_tool_call_missing"' in source
     assert '"role": "tool"' in source
