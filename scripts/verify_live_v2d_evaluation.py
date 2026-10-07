@@ -117,6 +117,33 @@ def main() -> int:
     if "shutil.rmtree(runtime)" in pilot_source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL pilot deletes active runtime root")
 
+    if "duration_resolver=lambda _scene, _script: 0.35" in pilot_source:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL smoke scene duration still active")
+    for required in (
+        "build_production_media(",
+        "EdgeSpeechProvider",
+        "production_output_gate",
+    ):
+        if required not in pilot_source:
+            raise SystemExit("LIVE_V2D_CONTRACT=FAIL production media gate wiring missing")
+
+    production_source = (ROOT / "lesson_pipeline" / "production.py").read_text(
+        encoding="utf-8"
+    )
+    for required in (
+        "MIN_TARGET_DURATION_RATIO",
+        '"audio_stream_present"',
+        '"motion_every_scene"',
+        '"transition_coverage"',
+        '"subtitle_coverage"',
+        "create_narration_beat_map_fallback",
+        "resolve_motion_plan_timing",
+        "compile_inter_scene_transition",
+        "render_transition_video",
+    ):
+        if required not in production_source:
+            raise SystemExit("LIVE_V2D_CONTRACT=FAIL production output gate incomplete")
+
     source = (ROOT / "live_evaluation" / "hermes_runner.py").read_text(encoding="utf-8")
     if 'provider="openrouter"' not in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL OpenRouter runner binding")
@@ -190,6 +217,8 @@ def main() -> int:
     print("research_workspace_sealing=PASS")
     print("native_research_delegation_enabled=PASS")
     print("active_hermes_profile_preserved=PASS")
+    print("production_media_gate=PASS")
+    print("production_tts_motion_transition_subtitles=PASS")
     print("deterministic_research_assembly=PASS")
     print("research_max_iterations=128")
     print("research_fanout_reservation=384")

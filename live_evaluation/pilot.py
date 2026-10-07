@@ -214,7 +214,6 @@ def run_live_v2d_pilot(
         run=plugin.handle_run,
         render=plugin.handle_render,
         repo_root=ROOT,
-        duration_resolver=lambda _scene, _script: 0.35,
     )
 
     result = run_lesson_pipeline(
@@ -223,6 +222,57 @@ def run_live_v2d_pilot(
         core_gateway=gateway,
         runtime_root=runtime / "lesson-runs",
     )
+
+    # The first Core pass above is a semantic/capability integration pass. The
+    # production media pass reuses the accepted typed artifacts, adds real TTS,
+    # narration-resolved Tier-1 motion, inter-scene transitions, subtitles, and
+    # a fail-closed output-quality gate. Keep these imports lazy so the offline
+    # contract job does not need network speech dependencies.
+    import asyncio
+    from app.providers.speech.edge import EdgeSpeechProvider
+    from learnflow_v2.render import SubtitleRenderCue
+    from lesson_pipeline.production import (
+        SynthesizedNarration,
+        build_production_media,
+        probe_media_duration,
+    )
+
+    speech = EdgeSpeechProvider(timeout=60.0)
+
+    def synthesize_narration(text: str, output_path: Path, language: str) -> SynthesizedNarration:
+        speech_result = asyncio.run(
+            speech.synthesize(text, output_path, language)
+        )
+        duration = (
+            float(speech_result.duration_seconds)
+            if speech_result.duration_seconds is not None
+            else probe_media_duration(speech_result.path)
+        )
+        cues = tuple(
+            SubtitleRenderCue(
+                start_seconds=float(cue.start_seconds),
+                end_seconds=float(cue.end_seconds),
+                text=cue.text,
+            )
+            for cue in speech_result.subtitle_cues
+            if float(cue.end_seconds) > float(cue.start_seconds)
+        )
+        return SynthesizedNarration(
+            path=Path(speech_result.path),
+            duration_seconds=duration,
+            subtitle_cues=cues,
+            provider=speech_result.provider,
+        )
+
+    production = build_production_media(
+        result,
+        create=plugin.handle_create,
+        run=plugin.handle_run,
+        render=plugin.handle_render,
+        repo_root=ROOT,
+        synthesize_narration=synthesize_narration,
+    )
+    result = result.model_copy(update={"final_video": production.final_video})
 
     state = GovernanceState.model_validate_json(state_path.read_text(encoding="utf-8"))
     report = {
@@ -247,6 +297,7 @@ def run_live_v2d_pilot(
             else state.budget.model_dump(mode="json")
         ),
         "publication_authorized": state.publication_authorized,
+        "production_output_gate": production.report,
     }
     report_path = runtime / "pilot_report.json"
     report_path.write_text(

@@ -236,6 +236,12 @@ def build_script_agent_task(
         objective.objective_id for objective in pedagogy.learning_objectives
     )
 
+    target_words_min = max(1, int(round(brief.target_duration_minutes * 130)))
+    target_words_max = max(
+        target_words_min,
+        int(round(brief.target_duration_minutes * 160)),
+    )
+
     payload = {
         "learning_brief": json.loads(brief.to_canonical_json()),
         "pedagogy_plan": json.loads(pedagogy.to_canonical_json()),
@@ -276,6 +282,12 @@ def build_script_agent_task(
             "Every factual assertion must be attached to the relevant selected claim index.",
             "Assign exactly one teaching_function to every segment using the LessonScript schema.",
             "Use INTRODUCE for framing, EXPLAIN for concepts, COMPARE for contrasts, DEMONSTRATE for worked examples, PRACTICE/CHECK for learner activity, and SUMMARIZE for synthesis when appropriate.",
+            (
+                f"Target total spoken narration length: {target_words_min}–{target_words_max} "
+                f"words for the requested {brief.target_duration_minutes:g}-minute lesson. "
+                "Stay inside this range unless the source material makes that impossible; "
+                "do not satisfy duration by repetition or filler."
+            ),
             "Write narration and subtitle text only. Keep spoken_text natural for voiceover.",
             "Do not output visual coordinates, pixel values, SceneGraph objects, renderer instructions, FFmpeg commands, implementation code, or fenced code blocks.",
             "Do not make layout, motion, camera, typography, or rendering decisions; those belong to Visual Director and Core.",

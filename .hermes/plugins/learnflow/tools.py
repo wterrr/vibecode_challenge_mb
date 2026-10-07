@@ -21,7 +21,7 @@ _MAX_INPUT_BYTES = 128 * 1024
 _MAX_NODES = 64
 _MAX_RELATIONS = 128
 _MIN_DURATION = 0.1
-_MAX_DURATION = 30.0
+_MAX_DURATION = 90.0
 
 # Explicitly reject geometry/executable-rendering vocabulary before Pydantic validation.
 # This is a control-plane boundary check, not a replacement for Core schema validation.
@@ -158,6 +158,7 @@ def _public_core_types():
     from learnflow_v2.motion import (
         CompiledMotionArtifact,
         MotionPlan,
+        ResolvedMotionPlanTiming,
         compile_motion_schedule,
         schedule_motion_plan,
     )
@@ -168,6 +169,7 @@ def _public_core_types():
         "SceneGraph": SceneGraph,
         "LayoutGraph": LayoutGraph,
         "MotionPlan": MotionPlan,
+        "ResolvedMotionPlanTiming": ResolvedMotionPlanTiming,
         "CompiledMotionArtifact": CompiledMotionArtifact,
         "RenderProfile": RenderProfile,
         "RenderedArtifact": RenderedArtifact,
@@ -183,7 +185,7 @@ def handle_create(args: dict[str, Any], **_kwargs: Any) -> str:
     try:
         if not isinstance(args, dict):
             return _fail("LEARNFLOW_PLUGIN_INVALID_ARGUMENTS", "arguments must be an object")
-        unexpected = sorted(set(args) - {"scene_graph", "motion_plan", "scene_duration"})
+        unexpected = sorted(set(args) - {"scene_graph", "motion_plan", "resolved_timing", "scene_duration"})
         if unexpected:
             return _fail("LEARNFLOW_PLUGIN_UNEXPECTED_ARGUMENT", f"unexpected argument(s): {unexpected}")
 
@@ -231,17 +233,40 @@ def handle_create(args: dict[str, Any], **_kwargs: Any) -> str:
                 "LEARNFLOW_PLUGIN_SCENE_MISMATCH",
                 "motion_plan.scene_id must match scene_graph.scene_id",
             )
-        if any(event.trigger is not None for event in motion_plan.events):
-            return _fail(
-                "LEARNFLOW_PLUGIN_TRIGGERED_MOTION_UNSUPPORTED",
-                "LearnFlow Capability Plugin accepts only untriggered motion; narration-beat orchestration is a later checkpoint",
-            )
         motion_plan.validate_with_scenegraph(scene_graph)
 
+        resolved_payload = args.get("resolved_timing")
+        resolved_timing = None
+        if resolved_payload is not None:
+            if not isinstance(resolved_payload, dict):
+                return _fail(
+                    "LEARNFLOW_PLUGIN_INVALID_RESOLVED_TIMING",
+                    "resolved_timing must be an object when provided",
+                )
+            resolved_timing = core["ResolvedMotionPlanTiming"].model_validate(
+                resolved_payload
+            )
+            if resolved_timing.scene_id != scene_graph.scene_id:
+                return _fail(
+                    "LEARNFLOW_PLUGIN_SCENE_MISMATCH",
+                    "resolved_timing.scene_id must match scene_graph.scene_id",
+                )
+
+        if any(event.trigger is not None for event in motion_plan.events) and resolved_timing is None:
+            return _fail(
+                "LEARNFLOW_PLUGIN_RESOLVED_TIMING_REQUIRED",
+                "triggered motion requires host-resolved narration timing",
+            )
+
         canonical_input = {
-            "schema_version": "learnflow-plugin-run-input-v1",
+            "schema_version": "learnflow-plugin-run-input-v2",
             "scene_graph": scene_graph.model_dump(mode="json"),
             "motion_plan": motion_plan.model_dump(mode="json"),
+            "resolved_timing": (
+                None
+                if resolved_timing is None
+                else resolved_timing.model_dump(mode="json")
+            ),
             "scene_duration": duration,
         }
         canonical = _canonical_bytes(canonical_input)
@@ -298,12 +323,19 @@ def handle_run(args: dict[str, Any], **_kwargs: Any) -> str:
         MotionPlan = core["MotionPlan"]
         scene_graph = SceneGraph.model_validate(payload["scene_graph"])
         motion_plan = MotionPlan.model_validate(payload["motion_plan"])
+        resolved_payload = payload.get("resolved_timing")
+        resolved_timing = (
+            None
+            if resolved_payload is None
+            else core["ResolvedMotionPlanTiming"].model_validate(resolved_payload)
+        )
         duration = _normalize_duration(payload["scene_duration"])
 
         layout_graph = core["compile_scene_layout"](scene_graph)
         motion_schedule = core["schedule_motion_plan"](
             motion_plan,
             duration,
+            resolved_timing=resolved_timing,
             graph=scene_graph,
         )
         compiled_motion = core["compile_motion_schedule"](motion_schedule)

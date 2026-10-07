@@ -717,3 +717,55 @@ def test_probe_matches_pinned_hermes_auto_tool_selection():
     assert '"tool_choice"' not in block
     assert "expected exactly one native tool call" in source
     assert 'function.get("name") != "probe_noop"' in source
+
+
+def test_live_pilot_uses_production_media_gate_not_smoke_duration():
+    pilot = (ROOT / "live_evaluation" / "pilot.py").read_text(encoding="utf-8")
+    production = (ROOT / "lesson_pipeline" / "production.py").read_text(encoding="utf-8")
+    workflow = (ROOT / ".github" / "workflows" / "live-v2d-evaluation.yml").read_text(
+        encoding="utf-8"
+    )
+
+    assert "duration_resolver=lambda _scene, _script: 0.35" not in pilot
+    assert "build_production_media(" in pilot
+    assert "EdgeSpeechProvider" in pilot
+    assert "production_output_gate" in pilot
+    assert "edge-tts" in workflow
+
+    assert "MIN_TARGET_DURATION_RATIO" in production
+    assert '"audio_stream_present"' in production
+    assert '"motion_every_scene"' in production
+    assert '"transition_coverage"' in production
+    assert '"subtitle_coverage"' in production
+    assert "create_narration_beat_map_fallback" in production
+    assert "resolve_motion_plan_timing" in production
+    assert "compile_inter_scene_transition" in production
+    assert "render_transition_video" in production
+
+
+def test_visual_director_code_nodes_use_content_for_visible_code():
+    import ast
+
+    source = (ROOT / "visual_director" / "hermes.py").read_text(encoding="utf-8")
+    module = ast.parse(source)
+    builder = next(
+        node
+        for node in module.body
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "build_visual_director_task"
+    )
+    guidance = "\n".join(
+        node.value
+        for node in ast.walk(builder)
+        if isinstance(node, ast.Constant) and isinstance(node.value, str)
+    )
+    assert "For CODE nodes" in guidance
+    assert "learner-visible code expression/snippet in content" in guidance
+
+
+def test_script_agent_has_target_duration_word_budget():
+    source = (ROOT / "script_agent" / "hermes.py").read_text(encoding="utf-8")
+    assert "target_words_min" in source
+    assert "brief.target_duration_minutes * 130" in source
+    assert "brief.target_duration_minutes * 160" in source
+    assert "Target total spoken narration length" in source

@@ -236,6 +236,7 @@ def main() -> int:
         "governance_events": report["governance_events"],
         "budget": report["budget"],
         "publication_authorized": report["publication_authorized"],
+        "production_output_gate": report["production_output_gate"],
     }
     print("LIVE_V2D_PILOT=PASS")
     print(json.dumps(safe, indent=2, ensure_ascii=False))

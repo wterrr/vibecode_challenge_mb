@@ -529,6 +529,12 @@ def build_visual_director_task(
             ),
             "Storyboard scene teaching_function must match every ScriptSegment assigned to that scene.",
             (
+                "For CODE nodes, put the exact learner-visible code expression/snippet in "
+                "content. Use label only as an optional short semantic label. Never put a "
+                "type name such as string/int/float in content when the learner should see "
+                "the code expression itself."
+            ),
+            (
                 "Use only frozen-Core-supported layout intents: CONCEPT_CARD, PROCESS, "
                 "COMPARISON, or HIERARCHY; and reading directions LEFT_TO_RIGHT, "
                 "RIGHT_TO_LEFT, TOP_TO_BOTTOM, or BOTTOM_TO_TOP."

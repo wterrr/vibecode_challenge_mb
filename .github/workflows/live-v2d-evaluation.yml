@@ -66,7 +66,7 @@ jobs:
        (github.ref == 'refs/heads/main' ||
         github.ref == 'refs/heads/chatgpt/live-v2d-evaluation'))
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     env:
       LEARNFLOW_LIVE_MODEL_CANDIDATES: google/gemma-4-31b-it:free,poolside/laguna-s-2.1:free,nvidia/nemotron-3-ultra-550b-a55b:free,apodex/apodex-1.1-mini:free
       LEARNFLOW_LIVE_TOPIC_ID: lfb-001-cs
@@ -112,7 +112,7 @@ jobs:
             exit 1
           fi
           "$HPY" -m ensurepip --upgrade
-          "$HPY" -m pip install pillow kiwisolver==1.5.1
+          "$HPY" -m pip install pillow kiwisolver==1.5.1 edge-tts
           echo "HPY=$HPY" >> "$GITHUB_ENV"
 
       - name: Run one-topic governed live V2D pilot
