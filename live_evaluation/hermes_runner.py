@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+from contextlib import contextmanager
 from dataclasses import dataclass, asdict
 from pathlib import Path
 import tempfile
@@ -37,6 +38,61 @@ class StageUsage:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+
+@contextmanager
+def _isolated_research_workspace(agent):
+    """Seal every pinned-Hermes workspace fallback away from the repository.
+
+    Native delegation resolves child context from several sources: terminal
+    ContextVar, process TERMINAL_CWD, parent subdirectory hints, parent cwd
+    attributes, and finally process cwd. Research leaves need only web access,
+    so all of those are pointed at one empty temporary directory for the full
+    synchronous delegate_task call.
+    """
+
+    from tools.terminal_scope import terminal_scope
+
+    sentinel = object()
+    previous_env = os.environ.get("TERMINAL_CWD")
+    previous_process_cwd = os.getcwd()
+    previous_terminal_cwd = getattr(agent, "terminal_cwd", sentinel)
+    previous_cwd_attr = getattr(agent, "cwd", sentinel)
+    hints = getattr(agent, "_subdirectory_hints", None)
+    previous_hint_dir = (
+        getattr(hints, "working_dir", sentinel)
+        if hints is not None
+        else sentinel
+    )
+
+    with tempfile.TemporaryDirectory(
+        prefix="learnflow-research-context-"
+    ) as isolated_cwd:
+        isolated = str(Path(isolated_cwd).resolve())
+        os.environ["TERMINAL_CWD"] = isolated
+        os.chdir(isolated)
+        if previous_terminal_cwd is not sentinel:
+            agent.terminal_cwd = isolated
+        if previous_cwd_attr is not sentinel:
+            agent.cwd = isolated
+        if hints is not None and previous_hint_dir is not sentinel:
+            hints.working_dir = Path(isolated)
+        try:
+            with terminal_scope({"TERMINAL_CWD": isolated}):
+                yield isolated
+        finally:
+            if hints is not None and previous_hint_dir is not sentinel:
+                hints.working_dir = previous_hint_dir
+            if previous_terminal_cwd is not sentinel:
+                agent.terminal_cwd = previous_terminal_cwd
+            if previous_cwd_attr is not sentinel:
+                agent.cwd = previous_cwd_attr
+            os.chdir(previous_process_cwd)
+            if previous_env is None:
+                os.environ.pop("TERMINAL_CWD", None)
+            else:
+                os.environ["TERMINAL_CWD"] = previous_env
 
 
 class LiveHermesStructuredRunner:
@@ -251,20 +307,12 @@ class LiveHermesStructuredRunner:
                 + str(fanout_decision.get("message") or "blocked")
             )
 
-        from tools.terminal_scope import terminal_scope
-
-        with tempfile.TemporaryDirectory(prefix="learnflow-research-context-") as isolated_cwd:
-            # Pinned Hermes resolves delegated-child workspace through the active
-            # terminal ContextVar before consulting process environment. Bind a
-            # real scoped TERMINAL_CWD so _resolve_workspace_hint() sees only this
-            # empty directory and cannot inject repository AGENTS.md into leaf
-            # researchers. Research leaves intentionally keep only web tools.
-            with terminal_scope({"TERMINAL_CWD": isolated_cwd}):
-                raw = delegate_task(
-                    tasks=hermes_tasks,
-                    background=False,
-                    parent_agent=agent,
-                )
+        with _isolated_research_workspace(agent):
+            raw = delegate_task(
+                tasks=hermes_tasks,
+                background=False,
+                parent_agent=agent,
+            )
         try:
             delegation_payload = json.loads(raw)
         except json.JSONDecodeError as exc:
