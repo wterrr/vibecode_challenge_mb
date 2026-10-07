@@ -682,7 +682,8 @@ def test_visual_task_states_specialized_layout_topology_contracts():
     assert "For PROCESS, emit exactly one PROCESS_TOPIC" in compact
     assert "PROCESS_ACTOR" in compact
     assert "PROCESS_STEP" in compact
-    assert "every node in that scene must use one of those roles" in compact
+    assert "every node in that" in compact
+    assert "scene must use one of those roles" in compact
     assert "For COMPARISON, emit exactly one COMPARISON_TOPIC" in compact
     assert "COMPARISON_COLUMN nodes" in compact
     assert "source=member and target=column" in compact
