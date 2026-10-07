@@ -791,3 +791,12 @@ def test_governance_subagent_cap_covers_runtime_model_fallbacks(tmp_path):
         encoding="utf-8"
     )
     assert "runtime_model_attempts=len(candidates)" in source
+
+
+def test_production_transition_text_fit_falls_back_without_weakening_core():
+    source = (ROOT / "lesson_pipeline" / "production.py").read_text(encoding="utf-8")
+    assert "MINIMAL_TRANSITION_CAPABILITIES" in source
+    assert "FADE_FOR_INTERPOLATION_TEXT_FIT" in source
+    assert 'if "does not fit solved LayoutGraph box" not in message' in source
+    assert "RenderInvalidInputError" in source
+    assert "except RenderInvalidInputError" in source

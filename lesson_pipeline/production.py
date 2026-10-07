@@ -30,6 +30,7 @@ from learnflow_v2.motion import (
 )
 from learnflow_v2.render import (
     RenderArtifactKind,
+    RenderInvalidInputError,
     RenderProfile,
     RenderedArtifact,
     SubtitleRenderCue,
@@ -38,7 +39,10 @@ from learnflow_v2.render import (
     mux_audio_track,
     render_transition_video,
 )
-from learnflow_v2.transitions import compile_inter_scene_transition
+from learnflow_v2.transitions import (
+    MINIMAL_TRANSITION_CAPABILITIES,
+    compile_inter_scene_transition,
+)
 
 from .models import LessonPipelineResult
 
@@ -559,18 +563,51 @@ def build_production_media(
             duration=TRANSITION_DURATION_SECONDS,
         )
         transition_path = transition_dir / f"{index + 1:03d}.mp4"
-        artifact = render_transition_video(
-            result.scenegraphs[index],
-            scene_layouts[index],
-            result.scenegraphs[index + 1],
-            scene_layouts[index + 1],
-            plan,
-            transition_path,
-            profile=profile,
+        fallback_used = False
+        try:
+            artifact = render_transition_video(
+                result.scenegraphs[index],
+                scene_layouts[index],
+                result.scenegraphs[index + 1],
+                scene_layouts[index + 1],
+                plan,
+                transition_path,
+                profile=profile,
+            )
+        except RenderInvalidInputError as exc:
+            message = str(exc)
+            if "does not fit solved LayoutGraph box" not in message:
+                raise
+            # Persistent MOVE interpolates between endpoint boxes. A text node can
+            # fit both accepted endpoint layouts yet become unreadable at an
+            # intermediate rect. Do not weaken Core text-fit validation. Recompile
+            # only this transition against the official FADE-only capability set.
+            plan = compile_inter_scene_transition(
+                scene_layouts[index],
+                scene_layouts[index + 1],
+                registry,
+                from_scene_graph=result.scenegraphs[index],
+                to_scene_graph=result.scenegraphs[index + 1],
+                duration=TRANSITION_DURATION_SECONDS,
+                capabilities=MINIMAL_TRANSITION_CAPABILITIES,
+            )
+            fallback_used = True
+            artifact = render_transition_video(
+                result.scenegraphs[index],
+                scene_layouts[index],
+                result.scenegraphs[index + 1],
+                scene_layouts[index + 1],
+                plan,
+                transition_path,
+                profile=profile,
+            )
+        transition_payload = plan.model_dump(mode="json")
+        transition_payload["production_render_fallback"] = (
+            "FADE_FOR_INTERPOLATION_TEXT_FIT" if fallback_used else None
         )
         _atomic_json(
             transition_dir / f"{index + 1:03d}.json",
-            plan.model_dump(mode="json"),
+            transition_payload,
         )
         transitions.append(artifact)
         transition_plans.append(plan)
@@ -663,6 +700,14 @@ def build_production_media(
         "stream_types": sorted(stream_types),
         "scene_count": len(scene_artifacts),
         "transition_count": len(transitions),
+        "transition_fade_fallback_count": sum(
+            1
+            for plan in transition_plans
+            if any(
+                item.fallback_reason == "BACKEND_UNSUPPORTED_MOVE"
+                for item in plan.persistent_objects
+            )
+        ),
         "persistent_transition_count": sum(
             len(plan.persistent_objects) for plan in transition_plans
         ),

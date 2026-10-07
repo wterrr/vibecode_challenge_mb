@@ -142,6 +142,8 @@ def main() -> int:
         "render_transition_video",
         "provider_cues.json",
         "deterministic_script_segments",
+        "MINIMAL_TRANSITION_CAPABILITIES",
+        "FADE_FOR_INTERPOLATION_TEXT_FIT",
     ):
         if required not in production_source:
             raise SystemExit("LIVE_V2D_CONTRACT=FAIL production output gate incomplete")
