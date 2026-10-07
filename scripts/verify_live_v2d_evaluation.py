@@ -130,6 +130,7 @@ def main() -> int:
     print("usd_cap=none")
     print("publication_authorized=false")
     print("live_secret_step_scope=PASS")
+    print("research_provider_runtime_fallback=PASS")
     print("native_research_delegation_enabled=PASS")
     print("active_hermes_profile_preserved=PASS")
     print("deterministic_research_assembly=PASS")
