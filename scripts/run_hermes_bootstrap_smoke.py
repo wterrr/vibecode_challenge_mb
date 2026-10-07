@@ -13,6 +13,10 @@ import sys
 from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from openrouter_policy import require_free_openrouter_model
 STATUS_PATH = ROOT / "hermes" / "bootstrap" / "status.json"
 CONFIG_TEMPLATE = ROOT / "hermes" / "bootstrap" / "config.yaml"
 RUNTIME = ROOT / ".hermes_runtime"
