@@ -26,6 +26,12 @@ delegation:
   orchestrator_enabled: true
   independent_completions: false
   inherit_mcp_toolsets: true
-  max_iterations: 32
+  max_iterations: 128
   child_timeout_seconds: 0
   subagent_auto_approve: false
+
+
+plugins:
+  # Project plugins are opt-in in pinned Hermes. Governance must be explicitly active.
+  enabled:
+    - learnflow-governance
