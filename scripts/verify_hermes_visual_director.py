@@ -111,8 +111,14 @@ def main() -> int:
         raise SystemExit("HERMES_VISUAL_DIRECTOR=FAIL segment index wire missing")
     if "script_segment_ids" in storyboard_scene:
         raise SystemExit("HERMES_VISUAL_DIRECTOR=FAIL dynamic segment IDs leaked")
-    if "scene_index" not in scenegraph or "scene_id" in scenegraph:
-        raise SystemExit("HERMES_VISUAL_DIRECTOR=FAIL dynamic scene IDs leaked")
+    if (
+        "scene_index" not in scenegraph
+        or "scene_id" in scenegraph
+        or "purpose" in scenegraph
+    ):
+        raise SystemExit(
+            "HERMES_VISUAL_DIRECTOR=FAIL dynamic scene IDs/purpose leaked"
+        )
     if "concept_index" not in scene_node:
         raise SystemExit("HERMES_VISUAL_DIRECTOR=FAIL concept index wire missing")
     if "concept_ref" in scene_node or "semantic_key" in scene_node:
@@ -126,6 +132,7 @@ def main() -> int:
     print("no_geometry_fields=PASS")
     print("deterministic_registry_context=PASS")
     print("host_owned_dynamic_refs=PASS")
+    print("host_owned_scene_purpose=PASS")
     return 0
 
 
