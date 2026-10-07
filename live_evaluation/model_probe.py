@@ -8,6 +8,8 @@ from typing import Any, Iterable
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from openrouter_policy import require_free_openrouter_model
+
 
 LIVE_MODEL_CANDIDATES = (
     "google/gemma-4-31b-it:free",
@@ -258,7 +260,7 @@ def select_live_model(
     probes: list[ModelProbeResult] = []
     seen: set[str] = set()
     for raw in candidates:
-        model = str(raw).strip()
+        model = require_free_openrouter_model(str(raw).strip())
         if not model or model in seen:
             continue
         seen.add(model)
