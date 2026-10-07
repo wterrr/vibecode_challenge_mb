@@ -184,7 +184,12 @@ def _visual_wire_schema(
     semantic_role = dict(node_props.get("semantic_role") or {})
     semantic_role["description"] = (
         "Optional domain semantic role. Do not use layout-zone roles such as "
-        "TITLE, HEADER, CAPTION, SUBTITLE, SAFE_TITLE, or SAFE_CAPTION."
+        "TITLE, HEADER, CAPTION, SUBTITLE, SAFE_TITLE, or SAFE_CAPTION. For "
+        "PROCESS scenes use PROCESS_TOPIC, PROCESS_ACTOR, and PROCESS_STEP roles "
+        "only so frozen Core's compact fallback remains valid. For COMPARISON "
+        "scenes use exactly one COMPARISON_TOPIC and at least two "
+        "COMPARISON_COLUMN roles; attach every remaining node to one column with "
+        "PART_OF."
     )
     semantic_role["pattern"] = (
         r"^(?!(?i:title|safe_title|header|caption|safe_caption|subtitle)$).+$"
@@ -527,6 +532,22 @@ def build_visual_director_task(
                 "Use only frozen-Core-supported layout intents: CONCEPT_CARD, PROCESS, "
                 "COMPARISON, or HIERARCHY; and reading directions LEFT_TO_RIGHT, "
                 "RIGHT_TO_LEFT, TOP_TO_BOTTOM, or BOTTOM_TO_TOP."
+            ),
+            (
+                "For PROCESS, emit exactly one PROCESS_TOPIC, at least one "
+                "PROCESS_ACTOR, and at least one PROCESS_STEP; every node in that "
+                "scene must use one of those roles so frozen Core's compact PROCESS "
+                "fallback remains valid."
+            ),
+            (
+                "For COMPARISON, emit exactly one COMPARISON_TOPIC and at least two "
+                "COMPARISON_COLUMN nodes. Every other node must belong to exactly one "
+                "column using PART_OF with source=member and target=column; do not "
+                "leave ungrouped nodes."
+            ),
+            (
+                "If a scene does not satisfy the specialized topology above, choose "
+                "CONCEPT_CARD rather than labeling it PROCESS or COMPARISON."
             ),
             (
                 "Keep each SceneGraph semantically minimal. Prefer CONCEPT_CARD for "

@@ -202,16 +202,31 @@ class LiveHermesStructuredRunner:
             MeasurementInvalidInputError,
             MeasurementUnsupportedNodeError,
         )
+        failures: list[tuple[str, Exception]] = []
         for graph in visual_output.scenegraphs:
             try:
                 compile_scene_layout(graph)
             except layout_errors as exc:
-                raise AgentContractError(
-                    "Visual Director SceneGraph is not layout-compatible with frozen "
-                    f"Core for scene {graph.scene_id!r}: {exc}. Simplify the semantic "
-                    "topology, reduce nonessential nodes/relations, or choose a simpler "
-                    "supported layout_intent such as CONCEPT_CARD."
-                ) from exc
+                failures.append((graph.scene_id, exc))
+
+        if failures:
+            rendered = "\n".join(
+                f"- {scene_id!r}: {exc}"
+                for scene_id, exc in failures
+            )
+            raise AgentContractError(
+                "Visual Director SceneGraphs are not layout-compatible with frozen Core. "
+                "Repair every listed scene in one response; do not fix only the first "
+                "failure.\n"
+                f"{rendered}\n"
+                "Frozen-Core specialized layout contracts: PROCESS should use exactly "
+                "one PROCESS_TOPIC, at least one PROCESS_ACTOR, and at least one "
+                "PROCESS_STEP, with no extra node roles so the compact fallback remains "
+                "available. COMPARISON requires exactly one COMPARISON_TOPIC, at least "
+                "two COMPARISON_COLUMN nodes, and every remaining node attached to one "
+                "comparison column via PART_OF (source=member, target=column). Otherwise "
+                "choose CONCEPT_CARD."
+            ) from failures[0][1]
 
 
     @staticmethod
