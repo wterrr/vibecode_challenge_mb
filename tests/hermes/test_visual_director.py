@@ -13,7 +13,15 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from agent_contracts import AgentContractError, Storyboard, StoryboardScene, TeachingFunction
-from learnflow_v2.scenegraph import LayoutHint, LayoutIntent, LayoutIntentSpec, NodeKind, SceneNode, ScenePurpose
+from learnflow_v2.scenegraph import (
+    LayoutHint,
+    LayoutIntent,
+    LayoutIntentSpec,
+    NodeKind,
+    RelationKind,
+    SceneNode,
+    ScenePurpose,
+)
 from scripts.verify_script_agent import build_fixture, build_script
 from scripts.verify_visual_director import build_visual_output
 from visual_director import (
@@ -519,3 +527,50 @@ def test_host_rejects_model_owned_scene_purpose():
             registry=registry,
             concept_order=pedagogy.concept_order,
         )
+
+
+
+def test_host_rejects_unsupported_directed_relation_before_frozen_core():
+    *_, pedagogy, script, registry, output = fixture()
+    wire = _wire_visual_payload(
+        output,
+        script,
+        registry,
+        pedagogy.concept_order,
+    )
+    process_index = next(
+        index
+        for index, graph in enumerate(wire["scenegraphs"])
+        if graph["layout_intent"]["type"] == LayoutIntent.PROCESS.value
+    )
+    wire["scenegraphs"][process_index]["relations"][0]["kind"] = RelationKind.LABELS.value
+    with pytest.raises(AgentContractError, match="directed-layout relations"):
+        assemble_visual_director_wire(
+            wire,
+            script=script,
+            registry=registry,
+            concept_order=pedagogy.concept_order,
+        )
+
+
+def test_concept_card_may_keep_non_directed_annotation_relation():
+    *_, pedagogy, script, registry, output = fixture()
+    wire = _wire_visual_payload(
+        output,
+        script,
+        registry,
+        pedagogy.concept_order,
+    )
+    concept_card_index = next(
+        index
+        for index, graph in enumerate(wire["scenegraphs"])
+        if graph["layout_intent"]["type"] == LayoutIntent.CONCEPT_CARD.value
+        and graph["relations"]
+    )
+    assembled = assemble_visual_director_wire(
+        wire,
+        script=script,
+        registry=registry,
+        concept_order=pedagogy.concept_order,
+    )
+    assert assembled.scenegraphs[concept_card_index].layout_intent.type == LayoutIntent.CONCEPT_CARD
