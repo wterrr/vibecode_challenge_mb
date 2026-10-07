@@ -251,24 +251,20 @@ class LiveHermesStructuredRunner:
                 + str(fanout_decision.get("message") or "blocked")
             )
 
-        previous_terminal_cwd = os.environ.get("TERMINAL_CWD")
+        from tools.terminal_scope import terminal_scope
+
         with tempfile.TemporaryDirectory(prefix="learnflow-research-context-") as isolated_cwd:
-            # Pinned Hermes injects workspace context into delegated children even
-            # when child AIAgent(skip_context_files=True) is used. Point the
-            # delegation workspace outside the repository so AGENTS.md cannot be
-            # injected or instruct a web-only researcher to call read_file.
-            os.environ["TERMINAL_CWD"] = isolated_cwd
-            try:
+            # Pinned Hermes resolves delegated-child workspace through the active
+            # terminal ContextVar before consulting process environment. Bind a
+            # real scoped TERMINAL_CWD so _resolve_workspace_hint() sees only this
+            # empty directory and cannot inject repository AGENTS.md into leaf
+            # researchers. Research leaves intentionally keep only web tools.
+            with terminal_scope({"TERMINAL_CWD": isolated_cwd}):
                 raw = delegate_task(
                     tasks=hermes_tasks,
                     background=False,
                     parent_agent=agent,
                 )
-            finally:
-                if previous_terminal_cwd is None:
-                    os.environ.pop("TERMINAL_CWD", None)
-                else:
-                    os.environ["TERMINAL_CWD"] = previous_terminal_cwd
         try:
             delegation_payload = json.loads(raw)
         except json.JSONDecodeError as exc:
