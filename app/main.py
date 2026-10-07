@@ -12,7 +12,7 @@ from app.config import Settings, get_settings
 from app.pipeline.base import LearningVideoPipeline
 from app.pipeline.factory import create_pipeline
 from app.repositories.base import JobRepository
-from app.repositories.sqlite import SqliteJobRepository
+from app.repositories.factory import create_job_repository
 from app.runner.job_runner import JobRunner
 from app.services.job_service import JobService
 from app.storage.base import ArtifactStore
@@ -39,7 +39,7 @@ def create_app(
 ) -> FastAPI:
     """Create and configure FastAPI application with explicit dependencies."""
     app_settings = settings or get_settings()
-    app_repository = repository or SqliteJobRepository(app_settings.db_path)
+    app_repository = repository or create_job_repository(app_settings)
     app_artifact_store = artifact_store or LocalArtifactStore(app_settings.artifacts_dir)
     app_pipeline = pipeline or create_pipeline(
         app_settings,
