@@ -46,6 +46,14 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("LEARNFLOW_PIPELINE_MODE", "pipeline_mode"),
     )
 
+    database_url: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "DATABASE_URL",
+            "LEARNFLOW_DATABASE_URL",
+            "database_url",
+        ),
+    )
     db_path: str = Field(
         default="learnflow.db",
         validation_alias=AliasChoices("LEARNFLOW_DB_PATH", "db_path"),
@@ -82,6 +90,8 @@ class Settings(BaseSettings):
         data = self.model_dump()
         if data.get("gemini_api_key"):
             data["gemini_api_key"] = "***REDACTED***"
+        if data.get("database_url"):
+            data["database_url"] = "***REDACTED***"
         return f"Settings({data})"
 
     def __str__(self) -> str:
