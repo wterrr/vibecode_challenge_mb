@@ -477,29 +477,27 @@ class LiveHermesStructuredRunner:
                 task_id=f"live-eval:{stage}",
             )
             text = str((result or {}).get("final_response") or "")
-            try:
-                parsed = self._parse_output(
-                    text,
-                    output_model,
-                    stage=stage,
-                    task=task,
-                )
-            except (ValidationError, json.JSONDecodeError, ValueError) as exc:
-                self._reserve(stage, retry=True)
-                attempts += 1
-                schema_retry_used = True
-                result = agent.run_conversation(
-                    user_message=self._validation_retry_message(task, text, exc),
-                    conversation_history=list((result or {}).get("messages") or []),
-                    task_id=f"live-eval:{stage}:schema-retry",
-                )
-                text = str((result or {}).get("final_response") or "")
-                parsed = self._parse_output(
-                    text,
-                    output_model,
-                    stage=stage,
-                    task=task,
-                )
+            while True:
+                try:
+                    parsed = self._parse_output(
+                        text,
+                        output_model,
+                        stage=stage,
+                        task=task,
+                    )
+                    break
+                except (ValidationError, json.JSONDecodeError, ValueError) as exc:
+                    if attempts >= 3:
+                        raise
+                    self._reserve(stage, retry=True)
+                    attempts += 1
+                    schema_retry_used = True
+                    result = agent.run_conversation(
+                        user_message=self._validation_retry_message(task, text, exc),
+                        conversation_history=list((result or {}).get("messages") or []),
+                        task_id=f"live-eval:{stage}:schema-retry:{attempts - 1}",
+                    )
+                    text = str((result or {}).get("final_response") or "")
 
             usage = StageUsage(
                 stage=stage,
