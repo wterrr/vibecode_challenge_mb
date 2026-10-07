@@ -636,7 +636,7 @@ def test_visual_output_preflights_against_frozen_core_layout():
     ]
     assert "from learnflow_v2.layout import compile_scene_layout" in helper
     assert "LayoutUnsatisfiableError" in helper
-    assert "compile_scene_layout(graph)" in helper
+    assert "compile_scene_layout(candidate)" in helper
     assert "except layout_errors as exc" in helper
     assert "not layout-compatible with frozen" in helper
     assert "CONCEPT_CARD" in helper
