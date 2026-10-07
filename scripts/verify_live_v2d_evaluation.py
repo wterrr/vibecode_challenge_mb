@@ -86,7 +86,6 @@ def main() -> int:
         '"require_parameters": True',
         '"max_tokens": 4096',
         'tool_payload["reasoning_effort"] = "medium"',
-        '"tool_choice"',
         'message["tool_calls"]',
         '"role": "tool"',
         '"native_tool_call_missing"',
@@ -97,6 +96,18 @@ def main() -> int:
     ):
         if required not in probe_source:
             raise SystemExit("LIVE_V2D_CONTRACT=FAIL model capability probe")
+
+    tool_payload_block = probe_source[
+        probe_source.index("tool_payload: dict[str, Any] = {"):
+        probe_source.index(
+            'if model.startswith("google/gemma-4-"):',
+            probe_source.index("tool_payload: dict[str, Any] = {"),
+        )
+    ]
+    if '"tool_choice"' in tool_payload_block:
+        raise SystemExit(
+            "LIVE_V2D_CONTRACT=FAIL probe must match pinned Hermes auto tool selection"
+        )
 
     pilot_source = (ROOT / "live_evaluation" / "pilot.py").read_text(encoding="utf-8")
     if "_reset_runtime_preserving_hermes_home(" not in pilot_source:
