@@ -82,10 +82,15 @@ def main() -> int:
     for required in (
         '"tools": [',
         "_RESPONSE_FORMAT_MODELS",
-        'payload["response_format"] = {"type": "json_object"}',
+        'final_payload["response_format"] = {"type": "json_object"}',
         '"require_parameters": True',
         '"max_tokens": 4096',
-        'payload["reasoning_effort"] = "medium"',
+        'tool_payload["reasoning_effort"] = "medium"',
+        '"tool_choice"',
+        'message["tool_calls"]',
+        '"role": "tool"',
+        '"native_tool_call_missing"',
+        "request_count=2",
         "_SPECIALIST_PROBE_OBJECT",
         '"source_indexes": [0]',
         '"claim_indexes": [0]',
@@ -127,8 +132,12 @@ def main() -> int:
 
     if 'TemporaryDirectory(prefix="learnflow-research-context-")' not in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL isolated research workspace missing")
-    if 'os.environ["TERMINAL_CWD"] = isolated_cwd' not in source:
+    if "from tools.terminal_scope import terminal_scope" not in source:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL Hermes terminal scope isolation missing")
+    if 'with terminal_scope({"TERMINAL_CWD": isolated_cwd}):' not in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL research context isolation missing")
+    if 'os.environ["TERMINAL_CWD"] = isolated_cwd' in source:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL process-env isolation is insufficient")
     if '"host-research-fanout"' not in source or "on_pre_tool_call(" not in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL direct research fan-out bypasses governance")
 
@@ -145,17 +154,23 @@ def main() -> int:
     )
     if "_charge_probe_attempts" not in live_script:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL model probes outside governance")
+    if "_probe_request_count(selection.probes)" not in live_script:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL probe HTTP attempts undercounted")
+    if "_retryable_research_model_incompatibility" not in live_script:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL research model incompatibility fallback missing")
     if "preserve_governance=True" not in live_script:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL fallback resets governance")
 
     print("LIVE_V2D_CONTRACT=PASS")
     print(f"pilot_topic={PILOT_TOPIC_ID}")
     print(f"default_model={DEFAULT_LIVE_MODEL}")
-    print("model_probe=nested_specialist_shape+tools+model_compatible_json+diverse_providers")
+    print("model_probe=native_tool_roundtrip+nested_specialist_shape+model_compatible_json+diverse_providers")
     print("usd_cap=none")
     print("publication_authorized=false")
     print("live_secret_step_scope=PASS")
     print("research_provider_runtime_fallback=PASS")
+    print("research_model_incompatibility_fallback=PASS")
+    print("research_terminal_scope_isolation=PASS")
     print("native_research_delegation_enabled=PASS")
     print("active_hermes_profile_preserved=PASS")
     print("deterministic_research_assembly=PASS")
