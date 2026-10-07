@@ -339,18 +339,26 @@ def test_bootstrap_aligns_delegated_research_budget_and_enables_governance():
     assert "- learnflow-governance" in config
 
 
-def test_research_fanout_uses_isolated_workspace_context():
+def test_research_fanout_seals_every_workspace_fallback():
     source = (
         ROOT / "live_evaluation" / "hermes_runner.py"
     ).read_text(encoding="utf-8")
+    helper = source[
+        source.index("def _isolated_research_workspace"):
+        source.index("class LiveHermesStructuredRunner")
+    ]
     research_block = source[
         source.index("def _run_research_delegation"):
         source.index("def _delegation_usage")
     ]
-    assert 'TemporaryDirectory(prefix="learnflow-research-context-")' in research_block
-    assert "from tools.terminal_scope import terminal_scope" in research_block
-    assert 'with terminal_scope({"TERMINAL_CWD": isolated_cwd}):' in research_block
-    assert 'os.environ["TERMINAL_CWD"] = isolated_cwd' not in research_block
+    assert 'TemporaryDirectory(' in helper
+    assert '"learnflow-research-context-"' in helper
+    assert "from tools.terminal_scope import terminal_scope" in helper
+    assert 'terminal_scope({"TERMINAL_CWD": isolated})' in helper
+    assert 'os.environ["TERMINAL_CWD"] = isolated' in helper
+    assert "hints.working_dir = Path(isolated)" in helper
+    assert "os.chdir(isolated)" in helper
+    assert "with _isolated_research_workspace(agent):" in research_block
 
 
 def test_runtime_reset_can_preserve_governance_across_fallback(tmp_path, monkeypatch):
