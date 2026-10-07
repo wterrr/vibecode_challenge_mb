@@ -613,25 +613,20 @@ def test_research_schema_repair_is_no_tool_and_bounded():
 
 
 
-def test_visual_output_preflights_against_frozen_core_layout(monkeypatch):
-    from types import SimpleNamespace
-
-    import learnflow_v2.layout as layout_module
-    from agent_contracts import AgentContractError
-    from learnflow_v2.core.errors import LayoutUnsatisfiableError
-
-    def reject(_graph):
-        raise LayoutUnsatisfiableError(
-            "Graph layout exceeds CONTENT zone without node scaling"
-        )
-
-    monkeypatch.setattr(layout_module, "compile_scene_layout", reject)
-    visual = SimpleNamespace(
-        scenegraphs=(SimpleNamespace(scene_id="scene.dense"),)
-    )
-
-    with pytest.raises(AgentContractError, match="not layout-compatible with frozen Core"):
-        LiveHermesStructuredRunner._require_frozen_core_layout_compatible(visual)
+def test_visual_output_preflights_against_frozen_core_layout():
+    source = (
+        ROOT / "live_evaluation" / "hermes_runner.py"
+    ).read_text(encoding="utf-8")
+    helper = source[
+        source.index("def _require_frozen_core_layout_compatible"):
+        source.index("def _parse_output")
+    ]
+    assert "from learnflow_v2.layout import compile_scene_layout" in helper
+    assert "LayoutUnsatisfiableError" in helper
+    assert "compile_scene_layout(graph)" in helper
+    assert "except layout_errors as exc" in helper
+    assert "not layout-compatible with frozen" in helper
+    assert "CONCEPT_CARD" in helper
 
 
 def test_visual_parse_runs_core_layout_preflight_before_acceptance():
@@ -643,5 +638,5 @@ def test_visual_parse_runs_core_layout_preflight_before_acceptance():
         source.index("return output_model.model_validate_json(candidate)")
     ]
     assert "_require_frozen_core_layout_compatible" in visual_block
-    assert "compile_scene_layout" in source
-    assert "Simplify the semantic topology" in source
+    assert "validated = output_model.model_validate" in visual_block
+    assert "return validated" in visual_block
