@@ -130,14 +130,20 @@ def main() -> int:
             "LIVE_V2D_CONTRACT=FAIL synchronous native research fan-out missing"
         )
 
-    if 'TemporaryDirectory(prefix="learnflow-research-context-")' not in source:
-        raise SystemExit("LIVE_V2D_CONTRACT=FAIL isolated research workspace missing")
-    if "from tools.terminal_scope import terminal_scope" not in source:
-        raise SystemExit("LIVE_V2D_CONTRACT=FAIL Hermes terminal scope isolation missing")
-    if 'with terminal_scope({"TERMINAL_CWD": isolated_cwd}):' not in source:
-        raise SystemExit("LIVE_V2D_CONTRACT=FAIL research context isolation missing")
-    if 'os.environ["TERMINAL_CWD"] = isolated_cwd' in source:
-        raise SystemExit("LIVE_V2D_CONTRACT=FAIL process-env isolation is insufficient")
+    for required in (
+        "def _isolated_research_workspace",
+        'prefix="learnflow-research-context-"',
+        "from tools.terminal_scope import terminal_scope",
+        'terminal_scope({"TERMINAL_CWD": isolated})',
+        'os.environ["TERMINAL_CWD"] = isolated',
+        "hints.working_dir = Path(isolated)",
+        "os.chdir(isolated)",
+        "with _isolated_research_workspace(agent):",
+    ):
+        if required not in source:
+            raise SystemExit(
+                "LIVE_V2D_CONTRACT=FAIL sealed research workspace missing"
+            )
     if '"host-research-fanout"' not in source or "on_pre_tool_call(" not in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL direct research fan-out bypasses governance")
 
@@ -170,7 +176,7 @@ def main() -> int:
     print("live_secret_step_scope=PASS")
     print("research_provider_runtime_fallback=PASS")
     print("research_model_incompatibility_fallback=PASS")
-    print("research_terminal_scope_isolation=PASS")
+    print("research_workspace_sealing=PASS")
     print("native_research_delegation_enabled=PASS")
     print("active_hermes_profile_preserved=PASS")
     print("deterministic_research_assembly=PASS")
