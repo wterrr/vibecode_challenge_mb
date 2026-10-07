@@ -19,15 +19,16 @@ def test_bootstrap_pins_runtime_and_records_live_pass():
     assert data["hermes"]["package_version"] == "0.21.5"
     assert data["hermes"]["commit"] == "f97608f178d1ffeca59860195ab7da295f7c8e5f"
     assert data["provider"]["id"] == "openrouter"
-    assert data["provider"]["primary_model"] == "openai/gpt-6-luna"
-    assert data["provider"]["free_fallback_model"] == "nvidia/nemotron-3.5-lightning:free"
+    assert data["provider"]["primary_model"] == "nvidia/nemotron-3.5-lightning:free"
+    assert data["provider"]["free_only"] is True
+    assert all(model.endswith(":free") for model in data["provider"]["allowed_models"])
     assert data["live_verification"]["status"] == "PASS"
     assert data["live_verification"]["fallback_used"] is True
 
 
 def test_bootstrap_config_contains_no_secret_and_uses_openrouter():
     text = CONFIG.read_text(encoding="utf-8")
-    assert 'default: "openai/gpt-6-luna"' in text
+    assert 'default: "nvidia/nemotron-3.5-lightning:free"' in text
     assert 'provider: "openrouter"' in text
     assert "sk-or-" not in text
     assert "OPENROUTER_API_KEY=" not in text
@@ -60,11 +61,12 @@ def test_runner_pins_project_local_binary_before_global_install():
     assert 'expected = status["hermes"]["commit"]' in text
 
 
-def test_runner_declares_primary_and_free_fallback():
+def test_runner_declares_free_only_allowlist():
     text = (ROOT / "scripts" / "run_hermes_bootstrap_smoke.py").read_text(encoding="utf-8")
-    assert 'PRIMARY_MODEL = "openai/gpt-6-luna"' in text
-    assert 'FREE_FALLBACK_MODEL = "nvidia/nemotron-3.5-lightning:free"' in text
-    assert '"fallback_used": passed_model == FREE_FALLBACK_MODEL' in text
+    assert 'PRIMARY_MODEL = "nvidia/nemotron-3.5-lightning:free"' in text
+    assert "FREE_FALLBACK_MODELS = (" in text
+    assert "require_free_openrouter_model(model)" in text
+    assert '"fallback_used": passed_model != PRIMARY_MODEL' in text
 
 
 def test_offline_stream_contract_passes():
@@ -81,7 +83,7 @@ def test_offline_stream_fails_without_tool_roundtrip(tmp_path):
     broken = tmp_path / "broken.jsonl"
     broken.write_text(
         "\n".join([
-            json.dumps({"type":"system","subtype":"init","model":"openai/gpt-6-luna","session_id":"broken"}),
+            json.dumps({"type":"system","subtype":"init","model":"nvidia/nemotron-3.5-lightning:free","session_id":"broken"}),
             json.dumps({"type":"result","session_id":"broken","exit_code":0,"text":"HERMES_BOOTSTRAP_OK:LEARNFLOW-BOOTSTRAP-FIXTURE-v1"}),
         ]) + "\n",
         encoding="utf-8",
