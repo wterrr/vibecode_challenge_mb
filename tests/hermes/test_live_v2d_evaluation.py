@@ -871,3 +871,33 @@ def test_comparison_topology_host_downgrades_ambiguous_membership():
     negotiated = _negotiate_comparison_topology(graph, position=0)
     assert negotiated["layout_intent"]["type"] == "CONCEPT_CARD"
     assert "host.fallback.comparison_to_concept_card" in negotiated["style_refs"]
+
+
+def test_visual_preflight_only_falls_back_unsatisfiable_comparison_layout():
+    source = (
+        ROOT / "live_evaluation" / "hermes_runner.py"
+    ).read_text(encoding="utf-8")
+    helper = source[
+        source.index("def _require_frozen_core_layout_compatible"):
+        source.index("def _parse_output")
+    ]
+    assert 'graph.layout_intent.type.value == "COMPARISON"' in helper
+    assert "isinstance(exc, LayoutUnsatisfiableError)" in helper
+    assert "host.fallback.comparison_layout_to_concept_card" in helper
+    assert 'payload["layout_intent"]["type"] = "CONCEPT_CARD"' in helper
+    assert "compile_scene_layout(candidate)" in helper
+    assert "failures.append((graph.scene_id, fallback_exc))" in helper
+
+
+def test_visual_parse_returns_core_negotiated_output():
+    source = (
+        ROOT / "live_evaluation" / "hermes_runner.py"
+    ).read_text(encoding="utf-8")
+    visual_block = source[
+        source.index('if stage == "visual_director":'):
+        source.index("return output_model.model_validate_json(candidate)")
+    ]
+    assert (
+        "validated = LiveHermesStructuredRunner."
+        "_require_frozen_core_layout_compatible"
+    ) in visual_block

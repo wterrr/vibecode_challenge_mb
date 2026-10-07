@@ -173,8 +173,15 @@ class LiveHermesStructuredRunner:
         )
 
     @staticmethod
-    def _require_frozen_core_layout_compatible(visual_output) -> None:
-        """Dry-run public frozen Core layout before accepting Visual output."""
+    def _require_frozen_core_layout_compatible(visual_output):
+        """Dry-run frozen Core and apply one explicit safe layout fallback.
+
+        A semantically valid COMPARISON can still be geometrically infeasible at
+        Core's 18px readability floor (for example, a generated column heading
+        can be too tall after wrapping). In that one case, preserve all semantic
+        nodes/relations and degrade only the layout intent to CONCEPT_CARD.
+        Every other Core/layout failure remains fail-closed.
+        """
 
         from learnflow_v2.core.errors import (
             GraphLayoutBackendError,
@@ -189,6 +196,7 @@ class LiveHermesStructuredRunner:
             MeasurementUnsupportedNodeError,
         )
         from learnflow_v2.layout import compile_scene_layout
+        from learnflow_v2.scenegraph import SceneGraph
 
         layout_errors = (
             LayoutInvalidInputError,
@@ -203,11 +211,35 @@ class LiveHermesStructuredRunner:
             MeasurementUnsupportedNodeError,
         )
         failures: list[tuple[str, Exception]] = []
+        negotiated_graphs = []
         for graph in visual_output.scenegraphs:
+            candidate = graph
             try:
-                compile_scene_layout(graph)
+                compile_scene_layout(candidate)
             except layout_errors as exc:
-                failures.append((graph.scene_id, exc))
+                if (
+                    isinstance(exc, LayoutUnsatisfiableError)
+                    and graph.layout_intent.type.value == "COMPARISON"
+                ):
+                    payload = graph.model_dump(mode="json")
+                    payload["layout_intent"]["type"] = "CONCEPT_CARD"
+                    style_refs = list(payload.get("style_refs") or ())
+                    marker = "host.fallback.comparison_layout_to_concept_card"
+                    if marker not in style_refs:
+                        style_refs.append(marker)
+                    payload["style_refs"] = style_refs
+                    candidate = SceneGraph.model_validate(payload)
+                    try:
+                        compile_scene_layout(candidate)
+                    except layout_errors as fallback_exc:
+                        failures.append((graph.scene_id, fallback_exc))
+                        negotiated_graphs.append(graph)
+                        continue
+                else:
+                    failures.append((graph.scene_id, exc))
+                    negotiated_graphs.append(graph)
+                    continue
+            negotiated_graphs.append(candidate)
 
         if failures:
             rendered = "\n".join(
@@ -227,6 +259,15 @@ class LiveHermesStructuredRunner:
                 "comparison column via PART_OF (source=member, target=column). Otherwise "
                 "choose CONCEPT_CARD."
             ) from failures[0][1]
+
+        if tuple(negotiated_graphs) == tuple(visual_output.scenegraphs):
+            return visual_output
+        payload = visual_output.model_dump(mode="json")
+        payload["scenegraphs"] = [
+            graph.model_dump(mode="json")
+            for graph in negotiated_graphs
+        ]
+        return type(visual_output).model_validate(payload)
 
 
     @staticmethod
@@ -295,7 +336,7 @@ class LiveHermesStructuredRunner:
             validated = output_model.model_validate(
                 assembled.model_dump(mode="json")
             )
-            LiveHermesStructuredRunner._require_frozen_core_layout_compatible(
+            validated = LiveHermesStructuredRunner._require_frozen_core_layout_compatible(
                 validated
             )
             return validated

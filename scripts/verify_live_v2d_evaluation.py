@@ -198,6 +198,16 @@ def main() -> int:
         )
 
     for required in (
+        'graph.layout_intent.type.value == "COMPARISON"',
+        "host.fallback.comparison_layout_to_concept_card",
+        'payload["layout_intent"]["type"] = "CONCEPT_CARD"',
+    ):
+        if required not in source:
+            raise SystemExit(
+                "LIVE_V2D_CONTRACT=FAIL comparison layout feasibility fallback missing"
+            )
+
+    for required in (
         "def _isolated_research_workspace",
         'prefix="learnflow-research-context-"',
         "from tools.terminal_scope import terminal_scope",
