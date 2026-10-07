@@ -6,7 +6,7 @@ This directory contains the accepted Hermes runtime pin, OpenRouter configuratio
 
 **PASS — 2026-10-06**
 
-The user-local live OpenRouter smoke completed successfully. The primary model `openai/gpt-6-luna` was attempted first and the accepted free fallback `nvidia/nemotron-3.5-lightning:free` completed the tool round-trip. Hermes called `read_file`, returned the expected sentinel, and exported a redacted trajectory.
+The historical user-local live OpenRouter smoke completed successfully with `nvidia/nemotron-3.5-lightning:free`. The current runtime policy is stricter: **all LearnFlow-owned OpenRouter calls must use model slugs ending in `:free`**. Paid OpenRouter models are rejected before a request is sent.
 
 The offline stream contract, bootstrap tests, and LearnFlow Core Freeze guard also passed. Session identifiers, token accounting, API keys, and trajectory contents are intentionally not committed.
 
@@ -19,8 +19,8 @@ The offline stream contract, bootstrap tests, and LearnFlow Core Freeze guard al
 | Package version | `0.21.5` |
 | Commit | `f97608f178d1ffeca59860195ab7da295f7c8e5f` |
 | Provider | `openrouter` |
-| Primary model | `openai/gpt-6-luna` |
-| Free fallback | `nvidia/nemotron-3.5-lightning:free` |
+| Primary model | `nvidia/nemotron-3.5-lightning:free` |
+| Model policy | `:free` only; paid OpenRouter slugs fail closed |
 | Programmatic protocol | `--format stream-json` |
 
 Do not install from Hermes `main`; use the exact pinned commit.
@@ -41,7 +41,7 @@ bash scripts/install_hermes_bootstrap.sh
 
 ## Configure OpenRouter
 
-Keep the real credential only in the ignored local `.env`:
+Keep the real credential only in the ignored local `.env`. The key may have paid balance, but LearnFlow's OpenRouter policy rejects any model slug that is not a `:free` variant:
 
 ```text
 OPENROUTER_API_KEY=<your-key>
