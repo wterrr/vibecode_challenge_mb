@@ -6,7 +6,7 @@ Verifies:
 - FFmpeg and FFprobe binaries
 - H.264 encoder availability (libx264)
 - Filesystem write permissions for artifacts directory
-- Temporary SQLite write/read functionality
+- Configured database write/read functionality (PostgreSQL in production)
 - Pillow font selection & Vietnamese sample rendering
 - Optional Manim availability
 - GEMINI_API_KEY configuration status (without leaking secrets)
@@ -134,6 +134,34 @@ def check_sqlite_writable() -> tuple[bool, str]:
             pass
 
 
+def check_postgres_writable(database_url: str) -> tuple[bool, str]:
+    """Verify PostgreSQL connectivity and transaction-local write/read capability."""
+
+    if not database_url.strip():
+        return False, "DATABASE_URL is not set"
+    try:
+        import psycopg
+
+        with psycopg.connect(database_url, connect_timeout=10) as conn:
+            conn.execute(
+                "CREATE TEMP TABLE learnflow_preflight_probe "
+                "(id INTEGER PRIMARY KEY, value TEXT NOT NULL)"
+            )
+            conn.execute(
+                "INSERT INTO learnflow_preflight_probe (id, value) VALUES (%s, %s)",
+                (1, "ok"),
+            )
+            row = conn.execute(
+                "SELECT value FROM learnflow_preflight_probe WHERE id = %s",
+                (1,),
+            ).fetchone()
+            if row and row[0] == "ok":
+                return True, "PostgreSQL connect/write/read OK"
+            return False, f"unexpected PostgreSQL probe result: {row!r}"
+    except Exception as exc:
+        return False, f"PostgreSQL error ({type(exc).__name__})"
+
+
 def check_gemini_smoke(api_key: str, model_name: str) -> tuple[bool, str]:
     if not api_key:
         return False, "GEMINI_API_KEY is not set"
@@ -213,9 +241,16 @@ def run_preflight(check_gemini: bool = False) -> bool:
     if not art_ok:
         all_required_passed = False
 
-    sql_ok, sql_msg = check_sqlite_writable()
-    print(f"  - SQLite writable   : [{'PASS' if sql_ok else 'FAIL'}] {sql_msg}")
-    if not sql_ok:
+    if settings.database_url.strip():
+        db_ok, db_msg = check_postgres_writable(settings.database_url)
+        print(f"  - PostgreSQL        : [{'PASS' if db_ok else 'FAIL'}] {db_msg}")
+    elif settings.environment.strip().lower() in {"production", "prod"}:
+        db_ok, db_msg = False, "DATABASE_URL is required in production"
+        print(f"  - PostgreSQL        : [FAIL] {db_msg}")
+    else:
+        db_ok, db_msg = check_sqlite_writable()
+        print(f"  - SQLite (dev/test) : [{'PASS' if db_ok else 'FAIL'}] {db_msg}")
+    if not db_ok:
         all_required_passed = False
 
     # Font & Internationalization
