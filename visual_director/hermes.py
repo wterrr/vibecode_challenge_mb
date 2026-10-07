@@ -245,6 +245,120 @@ def _validate_indexes(
     return indexes
 
 
+def _negotiate_comparison_topology(
+    graph: dict[str, Any],
+    *,
+    position: int,
+) -> dict[str, Any]:
+    """Make COMPARISON topology honest before frozen-Core validation.
+
+    Explicit PART_OF membership is preserved. A missing membership may be
+    reconstructed only when the node's semantic layout hint keeps it near
+    exactly one comparison column. If membership is still ambiguous, degrade
+    only that scene to CONCEPT_CARD instead of inventing semantic grouping.
+    """
+
+    layout_intent = dict(graph.get("layout_intent") or {})
+    if str(layout_intent.get("type") or "CONCEPT_CARD").upper() != "COMPARISON":
+        return graph
+
+    nodes = graph.get("nodes")
+    relations = graph.get("relations")
+    if not isinstance(nodes, list):
+        raise AgentContractError(
+            f"scenegraphs[{position}].nodes must be an array"
+        )
+    if not isinstance(relations, list):
+        raise AgentContractError(
+            f"scenegraphs[{position}].relations must be an array"
+        )
+
+    topic_ids = [
+        str(node.get("id"))
+        for node in nodes
+        if isinstance(node, dict)
+        and str(node.get("semantic_role") or "") == "COMPARISON_TOPIC"
+    ]
+    column_ids = [
+        str(node.get("id"))
+        for node in nodes
+        if isinstance(node, dict)
+        and str(node.get("semantic_role") or "") == "COMPARISON_COLUMN"
+    ]
+
+    def downgrade() -> dict[str, Any]:
+        layout_intent["type"] = "CONCEPT_CARD"
+        graph["layout_intent"] = layout_intent
+        style_refs = list(graph.get("style_refs") or ())
+        marker = "host.fallback.comparison_to_concept_card"
+        if marker not in style_refs:
+            style_refs.append(marker)
+        graph["style_refs"] = style_refs
+        return graph
+
+    if len(topic_ids) != 1 or len(column_ids) < 2:
+        return downgrade()
+
+    topic_id = topic_ids[0]
+    column_set = set(column_ids)
+    member_nodes = [
+        node
+        for node in nodes
+        if isinstance(node, dict)
+        and str(node.get("id")) not in column_set | {topic_id}
+    ]
+    member_ids = {str(node.get("id")) for node in member_nodes}
+
+    memberships: dict[str, set[str]] = {member_id: set() for member_id in member_ids}
+    for relation in relations:
+        if not isinstance(relation, dict):
+            raise AgentContractError(
+                f"scenegraphs[{position}].relations entries must be objects"
+            )
+        if str(relation.get("kind") or "") != "PART_OF":
+            continue
+        source = str(relation.get("source") or "")
+        target = str(relation.get("target") or "")
+        if source in memberships and target in column_set:
+            memberships[source].add(target)
+
+    generated: list[dict[str, Any]] = []
+    for node in member_nodes:
+        node_id = str(node.get("id"))
+        if memberships[node_id]:
+            continue
+        layout_hint = node.get("layout_hint")
+        keep_near = (
+            list(layout_hint.get("keep_near") or ())
+            if isinstance(layout_hint, dict)
+            else []
+        )
+        nearby_columns = sorted(
+            {str(item) for item in keep_near if str(item) in column_set}
+        )
+        if len(nearby_columns) == 1:
+            target = nearby_columns[0]
+            generated.append(
+                {
+                    "id": f"host:comparison-membership:{node_id}",
+                    "source": node_id,
+                    "target": target,
+                    "kind": "PART_OF",
+                    "source_port": "AUTO",
+                    "target_port": "AUTO",
+                    "style_refs": ["host.generated.comparison_membership"],
+                }
+            )
+            memberships[node_id].add(target)
+
+    if any(len(columns) != 1 for columns in memberships.values()):
+        return downgrade()
+
+    if generated:
+        graph["relations"] = [*relations, *generated]
+    return graph
+
+
 def assemble_visual_director_wire(
     payload: dict[str, Any],
     *,
@@ -376,6 +490,10 @@ def assemble_visual_director_wire(
             nodes.append(node)
 
         graph["nodes"] = nodes
+        graph = _negotiate_comparison_topology(
+            graph,
+            position=position,
+        )
 
         # Defensive host-side capability negotiation. Port hints are geometric
         # preferences, not lesson semantics. Canonicalize unsupported fixed-side

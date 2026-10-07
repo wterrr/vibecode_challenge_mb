@@ -815,3 +815,59 @@ def test_visual_director_host_negotiates_directed_ports_to_auto():
     assert 'relation["source_port"] = "AUTO"' in source
     assert 'relation["target_port"] = "AUTO"' in source
     assert "Graphviz cannot guarantee strict orthogonal fixed-side ports" in source
+
+
+def test_comparison_topology_host_uses_explicit_keep_near_membership():
+    from visual_director.hermes import _negotiate_comparison_topology
+
+    graph = {
+        "layout_intent": {"type": "COMPARISON"},
+        "nodes": [
+            {"id": "topic", "semantic_role": "COMPARISON_TOPIC"},
+            {"id": "left", "semantic_role": "COMPARISON_COLUMN"},
+            {"id": "right", "semantic_role": "COMPARISON_COLUMN"},
+            {
+                "id": "member",
+                "semantic_role": "DETAIL",
+                "layout_hint": {"keep_near": ["left"]},
+            },
+        ],
+        "relations": [],
+    }
+    negotiated = _negotiate_comparison_topology(graph, position=0)
+    assert negotiated["layout_intent"]["type"] == "COMPARISON"
+    generated = [
+        relation
+        for relation in negotiated["relations"]
+        if relation["id"].startswith("host:comparison-membership:")
+    ]
+    assert generated == [
+        {
+            "id": "host:comparison-membership:member",
+            "source": "member",
+            "target": "left",
+            "kind": "PART_OF",
+            "source_port": "AUTO",
+            "target_port": "AUTO",
+            "style_refs": ["host.generated.comparison_membership"],
+        }
+    ]
+
+
+def test_comparison_topology_host_downgrades_ambiguous_membership():
+    from visual_director.hermes import _negotiate_comparison_topology
+
+    graph = {
+        "layout_intent": {"type": "COMPARISON"},
+        "nodes": [
+            {"id": "topic", "semantic_role": "COMPARISON_TOPIC"},
+            {"id": "left", "semantic_role": "COMPARISON_COLUMN"},
+            {"id": "right", "semantic_role": "COMPARISON_COLUMN"},
+            {"id": "member", "semantic_role": "DETAIL"},
+        ],
+        "relations": [],
+        "style_refs": [],
+    }
+    negotiated = _negotiate_comparison_topology(graph, position=0)
+    assert negotiated["layout_intent"]["type"] == "CONCEPT_CARD"
+    assert "host.fallback.comparison_to_concept_card" in negotiated["style_refs"]

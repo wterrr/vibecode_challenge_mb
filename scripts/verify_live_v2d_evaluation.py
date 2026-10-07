@@ -143,6 +143,9 @@ def main() -> int:
         'port_hint["enum"] = ["AUTO"]',
         'relation["source_port"] = "AUTO"',
         'relation["target_port"] = "AUTO"',
+        "def _negotiate_comparison_topology",
+        "host.fallback.comparison_to_concept_card",
+        "host.generated.comparison_membership",
     ):
         if required not in visual_source:
             raise SystemExit(
