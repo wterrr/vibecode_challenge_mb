@@ -173,6 +173,48 @@ class LiveHermesStructuredRunner:
         )
 
     @staticmethod
+    def _require_frozen_core_layout_compatible(visual_output) -> None:
+        """Dry-run public frozen Core layout before accepting Visual output."""
+
+        from learnflow_v2.core.errors import (
+            GraphLayoutBackendError,
+            GraphLayoutBackendUnavailableError,
+            GraphLayoutInvalidInputError,
+            GraphLayoutUnsupportedCapabilityError,
+            GraphLayoutUnsupportedDirectionError,
+            LayoutInvalidInputError,
+            LayoutPreflightFailedError,
+            LayoutUnsatisfiableError,
+            MeasurementInvalidInputError,
+            MeasurementUnsupportedNodeError,
+        )
+        from learnflow_v2.layout import compile_scene_layout
+
+        layout_errors = (
+            LayoutInvalidInputError,
+            LayoutUnsatisfiableError,
+            LayoutPreflightFailedError,
+            GraphLayoutInvalidInputError,
+            GraphLayoutBackendUnavailableError,
+            GraphLayoutBackendError,
+            GraphLayoutUnsupportedDirectionError,
+            GraphLayoutUnsupportedCapabilityError,
+            MeasurementInvalidInputError,
+            MeasurementUnsupportedNodeError,
+        )
+        for graph in visual_output.scenegraphs:
+            try:
+                compile_scene_layout(graph)
+            except layout_errors as exc:
+                raise AgentContractError(
+                    "Visual Director SceneGraph is not layout-compatible with frozen "
+                    f"Core for scene {graph.scene_id!r}: {exc}. Simplify the semantic "
+                    "topology, reduce nonessential nodes/relations, or choose a simpler "
+                    "supported layout_intent such as CONCEPT_CARD."
+                ) from exc
+
+
+    @staticmethod
     def _parse_output(
         text: str,
         output_model: type[T],
@@ -235,9 +277,13 @@ class LiveHermesStructuredRunner:
                 registry=registry,
                 concept_order=tuple(str(item) for item in context["concept_order"]),
             )
-            return output_model.model_validate(
+            validated = output_model.model_validate(
                 assembled.model_dump(mode="json")
             )
+            LiveHermesStructuredRunner._require_frozen_core_layout_compatible(
+                validated
+            )
+            return validated
         return output_model.model_validate_json(candidate)
 
     @staticmethod
