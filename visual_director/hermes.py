@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from agent_contracts import (
@@ -17,6 +18,7 @@ from fact_verification import FactVerificationReport
 from learnflow_v2.concepts import ConceptRegistry
 from script_agent import require_visual_director_ready, validate_lesson_script
 
+from .gate import has_visual_implementation_directive
 from .models import VisualDirectorOutput
 from .registry import build_visual_concept_registry
 
@@ -198,6 +200,27 @@ def _visual_wire_schema(
     node["properties"] = node_props
     defs["SceneNode"] = node
 
+    # style_refs are symbolic design tokens, never renderer instructions.
+    # Keep the wire grammar intentionally narrow so providers cannot encode
+    # coordinates, CSS declarations, pixel sizes, or backend names here.
+    for def_name in ("SceneGraph", "SceneNode", "SceneRelation"):
+        definition = dict(defs.get(def_name) or {})
+        properties = dict(definition.get("properties") or {})
+        style_refs = dict(properties.get("style_refs") or {})
+        if style_refs:
+            items = dict(style_refs.get("items") or {})
+            items["type"] = "string"
+            items["pattern"] = r"^[A-Za-z][A-Za-z0-9.-]{0,63}$"
+            style_refs["items"] = items
+            style_refs["description"] = (
+                "Symbolic style tokens only, for example concept.primary or "
+                "emphasis.high. Never emit px values, coordinates, CSS position "
+                "directives, renderer/backend names, or implementation commands."
+            )
+            properties["style_refs"] = style_refs
+            definition["properties"] = properties
+            defs[def_name] = definition
+
     layout_intent = dict(defs.get("LayoutIntent") or {})
     layout_intent["enum"] = list(_CORE_LAYOUT_INTENTS)
     defs["LayoutIntent"] = layout_intent
@@ -243,6 +266,48 @@ def _validate_indexes(
     if len(indexes) != len(set(indexes)):
         raise AgentContractError(f"{field_name} must be unique")
     return indexes
+
+
+def _sanitize_symbolic_style_refs(graph: dict[str, Any]) -> dict[str, Any]:
+    """Drop only invalid implementation-bearing style tokens.
+
+    style_refs have no semantic authority; they are optional symbolic styling
+    hints. Semantic roles, visual intent, content, relations, and concept
+    identity are deliberately untouched and remain fail-closed at the gate.
+    """
+
+    token_pattern = re.compile(r"^[A-Za-z][A-Za-z0-9.-]{0,63}$")
+
+    def clean(values: Any) -> list[str]:
+        if not isinstance(values, list):
+            return []
+        kept: list[str] = []
+        for raw in values:
+            value = str(raw or "").strip()
+            if not value:
+                continue
+            if not token_pattern.fullmatch(value):
+                continue
+            if has_visual_implementation_directive(value):
+                continue
+            kept.append(value)
+        return kept
+
+    graph["style_refs"] = clean(graph.get("style_refs"))
+    for collection_name in ("nodes", "relations"):
+        collection = graph.get(collection_name)
+        if not isinstance(collection, list):
+            continue
+        cleaned_collection: list[Any] = []
+        for item in collection:
+            if not isinstance(item, dict):
+                cleaned_collection.append(item)
+                continue
+            normalized = dict(item)
+            normalized["style_refs"] = clean(normalized.get("style_refs"))
+            cleaned_collection.append(normalized)
+        graph[collection_name] = cleaned_collection
+    return graph
 
 
 def _negotiate_comparison_topology(
@@ -490,6 +555,7 @@ def assemble_visual_director_wire(
             nodes.append(node)
 
         graph["nodes"] = nodes
+        graph = _sanitize_symbolic_style_refs(graph)
         graph = _negotiate_comparison_topology(
             graph,
             position=position,

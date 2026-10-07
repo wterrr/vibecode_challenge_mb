@@ -146,6 +146,9 @@ def main() -> int:
         "def _negotiate_comparison_topology",
         "host.fallback.comparison_to_concept_card",
         "host.generated.comparison_membership",
+        "def _sanitize_symbolic_style_refs",
+        'items["pattern"] = r"^[A-Za-z][A-Za-z0-9.-]{0,63}$"',
+        "has_visual_implementation_directive",
     ):
         if required not in visual_source:
             raise SystemExit(

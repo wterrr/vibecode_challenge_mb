@@ -901,3 +901,41 @@ def test_visual_parse_returns_core_negotiated_output():
         "validated = LiveHermesStructuredRunner."
         "_require_frozen_core_layout_compatible"
     ) in visual_block
+
+
+def test_visual_style_refs_are_symbolic_only_in_wire_schema():
+    from visual_director.hermes import _visual_wire_schema
+
+    schema = _visual_wire_schema(segment_count=1, concept_count=1)
+    for name in ("SceneGraph", "SceneNode", "SceneRelation"):
+        items = schema["$defs"][name]["properties"]["style_refs"]["items"]
+        assert items["pattern"] == r"^[A-Za-z][A-Za-z0-9.-]{0,63}$"
+
+
+def test_host_drops_only_implementation_bearing_style_refs():
+    from visual_director.hermes import _sanitize_symbolic_style_refs
+
+    graph = {
+        "style_refs": ["concept.primary", "font-size:18px", "ffmpeg"],
+        "nodes": [
+            {
+                "id": "n1",
+                "semantic_role": "DETAIL",
+                "style_refs": ["emphasis.high", "position:absolute"],
+            }
+        ],
+        "relations": [
+            {
+                "id": "r1",
+                "source": "n1",
+                "target": "n1",
+                "kind": "PART_OF",
+                "style_refs": ["edge.strong", "x=100"],
+            }
+        ],
+    }
+    cleaned = _sanitize_symbolic_style_refs(graph)
+    assert cleaned["style_refs"] == ["concept.primary"]
+    assert cleaned["nodes"][0]["style_refs"] == ["emphasis.high"]
+    assert cleaned["relations"][0]["style_refs"] == ["edge.strong"]
+    assert cleaned["nodes"][0]["semantic_role"] == "DETAIL"

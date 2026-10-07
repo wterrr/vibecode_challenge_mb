@@ -46,6 +46,13 @@ def _sorted_unique(values) -> tuple[str, ...]:
     return tuple(sorted(set(values)))
 
 
+def has_visual_implementation_directive(value: str) -> bool:
+    """Return whether one metadata string leaks renderer/geometry implementation detail."""
+
+    text = str(value or "")
+    return any(pattern.search(text) for pattern in _BOUNDARY_PATTERNS)
+
+
 def _metadata_has_boundary_directive(scene: StoryboardScene, graph: SceneGraph) -> bool:
     values: list[str] = [scene.visual_intent, *scene.continuity_keys, *graph.style_refs]
     for node in graph.nodes:
@@ -57,8 +64,7 @@ def _metadata_has_boundary_directive(scene: StoryboardScene, graph: SceneGraph) 
     for group in graph.groups:
         if group.semantic_role:
             values.append(group.semantic_role)
-    text = "\n".join(values)
-    return any(pattern.search(text) for pattern in _BOUNDARY_PATTERNS)
+    return any(has_visual_implementation_directive(value) for value in values)
 
 
 def validate_visual_director_output(
