@@ -31,7 +31,7 @@ def _safe_error(exc: BaseException, secret: str) -> str:
 
 
 _RETRYABLE_PROVIDER_HTTP = re.compile(
-    r"\\bHTTP\\s+(?:404|408|425|429|500|502|503|504)\\b",
+    r"\bHTTP\s+(?:404|408|425|429|500|502|503|504)\b",
     re.IGNORECASE,
 )
 _RESEARCH_FAILURE_MARKERS = (
