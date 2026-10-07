@@ -97,6 +97,93 @@ def _index_results(
     return indexed
 
 
+def _require_object_keys(
+    payload: dict[str, Any],
+    *,
+    required: set[str],
+    optional: set[str] | None = None,
+    label: str,
+) -> None:
+    optional = optional or set()
+    actual = set(payload)
+    missing = sorted(required - actual)
+    unknown = sorted(actual - required - optional)
+    if missing:
+        raise AgentContractError(f"{label} is missing required fields {missing!r}")
+    if unknown:
+        raise AgentContractError(f"{label} has unexpected fields {unknown!r}")
+
+
+def _validate_wire_shape(role: ResearchRole, payload: dict[str, Any]) -> None:
+    if role == ResearchRole.CONCEPT:
+        _require_object_keys(
+            payload,
+            required={"concepts"},
+            optional={"open_questions"},
+            label="concept specialist output",
+        )
+        return
+
+    _require_object_keys(
+        payload,
+        required=(
+            {"sources", "claims"}
+            if role == ResearchRole.EVIDENCE
+            else {"sources", "claims", "misconceptions", "examples"}
+        ),
+        label=f"{role.value} output",
+    )
+
+    sources = _require_list(payload, "sources")
+    for index, row in enumerate(sources):
+        if not isinstance(row, dict):
+            raise AgentContractError(f"sources[{index}] must be an object")
+        _require_object_keys(
+            row,
+            required={"title", "locator"},
+            optional={"source_type", "publisher", "authors"},
+            label=f"sources[{index}]",
+        )
+
+    claims = _require_list(payload, "claims")
+    for index, row in enumerate(claims):
+        if not isinstance(row, dict):
+            raise AgentContractError(f"claims[{index}] must be an object")
+        _require_object_keys(
+            row,
+            required={"statement", "source_indexes", "confidence"},
+            label=f"claims[{index}]",
+        )
+
+    if role == ResearchRole.MISCONCEPTION:
+        for field in ("misconceptions", "examples"):
+            rows = _require_list(payload, field)
+            for index, row in enumerate(rows):
+                if not isinstance(row, dict):
+                    raise AgentContractError(f"{field}[{index}] must be an object")
+                required = (
+                    {"statement", "correction", "claim_indexes"}
+                    if field == "misconceptions"
+                    else {"description", "claim_indexes"}
+                )
+                _require_object_keys(
+                    row,
+                    required=required,
+                    label=f"{field}[{index}]",
+                )
+
+
+def validate_specialist_summary(
+    role: ResearchRole,
+    summary: str,
+):
+    """Strictly validate one specialist wire result with host-owned semantics."""
+
+    payload = _extract_json_object(summary)
+    _validate_wire_shape(role, payload)
+    return _parse_role_payload(role, payload)
+
+
 def _require_list(payload: dict[str, Any], field: str) -> list[Any]:
     value = payload.get(field)
     if not isinstance(value, list) or not value:
@@ -329,10 +416,9 @@ def assemble_specialist_delegation_results(
                 f"{errors!r}"
             )
 
-        payload = _extract_json_object(str(entry.get("summary") or ""))
-        parsed_by_role[specialist_task.role] = _parse_role_payload(
+        parsed_by_role[specialist_task.role] = validate_specialist_summary(
             specialist_task.role,
-            payload,
+            str(entry.get("summary") or ""),
         )
 
     expected_roles = {
