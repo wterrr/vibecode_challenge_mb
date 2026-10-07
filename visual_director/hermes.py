@@ -31,6 +31,15 @@ _CORE_READING_DIRECTIONS = (
 _RESERVED_LAYOUT_ROLES = frozenset(
     {"title", "safe_title", "header", "caption", "safe_caption", "subtitle"}
 )
+_SCENE_PURPOSE_BY_TEACHING_FUNCTION = {
+    "INTRODUCE": "INTRODUCE",
+    "EXPLAIN": "EXPLAIN",
+    "COMPARE": "COMPARE",
+    "DEMONSTRATE": "DEMONSTRATE",
+    "PRACTICE": "DRILLDOWN",
+    "CHECK": "RECAP",
+    "SUMMARIZE": "SUMMARIZE",
+}
 
 
 def _indexed_array_schema(
@@ -111,9 +120,13 @@ def _visual_wire_schema(
 
     graph = dict(defs.get("SceneGraph") or {})
     graph_props = dict(graph.get("properties") or {})
-    if "scene_id" not in graph_props:
-        raise AgentContractError("SceneGraph schema is missing scene_id")
+    for required_field in ("scene_id", "purpose"):
+        if required_field not in graph_props:
+            raise AgentContractError(
+                f"SceneGraph schema is missing {required_field}"
+            )
     graph_props.pop("scene_id", None)
+    graph_props.pop("purpose", None)
     graph_props["scene_index"] = {
         "type": "integer",
         "minimum": 0,
@@ -126,6 +139,7 @@ def _visual_wire_schema(
     graph["required"] = [
         "scene_index" if field == "scene_id" else field
         for field in list(graph.get("required") or ())
+        if field != "purpose"
     ]
     if "scene_index" not in graph["required"]:
         graph["required"].append("scene_index")
@@ -278,9 +292,10 @@ def assemble_visual_director_wire(
     for position, raw_graph in enumerate(raw_graphs):
         if not isinstance(raw_graph, dict):
             raise AgentContractError(f"scenegraphs[{position}] must be an object")
-        if "scene_id" in raw_graph:
+        if "scene_id" in raw_graph or "purpose" in raw_graph:
             raise AgentContractError(
-                "Visual Director wire SceneGraph must use scene_index, not scene_id"
+                "Visual Director wire SceneGraph must use scene_index and must "
+                "not emit host-owned scene_id/purpose"
             )
 
         graph = dict(raw_graph)
@@ -339,6 +354,16 @@ def assemble_visual_director_wire(
 
         graph["nodes"] = nodes
         graph["scene_id"] = scenes[scene_index]["scene_id"]
+        teaching_function = str(scenes[scene_index]["teaching_function"])
+        try:
+            graph["purpose"] = _SCENE_PURPOSE_BY_TEACHING_FUNCTION[
+                teaching_function
+            ]
+        except KeyError as exc:
+            raise AgentContractError(
+                "Storyboard teaching_function has no frozen-Core ScenePurpose "
+                f"mapping: {teaching_function!r}"
+            ) from exc
         graphs_by_scene_index[scene_index] = graph
         concepts_by_scene_index[scene_index] = concept_indexes
 
@@ -457,8 +482,10 @@ def build_visual_director_task(
                 "The host reconstructs those canonical references."
             ),
             (
-                "Each SceneGraph returns scene_index, not scene_id. scene_index points to "
-                "the corresponding storyboard scene; the host injects the exact scene_id."
+                "Each SceneGraph returns scene_index, not scene_id or purpose. scene_index "
+                "points to the corresponding storyboard scene; the host injects the exact "
+                "scene_id and deterministically derives ScenePurpose from that storyboard "
+                "scene's teaching_function."
             ),
             (
                 "For a SceneNode representing a canonical lesson concept, return "
