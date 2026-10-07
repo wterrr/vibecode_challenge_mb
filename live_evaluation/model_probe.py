@@ -146,8 +146,9 @@ def _extract_text(message: Any) -> str:
 def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> ModelProbeResult:
     """Probe both native function calling and structured specialist JSON.
 
-    A model only passes when it emits a real OpenAI-compatible tool_calls entry,
-    consumes the tool result, and then returns the exact specialist-shaped JSON.
+    A model only passes when, under the same auto tool-selection surface used by
+    pinned Hermes, it emits a real OpenAI-compatible tool_calls entry, consumes the
+    tool result, and then returns the exact specialist-shaped JSON.
     Serializing a fake {"calls": ...} object in assistant text is not sufficient.
     """
 
@@ -211,10 +212,9 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
         "max_tokens": 4096,
         "temperature": 0,
         "tools": [tool_definition],
-        "tool_choice": {
-            "type": "function",
-            "function": {"name": "probe_noop"},
-        },
+        # Match pinned Hermes ChatCompletionsTransport: expose tools but do not
+        # force tool_choice. Passing a forced function here rejects otherwise
+        # usable OpenRouter free endpoints that Hermes itself can call.
         "provider": {"require_parameters": True},
     }
     if model.startswith("google/gemma-4-"):
