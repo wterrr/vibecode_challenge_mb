@@ -162,6 +162,26 @@ class LiveHermesStructuredRunner:
             return output_model.model_validate(
                 assembled.model_dump(mode="json")
             )
+        if stage == "visual_director":
+            from agent_contracts import LessonScript
+            from learnflow_v2.concepts import ConceptRegistry, ConceptRegistrySchema
+            from visual_director import assemble_visual_director_wire
+
+            payload = json.loads(candidate)
+            context = json.loads(str(task["context"]))
+            script = LessonScript.model_validate(context["lesson_script"])
+            registry = ConceptRegistry.from_schema(
+                ConceptRegistrySchema.model_validate(context["concept_registry"])
+            )
+            assembled = assemble_visual_director_wire(
+                payload,
+                script=script,
+                registry=registry,
+                concept_order=tuple(str(item) for item in context["concept_order"]),
+            )
+            return output_model.model_validate(
+                assembled.model_dump(mode="json")
+            )
         return output_model.model_validate_json(candidate)
 
     @staticmethod
