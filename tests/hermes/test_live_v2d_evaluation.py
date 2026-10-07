@@ -505,3 +505,108 @@ def test_standard_agents_can_use_full_three_turn_schema_budget():
     assert "if attempts >= 3:" in source
     assert 'task_id=f"live-eval:{stage}:schema-retry:{attempts - 1}"' in source
     assert "max_iterations=128 if research else 3" in source
+
+
+
+def test_research_schema_repair_replaces_only_invalid_leaf(monkeypatch, tmp_path):
+    from research_orchestration import build_research_orchestration_plan
+    from scripts.verify_research_orchestration import LearningBrief
+
+    brief = LearningBrief(
+        brief_id="brief.repair",
+        user_query="Explain Python variables.",
+        learner_level="beginner",
+        target_duration_minutes=2,
+        language="en",
+    )
+    plan = build_research_orchestration_plan(brief)
+    payload = {
+        "results": [
+            {
+                "task_index": 1,
+                "status": "completed",
+                "truncated": False,
+                "schema_valid": False,
+                "schema_errors": ["calls was unexpected"],
+                "summary": '{"calls":[{"name":"web_search"}]}',
+                "tokens": {"input": 5, "output": 2},
+                "api_calls": 1,
+                "cost_usd": 0.0,
+                "cost_status": "free",
+                "schema_retries": 0,
+            }
+        ]
+    }
+    repaired_summary = json.dumps(
+        {
+            "sources": [
+                {
+                    "title": "Python Tutorial",
+                    "locator": "https://docs.python.org/3/tutorial/",
+                    "source_type": "DOCUMENT",
+                }
+            ],
+            "claims": [
+                {
+                    "statement": "Python assignment statements bind names to values.",
+                    "source_indexes": [0],
+                    "confidence": 0.9,
+                }
+            ],
+        }
+    )
+
+    class FakeRepairAgent:
+        session_prompt_tokens = 11
+        session_completion_tokens = 7
+        session_estimated_cost_usd = 0.0
+        session_cost_status = "free"
+
+        def run_conversation(self, **kwargs):
+            assert "NO tools" in kwargs["user_message"]
+            return {
+                "final_response": repaired_summary,
+                "api_calls": 1,
+            }
+
+        def close(self):
+            pass
+
+    runner = LiveHermesStructuredRunner(
+        model="apodex/apodex-1.1-mini:free",
+        api_key="not-used",
+        repo_root=tmp_path,
+    )
+    monkeypatch.setattr(runner, "_reserve", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        runner,
+        "_agent",
+        lambda **kwargs: FakeRepairAgent(),
+    )
+
+    runner._repair_invalid_research_results(
+        delegation_payload=payload,
+        plan=plan,
+    )
+
+    repaired = payload["results"][0]
+    assert repaired["schema_valid"] is True
+    assert repaired["schema_errors"] == []
+    assert repaired["summary"] == repaired_summary
+    assert repaired["schema_retries"] == 1
+    assert repaired["api_calls"] == 2
+    assert repaired["tokens"] == {"input": 16, "output": 9}
+
+
+def test_research_schema_repair_is_no_tool_and_bounded():
+    source = (
+        ROOT / "live_evaluation" / "hermes_runner.py"
+    ).read_text(encoding="utf-8")
+    repair_block = source[
+        source.index("def _repair_invalid_research_results"):
+        source.index("def _run_research_delegation")
+    ]
+    assert "range(1, 3)" in repair_block
+    assert "research_leaf_repair=True" in repair_block
+    assert "You have NO tools in this repair pass" in repair_block
+    assert "schema repair failed after" in repair_block
