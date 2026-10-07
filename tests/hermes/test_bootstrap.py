@@ -52,6 +52,10 @@ def test_install_wrappers_pin_exact_commit():
     assert "raw.githubusercontent.com/NousResearch/hermes-agent/$PIN/" in sh
     assert "raw.githubusercontent.com/NousResearch/hermes-agent/$Pin/" in ps1
 
+    assert "--retry 8" in sh
+    assert "--retry-all-errors" in sh
+    assert "--retry-max-time 240" in sh
+
 
 def test_runner_pins_project_local_binary_before_global_install():
     text = (ROOT / "scripts" / "run_hermes_bootstrap_smoke.py").read_text(encoding="utf-8")

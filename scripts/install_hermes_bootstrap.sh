@@ -10,7 +10,13 @@ INSTALLER="$RUNTIME/install-hermes-bootstrap.sh"
 
 mkdir -p "$RUNTIME"
 
-curl -fsSL "https://raw.githubusercontent.com/NousResearch/hermes-agent/$PIN/scripts/install.sh" -o "$INSTALLER"
+curl -fsSL \
+  --retry 8 \
+  --retry-all-errors \
+  --retry-delay 5 \
+  --retry-max-time 240 \
+  "https://raw.githubusercontent.com/NousResearch/hermes-agent/$PIN/scripts/install.sh" \
+  -o "$INSTALLER"
 
 bash "$INSTALLER" --commit "$PIN" --force-commit --skip-setup --skip-browser --skip-computer-use --dir "$INSTALL_DIR" --hermes-home "$HERMES_HOME"
 
