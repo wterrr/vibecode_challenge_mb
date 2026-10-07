@@ -8,6 +8,8 @@ on:
       - "app/main.py"
       - "requirements.txt"
       - "tests/test_postgres_repository.py"
+      - "tests/test_repository_factory.py"
+      - "scripts/migrate_sqlite_jobs_to_postgres.py"
       - ".github/workflows/postgres-persistence.yml"
   push:
     branches:
@@ -19,6 +21,8 @@ on:
       - "app/main.py"
       - "requirements.txt"
       - "tests/test_postgres_repository.py"
+      - "tests/test_repository_factory.py"
+      - "scripts/migrate_sqlite_jobs_to_postgres.py"
       - ".github/workflows/postgres-persistence.yml"
 
 jobs:
@@ -57,6 +61,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
+
+      - name: Repository backend selection
+        run: pytest -q tests/test_repository_factory.py
 
       - name: PostgreSQL repository integration
         run: pytest -q tests/test_postgres_repository.py
