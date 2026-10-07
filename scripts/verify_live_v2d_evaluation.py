@@ -66,6 +66,15 @@ def main() -> int:
     ):
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL non-research provider-attempt quota")
 
+    bootstrap_installer = (ROOT / "scripts" / "install_hermes_bootstrap.sh").read_text(
+        encoding="utf-8"
+    )
+    for required in ("--retry 8", "--retry-all-errors", "--retry-max-time 240"):
+        if required not in bootstrap_installer:
+            raise SystemExit(
+                "LIVE_V2D_CONTRACT=FAIL pinned Hermes bootstrap retry policy missing"
+            )
+
     workflow = (ROOT / ".github" / "workflows" / "live-v2d-evaluation.yml").read_text(
         encoding="utf-8"
     )
