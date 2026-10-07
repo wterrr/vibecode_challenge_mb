@@ -10,6 +10,9 @@ on:
       - chatgpt/live-v2d-evaluation
     paths:
       - "live_evaluation/**"
+      - "runtime_governance/**"
+      - ".hermes/plugins/learnflow-governance/**"
+      - "hermes/bootstrap/config.yaml"
       - "scripts/run_live_v2d_pilot.py"
       - "scripts/verify_live_v2d_evaluation.py"
       - "tests/hermes/test_live_v2d_evaluation.py"
