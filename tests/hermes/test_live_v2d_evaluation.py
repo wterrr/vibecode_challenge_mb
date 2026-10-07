@@ -269,42 +269,50 @@ def test_candidate_chain_diversifies_free_upstream_providers():
 
 
 
-def test_runtime_model_fallback_is_restricted_to_research_provider_failures():
+def test_runtime_model_fallback_is_restricted_to_research_provider_or_model_failures():
     source = (
         ROOT / "scripts" / "run_live_v2d_pilot.py"
     ).read_text(encoding="utf-8")
     assert "_retryable_research_provider_failure" in source
+    assert "_retryable_research_model_incompatibility" in source
     assert "CONCEPT_RESEARCHER" in source
     assert "EVIDENCE_RESEARCHER" in source
     assert "MISCONCEPTION_RESEARCHER" in source
     assert "404|408|425|429|500|502|503|504" in source
+    assert "failed output schema validation" in source
+    assert "repetition detected" in source
     assert "LIVE_MODEL_RUNTIME_FALLBACK" in source
     assert '"runtime_fallbacks": runtime_fallbacks' in source
 
 
-def test_runtime_model_fallback_does_not_retry_schema_or_nonresearch_errors():
-    from scripts.run_live_v2d_pilot import _retryable_research_provider_failure
+def test_runtime_model_fallback_classifies_provider_vs_model_failures_narrowly():
+    from scripts.run_live_v2d_pilot import (
+        _retryable_research_model_incompatibility,
+        _retryable_research_provider_failure,
+    )
 
-    assert _retryable_research_provider_failure(
-        RuntimeError(
-            "CONCEPT_RESEARCHER failed: HTTP 429: Provider returned error"
-        )
+    provider = RuntimeError(
+        "CONCEPT_RESEARCHER failed: HTTP 429: Provider returned error"
     )
-    assert _retryable_research_provider_failure(
-        RuntimeError(
-            "EVIDENCE_RESEARCHER failed: HTTP 503: upstream unavailable"
-        )
+    schema = RuntimeError(
+        "EVIDENCE_RESEARCHER failed output schema validation"
     )
-    assert not _retryable_research_provider_failure(
-        RuntimeError(
-            "EVIDENCE_RESEARCHER failed output schema validation"
-        )
+    repetition = RuntimeError(
+        "MISCONCEPTION_RESEARCHER failed: Response Stopped — Repetition Detected"
     )
-    assert not _retryable_research_provider_failure(
-        RuntimeError(
-            "pedagogy_agent failed: HTTP 429: Provider returned error"
-        )
+    nonresearch = RuntimeError(
+        "pedagogy_agent failed output schema validation"
     )
+
+    assert _retryable_research_provider_failure(provider)
+    assert not _retryable_research_model_incompatibility(provider)
+
+    assert not _retryable_research_provider_failure(schema)
+    assert _retryable_research_model_incompatibility(schema)
+    assert _retryable_research_model_incompatibility(repetition)
+
+    assert not _retryable_research_provider_failure(nonresearch)
+    assert not _retryable_research_model_incompatibility(nonresearch)
 
 
 
@@ -337,8 +345,9 @@ def test_research_fanout_uses_isolated_workspace_context():
         source.index("def _delegation_usage")
     ]
     assert 'TemporaryDirectory(prefix="learnflow-research-context-")' in research_block
-    assert 'os.environ["TERMINAL_CWD"] = isolated_cwd' in research_block
-    assert 'os.environ["TERMINAL_CWD"] = previous_terminal_cwd' in research_block
+    assert "from tools.terminal_scope import terminal_scope" in research_block
+    assert 'with terminal_scope({"TERMINAL_CWD": isolated_cwd}):' in research_block
+    assert 'os.environ["TERMINAL_CWD"] = isolated_cwd' not in research_block
 
 
 def test_runtime_reset_can_preserve_governance_across_fallback(tmp_path, monkeypatch):
@@ -370,8 +379,8 @@ def test_live_script_accounts_model_probes_before_runtime_fallback():
         ROOT / "scripts" / "run_live_v2d_pilot.py"
     ).read_text(encoding="utf-8")
     assert "_charge_probe_attempts" in source
-    assert "_charge_probe_attempts(len(selection.probes))" in source
-    assert "_charge_probe_attempts(len(probe_exc.probes))" in source
+    assert "_probe_request_count(selection.probes)" in source
+    assert "_probe_request_count(probe_exc.probes)" in source
     assert "preserve_governance=True" in source
 
 
@@ -450,3 +459,27 @@ def test_paid_openrouter_models_fail_closed_before_request(tmp_path):
 def test_all_default_live_models_are_free_variants():
     assert LIVE_MODEL_CANDIDATES
     assert all(model.endswith(":free") for model in LIVE_MODEL_CANDIDATES)
+
+
+
+def test_model_probe_requires_native_tool_call_roundtrip():
+    source = (
+        ROOT / "live_evaluation" / "model_probe.py"
+    ).read_text(encoding="utf-8")
+    assert '"tool_choice"' in source
+    assert 'message["tool_calls"]' in source
+    assert '"native_tool_call_missing"' in source
+    assert '"role": "tool"' in source
+    assert "request_count=2" in source
+    assert "fake" in source.lower() and "tool call" in source.lower()
+
+
+def test_probe_request_accounting_counts_http_roundtrips():
+    from live_evaluation.model_probe import ModelProbeResult
+    from scripts.run_live_v2d_pilot import _probe_request_count
+
+    probes = (
+        ModelProbeResult("a:free", False, "http_429", request_count=1),
+        ModelProbeResult("b:free", True, "pass", request_count=2),
+    )
+    assert _probe_request_count(probes) == 3
