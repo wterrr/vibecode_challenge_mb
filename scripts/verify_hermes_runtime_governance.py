@@ -50,7 +50,7 @@ def _enable_plugin(home: Path) -> None:
         )
 
 
-def _write_state(*, authorized: bool, tool_calls: int = 2) -> None:
+def _write_state(*, authorized: bool, tool_calls: int = 2, subagent_calls: int = 1) -> None:
     from agent_contracts import BudgetLedger, BudgetLimits
     from runtime_governance import GovernanceState
 
@@ -59,7 +59,7 @@ def _write_state(*, authorized: bool, tool_calls: int = 2) -> None:
         budget=BudgetLedger(
             ledger_id="budget.pinned",
             max_usd=1.0,
-            limits=BudgetLimits(tool_calls=tool_calls, subagent_calls=1),
+            limits=BudgetLimits(tool_calls=tool_calls, subagent_calls=subagent_calls),
         ),
         publication_authorized=authorized,
     )
@@ -152,6 +152,23 @@ def main() -> int:
     )
     if not _blocked(third):
         raise SystemExit("HERMES_RUNTIME_GOVERNANCE=FAIL tool budget was exceeded")
+
+    _write_state(authorized=False, tool_calls=1, subagent_calls=3)
+    batch = manager.invoke_hook(
+        "pre_tool_call",
+        tool_name="delegate_task",
+        args={"tasks": [{"goal": "a"}, {"goal": "b"}, {"goal": "c"}]},
+        session_id="session.pinned",
+        task_id="task.pinned",
+        turn_id="turn.pinned",
+        tool_call_id="tool.delegate.batch",
+    )
+    if _blocked(batch):
+        raise SystemExit("HERMES_RUNTIME_GOVERNANCE=FAIL three-child batch blocked")
+    from runtime_governance.hermes_plugin import load_state
+    batch_state = load_state()
+    if batch_state.budget is None or batch_state.budget.usage.subagent_calls != 3:
+        raise SystemExit("HERMES_RUNTIME_GOVERNANCE=FAIL child batch accounting")
 
     _write_state(authorized=True, tool_calls=4)
     allowed_publication = manager.invoke_hook(
@@ -295,6 +312,7 @@ def main() -> int:
     print("plugin_discovery=PASS")
     print("native_pre_tool_call_block=PASS")
     print("tool_budget_block=PASS")
+    print("delegated_child_accounting=PASS")
     print("authorized_publication=PASS")
     print("post_tool_metrics=PASS")
     print("post_api_cost_metrics=PASS")
