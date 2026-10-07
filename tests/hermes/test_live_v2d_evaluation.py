@@ -159,8 +159,9 @@ def test_live_provider_waits_for_contract_job_before_spending_provider_quota():
         encoding="utf-8"
     )
     assert "live-provider-pilot:\n    needs: live-eval-contract" in workflow
-    assert "github.event.pull_request.head.repo.full_name == github.repository" in workflow
-    assert "github.head_ref == 'chatgpt/live-v2d-evaluation'" in workflow
+    provider_block = workflow[workflow.index("live-provider-pilot:"):]
+    assert "github.event_name == 'workflow_dispatch'" in provider_block
+    assert "github.event_name == 'pull_request'" not in provider_block.split("steps:", 1)[0]
 
 
 def test_live_script_selects_model_via_probe_before_pilot():
