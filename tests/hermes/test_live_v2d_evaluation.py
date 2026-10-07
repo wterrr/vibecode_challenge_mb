@@ -265,3 +265,42 @@ def test_candidate_chain_diversifies_free_upstream_providers():
     providers = [model.split("/", 1)[0] for model in LIVE_MODEL_CANDIDATES]
     assert providers == ["google", "poolside", "nvidia", "apodex"]
     assert len(set(providers)) == len(providers)
+
+
+
+def test_runtime_model_fallback_is_restricted_to_research_provider_failures():
+    source = (
+        ROOT / "scripts" / "run_live_v2d_pilot.py"
+    ).read_text(encoding="utf-8")
+    assert "_retryable_research_provider_failure" in source
+    assert "CONCEPT_RESEARCHER" in source
+    assert "EVIDENCE_RESEARCHER" in source
+    assert "MISCONCEPTION_RESEARCHER" in source
+    assert "404|408|425|429|500|502|503|504" in source
+    assert "LIVE_MODEL_RUNTIME_FALLBACK" in source
+    assert '"runtime_fallbacks": runtime_fallbacks' in source
+
+
+def test_runtime_model_fallback_does_not_retry_schema_or_nonresearch_errors():
+    from scripts.run_live_v2d_pilot import _retryable_research_provider_failure
+
+    assert _retryable_research_provider_failure(
+        RuntimeError(
+            "CONCEPT_RESEARCHER failed: HTTP 429: Provider returned error"
+        )
+    )
+    assert _retryable_research_provider_failure(
+        RuntimeError(
+            "EVIDENCE_RESEARCHER failed: HTTP 503: upstream unavailable"
+        )
+    )
+    assert not _retryable_research_provider_failure(
+        RuntimeError(
+            "EVIDENCE_RESEARCHER failed output schema validation"
+        )
+    )
+    assert not _retryable_research_provider_failure(
+        RuntimeError(
+            "pedagogy_agent failed: HTTP 429: Provider returned error"
+        )
+    )
