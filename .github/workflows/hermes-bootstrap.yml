@@ -1,8 +1,18 @@
 name: Hermes Bootstrap
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "openrouter_policy.py"
+      - "hermes/bootstrap/**"
+      - "scripts/run_hermes_bootstrap_smoke.py"
+      - "tests/hermes/test_bootstrap.py"
+      - ".github/workflows/hermes-bootstrap.yml"
   pull_request:
     paths:
+      - "openrouter_policy.py"
       - "AGENTS.md"
       - ".env.example"
       - ".gitignore"
