@@ -21,6 +21,18 @@ from .models import VisualDirectorOutput
 from .registry import build_visual_concept_registry
 
 
+_CORE_LAYOUT_INTENTS = ("CONCEPT_CARD", "PROCESS", "COMPARISON", "HIERARCHY")
+_CORE_READING_DIRECTIONS = (
+    "LEFT_TO_RIGHT",
+    "RIGHT_TO_LEFT",
+    "TOP_TO_BOTTOM",
+    "BOTTOM_TO_TOP",
+)
+_RESERVED_LAYOUT_ROLES = frozenset(
+    {"title", "safe_title", "header", "caption", "safe_caption", "subtitle"}
+)
+
+
 def _indexed_array_schema(
     count: int,
     *,
@@ -144,7 +156,25 @@ def _visual_wire_schema(
         field for field in list(node.get("required") or ())
         if field not in {"concept_ref", "semantic_key"}
     ]
+    semantic_role = dict(node_props.get("semantic_role") or {})
+    semantic_role["description"] = (
+        "Optional domain semantic role. Do not use layout-zone roles such as "
+        "TITLE, HEADER, CAPTION, SUBTITLE, SAFE_TITLE, or SAFE_CAPTION."
+    )
+    semantic_role["pattern"] = (
+        r"^(?!(?i:title|safe_title|header|caption|safe_caption|subtitle)$).+$"
+    )
+    node_props["semantic_role"] = semantic_role
+    node["properties"] = node_props
     defs["SceneNode"] = node
+
+    layout_intent = dict(defs.get("LayoutIntent") or {})
+    layout_intent["enum"] = list(_CORE_LAYOUT_INTENTS)
+    defs["LayoutIntent"] = layout_intent
+
+    reading_direction = dict(defs.get("ReadingDirection") or {})
+    reading_direction["enum"] = list(_CORE_READING_DIRECTIONS)
+    defs["ReadingDirection"] = reading_direction
 
     schema["$defs"] = defs
     return schema
@@ -341,7 +371,29 @@ def assemble_visual_director_wire(
     canonical["scenegraphs"] = [
         graphs_by_scene_index[index] for index in range(len(scenes))
     ]
-    return VisualDirectorOutput.model_validate(canonical)
+    output = VisualDirectorOutput.model_validate(canonical)
+
+    for graph in output.scenegraphs:
+        if graph.layout_intent.type.value not in _CORE_LAYOUT_INTENTS:
+            raise AgentContractError(
+                "Visual Director layout_intent is not supported by frozen Core; "
+                f"scene_id={graph.scene_id!r}, layout_intent={graph.layout_intent.type.value!r}"
+            )
+        if graph.layout_intent.reading_direction.value not in _CORE_READING_DIRECTIONS:
+            raise AgentContractError(
+                "Visual Director reading_direction is not supported by frozen Core; "
+                f"scene_id={graph.scene_id!r}, "
+                f"reading_direction={graph.layout_intent.reading_direction.value!r}"
+            )
+        for node in graph.nodes:
+            role = str(node.semantic_role or "").strip()
+            if role and role.casefold() in _RESERVED_LAYOUT_ROLES:
+                raise AgentContractError(
+                    "Visual Director semantic_role must not use frozen Core layout-zone "
+                    f"vocabulary; scene_id={graph.scene_id!r}, node_id={node.id!r}, "
+                    f"semantic_role={role!r}"
+                )
+    return output
 
 
 def build_visual_director_task(
@@ -415,6 +467,15 @@ def build_visual_director_task(
                 "The host injects exact concept_ref and semantic_key values."
             ),
             "Storyboard scene teaching_function must match every ScriptSegment assigned to that scene.",
+            (
+                "Use only frozen-Core-supported layout intents: CONCEPT_CARD, PROCESS, "
+                "COMPARISON, or HIERARCHY; and reading directions LEFT_TO_RIGHT, "
+                "RIGHT_TO_LEFT, TOP_TO_BOTTOM, or BOTTOM_TO_TOP."
+            ),
+            (
+                "semantic_role is domain semantics only. Never use layout-zone role names "
+                "TITLE, HEADER, CAPTION, SUBTITLE, SAFE_TITLE, or SAFE_CAPTION."
+            ),
             "Use semantic SceneGraph structure only: nodes, relations, groups, symbolic style_refs, LayoutIntent, ReadingDirection, PortHint, and semantic LayoutHint fields.",
             "Layout hints may express preferred_region, relative importance, keep_near, keep_apart, and preferred_order only.",
             "Never output x/y coordinates, pixel values, width/height geometry, absolute font sizes, CSS positioning, renderer commands, FFmpeg commands, Manim/Pillow implementation instructions, or arbitrary rendering code.",
