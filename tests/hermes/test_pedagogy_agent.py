@@ -36,6 +36,7 @@ from fact_verification import (
 )
 from pedagogy_agent import (
     PedagogyIssue,
+    assemble_pedagogy_plan_wire,
     build_pedagogy_agent_task,
     require_script_ready,
     validate_pedagogy_plan,
@@ -306,14 +307,23 @@ def test_hermes_task_requires_all_pedagogical_outputs_and_preserves_boundaries()
     for field in (
         "learning_objectives",
         "prerequisites",
-        "concept_order",
+        "concept_indexes",
         "worked_examples",
         "analogies",
         "misconceptions",
         "assessment_probes",
     ):
         assert field in properties
+    assert "concept_order" not in properties
+    concept_indexes = properties["concept_indexes"]
+    assert concept_indexes["uniqueItems"] is True
+    assert concept_indexes["items"]["minimum"] == 0
+    assert concept_indexes["items"]["maximum"] == len(pack.concepts) - 1
     context = json.loads(task["context"])
+    assert context["research"]["concept_catalog"] == [
+        {"index": 0, "concept": "first"},
+        {"index": 1, "concept": "second"},
+    ]
     assert "Do not write lesson-script narration." in context["instructions"]
     assert any("visual coordinates" in item for item in context["instructions"])
 
@@ -380,3 +390,52 @@ def test_hermes_task_rejects_forged_fact_approval_before_context_exposure():
     )
     with pytest.raises(AgentContractError, match="approves claims blocked"):
         build_pedagogy_agent_task(brief, pack, graph, forged)
+
+
+
+def _wire_payload_from_good_plan(brief, pack, graph):
+    payload = good_plan(brief, pack, graph).model_dump(mode="json")
+    payload.pop("concept_order")
+    payload["concept_indexes"] = [1, 0]
+    return payload
+
+
+def test_host_assembles_exact_concept_order_from_indexes():
+    brief, pack, graph, _ = fixture()
+    assembled = assemble_pedagogy_plan_wire(
+        _wire_payload_from_good_plan(brief, pack, graph),
+        concepts=pack.concepts,
+    )
+    assert assembled.concept_order == ("second", "first")
+    assert set(assembled.concept_order).issubset(set(pack.concepts))
+
+
+@pytest.mark.parametrize(
+    "indexes,match",
+    [
+        ([0, 0], "must be unique"),
+        ([2], "outside 0..1"),
+        ([-1], "outside 0..1"),
+        (["0"], "must be integers"),
+    ],
+)
+def test_host_rejects_invalid_concept_indexes(indexes, match):
+    brief, pack, graph, _ = fixture()
+    payload = _wire_payload_from_good_plan(brief, pack, graph)
+    payload["concept_indexes"] = indexes
+    with pytest.raises(AgentContractError, match=match):
+        assemble_pedagogy_plan_wire(
+            payload,
+            concepts=pack.concepts,
+        )
+
+
+def test_host_rejects_model_generated_concept_order_on_wire():
+    brief, pack, graph, _ = fixture()
+    payload = _wire_payload_from_good_plan(brief, pack, graph)
+    payload["concept_order"] = ["hallucinated"]
+    with pytest.raises(AgentContractError, match="concept_indexes, not concept_order"):
+        assemble_pedagogy_plan_wire(
+            payload,
+            concepts=pack.concepts,
+        )
