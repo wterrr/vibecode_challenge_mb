@@ -138,6 +138,27 @@ class LiveHermesStructuredRunner:
             return output_model.model_validate(
                 assembled.model_dump(mode="json")
             )
+        if stage == "script_agent":
+            from script_agent import assemble_lesson_script_wire
+
+            payload = json.loads(candidate)
+            context = json.loads(str(task["context"]))
+            claim_ids = tuple(
+                str(item["claim_id"])
+                for item in context.get("selected_fact_claim_catalog") or ()
+            )
+            objective_ids = tuple(
+                str(item["objective_id"])
+                for item in context.get("objective_catalog") or ()
+            )
+            assembled = assemble_lesson_script_wire(
+                payload,
+                claim_ids=claim_ids,
+                objective_ids=objective_ids,
+            )
+            return output_model.model_validate(
+                assembled.model_dump(mode="json")
+            )
         return output_model.model_validate_json(candidate)
 
     @staticmethod
