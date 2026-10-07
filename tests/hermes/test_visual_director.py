@@ -13,7 +13,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from agent_contracts import AgentContractError, Storyboard, StoryboardScene, TeachingFunction
-from learnflow_v2.scenegraph import LayoutHint, NodeKind, SceneNode, ScenePurpose
+from learnflow_v2.scenegraph import LayoutHint, LayoutIntent, LayoutIntentSpec, NodeKind, SceneNode, ScenePurpose
 from scripts.verify_script_agent import build_fixture, build_script
 from scripts.verify_visual_director import build_visual_output
 from visual_director import (
@@ -415,6 +415,63 @@ def test_host_rejects_duplicate_scenegraph_indexes():
     )
     wire["scenegraphs"][1]["scene_index"] = wire["scenegraphs"][0]["scene_index"]
     with pytest.raises(AgentContractError, match="more than one SceneGraph"):
+        assemble_visual_director_wire(
+            wire,
+            script=script,
+            registry=registry,
+            concept_order=pedagogy.concept_order,
+        )
+
+
+
+def test_visual_wire_schema_restricts_frozen_core_layout_vocabulary():
+    brief, pack, evidence_graph, report, pedagogy, script, _, _ = fixture()
+    task = build_visual_director_task(
+        brief, pack, evidence_graph, report, pedagogy, script
+    )
+    schema = task["output_schema"]
+    assert schema["$defs"]["LayoutIntent"]["enum"] == [
+        "CONCEPT_CARD",
+        "PROCESS",
+        "COMPARISON",
+        "HIERARCHY",
+    ]
+    assert schema["$defs"]["ReadingDirection"]["enum"] == [
+        "LEFT_TO_RIGHT",
+        "RIGHT_TO_LEFT",
+        "TOP_TO_BOTTOM",
+        "BOTTOM_TO_TOP",
+    ]
+
+
+def test_host_rejects_layout_zone_role_before_frozen_core():
+    *_, pedagogy, script, registry, output = fixture()
+    wire = _wire_visual_payload(
+        output,
+        script,
+        registry,
+        pedagogy.concept_order,
+    )
+    wire["scenegraphs"][0]["nodes"][0]["semantic_role"] = "TITLE"
+    with pytest.raises(AgentContractError, match="layout-zone vocabulary"):
+        assemble_visual_director_wire(
+            wire,
+            script=script,
+            registry=registry,
+            concept_order=pedagogy.concept_order,
+        )
+
+
+def test_host_rejects_unsupported_layout_intent_before_frozen_core():
+    *_, pedagogy, script, registry, output = fixture()
+    wire = _wire_visual_payload(
+        output,
+        script,
+        registry,
+        pedagogy.concept_order,
+    )
+    wire["scenegraphs"][0]["layout_intent"]["type"] = LayoutIntent.ILLUSTRATION.value
+    with pytest.raises(AgentContractError, match="not supported by frozen Core"):
         assemble_visual_director_wire(
             wire,
             script=script,
