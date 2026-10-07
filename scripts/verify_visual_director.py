@@ -279,6 +279,7 @@ def _wire_payload(output, script, registry, concept_order):
     }
     for graph in payload["scenegraphs"]:
         graph["scene_index"] = scene_indexes[graph.pop("scene_id")]
+        graph.pop("purpose", None)
         for node in graph["nodes"]:
             ref = node.pop("concept_ref", None)
             node.pop("semantic_key", None)
@@ -315,8 +316,12 @@ def main() -> int:
     node_props = wire_schema["$defs"]["SceneNode"]["properties"]
     if "script_segment_indexes" not in scene_props or "script_segment_ids" in scene_props:
         raise SystemExit("VISUAL_DIRECTOR=FAIL script refs are not host-owned")
-    if "scene_index" not in graph_props or "scene_id" in graph_props:
-        raise SystemExit("VISUAL_DIRECTOR=FAIL scene refs are not host-owned")
+    if (
+        "scene_index" not in graph_props
+        or "scene_id" in graph_props
+        or "purpose" in graph_props
+    ):
+        raise SystemExit("VISUAL_DIRECTOR=FAIL scene refs/purpose are not host-owned")
     if "concept_index" not in node_props or "concept_ref" in node_props:
         raise SystemExit("VISUAL_DIRECTOR=FAIL concept refs are not host-owned")
 
@@ -330,6 +335,11 @@ def main() -> int:
     )
     if assembled.to_canonical_json() != output.to_canonical_json():
         raise SystemExit("VISUAL_DIRECTOR=FAIL host wire assembly changed semantics")
+    check_graph = next(
+        graph for graph in assembled.scenegraphs if graph.scene_id == "scene.check"
+    )
+    if check_graph.purpose != ScenePurpose.RECAP:
+        raise SystemExit("VISUAL_DIRECTOR=FAIL host scene-purpose derivation")
     validation = validate_visual_director_output(
         output,
         script=script,
@@ -344,6 +354,7 @@ def main() -> int:
     print("storyboard_script_coverage=PASS")
     print("deterministic_concept_registry=PASS")
     print("host_owned_dynamic_refs=PASS")
+    print("host_owned_scene_purpose=PASS")
     print("registry_identity_validation=PASS")
     print("semantic_layout_hints_only=PASS")
     print("no_pixel_coordinates=PASS")
