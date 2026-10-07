@@ -61,6 +61,27 @@ def _retryable_research_provider_failure(exc: BaseException) -> bool:
     )
 
 
+def _retryable_research_model_incompatibility(exc: BaseException) -> bool:
+    """Hop free models only for leaf-output failures attributable to model behavior.
+
+    Keep this deliberately narrow so application/contract bugs still fail closed.
+    """
+
+    text = f"{type(exc).__name__}: {exc}"
+    if not any(marker in text for marker in _RESEARCH_FAILURE_MARKERS):
+        return False
+    lowered = text.lower()
+    return bool(
+        "failed output schema validation" in lowered
+        or "response stopped" in lowered and "repetition" in lowered
+        or "repetition detected" in lowered
+    )
+
+
+def _probe_request_count(probes) -> int:
+    return sum(max(1, int(getattr(item, "request_count", 1) or 1)) for item in probes)
+
+
 
 def _charge_probe_attempts(count: int) -> None:
     if count <= 0:
@@ -117,9 +138,9 @@ def main() -> int:
             try:
                 selection = select_live_model(api_key=key, candidates=remaining)
             except ModelProbeError as probe_exc:
-                _charge_probe_attempts(len(probe_exc.probes))
+                _charge_probe_attempts(_probe_request_count(probe_exc.probes))
                 raise
-            _charge_probe_attempts(len(selection.probes))
+            _charge_probe_attempts(_probe_request_count(selection.probes))
             probe_rows.extend(item.to_dict() for item in selection.probes)
             model = selection.selected_model
             print(f"LIVE_MODEL_PROBE=PASS selected={model}")
@@ -133,18 +154,28 @@ def main() -> int:
                 )
                 break
             except BaseException as runtime_exc:
-                if not _retryable_research_provider_failure(runtime_exc):
+                provider_failure = _retryable_research_provider_failure(runtime_exc)
+                model_incompatible = _retryable_research_model_incompatibility(
+                    runtime_exc
+                )
+                if not provider_failure and not model_incompatible:
                     raise
+                fallback_status = (
+                    "research_provider_unavailable"
+                    if provider_failure
+                    else "research_model_incompatible"
+                )
                 runtime_fallbacks.append(
                     {
                         "model": model,
-                        "status": "research_provider_unavailable",
+                        "status": fallback_status,
                         "error": _safe_error(runtime_exc, key),
                     }
                 )
                 print(
                     "LIVE_MODEL_RUNTIME_FALLBACK "
-                    f"model={model} reason={_safe_error(runtime_exc, key)}",
+                    f"model={model} status={fallback_status} "
+                    f"reason={_safe_error(runtime_exc, key)}",
                     file=sys.stderr,
                 )
                 selected_index = remaining.index(model)
