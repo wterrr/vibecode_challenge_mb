@@ -496,26 +496,36 @@ def build_production_media(
             source_hash=str(rendered["source_hash"]),
         )
 
+        # Edge TTS SentenceBoundary events are useful provenance, but providers
+        # may emit overlapping sentence intervals. Frozen Core intentionally
+        # rejects overlapping subtitle cues, so learner-visible subtitles are
+        # derived from the accepted ScriptSegment boundaries and measured audio
+        # duration via the deterministic beat map. Persist raw provider cues for
+        # audit rather than silently trusting them as presentation timing.
+        _atomic_json(
+            audio_dir / f"{index:03d}.provider_cues.json",
+            [
+                cue.model_dump(mode="json")
+                for cue in narration.subtitle_cues
+            ],
+        )
         cues: list[SubtitleRenderCue] = []
-        if narration.subtitle_cues:
-            cues.extend(narration.subtitle_cues)
-        else:
-            for phrase_index, phrase in enumerate(beat_map.phrases):
-                text = (
-                    subtitle_texts[phrase_index]
-                    if phrase_index < len(subtitle_texts)
-                    else phrase.text
-                )
-                end = min(float(phrase.end), artifact.duration)
-                start = min(float(phrase.start), max(0.0, end - 1e-3))
-                if end > start + 1e-4:
-                    cues.append(
-                        SubtitleRenderCue(
-                            start_seconds=start,
-                            end_seconds=end,
-                            text=text,
-                        )
+        for phrase_index, phrase in enumerate(beat_map.phrases):
+            text = (
+                subtitle_texts[phrase_index]
+                if phrase_index < len(subtitle_texts)
+                else phrase.text
+            )
+            end = min(float(phrase.end), artifact.duration)
+            start = min(float(phrase.start), max(0.0, end - 1e-3))
+            if end > start + 1e-4:
+                cues.append(
+                    SubtitleRenderCue(
+                        start_seconds=start,
+                        end_seconds=end,
+                        text=text,
                     )
+                )
 
         scene_artifacts.append(artifact)
         scene_layouts.append(layout)
@@ -531,6 +541,8 @@ def build_production_media(
                 "render_duration_seconds": artifact.duration,
                 "motion_event_count": len(compiled.events),
                 "subtitle_cue_count": len(cues),
+                "provider_subtitle_cue_count": len(narration.subtitle_cues),
+                "subtitle_timing_source": "deterministic_script_segments",
                 "layout_intent": graph.layout_intent.type.value,
             }
         )
