@@ -14,8 +14,17 @@
   "provider": {
     "id": "openrouter",
     "api_key_env": "OPENROUTER_API_KEY",
-    "primary_model": "openai/gpt-6-luna",
-    "free_fallback_model": "nvidia/nemotron-3.5-lightning:free"
+    "primary_model": "nvidia/nemotron-3.5-lightning:free",
+    "free_fallback_model": "nvidia/nemotron-3.5-lightning:free",
+    "free_only": true,
+    "allowed_models": [
+      "nvidia/nemotron-3.5-lightning:free",
+      "google/gemma-4-31b-it:free",
+      "poolside/laguna-s-2.1:free",
+      "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "apodex/apodex-1.1-mini:free"
+    ],
+    "historical_paid_model_removed": "openai/gpt-6-luna"
   },
   "protocol": {
     "cli_output_format": "stream-json",
