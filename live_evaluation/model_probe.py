@@ -87,6 +87,44 @@ def _safe_detail(value: Any) -> str:
     return text[-500:]
 
 
+def _safe_http_error_detail(raw: str) -> str:
+    """Keep diagnostic HTTP error fields without persisting account/header metadata."""
+
+    try:
+        payload = json.loads(raw)
+    except (TypeError, json.JSONDecodeError):
+        return "non_json_http_error"
+
+    error = payload.get("error") if isinstance(payload, dict) else None
+    if not isinstance(error, dict):
+        return "unstructured_http_error"
+
+    safe_error: dict[str, Any] = {}
+    message = error.get("message")
+    if isinstance(message, str) and message.strip():
+        safe_error["message"] = _safe_detail(message)
+    code = error.get("code")
+    if isinstance(code, (int, float, str)) and not isinstance(code, bool):
+        safe_error["code"] = code
+
+    metadata = error.get("metadata")
+    if isinstance(metadata, dict):
+        safe_metadata = {}
+        for key in ("limit_source", "provider_name", "remedy_hint"):
+            value = metadata.get(key)
+            if isinstance(value, str) and value.strip():
+                safe_metadata[key] = _safe_detail(value)
+        if safe_metadata:
+            safe_error["metadata"] = safe_metadata
+
+    return json.dumps(
+        {"error": safe_error},
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+
+
 def _extract_text(message: Any) -> str:
     if not isinstance(message, dict):
         return ""
@@ -165,7 +203,7 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
             model=model,
             passed=False,
             status=f"http_{exc.code}",
-            detail=_safe_detail(detail),
+            detail=_safe_http_error_detail(detail),
         )
     except (URLError, TimeoutError, json.JSONDecodeError) as exc:
         return ModelProbeResult(
