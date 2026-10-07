@@ -123,13 +123,16 @@ def main() -> int:
         "subtitle_text",
         "spoken_language",
         "subtitle_language",
-        "claim_ids",
-        "objective_ids",
+        "claim_indexes",
+        "objective_indexes",
         "teaching_function",
         "emphasis",
     }
     if not required_segment_fields.issubset(segment_properties):
         raise SystemExit("HERMES_SCRIPT_AGENT=FAIL ScriptSegment schema incomplete")
+
+    if "claim_ids" in segment_properties or "objective_ids" in segment_properties:
+        raise SystemExit("HERMES_SCRIPT_AGENT=FAIL dynamic IDs exposed on wire")
 
     forbidden_fields = {
         "x", "y", "width", "height", "pixel_x", "pixel_y",
@@ -153,6 +156,7 @@ def main() -> int:
     print("runtime=exact pinned Hermes")
     print("structured_lesson_script_schema=PASS")
     print("claim_preservation_context=PASS")
+    print("host_owned_claim_objective_references=PASS")
     print("teaching_function_field=PASS")
     print("no_visual_or_code_fields=PASS")
     return 0
