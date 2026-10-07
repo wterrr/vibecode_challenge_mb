@@ -114,10 +114,30 @@ class LiveHermesStructuredRunner:
         )
 
     @staticmethod
-    def _parse_output(text: str, output_model: type[T]) -> T:
+    def _parse_output(
+        text: str,
+        output_model: type[T],
+        *,
+        stage: str,
+        task: dict,
+    ) -> T:
         from tools.delegation_output_schema import extract_json_candidate
 
         candidate = extract_json_candidate(text)
+        if stage == "pedagogy_agent":
+            from pedagogy_agent import assemble_pedagogy_plan_wire
+
+            payload = json.loads(candidate)
+            context = json.loads(str(task["context"]))
+            research = dict(context.get("research") or {})
+            concepts = tuple(str(item) for item in research.get("concepts") or ())
+            assembled = assemble_pedagogy_plan_wire(
+                payload,
+                concepts=concepts,
+            )
+            return output_model.model_validate(
+                assembled.model_dump(mode="json")
+            )
         return output_model.model_validate_json(candidate)
 
     @staticmethod
@@ -344,7 +364,12 @@ class LiveHermesStructuredRunner:
             )
             text = str((result or {}).get("final_response") or "")
             try:
-                parsed = self._parse_output(text, output_model)
+                parsed = self._parse_output(
+                    text,
+                    output_model,
+                    stage=stage,
+                    task=task,
+                )
             except (ValidationError, json.JSONDecodeError, ValueError) as exc:
                 self._reserve(stage, retry=True)
                 attempts += 1
@@ -355,7 +380,12 @@ class LiveHermesStructuredRunner:
                     task_id=f"live-eval:{stage}:schema-retry",
                 )
                 text = str((result or {}).get("final_response") or "")
-                parsed = self._parse_output(text, output_model)
+                parsed = self._parse_output(
+                    text,
+                    output_model,
+                    stage=stage,
+                    task=task,
+                )
 
             usage = StageUsage(
                 stage=stage,
