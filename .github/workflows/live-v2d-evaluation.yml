@@ -7,9 +7,11 @@ concurrency:
 on:
   push:
     branches:
+      - main
       - chatgpt/live-v2d-evaluation
     paths:
       - "live_evaluation/**"
+      - "openrouter_policy.py"
       - "runtime_governance/**"
       - ".hermes/plugins/learnflow-governance/**"
       - "hermes/bootstrap/config.yaml"
@@ -50,9 +52,11 @@ jobs:
     needs: live-eval-contract
     if: >-
       (github.event_name == 'push' &&
-       github.ref == 'refs/heads/chatgpt/live-v2d-evaluation') ||
+       (github.ref == 'refs/heads/main' ||
+        github.ref == 'refs/heads/chatgpt/live-v2d-evaluation')) ||
       (github.event_name == 'workflow_dispatch' &&
-       github.ref == 'refs/heads/chatgpt/live-v2d-evaluation')
+       (github.ref == 'refs/heads/main' ||
+        github.ref == 'refs/heads/chatgpt/live-v2d-evaluation'))
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
