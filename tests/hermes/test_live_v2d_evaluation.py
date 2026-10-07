@@ -397,3 +397,29 @@ def test_host_preauthorizes_direct_research_fanout():
     assert '"delegate_task"' in research_block
     assert '"host-research-fanout"' in research_block
     assert "LearnFlow governance rejected research fan-out" in research_block
+
+
+
+def test_probe_http_error_detail_redacts_account_metadata():
+    from live_evaluation.model_probe import _safe_http_error_detail
+
+    raw = json.dumps(
+        {
+            "error": {
+                "message": "rate limited",
+                "code": 429,
+                "metadata": {
+                    "limit_source": "free-tier",
+                    "provider_name": "provider",
+                    "headers": {"Authorization": "secret"},
+                },
+            },
+            "user_id": "private-account-id",
+        }
+    )
+    detail = _safe_http_error_detail(raw)
+    assert "rate limited" in detail
+    assert "429" in detail
+    assert "private-account-id" not in detail
+    assert "Authorization" not in detail
+    assert "secret" not in detail
