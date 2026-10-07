@@ -73,6 +73,7 @@ def _retryable_research_model_incompatibility(exc: BaseException) -> bool:
     lowered = text.lower()
     return bool(
         "failed output schema validation" in lowered
+        or "schema repair failed after" in lowered
         or "response stopped" in lowered and "repetition" in lowered
         or "repetition detected" in lowered
     )

@@ -308,6 +308,10 @@ def test_runtime_model_fallback_classifies_provider_vs_model_failures_narrowly()
     repetition = RuntimeError(
         "MISCONCEPTION_RESEARCHER failed: Response Stopped — Repetition Detected"
     )
+    repair_exhausted = RuntimeError(
+        "MISCONCEPTION_RESEARCHER schema repair failed after 2 bounded attempts: "
+        "output is missing required fields ['claims', 'examples', 'misconceptions']"
+    )
     nonresearch = RuntimeError(
         "pedagogy_agent failed output schema validation"
     )
@@ -318,6 +322,7 @@ def test_runtime_model_fallback_classifies_provider_vs_model_failures_narrowly()
     assert not _retryable_research_provider_failure(schema)
     assert _retryable_research_model_incompatibility(schema)
     assert _retryable_research_model_incompatibility(repetition)
+    assert _retryable_research_model_incompatibility(repair_exhausted)
 
     assert not _retryable_research_provider_failure(nonresearch)
     assert not _retryable_research_model_incompatibility(nonresearch)

@@ -244,6 +244,10 @@ def main() -> int:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL probe HTTP attempts undercounted")
     if "_retryable_research_model_incompatibility" not in live_script:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL research model incompatibility fallback missing")
+    if "schema repair failed after" not in live_script:
+        raise SystemExit(
+            "LIVE_V2D_CONTRACT=FAIL exhausted research schema repair must trigger model fallback"
+        )
     if "preserve_governance=True" not in live_script:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL fallback resets governance")
 
