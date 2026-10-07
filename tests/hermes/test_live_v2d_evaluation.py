@@ -304,3 +304,14 @@ def test_runtime_model_fallback_does_not_retry_schema_or_nonresearch_errors():
             "pedagogy_agent failed: HTTP 429: Provider returned error"
         )
     )
+
+
+
+def test_live_runner_assembles_script_dynamic_refs_on_host():
+    source = (
+        ROOT / "live_evaluation" / "hermes_runner.py"
+    ).read_text(encoding="utf-8")
+    assert 'if stage == "script_agent":' in source
+    assert "assemble_lesson_script_wire" in source
+    assert "selected_fact_claim_catalog" in source
+    assert "objective_catalog" in source
