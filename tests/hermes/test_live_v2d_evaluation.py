@@ -47,11 +47,13 @@ def test_live_model_candidates_prioritize_specialist_schema_reliability():
 
 def test_model_probe_matches_actual_hermes_free_endpoint_requirements():
     source = (ROOT / "live_evaluation" / "model_probe.py").read_text(encoding="utf-8")
-    assert '"tools": [' in source
+    assert '"tools": [tool_definition]' in source
     assert '_RESPONSE_FORMAT_MODELS' in source
-    assert 'payload["response_format"] = {"type": "json_object"}' in source
+    assert 'final_payload["response_format"] = {"type": "json_object"}' in source
     assert '"require_parameters": True' in source
-    assert '"tool_choice"' not in source
+    assert '"tool_choice"' in source
+    assert 'message["tool_calls"]' in source
+    assert '"role": "tool"' in source
     assert '"type": "json_schema"' not in source
 
 
@@ -214,7 +216,8 @@ def test_probe_uses_specialist_shaped_nested_contract_with_reasoning_enabled():
     assert '"source_indexes": [0]' in source
     assert '"claim_indexes": [0]' in source
     assert 'google/gemma-4-' in source
-    assert 'payload["reasoning_effort"] = "medium"' in source
+    assert 'tool_payload["reasoning_effort"] = "medium"' in source
+    assert 'final_payload["reasoning_effort"] = "medium"' in source
     assert "parsed != _SPECIALIST_PROBE_OBJECT" in source
     assert "finish_reason=" in source
     assert "response_prefix=" in source
