@@ -147,8 +147,13 @@ def main() -> int:
     context = json.loads(task["context"])
     if [item["claim_id"] for item in context["selected_fact_claims"]] != ["C1"]:
         raise SystemExit("HERMES_SCRIPT_AGENT=FAIL claim preservation context")
-    if not any("do not drop" in item.lower() for item in context["instructions"]):
-        raise SystemExit("HERMES_SCRIPT_AGENT=FAIL claim preservation instruction missing")
+    if not any(
+        "cover every selected claim at least once" in item.lower()
+        for item in context["instructions"]
+    ):
+        raise SystemExit(
+            "HERMES_SCRIPT_AGENT=FAIL full claim coverage instruction missing"
+        )
     if not any("visual coordinates" in item.lower() for item in context["instructions"]):
         raise SystemExit("HERMES_SCRIPT_AGENT=FAIL visual boundary missing")
 
