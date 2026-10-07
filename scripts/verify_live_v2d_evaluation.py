@@ -39,8 +39,8 @@ def main() -> int:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL publication must be disabled")
     if state.budget is None or state.budget.max_usd is not None:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL live evaluation must not impose a USD cap")
-    if state.budget.limits.subagent_calls != 3:
-        raise SystemExit("LIVE_V2D_CONTRACT=FAIL subagent cap")
+    if state.budget.limits.subagent_calls != 3 * len(LIVE_MODEL_CANDIDATES):
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL fallback-aware subagent cap")
     if state.budget.limits.tool_calls != 32:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL tool cap")
     if state.budget.limits.provider_attempts != 1600:
@@ -224,6 +224,7 @@ def main() -> int:
     print("deterministic_research_assembly=PASS")
     print("research_max_iterations=128")
     print("research_fanout_reservation=384")
+    print(f"runtime_fallback_subagent_cap={state.budget.limits.subagent_calls}")
     print("provider_attempt_quota=1600")
     return 0
 

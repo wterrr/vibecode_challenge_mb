@@ -66,7 +66,16 @@ def build_pilot_brief(topic_id: str = PILOT_TOPIC_ID) -> LearningBrief:
     )
 
 
-def initialize_governance_state(path: str | Path) -> GovernanceState:
+def initialize_governance_state(
+    path: str | Path,
+    *,
+    runtime_model_attempts: int | None = None,
+) -> GovernanceState:
+    model_attempts = (
+        len(LIVE_MODEL_CANDIDATES)
+        if runtime_model_attempts is None
+        else max(1, int(runtime_model_attempts))
+    )
     state = GovernanceState(
         state_id="live-eval.pilot",
         budget=BudgetLedger(
@@ -74,7 +83,11 @@ def initialize_governance_state(path: str | Path) -> GovernanceState:
             max_usd=None,
             spent=BudgetSpend(),
             limits=BudgetLimits(
-                subagent_calls=3,
+                # Each runtime model attempt may launch the same three sealed
+                # research specialists. Provider/model fallback keeps one
+                # cumulative governance ledger, so the cap must bound the full
+                # candidate sequence rather than only the first attempt.
+                subagent_calls=3 * model_attempts,
                 vlm_repairs=0,
                 image_generations=0,
                 tool_calls=32,

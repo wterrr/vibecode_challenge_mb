@@ -67,7 +67,7 @@ def test_governance_state_is_fail_closed(tmp_path):
     assert state.publication_authorized is False
     assert state.budget is not None
     assert state.budget.max_usd is None
-    assert state.budget.limits.subagent_calls == 3
+    assert state.budget.limits.subagent_calls == 3 * len(LIVE_MODEL_CANDIDATES)
     assert state.budget.limits.tool_calls == 32
     assert state.budget.limits.provider_attempts == 1600
     assert state.budget.limits.retries == 4
@@ -777,3 +777,17 @@ def test_production_subtitles_are_script_timed_not_provider_timed():
     assert "deterministic_script_segments" in source
     assert "if narration.subtitle_cues:" not in source
     assert "for phrase_index, phrase in enumerate(beat_map.phrases)" in source
+
+
+def test_governance_subagent_cap_covers_runtime_model_fallbacks(tmp_path):
+    state = initialize_governance_state(
+        tmp_path / "state.json",
+        runtime_model_attempts=2,
+    )
+    assert state.budget is not None
+    assert state.budget.limits.subagent_calls == 6
+
+    source = (ROOT / "scripts" / "run_live_v2d_pilot.py").read_text(
+        encoding="utf-8"
+    )
+    assert "runtime_model_attempts=len(candidates)" in source

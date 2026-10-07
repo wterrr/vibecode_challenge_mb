@@ -124,7 +124,10 @@ def main() -> int:
     events_path = governance_root / "events.jsonl"
     os.environ["LEARNFLOW_GOVERNANCE_STATE"] = str(state_path)
     os.environ["LEARNFLOW_GOVERNANCE_EVENTS"] = str(events_path)
-    initialize_governance_state(state_path)
+    initialize_governance_state(
+        state_path,
+        runtime_model_attempts=len(candidates),
+    )
 
     selection = None
     probe_rows: list[dict] = []
