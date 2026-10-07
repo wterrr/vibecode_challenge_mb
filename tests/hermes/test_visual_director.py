@@ -76,8 +76,10 @@ def test_task_revalidates_script_and_exposes_semantic_context_only():
     context = json.loads(task["context"])
     assert set(context) == {
         "lesson_script",
+        "script_segment_catalog",
         "concept_registry",
         "concept_order",
+        "concept_catalog",
         "required_ids",
         "instructions",
     }
