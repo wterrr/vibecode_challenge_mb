@@ -15,7 +15,7 @@ from pydantic import BaseModel, ValidationError
 
 from openrouter_policy import require_free_openrouter_model
 
-from agent_contracts import BudgetUsage
+from agent_contracts import AgentContractError, BudgetUsage
 from runtime_governance import BudgetCharge, HardBudgetController, SpendCategory
 from runtime_governance.hermes_plugin import load_state, on_pre_tool_call, save_state
 
@@ -275,6 +275,152 @@ class LiveHermesStructuredRunner:
         plan = ResearchOrchestrationPlan.model_validate(plan_payload)
         return brief, plan
 
+    @staticmethod
+    def _accumulate_research_retry_usage(
+        entry: dict[str, Any],
+        *,
+        agent,
+        result: dict[str, Any] | None,
+    ) -> None:
+        tokens = dict(entry.get("tokens") or {})
+        tokens["input"] = int(tokens.get("input") or 0) + int(
+            getattr(agent, "session_prompt_tokens", 0) or 0
+        )
+        tokens["output"] = int(tokens.get("output") or 0) + int(
+            getattr(agent, "session_completion_tokens", 0) or 0
+        )
+        entry["tokens"] = tokens
+        entry["api_calls"] = int(entry.get("api_calls") or 0) + int(
+            (result or {}).get("api_calls") or 0
+        )
+        previous_cost = float(entry.get("cost_usd") or 0.0)
+        retry_cost = getattr(agent, "session_estimated_cost_usd", None)
+        if isinstance(retry_cost, (int, float)):
+            entry["cost_usd"] = previous_cost + float(retry_cost)
+        previous_status = str(entry.get("cost_status") or "unknown")
+        retry_status = str(
+            getattr(agent, "session_cost_status", None) or "unknown"
+        )
+        entry["cost_status"] = (
+            previous_status
+            if previous_status == retry_status
+            else (
+                retry_status
+                if previous_status == "unknown"
+                else (
+                    previous_status
+                    if retry_status == "unknown"
+                    else "mixed"
+                )
+            )
+        )
+        entry["schema_retries"] = int(entry.get("schema_retries") or 0) + 1
+
+    def _repair_invalid_research_results(
+        self,
+        *,
+        delegation_payload: dict[str, Any],
+        plan,
+    ) -> None:
+        """Repair malformed completed leaves without re-running the research fan-out."""
+
+        from research_orchestration import validate_specialist_summary
+
+        rows = delegation_payload.get("results")
+        if not isinstance(rows, list):
+            return
+        by_index = {
+            row.get("task_index"): row
+            for row in rows
+            if isinstance(row, dict)
+            and isinstance(row.get("task_index"), int)
+            and not isinstance(row.get("task_index"), bool)
+        }
+
+        for task_index, specialist_task in enumerate(plan.specialist_tasks):
+            entry = by_index.get(task_index)
+            if not isinstance(entry, dict):
+                continue
+            if entry.get("status") != "completed" or bool(entry.get("truncated")):
+                continue
+            if entry.get("schema_valid") is True:
+                continue
+
+            previous = str(entry.get("summary") or "")
+            errors = list(entry.get("schema_errors") or ())
+            last_error: Exception | None = None
+
+            for repair_number in range(1, 3):
+                self._reserve("research_orchestration", retry=True)
+                repair_agent = self._agent(
+                    stage="research_orchestration",
+                    research_leaf_repair=True,
+                )
+                result: dict[str, Any] | None = None
+                try:
+                    result = repair_agent.run_conversation(
+                        user_message=(
+                            "Correct one malformed LearnFlow research specialist result. "
+                            "You have NO tools in this repair pass. Do not emit tool calls, "
+                            "analysis, markdown, or prose. Return exactly one JSON object "
+                            "matching the schema. Preserve only claims and source locators "
+                            "you can state without inventing them.\n\n"
+                            f"Specialist role: {specialist_task.role.value}\n"
+                            f"Goal: {specialist_task.goal}\n"
+                            f"Context: {specialist_task.context}\n"
+                            "Required JSON Schema:\n"
+                            + json.dumps(
+                                specialist_task.output_schema,
+                                ensure_ascii=False,
+                                sort_keys=True,
+                            )
+                            + "\n\nPrevious malformed response:\n"
+                            + previous
+                            + "\n\nValidation errors:\n"
+                            + json.dumps(errors, ensure_ascii=False)
+                        ),
+                        task_id=(
+                            "live-eval:research_orchestration:"
+                            f"{specialist_task.role.value}:schema-repair:{repair_number}"
+                        ),
+                    )
+                    repaired = str((result or {}).get("final_response") or "")
+                    validate_specialist_summary(
+                        specialist_task.role,
+                        repaired,
+                    )
+                    self._accumulate_research_retry_usage(
+                        entry,
+                        agent=repair_agent,
+                        result=result,
+                    )
+                    entry["summary"] = repaired
+                    entry["schema_valid"] = True
+                    entry["schema_errors"] = []
+                    entry["error"] = None
+                    break
+                except Exception as exc:
+                    last_error = exc
+                    self._accumulate_research_retry_usage(
+                        entry,
+                        agent=repair_agent,
+                        result=result,
+                    )
+                    previous = str(
+                        (result or {}).get("final_response") or previous
+                    )
+                    errors = [f"{type(exc).__name__}: {exc}"]
+                finally:
+                    try:
+                        repair_agent.close()
+                    except Exception:
+                        pass
+            else:
+                raise AgentContractError(
+                    f"{specialist_task.role.value} schema repair failed after "
+                    f"2 bounded attempts: {last_error}"
+                )
+
     def _run_research_delegation(
         self,
         *,
@@ -324,6 +470,11 @@ class LiveHermesStructuredRunner:
                 "Hermes delegate_task rejected research fan-out: "
                 + str(delegation_payload["error"])
             )
+
+        self._repair_invalid_research_results(
+            delegation_payload=delegation_payload,
+            plan=plan,
+        )
 
         assembled = assemble_specialist_delegation_results(
             plan=plan,
@@ -386,10 +537,10 @@ class LiveHermesStructuredRunner:
             ),
         }
 
-    def _agent(self, *, stage: str):
+    def _agent(self, *, stage: str, research_leaf_repair: bool = False):
         from run_agent import AIAgent
 
-        research = stage == "research_orchestration"
+        research = stage == "research_orchestration" and not research_leaf_repair
         enabled = ["delegation", "web"] if research else []
         disabled = [] if research else ["*"]
         request_overrides: dict[str, Any] = {}
