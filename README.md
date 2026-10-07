@@ -122,6 +122,32 @@ curl http://127.0.0.1:8000/healthz
 # Response: {"status":"ok"}
 ```
 
+## Docker production image
+
+The repository includes a production `Dockerfile` with the runtime dependencies required by LearnFlow: Python 3.12, FFmpeg/ffprobe with H.264 support, DejaVu fonts, Graphviz, Node.js, and the pinned `elkjs` package. The application runs as a non-root user and exposes a Docker healthcheck on `/healthz`.
+
+Build locally:
+
+```bash
+docker build -t learnflow-ai .
+```
+
+Run against PostgreSQL:
+
+```bash
+docker run --rm \
+  -e ENVIRONMENT=production \
+  -e DATABASE_URL="$DATABASE_URL" \
+  -e LEARNFLOW_PIPELINE_MODE=demo \
+  -e PORT=8000 \
+  -p 8000:8000 \
+  learnflow-ai
+```
+
+Production containers never fall back to SQLite. `ENVIRONMENT=production` without `DATABASE_URL` fails during application startup.
+
+Vibe Host v2 can deploy directly from GitHub and manages its own container lifecycle. Configure the website environment with `ENVIRONMENT=production`, the managed PostgreSQL connection string as `DATABASE_URL`, and the normal LearnFlow provider variables. The committed Docker image also provides a reproducible CI/deployment contract for all native media dependencies.
+
 ## Environment Variables
 
 | Variable | Default | Description |
