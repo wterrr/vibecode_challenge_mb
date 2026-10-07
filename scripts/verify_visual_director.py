@@ -186,7 +186,7 @@ def build_visual_output(script, registry) -> VisualDirectorOutput:
                     kind=RelationKind.FLOW,
                 ),
             ],
-            layout_intent=LayoutIntentSpec(type=LayoutIntent.ILLUSTRATION),
+            layout_intent=LayoutIntentSpec(type=LayoutIntent.CONCEPT_CARD),
         ),
         SceneGraph(
             scene_id="scene.check",
