@@ -1,6 +1,6 @@
 """LearnFlow research orchestration built on Hermes native delegation."""
 
-from .assembly import assemble_specialist_delegation_results
+from .assembly import assemble_specialist_delegation_results, validate_specialist_summary
 from .merge import merge_specialist_findings
 from .models import (
     ConceptResearchFindings,
@@ -34,4 +34,5 @@ __all__ = [
     "expected_hermes_limits",
     "merge_specialist_findings",
     "assemble_specialist_delegation_results",
+    "validate_specialist_summary",
 ]
