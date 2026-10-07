@@ -49,10 +49,10 @@ jobs:
   live-provider-pilot:
     needs: live-eval-contract
     if: >-
-      (github.event_name == 'push' && github.ref == 'refs/heads/chatgpt/live-v2d-evaluation') ||
-      (github.event_name == 'pull_request' &&
-       github.head_ref == 'chatgpt/live-v2d-evaluation' &&
-       github.event.pull_request.head.repo.full_name == github.repository)
+      (github.event_name == 'push' &&
+       github.ref == 'refs/heads/chatgpt/live-v2d-evaluation') ||
+      (github.event_name == 'workflow_dispatch' &&
+       github.ref == 'refs/heads/chatgpt/live-v2d-evaluation')
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
