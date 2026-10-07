@@ -140,6 +140,8 @@ def main() -> int:
         "resolve_motion_plan_timing",
         "compile_inter_scene_transition",
         "render_transition_video",
+        "provider_cues.json",
+        "deterministic_script_segments",
     ):
         if required not in production_source:
             raise SystemExit("LIVE_V2D_CONTRACT=FAIL production output gate incomplete")

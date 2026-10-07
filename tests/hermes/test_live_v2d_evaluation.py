@@ -769,3 +769,11 @@ def test_script_agent_has_target_duration_word_budget():
     assert "brief.target_duration_minutes * 130" in source
     assert "brief.target_duration_minutes * 160" in source
     assert "Target total spoken narration length" in source
+
+
+def test_production_subtitles_are_script_timed_not_provider_timed():
+    source = (ROOT / "lesson_pipeline" / "production.py").read_text(encoding="utf-8")
+    assert "provider_cues.json" in source
+    assert "deterministic_script_segments" in source
+    assert "if narration.subtitle_cues:" not in source
+    assert "for phrase_index, phrase in enumerate(beat_map.phrases)" in source
