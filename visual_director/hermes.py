@@ -28,6 +28,17 @@ _CORE_READING_DIRECTIONS = (
     "TOP_TO_BOTTOM",
     "BOTTOM_TO_TOP",
 )
+_CORE_DIRECTED_RELATION_KINDS = frozenset(
+    {
+        "FLOW",
+        "CAUSES",
+        "DEPENDS_ON",
+        "PART_OF",
+        "TRANSFORMS_INTO",
+        "SEQUENCE_BEFORE",
+        "SEQUENCE_AFTER",
+    }
+)
 _RESERVED_LAYOUT_ROLES = frozenset(
     {"title", "safe_title", "header", "caption", "safe_caption", "subtitle"}
 )
@@ -418,6 +429,24 @@ def assemble_visual_director_wire(
                     f"vocabulary; scene_id={graph.scene_id!r}, node_id={node.id!r}, "
                     f"semantic_role={role!r}"
                 )
+        if graph.layout_intent.type.value in {"PROCESS", "HIERARCHY"}:
+            unsupported_relations = [
+                relation
+                for relation in graph.relations
+                if relation.kind.value not in _CORE_DIRECTED_RELATION_KINDS
+            ]
+            if unsupported_relations:
+                rendered = [
+                    f"{relation.id}:{relation.kind.value}"
+                    for relation in unsupported_relations
+                ]
+                raise AgentContractError(
+                    "Visual Director directed-layout relations are not supported by "
+                    "frozen Core; "
+                    f"scene_id={graph.scene_id!r}, unsupported={rendered!r}. "
+                    "Use only FLOW, CAUSES, DEPENDS_ON, PART_OF, TRANSFORMS_INTO, "
+                    "SEQUENCE_BEFORE, or SEQUENCE_AFTER."
+                )
     return output
 
 
@@ -502,6 +531,12 @@ def build_visual_director_task(
             (
                 "semantic_role is domain semantics only. Never use layout-zone role names "
                 "TITLE, HEADER, CAPTION, SUBTITLE, SAFE_TITLE, or SAFE_CAPTION."
+            ),
+            (
+                "For PROCESS or HIERARCHY SceneGraphs, relation kinds must be limited to "
+                "FLOW, CAUSES, DEPENDS_ON, PART_OF, TRANSFORMS_INTO, SEQUENCE_BEFORE, "
+                "or SEQUENCE_AFTER. Do not use LABELS, ANNOTATES, GROUP_WITH, "
+                "COMPARES_WITH, CONTRASTS_WITH, or EQUIVALENT_TO in directed layouts."
             ),
             "Use semantic SceneGraph structure only: nodes, relations, groups, symbolic style_refs, LayoutIntent, ReadingDirection, PortHint, and semantic LayoutHint fields.",
             "Layout hints may express preferred_region, relative importance, keep_near, keep_apart, and preferred_order only.",
