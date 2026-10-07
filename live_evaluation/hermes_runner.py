@@ -14,7 +14,7 @@ from pydantic import BaseModel, ValidationError
 
 from agent_contracts import BudgetUsage
 from runtime_governance import BudgetCharge, HardBudgetController, SpendCategory
-from runtime_governance.hermes_plugin import load_state, save_state
+from runtime_governance.hermes_plugin import load_state, on_pre_tool_call, save_state
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -216,6 +216,19 @@ class LiveHermesStructuredRunner:
             }
             for specialist in plan.specialist_tasks
         ]
+        fanout_decision = on_pre_tool_call(
+            "delegate_task",
+            args={"tasks": hermes_tasks},
+            session_id=str(getattr(agent, "session_id", "") or ""),
+            task_id="live-eval:research_orchestration",
+            tool_call_id="host-research-fanout",
+        )
+        if isinstance(fanout_decision, dict) and fanout_decision.get("action") == "block":
+            raise RuntimeError(
+                "LearnFlow governance rejected research fan-out: "
+                + str(fanout_decision.get("message") or "blocked")
+            )
+
         previous_terminal_cwd = os.environ.get("TERMINAL_CWD")
         with tempfile.TemporaryDirectory(prefix="learnflow-research-context-") as isolated_cwd:
             # Pinned Hermes injects workspace context into delegated children even
