@@ -494,3 +494,14 @@ def test_probe_request_accounting_counts_http_roundtrips():
         ModelProbeResult("b:free", True, "pass", request_count=2),
     )
     assert _probe_request_count(probes) == 3
+
+
+
+def test_standard_agents_can_use_full_three_turn_schema_budget():
+    source = (
+        ROOT / "live_evaluation" / "hermes_runner.py"
+    ).read_text(encoding="utf-8")
+    assert "while True:" in source
+    assert "if attempts >= 3:" in source
+    assert 'task_id=f"live-eval:{stage}:schema-retry:{attempts - 1}"' in source
+    assert "max_iterations=128 if research else 3" in source
