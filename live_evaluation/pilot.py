@@ -78,7 +78,7 @@ def initialize_governance_state(path: str | Path) -> GovernanceState:
                 vlm_repairs=0,
                 image_generations=0,
                 tool_calls=32,
-                provider_attempts=160,
+                provider_attempts=1600,
                 retries=4,
             ),
             usage=BudgetUsage(),
@@ -127,8 +127,16 @@ def _governance_event_summary(path: Path) -> dict[str, Any]:
     }
 
 
-def _reset_runtime_preserving_hermes_home(runtime: Path) -> None:
-    """Clear pilot-owned artifacts without deleting the active Hermes profile."""
+def _reset_runtime_preserving_hermes_home(
+    runtime: Path,
+    *,
+    preserve_governance: bool = False,
+) -> None:
+    """Clear pilot-owned artifacts without deleting the active Hermes profile.
+
+    When a provider fallback re-runs the pilot, keep governance state/events so
+    usage accounting remains cumulative across failed model attempts.
+    """
 
     runtime = runtime.resolve()
     raw_home = str(os.environ.get("HERMES_HOME") or "").strip()
@@ -147,7 +155,11 @@ def _reset_runtime_preserving_hermes_home(runtime: Path) -> None:
                 or child_resolved in hermes_home.parents
             )
         )
-        if preserves_hermes:
+        preserves_governance = (
+            preserve_governance
+            and child.name == "governance"
+        )
+        if preserves_hermes or preserves_governance:
             continue
         if child.is_dir() and not child.is_symlink():
             shutil.rmtree(child)
@@ -162,20 +174,25 @@ def run_live_v2d_pilot(
     model: str = DEFAULT_LIVE_MODEL,
     topic_id: str = PILOT_TOPIC_ID,
     runtime_root: str | Path | None = None,
+    preserve_governance: bool = False,
 ) -> dict[str, Any]:
     runtime = (
         Path(runtime_root).resolve()
         if runtime_root is not None
         else (ROOT / ".hermes_runtime" / "live-v2d-evaluation").resolve()
     )
-    _reset_runtime_preserving_hermes_home(runtime)
+    _reset_runtime_preserving_hermes_home(
+        runtime,
+        preserve_governance=preserve_governance,
+    )
 
     state_path = runtime / "governance" / "state.json"
     events_path = runtime / "governance" / "events.jsonl"
     os.environ["LEARNFLOW_GOVERNANCE_STATE"] = str(state_path)
     os.environ["LEARNFLOW_GOVERNANCE_EVENTS"] = str(events_path)
     os.environ["HERMES_ENABLE_PROJECT_PLUGINS"] = "true"
-    initialize_governance_state(state_path)
+    if not preserve_governance or not state_path.is_file():
+        initialize_governance_state(state_path)
 
     from lesson_pipeline import CapabilityCoreGateway, run_lesson_pipeline
 
