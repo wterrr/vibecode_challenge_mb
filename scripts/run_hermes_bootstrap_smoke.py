@@ -12,8 +12,6 @@ import subprocess
 import sys
 from typing import Any
 
-from openrouter_policy import require_free_openrouter_model
-
 ROOT = Path(__file__).resolve().parent.parent
 STATUS_PATH = ROOT / "hermes" / "bootstrap" / "status.json"
 CONFIG_TEMPLATE = ROOT / "hermes" / "bootstrap" / "config.yaml"
