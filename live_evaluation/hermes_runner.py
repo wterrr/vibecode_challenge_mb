@@ -12,6 +12,8 @@ from typing import Any, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
+from openrouter_policy import require_free_openrouter_model
+
 from agent_contracts import BudgetUsage
 from runtime_governance import BudgetCharge, HardBudgetController, SpendCategory
 from runtime_governance.hermes_plugin import load_state, on_pre_tool_call, save_state
@@ -55,7 +57,7 @@ class LiveHermesStructuredRunner:
         repo_root: str | Path,
         base_url: str = "https://openrouter.ai/api/v1",
     ) -> None:
-        self.model = str(model)
+        self.model = require_free_openrouter_model(model)
         self.api_key = str(api_key)
         self.base_url = str(base_url)
         self.repo_root = Path(repo_root).resolve()
