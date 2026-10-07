@@ -61,6 +61,7 @@ class ModelProbeResult:
     passed: bool
     status: str
     detail: str = ""
+    request_count: int = 1
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -143,82 +144,167 @@ def _extract_text(message: Any) -> str:
 
 
 def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> ModelProbeResult:
-    payload = {
+    """Probe both native function calling and structured specialist JSON.
+
+    A model only passes when it emits a real OpenAI-compatible tool_calls entry,
+    consumes the tool result, and then returns the exact specialist-shaped JSON.
+    Serializing a fake {"calls": ...} object in assistant text is not sufficient.
+    """
+
+    tool_definition = {
+        "type": "function",
+        "function": {
+            "name": "probe_noop",
+            "description": "Capability probe. Call exactly once with an empty object.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": False,
+            },
+        },
+    }
+
+    def _send(payload: dict[str, Any], *, request_count: int):
+        request = Request(
+            OPENROUTER_CHAT_COMPLETIONS,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://github.com/wterrr/vibecode_challenge_mb",
+                "X-Title": "LearnFlow Live V2D Probe",
+            },
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=timeout_seconds) as response:
+                return json.loads(response.read().decode("utf-8")), None
+        except HTTPError as exc:
+            try:
+                detail = exc.read().decode("utf-8", errors="replace")
+            except Exception:
+                detail = str(exc)
+            return None, ModelProbeResult(
+                model=model,
+                passed=False,
+                status=f"http_{exc.code}",
+                detail=_safe_http_error_detail(detail),
+                request_count=request_count,
+            )
+        except (URLError, TimeoutError, json.JSONDecodeError) as exc:
+            return None, ModelProbeResult(
+                model=model,
+                passed=False,
+                status="transport_error",
+                detail=_safe_detail(exc),
+                request_count=request_count,
+            )
+
+    tool_prompt = (
+        "Capability probe. Call the probe_noop function exactly once with an empty "
+        "JSON object {}. Do not describe the call and do not return a JSON imitation "
+        "of a tool call in assistant text."
+    )
+    tool_payload: dict[str, Any] = {
+        "model": model,
+        "messages": [{"role": "user", "content": tool_prompt}],
+        "max_tokens": 4096,
+        "temperature": 0,
+        "tools": [tool_definition],
+        "tool_choice": {
+            "type": "function",
+            "function": {"name": "probe_noop"},
+        },
+        "provider": {"require_parameters": True},
+    }
+    if model.startswith("google/gemma-4-"):
+        tool_payload["reasoning_effort"] = "medium"
+
+    body, error = _send(tool_payload, request_count=1)
+    if error is not None:
+        return error
+
+    try:
+        message = body["choices"][0]["message"]
+        tool_calls = message["tool_calls"]
+        if not isinstance(tool_calls, list) or len(tool_calls) != 1:
+            raise ValueError("expected exactly one native tool call")
+        tool_call = tool_calls[0]
+        function = tool_call["function"]
+        if function.get("name") != "probe_noop":
+            raise ValueError(f"unexpected tool name {function.get('name')!r}")
+        arguments = function.get("arguments", "{}")
+        parsed_arguments = (
+            json.loads(arguments)
+            if isinstance(arguments, str)
+            else arguments
+        )
+        if parsed_arguments != {}:
+            raise ValueError(
+                f"probe_noop arguments must be empty object, got {parsed_arguments!r}"
+            )
+        tool_call_id = str(tool_call["id"])
+        if not tool_call_id:
+            raise ValueError("native tool call is missing id")
+    except (KeyError, IndexError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        safe_prefix = ""
+        try:
+            safe_prefix = _extract_text(body["choices"][0].get("message", {}))[:240]
+        except Exception:
+            pass
+        return ModelProbeResult(
+            model=model,
+            passed=False,
+            status="native_tool_call_missing",
+            detail=_safe_detail(
+                f"{type(exc).__name__}: {exc}; response_prefix={safe_prefix!r}"
+            ),
+            request_count=1,
+        )
+
+    assistant_message = {
+        "role": "assistant",
+        "content": message.get("content"),
+        "tool_calls": tool_calls,
+    }
+    final_prompt = (
+        "The tool call succeeded. Return ONLY the following JSON object exactly, "
+        "with the same keys, nesting, arrays, indexes, strings, and numbers. JSON: "
+        + json.dumps(
+            _SPECIALIST_PROBE_OBJECT,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
+    )
+    final_payload: dict[str, Any] = {
         "model": model,
         "messages": [
+            {"role": "user", "content": tool_prompt},
+            assistant_message,
             {
-                "role": "user",
-                "content": (
-                    "Return ONLY the following JSON object exactly, with the same keys, "
-                    "nesting, arrays, indexes, strings, and numbers. Do not call the "
-                    "probe_noop tool. JSON: "
-                    + json.dumps(
-                        _SPECIALIST_PROBE_OBJECT,
-                        ensure_ascii=False,
-                        separators=(",", ":"),
-                    )
-                ),
-            }
+                "role": "tool",
+                "tool_call_id": tool_call_id,
+                "content": json.dumps({"ok": True}, separators=(",", ":")),
+            },
+            {"role": "user", "content": final_prompt},
         ],
         "max_tokens": 4096,
         "temperature": 0,
-        "tools": [
-            {
-                "type": "function",
-                "function": {
-                    "name": "probe_noop",
-                    "description": "Capability probe only; do not call it.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {},
-                        "additionalProperties": False,
-                    },
-                },
-            }
-        ],
         "provider": {"require_parameters": True},
     }
     if model.startswith(_RESPONSE_FORMAT_MODELS):
-        payload["response_format"] = {"type": "json_object"}
+        final_payload["response_format"] = {"type": "json_object"}
     if model.startswith("google/gemma-4-"):
-        payload["reasoning_effort"] = "medium"
-    request = Request(
-        OPENROUTER_CHAT_COMPLETIONS,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://github.com/wterrr/vibecode_challenge_mb",
-            "X-Title": "LearnFlow Live V2D Probe",
-        },
-        method="POST",
-    )
-    try:
-        with urlopen(request, timeout=timeout_seconds) as response:
-            body = json.loads(response.read().decode("utf-8"))
-    except HTTPError as exc:
-        try:
-            detail = exc.read().decode("utf-8", errors="replace")
-        except Exception:
-            detail = str(exc)
-        return ModelProbeResult(
-            model=model,
-            passed=False,
-            status=f"http_{exc.code}",
-            detail=_safe_http_error_detail(detail),
-        )
-    except (URLError, TimeoutError, json.JSONDecodeError) as exc:
-        return ModelProbeResult(
-            model=model,
-            passed=False,
-            status="transport_error",
-            detail=_safe_detail(exc),
-        )
+        final_payload["reasoning_effort"] = "medium"
+
+    body, error = _send(final_payload, request_count=2)
+    if error is not None:
+        return error
 
     try:
         choice = body["choices"][0]
-        message = choice["message"]
-        text = _extract_text(message)
+        final_message = choice["message"]
+        text = _extract_text(final_message)
         parsed = json.loads(text)
     except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
         finish_reason = None
@@ -240,6 +326,7 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
                 f"finish_reason={finish_reason!r}; "
                 f"response_prefix={safe_prefix!r}"
             ),
+            request_count=2,
         )
 
     if parsed != _SPECIALIST_PROBE_OBJECT:
@@ -248,8 +335,14 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
             passed=False,
             status="schema_mismatch",
             detail=_safe_detail(parsed),
+            request_count=2,
         )
-    return ModelProbeResult(model=model, passed=True, status="pass")
+    return ModelProbeResult(
+        model=model,
+        passed=True,
+        status="pass",
+        request_count=2,
+    )
 
 
 def select_live_model(
