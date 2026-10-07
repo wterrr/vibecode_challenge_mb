@@ -129,6 +129,8 @@ def main() -> int:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL isolated research workspace missing")
     if 'os.environ["TERMINAL_CWD"] = isolated_cwd' not in source:
         raise SystemExit("LIVE_V2D_CONTRACT=FAIL research context isolation missing")
+    if '"host-research-fanout"' not in source or "on_pre_tool_call(" not in source:
+        raise SystemExit("LIVE_V2D_CONTRACT=FAIL direct research fan-out bypasses governance")
 
     bootstrap = (ROOT / "hermes" / "bootstrap" / "config.yaml").read_text(
         encoding="utf-8"
