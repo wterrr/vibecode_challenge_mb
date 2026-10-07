@@ -51,7 +51,12 @@ def test_model_probe_matches_actual_hermes_free_endpoint_requirements():
     assert '_RESPONSE_FORMAT_MODELS' in source
     assert 'final_payload["response_format"] = {"type": "json_object"}' in source
     assert '"require_parameters": True' in source
-    assert '"tool_choice"' in source
+    tool_payload_block = source[
+        source.index("tool_payload: dict[str, Any] = {"):
+        source.index('if model.startswith("google/gemma-4-"):', source.index("tool_payload: dict[str, Any] = {"))
+    ]
+    assert '"tool_choice"' not in tool_payload_block
+    assert '"tools": [tool_definition]' in tool_payload_block
     assert 'message["tool_calls"]' in source
     assert '"role": "tool"' in source
     assert '"type": "json_schema"' not in source
@@ -640,3 +645,18 @@ def test_visual_parse_runs_core_layout_preflight_before_acceptance():
     assert "_require_frozen_core_layout_compatible" in visual_block
     assert "validated = output_model.model_validate" in visual_block
     assert "return validated" in visual_block
+
+
+
+def test_probe_matches_pinned_hermes_auto_tool_selection():
+    source = (
+        ROOT / "live_evaluation" / "model_probe.py"
+    ).read_text(encoding="utf-8")
+    block = source[
+        source.index("tool_payload: dict[str, Any] = {"):
+        source.index('if model.startswith("google/gemma-4-"):', source.index("tool_payload: dict[str, Any] = {"))
+    ]
+    assert '"tools": [tool_definition]' in block
+    assert '"tool_choice"' not in block
+    assert "expected exactly one native tool call" in source
+    assert 'function.get("name") != "probe_noop"' in source
