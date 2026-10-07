@@ -522,3 +522,34 @@ def test_host_rejects_bad_indexes_and_placeholder_locators():
             topic="Explain demo.",
             delegation_payload=placeholder,
         )
+
+
+
+def test_specialist_wire_rejects_tool_call_object_even_with_required_fields():
+    from research_orchestration import validate_specialist_summary
+
+    malformed = json.dumps(
+        {
+            "sources": [
+                {
+                    "title": "Python tutorial",
+                    "locator": "https://docs.python.org/3/tutorial/",
+                }
+            ],
+            "claims": [
+                {
+                    "statement": "Python names can be bound to objects.",
+                    "source_indexes": [0],
+                    "confidence": 0.9,
+                }
+            ],
+            "calls": [
+                {
+                    "name": "web_search",
+                    "args": {"query": "python variables"},
+                }
+            ],
+        }
+    )
+    with pytest.raises(AgentContractError, match="unexpected fields"):
+        validate_specialist_summary(ResearchRole.EVIDENCE, malformed)
