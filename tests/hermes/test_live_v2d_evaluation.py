@@ -62,7 +62,7 @@ def test_governance_state_is_fail_closed(tmp_path):
     assert state.budget.max_usd is None
     assert state.budget.limits.subagent_calls == 3
     assert state.budget.limits.tool_calls == 32
-    assert state.budget.limits.provider_attempts == 160
+    assert state.budget.limits.provider_attempts == 1600
     assert state.budget.limits.retries == 4
     assert state.budget.limits.image_generations == 0
     assert state.budget.limits.vlm_repairs == 0
@@ -89,11 +89,11 @@ def test_stage_reservations_cover_only_live_agent_stages():
 def test_live_eval_has_no_usd_reservation_and_attempt_quota_matches_iterations():
     reservations = LiveHermesStructuredRunner._STAGE_RESERVATIONS
     assert all(float(item["usd"]) == 0.0 for item in reservations.values())
-    assert reservations["research_orchestration"]["provider_attempts"] == 128
+    assert reservations["research_orchestration"]["provider_attempts"] == 384
     assert reservations["pedagogy_agent"]["provider_attempts"] == 3
     assert reservations["script_agent"]["provider_attempts"] == 3
     assert reservations["visual_director"]["provider_attempts"] == 3
-    assert sum(int(item["provider_attempts"]) for item in reservations.values()) == 137
+    assert sum(int(item["provider_attempts"]) for item in reservations.values()) == 393
 
 
 def test_research_gets_delegation_and_web_only():
@@ -315,3 +315,69 @@ def test_live_runner_assembles_script_dynamic_refs_on_host():
     assert "assemble_lesson_script_wire" in source
     assert "selected_fact_claim_catalog" in source
     assert "objective_catalog" in source
+
+
+
+def test_bootstrap_aligns_delegated_research_budget_and_enables_governance():
+    config = (ROOT / "hermes" / "bootstrap" / "config.yaml").read_text(
+        encoding="utf-8"
+    )
+    assert "max_iterations: 128" in config
+    assert "plugins:" in config
+    assert "- learnflow-governance" in config
+
+
+def test_research_fanout_uses_isolated_workspace_context():
+    source = (
+        ROOT / "live_evaluation" / "hermes_runner.py"
+    ).read_text(encoding="utf-8")
+    research_block = source[
+        source.index("def _run_research_delegation"):
+        source.index("def _delegation_usage")
+    ]
+    assert 'TemporaryDirectory(prefix="learnflow-research-context-")' in research_block
+    assert 'os.environ["TERMINAL_CWD"] = isolated_cwd' in research_block
+    assert 'os.environ["TERMINAL_CWD"] = previous_terminal_cwd' in research_block
+
+
+def test_runtime_reset_can_preserve_governance_across_fallback(tmp_path, monkeypatch):
+    runtime = tmp_path / "live-v2d"
+    hermes_home = runtime / "hermes-home"
+    governance = runtime / "governance"
+    hermes_home.mkdir(parents=True)
+    governance.mkdir(parents=True)
+    (hermes_home / "config.yaml").write_text("x: 1\n", encoding="utf-8")
+    state = governance / "state.json"
+    events = governance / "events.jsonl"
+    state.write_text('{"kept": true}', encoding="utf-8")
+    events.write_text('{"event":"kept"}\n', encoding="utf-8")
+    (runtime / "stale.txt").write_text("stale", encoding="utf-8")
+    monkeypatch.setenv("HERMES_HOME", str(hermes_home))
+
+    _reset_runtime_preserving_hermes_home(
+        runtime,
+        preserve_governance=True,
+    )
+
+    assert state.read_text(encoding="utf-8") == '{"kept": true}'
+    assert events.read_text(encoding="utf-8") == '{"event":"kept"}\n'
+    assert not (runtime / "stale.txt").exists()
+
+
+def test_live_script_accounts_model_probes_before_runtime_fallback():
+    source = (
+        ROOT / "scripts" / "run_live_v2d_pilot.py"
+    ).read_text(encoding="utf-8")
+    assert "_charge_probe_attempts" in source
+    assert "_charge_probe_attempts(len(selection.probes))" in source
+    assert "_charge_probe_attempts(len(probe_exc.probes))" in source
+    assert "preserve_governance=True" in source
+
+
+def test_live_workflow_reacts_to_governance_and_bootstrap_changes():
+    workflow = (
+        ROOT / ".github" / "workflows" / "live-v2d-evaluation.yml"
+    ).read_text(encoding="utf-8")
+    assert '"runtime_governance/**"' in workflow
+    assert '".hermes/plugins/learnflow-governance/**"' in workflow
+    assert '"hermes/bootstrap/config.yaml"' in workflow
