@@ -96,8 +96,27 @@ def main() -> int:
     instruction_text = "\n".join(context["instructions"]).lower()
     if "pixel" not in instruction_text or "semantic" not in instruction_text:
         raise SystemExit("HERMES_VISUAL_DIRECTOR=FAIL visual boundary instruction missing")
-    if "do not invent concept ids" not in instruction_text:
-        raise SystemExit("HERMES_VISUAL_DIRECTOR=FAIL concept identity rule missing")
+    if (
+        "concept_index" not in instruction_text
+        or "host injects exact concept_ref and semantic_key" not in instruction_text
+    ):
+        raise SystemExit(
+            "HERMES_VISUAL_DIRECTOR=FAIL host-owned concept identity rule missing"
+        )
+
+    storyboard_scene = defs.get("StoryboardScene", {}).get("properties", {})
+    scenegraph = defs.get("SceneGraph", {}).get("properties", {})
+    scene_node = defs.get("SceneNode", {}).get("properties", {})
+    if "script_segment_indexes" not in storyboard_scene:
+        raise SystemExit("HERMES_VISUAL_DIRECTOR=FAIL segment index wire missing")
+    if "script_segment_ids" in storyboard_scene:
+        raise SystemExit("HERMES_VISUAL_DIRECTOR=FAIL dynamic segment IDs leaked")
+    if "scene_index" not in scenegraph or "scene_id" in scenegraph:
+        raise SystemExit("HERMES_VISUAL_DIRECTOR=FAIL dynamic scene IDs leaked")
+    if "concept_index" not in scene_node:
+        raise SystemExit("HERMES_VISUAL_DIRECTOR=FAIL concept index wire missing")
+    if "concept_ref" in scene_node or "semantic_key" in scene_node:
+        raise SystemExit("HERMES_VISUAL_DIRECTOR=FAIL dynamic concept refs leaked")
 
     print("HERMES_VISUAL_DIRECTOR=PASS")
     print("runtime=exact pinned Hermes")
@@ -106,6 +125,7 @@ def main() -> int:
     print("semantic_layout_hint_schema=PASS")
     print("no_geometry_fields=PASS")
     print("deterministic_registry_context=PASS")
+    print("host_owned_dynamic_refs=PASS")
     return 0
 
 
