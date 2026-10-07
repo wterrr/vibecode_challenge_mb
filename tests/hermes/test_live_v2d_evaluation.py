@@ -655,34 +655,21 @@ def test_visual_parse_runs_core_layout_preflight_before_acceptance():
     assert "return validated" in visual_block
 
 
-def test_visual_preflight_reports_every_incompatible_scene(monkeypatch):
-    from types import SimpleNamespace
+def test_visual_preflight_aggregates_all_incompatible_scenes():
+    source = (
+        ROOT / "live_evaluation" / "hermes_runner.py"
+    ).read_text(encoding="utf-8")
+    helper = source[
+        source.index("def _require_frozen_core_layout_compatible"):
+        source.index("def _parse_output")
+    ]
 
-    from agent_contracts import AgentContractError
-    from learnflow_v2.core.errors import LayoutUnsatisfiableError
-    import learnflow_v2.layout as layout_module
-
-    graphs = (
-        SimpleNamespace(scene_id="scene-a"),
-        SimpleNamespace(scene_id="scene-b"),
-    )
-
-    def fail_layout(graph):
-        raise LayoutUnsatisfiableError(f"bad layout for {graph.scene_id}")
-
-    monkeypatch.setattr(layout_module, "compile_scene_layout", fail_layout)
-
-    with pytest.raises(AgentContractError) as caught:
-        LiveHermesStructuredRunner._require_frozen_core_layout_compatible(
-            SimpleNamespace(scenegraphs=graphs)
-        )
-
-    message = str(caught.value)
-    assert "scene-a" in message
-    assert "scene-b" in message
-    assert "Repair every listed scene in one response" in message
-    assert "PROCESS_TOPIC" in message
-    assert "COMPARISON_TOPIC" in message
+    assert "failures: list[tuple[str, Exception]] = []" in helper
+    assert "failures.append((graph.scene_id, exc))" in helper
+    assert "if failures:" in helper
+    assert "for scene_id, exc in failures" in helper
+    assert "Repair every listed scene in one response" in helper
+    assert "from failures[0][1]" in helper
 
 
 def test_visual_task_states_specialized_layout_topology_contracts():
@@ -690,14 +677,19 @@ def test_visual_task_states_specialized_layout_topology_contracts():
         ROOT / "visual_director" / "hermes.py"
     ).read_text(encoding="utf-8")
     block = source[source.index("def build_visual_director_task"):]
+    compact = " ".join(block.split())
 
-    assert "For PROCESS, emit exactly one PROCESS_TOPIC" in block
-    assert "at least one PROCESS_ACTOR" in block
-    assert "at least one PROCESS_STEP" in block
-    assert "For COMPARISON, emit exactly one COMPARISON_TOPIC" in block
-    assert "at least two COMPARISON_COLUMN nodes" in block
-    assert "source=member and target=column" in block
-    assert "choose CONCEPT_CARD rather than labeling it PROCESS or COMPARISON" in block
+    assert (
+        "For PROCESS, emit exactly one PROCESS_TOPIC, at least one "
+        "PROCESS_ACTOR, and at least one PROCESS_STEP"
+    ) in compact
+    assert "every node in that scene must use one of those roles" in compact
+    assert (
+        "For COMPARISON, emit exactly one COMPARISON_TOPIC and at least two "
+        "COMPARISON_COLUMN nodes"
+    ) in compact
+    assert "source=member and target=column" in compact
+    assert "choose CONCEPT_CARD rather than labeling it PROCESS or COMPARISON" in compact
 
 
 
