@@ -381,3 +381,18 @@ def test_live_workflow_reacts_to_governance_and_bootstrap_changes():
     assert '"runtime_governance/**"' in workflow
     assert '".hermes/plugins/learnflow-governance/**"' in workflow
     assert '"hermes/bootstrap/config.yaml"' in workflow
+
+
+
+def test_host_preauthorizes_direct_research_fanout():
+    source = (
+        ROOT / "live_evaluation" / "hermes_runner.py"
+    ).read_text(encoding="utf-8")
+    research_block = source[
+        source.index("def _run_research_delegation"):
+        source.index("def _delegation_usage")
+    ]
+    assert 'on_pre_tool_call(' in research_block
+    assert '"delegate_task"' in research_block
+    assert '"host-research-fanout"' in research_block
+    assert "LearnFlow governance rejected research fan-out" in research_block
