@@ -529,6 +529,12 @@ def build_visual_director_task(
                 "RIGHT_TO_LEFT, TOP_TO_BOTTOM, or BOTTOM_TO_TOP."
             ),
             (
+                "Keep each SceneGraph semantically minimal. Prefer CONCEPT_CARD for "
+                "dense explanatory scenes; use PROCESS or HIERARCHY only when a small "
+                "directed topology is essential. The host will reject SceneGraphs that "
+                "frozen Core cannot lay out without scaling."
+            ),
+            (
                 "semantic_role is domain semantics only. Never use layout-zone role names "
                 "TITLE, HEADER, CAPTION, SUBTITLE, SAFE_TITLE, or SAFE_CAPTION."
             ),
