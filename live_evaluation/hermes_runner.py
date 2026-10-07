@@ -6,6 +6,7 @@ import json
 import os
 from dataclasses import dataclass, asdict
 from pathlib import Path
+import tempfile
 import time
 from typing import Any, TypeVar
 
@@ -40,7 +41,7 @@ class LiveHermesStructuredRunner:
     """Use exact Hermes AIAgent with hard usage quotas and uncapped USD telemetry."""
 
     _STAGE_RESERVATIONS = {
-        "research_orchestration": {"usd": 0.0, "provider_attempts": 128},
+        "research_orchestration": {"usd": 0.0, "provider_attempts": 384},
         "pedagogy_agent": {"usd": 0.0, "provider_attempts": 3},
         "script_agent": {"usd": 0.0, "provider_attempts": 3},
         "visual_director": {"usd": 0.0, "provider_attempts": 3},
@@ -215,11 +216,24 @@ class LiveHermesStructuredRunner:
             }
             for specialist in plan.specialist_tasks
         ]
-        raw = delegate_task(
-            tasks=hermes_tasks,
-            background=False,
-            parent_agent=agent,
-        )
+        previous_terminal_cwd = os.environ.get("TERMINAL_CWD")
+        with tempfile.TemporaryDirectory(prefix="learnflow-research-context-") as isolated_cwd:
+            # Pinned Hermes injects workspace context into delegated children even
+            # when child AIAgent(skip_context_files=True) is used. Point the
+            # delegation workspace outside the repository so AGENTS.md cannot be
+            # injected or instruct a web-only researcher to call read_file.
+            os.environ["TERMINAL_CWD"] = isolated_cwd
+            try:
+                raw = delegate_task(
+                    tasks=hermes_tasks,
+                    background=False,
+                    parent_agent=agent,
+                )
+            finally:
+                if previous_terminal_cwd is None:
+                    os.environ.pop("TERMINAL_CWD", None)
+                else:
+                    os.environ["TERMINAL_CWD"] = previous_terminal_cwd
         try:
             delegation_payload = json.loads(raw)
         except json.JSONDecodeError as exc:
