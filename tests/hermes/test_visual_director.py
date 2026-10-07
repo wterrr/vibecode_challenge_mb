@@ -330,6 +330,7 @@ def _wire_visual_payload(output, script, registry, concept_order):
     }
     for graph in payload["scenegraphs"]:
         graph["scene_index"] = scene_index[graph.pop("scene_id")]
+        graph.pop("purpose", None)
         for node in graph["nodes"]:
             ref = node.pop("concept_ref", None)
             node.pop("semantic_key", None)
@@ -356,6 +357,7 @@ def test_visual_wire_schema_uses_indexes_for_all_dynamic_refs():
     assert "continuity_keys" not in scene_props
     assert "scene_index" in graph_props
     assert "scene_id" not in graph_props
+    assert "purpose" not in graph_props
     assert "concept_index" in node_props
     assert "concept_ref" not in node_props
     assert "semantic_key" not in node_props
@@ -472,6 +474,45 @@ def test_host_rejects_unsupported_layout_intent_before_frozen_core():
     )
     wire["scenegraphs"][0]["layout_intent"]["type"] = LayoutIntent.ILLUSTRATION.value
     with pytest.raises(AgentContractError, match="not supported by frozen Core"):
+        assemble_visual_director_wire(
+            wire,
+            script=script,
+            registry=registry,
+            concept_order=pedagogy.concept_order,
+        )
+
+
+
+def test_host_derives_scene_purpose_from_teaching_function():
+    *_, pedagogy, script, registry, output = fixture()
+    wire = _wire_visual_payload(
+        output,
+        script,
+        registry,
+        pedagogy.concept_order,
+    )
+    # CHECK is a valid Script/Storyboard teaching function but is intentionally
+    # not a ScenePurpose enum member. The host maps it to RECAP before Core.
+    wire["storyboard"]["scenes"][0]["teaching_function"] = "CHECK"
+    assembled = assemble_visual_director_wire(
+        wire,
+        script=script,
+        registry=registry,
+        concept_order=pedagogy.concept_order,
+    )
+    assert assembled.scenegraphs[0].purpose.value == "RECAP"
+
+
+def test_host_rejects_model_owned_scene_purpose():
+    *_, pedagogy, script, registry, output = fixture()
+    wire = _wire_visual_payload(
+        output,
+        script,
+        registry,
+        pedagogy.concept_order,
+    )
+    wire["scenegraphs"][0]["purpose"] = "CHECK"
+    with pytest.raises(AgentContractError, match="host-owned scene_id/purpose"):
         assemble_visual_director_wire(
             wire,
             script=script,
