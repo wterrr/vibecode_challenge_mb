@@ -19,6 +19,7 @@ from scripts.verify_visual_director import build_visual_output
 from visual_director import (
     VisualDirectorIssue,
     VisualDirectorOutput,
+    assemble_visual_director_wire,
     build_visual_concept_registry,
     build_visual_director_task,
     require_core_ready,
@@ -297,3 +298,124 @@ def test_visual_director_surface_does_not_import_geometry_motion_or_renderer():
         "deterministicpillowrenderer(",
     ):
         assert forbidden not in source
+
+
+
+def _wire_visual_payload(output, script, registry, concept_order):
+    payload = output.model_dump(mode="json")
+    segment_index = {
+        segment.segment_id: index
+        for index, segment in enumerate(script.segments)
+    }
+    concept_entries = tuple(registry.resolve(item) for item in concept_order)
+    concept_index = {
+        entry.concept_id: index
+        for index, entry in enumerate(concept_entries)
+    }
+
+    storyboard = payload["storyboard"]
+    storyboard.pop("script_id", None)
+    for scene in storyboard["scenes"]:
+        scene["script_segment_indexes"] = [
+            segment_index[item] for item in scene.pop("script_segment_ids")
+        ]
+        scene.pop("concept_refs", None)
+        scene.pop("continuity_keys", None)
+
+    scene_index = {
+        scene["scene_id"]: index
+        for index, scene in enumerate(storyboard["scenes"])
+    }
+    for graph in payload["scenegraphs"]:
+        graph["scene_index"] = scene_index[graph.pop("scene_id")]
+        for node in graph["nodes"]:
+            ref = node.pop("concept_ref", None)
+            node.pop("semantic_key", None)
+            if ref is not None:
+                node["concept_index"] = concept_index[ref]
+    return payload
+
+
+def test_visual_wire_schema_uses_indexes_for_all_dynamic_refs():
+    brief, pack, evidence_graph, report, pedagogy, script, _, _ = fixture()
+    task = build_visual_director_task(
+        brief, pack, evidence_graph, report, pedagogy, script
+    )
+    schema = task["output_schema"]
+    serialized = json.dumps(schema)
+    scene_props = schema["$defs"]["StoryboardScene"]["properties"]
+    graph_props = schema["$defs"]["SceneGraph"]["properties"]
+    node_props = schema["$defs"]["SceneNode"]["properties"]
+    storyboard_props = schema["$defs"]["Storyboard"]["properties"]
+
+    assert "script_segment_indexes" in scene_props
+    assert "script_segment_ids" not in scene_props
+    assert "concept_refs" not in scene_props
+    assert "continuity_keys" not in scene_props
+    assert "scene_index" in graph_props
+    assert "scene_id" not in graph_props
+    assert "concept_index" in node_props
+    assert "concept_ref" not in node_props
+    assert "semantic_key" not in node_props
+    assert "script_id" not in storyboard_props
+    assert "concept_catalog" in json.loads(task["context"])
+    assert "script_segment_catalog" in json.loads(task["context"])
+    assert '"x":' not in serialized.lower()
+    assert '"y":' not in serialized.lower()
+
+
+def test_host_assembles_visual_dynamic_refs_and_derives_concept_sets():
+    *_, pedagogy, script, registry, output = fixture()
+    wire = _wire_visual_payload(
+        output,
+        script,
+        registry,
+        pedagogy.concept_order,
+    )
+    assembled = assemble_visual_director_wire(
+        wire,
+        script=script,
+        registry=registry,
+        concept_order=pedagogy.concept_order,
+    )
+    assert assembled.to_canonical_json() == output.to_canonical_json()
+
+    result = validate(assembled, script, registry)
+    assert result.ready_for_core
+    assert VisualDirectorIssue.SCENE_CONCEPT_SET_MISMATCH not in result.issues
+
+
+def test_host_rejects_direct_dynamic_visual_references():
+    *_, pedagogy, script, registry, output = fixture()
+    wire = _wire_visual_payload(
+        output,
+        script,
+        registry,
+        pedagogy.concept_order,
+    )
+    wire["storyboard"]["scenes"][1]["concept_refs"] = ["c_forbidden"]
+    with pytest.raises(AgentContractError, match="host-owned concept_refs"):
+        assemble_visual_director_wire(
+            wire,
+            script=script,
+            registry=registry,
+            concept_order=pedagogy.concept_order,
+        )
+
+
+def test_host_rejects_duplicate_scenegraph_indexes():
+    *_, pedagogy, script, registry, output = fixture()
+    wire = _wire_visual_payload(
+        output,
+        script,
+        registry,
+        pedagogy.concept_order,
+    )
+    wire["scenegraphs"][1]["scene_index"] = wire["scenegraphs"][0]["scene_index"]
+    with pytest.raises(AgentContractError, match="more than one SceneGraph"):
+        assemble_visual_director_wire(
+            wire,
+            script=script,
+            registry=registry,
+            concept_order=pedagogy.concept_order,
+        )
