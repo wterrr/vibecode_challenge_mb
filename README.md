@@ -141,6 +141,30 @@ curl http://127.0.0.1:8000/healthz
 | `GEMINI_IMAGE_MODEL` | `gemini-3.1-flash-image` | Gemini model for image generation |
 | `RENDER_PROFILE` | `production` | Render profile (`production` for 1080p, `test` for fast 360p) |
 
+## PostgreSQL production persistence
+
+Production deployments use PostgreSQL through `DATABASE_URL`. For Vibehost, configure at minimum:
+
+```bash
+ENVIRONMENT=production
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE
+```
+
+The application creates the `jobs` table and indexes idempotently at startup. If `ENVIRONMENT=production` is set without `DATABASE_URL`, startup fails closed instead of falling back to SQLite.
+
+SQLite remains available only for local development and fast tests when `DATABASE_URL` is absent.
+
+To copy existing local job rows into PostgreSQL:
+
+```bash
+python scripts/migrate_sqlite_jobs_to_postgres.py \
+  --sqlite learnflow.db \
+  --database-url "$DATABASE_URL" \
+  --skip-existing
+```
+
+The migration command never prints the database URL.
+
 ## Preflight Verification
 
 Run the local environment diagnostics:
