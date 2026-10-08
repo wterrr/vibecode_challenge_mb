@@ -217,3 +217,51 @@ def test_partial_write_crash_cleaned_and_unpublished(tmp_path,monkeypatch):
         response=client.post("/api/v3/offline/binary-search-lesson",json=SOURCE)
     assert response.status_code==500
     assert not list(Path(settings.artifacts_dir).glob("v3narrated*"))
+
+
+def test_forged_rehashed_mp4_without_aac_still_fails_media_gate(live,tmp_path):
+    """Not merely mismatched SHA: require actual audio stream in the file."""
+    _,_,original=live
+    target=tmp_path/"no_aac";target.mkdir()
+    p=original/"narrated_binary_lesson.mp4"
+    out=target/p.name
+    subprocess.run(["ffmpeg","-hide_banner","-v","error","-y",
+                    "-i",str(p),"-map","0:v:0","-c:v","copy","-an",str(out)],
+                   check=True,timeout=40)
+    shutil.copy2(original/"narrated_binary_lesson.srt",
+                 target/"narrated_binary_lesson.srt")
+    data=json.loads((original/"narrated_binary_lesson.receipt.json").read_text())
+    from learnflow_v2.repair import compute_content_hash
+    data["video_sha256"]=hashlib.sha256(out.read_bytes()).hexdigest()
+    data["report_sha256"]=compute_content_hash({
+        k:v for k,v in data.items() if k!="report_sha256"})
+    (target/"narrated_binary_lesson.receipt.json").write_text(
+        json.dumps(data,indent=2)+"\n")
+    forged=NarratedLessonReceipt.model_validate(data)
+    source=build_binary_lesson_source(
+        values=tuple(SOURCE["values"]),target=SOURCE["target"])
+    with pytest.raises(SemanticContractError,match="MISSING_REAL_VIDEO_OR_SPOKEN_AUDIO"):
+        verify_narrated_lesson(source=source,folder=target,receipt=forged)
+
+
+def test_forged_rehashed_srt_wrong_time_still_fails_source_alignment(live,tmp_path):
+    _,_,original=live
+    target=tmp_path/"tampered_srt";target.mkdir()
+    for p in original.iterdir():shutil.copy2(p,target/p.name)
+    file=target/"narrated_binary_lesson.srt"
+    original_text=file.read_text()
+    changed=original_text.replace("00:00:00,000","00:00:01,000",1)
+    assert changed!=original_text
+    file.write_text(changed)
+    from learnflow_v2.repair import compute_content_hash
+    data=json.loads((target/"narrated_binary_lesson.receipt.json").read_text())
+    data["subtitle_sha256"]=hashlib.sha256(file.read_bytes()).hexdigest()
+    data["report_sha256"]=compute_content_hash({
+        k:v for k,v in data.items() if k!="report_sha256"})
+    (target/"narrated_binary_lesson.receipt.json").write_text(
+        json.dumps(data,indent=2)+"\n")
+    forged=NarratedLessonReceipt.model_validate(data)
+    source=build_binary_lesson_source(
+        values=tuple(SOURCE["values"]),target=SOURCE["target"])
+    with pytest.raises(SemanticContractError,match="SUBTITLE_TEXT_OR_TIME_DRIFT"):
+        verify_narrated_lesson(source=source,folder=target,receipt=forged)
