@@ -608,7 +608,9 @@ def verify_narrated_lesson(*,source:BinaryLessonSource,folder:Path,
                 images.append(Image.frombytes("RGB",(W,H),z).crop((0,80,W,235)))
             diff=ImageChops.difference(images[0],images[1])
             mae=sum(ImageStat.Stat(diff).mean)/3.0
-            if mae>5.0:
+            # The verified regression produced MAE=4.12 on frame 239→240;
+            # a 5.0 threshold would incorrectly let that actual rewind pass.
+            if mae>2.0:
                 _block("EVENT_SCENE_BOUNDARY_REWINDS_STATE")
     # Visual QA: inspect decoded output (after SRT burn) to guarantee a
     # deliberate BLACK gutter between source action label (Y=252..270) and
