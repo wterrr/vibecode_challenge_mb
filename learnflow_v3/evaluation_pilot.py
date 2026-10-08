@@ -232,6 +232,35 @@ class PrimaryEffect(V3Model):
     threshold_wins_reached:bool
 
 
+class StratumEffect(V3Model):
+    group:Literal["domain","difficulty"]
+    value:str
+    topic_count:int=Field(ge=1,le=N)
+    clarity_mean_paired_delta:float
+    representation_mean_paired_delta:float
+
+
+def _quadratic_kappa(pairs:list[tuple[int,int]])->float|None:
+    """Quadratic ordinal Cohen kappa for independent first-two primary ratings."""
+    if not pairs:return None
+    observed=sum((a-b)**2 for a,b in pairs)/len(pairs)
+    left=[sum(a==i for a,_ in pairs)/len(pairs) for i in range(1,6)]
+    right=[sum(b==i for _,b in pairs)/len(pairs) for i in range(1,6)]
+    expected=sum(left[i-1]*right[j-1]*(i-j)**2
+                 for i in range(1,6) for j in range(1,6))
+    if expected==0:
+        return 1.0 if observed==0 else None
+    return round(1-observed/expected,5)
+
+
+def _percentile(values:list[float],q:float)->float|None:
+    if not values:return None
+    sorted_values=sorted(values)
+    point=(len(sorted_values)-1)*q
+    low=int(point);high=min(len(sorted_values)-1,low+1)
+    return round(sorted_values[low]*(high-point)+sorted_values[high]*(point-low),5)
+
+
 class SyntheticRehearsal(V3Model):
     version:Literal["v3-16-blinded-pilot-manifest-v1"]=VERSION
     status:Literal["AUTHOR_SEEDED_REHEARSAL_ONLY_NOT_HUMAN_EVIDENCE"]="AUTHOR_SEEDED_REHEARSAL_ONLY_NOT_HUMAN_EVIDENCE"
@@ -244,6 +273,12 @@ class SyntheticRehearsal(V3Model):
     provider_cost_total_usd:float|None
     wall_seconds_total:float|None
     mean_absolute_rater_disagreement:float|None
+    primary_quadratic_weighted_kappa:float|None
+    stratified_effects:tuple[StratumEffect,...]=Field(min_length=9,max_length=9)
+    provider_cost_p50_usd:float|None
+    provider_cost_p95_usd:float|None
+    wall_seconds_p50:float|None
+    wall_seconds_p95:float|None
     critical_safety_errors:Literal[None]=None
     independent_human_data:Literal[False]=False
     actual_human_quality_effect:Literal["UNMEASURED"]="UNMEASURED"
@@ -310,7 +345,7 @@ def rehearsal_analysis(*,protocol:dict,manifest:PilotManifest,
     if len(present)!=len(ratings) or any(r.topic_id not in TOPIC_IDS for r in ratings):
         _reject("DUPLICATE_OR_FOREIGN_RATING")
     account={(a.topic_id,a.system):a for a in attempts}
-    used=set();disagree=[];pairs=[]
+    used=set();disagree=[];rater_primary_pairs=[];pairs=[]
     for slot in manifest.topic_slots:
         mapping=private_assignment(protocol,slot.topic_id)
         scored={}
@@ -318,6 +353,10 @@ def rehearsal_analysis(*,protocol:dict,manifest:PilotManifest,
             system=mapping[side]
             scores=[r for r in ratings if r.topic_id==slot.topic_id and r.slot==side]
             observed,ds=_score_system(account[(slot.topic_id,system)],scores)
+            if len(scores)>=2:
+                rater_primary_pairs.extend(
+                    (scores[0].ratings[k],scores[1].ratings[k]) for k in PRIMARY
+                )
             used.update((r.topic_id,r.slot,r.rater_id) for r in scores)
             disagree.extend(ds)
             scored[system]=observed
@@ -342,6 +381,17 @@ def rehearsal_analysis(*,protocol:dict,manifest:PilotManifest,
             threshold_mean_reached=statistics.mean(arr)>=.5,
             threshold_wins_reached=wins>=8,
         ))
+    strata=[]
+    for group in ("domain","difficulty"):
+        for label in dict.fromkeys(getattr(p,group) for p in pairs):
+            selected=[p for p in pairs if getattr(p,group)==label]
+            strata.append(StratumEffect(
+                group=group,value=label,topic_count=len(selected),
+                clarity_mean_paired_delta=round(statistics.mean(
+                    p.delta["clarity"] for p in selected),4),
+                representation_mean_paired_delta=round(statistics.mean(
+                    p.delta["representation_adequacy"] for p in selected),4),
+            ))
     costs=[a.actual_usd_cost for a in attempts]
     durations=[a.wall_seconds for a in attempts]
     values=dict(
@@ -353,6 +403,12 @@ def rehearsal_analysis(*,protocol:dict,manifest:PilotManifest,
         provider_cost_total_usd=round(sum(costs),6) if all(v is not None for v in costs) else None,
         wall_seconds_total=round(sum(durations),4) if all(v is not None for v in durations) else None,
         mean_absolute_rater_disagreement=round(statistics.mean(disagree),4) if disagree else None,
+        primary_quadratic_weighted_kappa=_quadratic_kappa(rater_primary_pairs),
+        stratified_effects=[x.model_dump(mode="json") for x in strata],
+        provider_cost_p50_usd=_percentile(costs,.5) if all(v is not None for v in costs) else None,
+        provider_cost_p95_usd=_percentile(costs,.95) if all(v is not None for v in costs) else None,
+        wall_seconds_p50=_percentile(durations,.5) if all(v is not None for v in durations) else None,
+        wall_seconds_p95=_percentile(durations,.95) if all(v is not None for v in durations) else None,
         critical_safety_errors=None,independent_human_data=False,
         actual_human_quality_effect="UNMEASURED",real_pilot_pass=False,publication_blocked=True,
     )
