@@ -1,7 +1,7 @@
 # V3-11 — Temporal Geometry: Swept Time and Intermediate Frame QA
 
 **Date:** 2026-10-08
-**Status:** IMPLEMENTED; final CI still pending at initial report. Bounded engineering success must follow the exact PR-head workflow, not implementation alone.
+**Status:** BOUNDED ENGINEERING PASS on code HEAD cd65c8765205a09c2b3b86451762514918ca4332, report-only HEAD CI pending. Not a production or full V3-06/07/08 temporal guarantee.
 **Parent:** PR #43 exact SHA 5f7314584248a6b95d447a71b616a49577593502, branch chatgpt/v3-11-temporal-geometry, stacked review-only. Frozen V2/Core and main untouched.
 
 ## Root cause, existing capabilities, reuse licensing
@@ -34,3 +34,10 @@ The **bounded engineering criterion** is that every fixed negative mutation fail
 **Explicit NO-CLAIM boundaries:** no general scene/shot transition optimizer; no tested integration into all V3-06 Binary Search pointer geometry, V3-07 Code/Process or V3-08 Mathematics video; no real TTS audio/subtitle speech alignment; no audio channels in golden; no human evaluation, general production publication or 3Blue1Brown visual parity; no representative-domain ≥90% gain. Static/Python source correctness cannot independently certify produced perceptual understanding. The generic planner treats nodes as non-overlapping AABBs; intentional layering/overlapping labels requires a future typed composition contract. Fail closed for unsupported shapes.
 
 **Next exactly one checkpoint if and only if V3-11 final HEAD passes:** V3-12 Fail-Closed QA and Publication policy.
+
+
+## Verified code-head evidence
+
+[CI #37751060381](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37751060381) **SUCCESS** on implementation SHA cd65c8765205a09c2b3b86451762514918ca4332: 163 V3 tests, 39 frozen V2, 86 Hermes tests PASS; V3_BENCHMARK_PREREG, LEARNFLOW_BENCH_CONTRACT and CORE_FREEZE all PASS. Golden reports 49 frames (4.083 s), 640×360 @12fps H264, 24,887 MP4 bytes; 3 analytic pair segments, 3 conservative nonlinear subdivisions, 100 typed text measurements, maximum simultaneous motion 2. Zero critical overlaps, clipping, overflow or subtitle intrusion. Five exact ordinal decoded frame anchors have MAEs 0.238, 0.201, 0.201, 0.201, 0.201 (0–255 channels). The video is a **plain geometry test card**, not a full lesson.
+
+[Artifact #11537957182](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37751060381/artifacts/11537957182) downloaded and independently unzipped: video_sha256 6a2353fab00b20ae9baa0f43d65841a5d28333ce28b9fdaf1688117d613809d4 matches the JSON exactly; ffprobe shows H264, 640×360, 12/1 fps, 49 decoded frames. Poster at frame 24 inspected for legibility. Exactly one next checkpoint only after approval: V3-12. No source statement of human/video production efficacy is made.
