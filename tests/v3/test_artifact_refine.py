@@ -244,3 +244,31 @@ def test_deceptive_success_or_rehashed_audit_does_not_validate(certified,tmp_pat
     forged=r.model_copy(update={"reason":"LLM claims verified"})
     with pytest.raises(SemanticContractError,match="REHASHED_OR_STALE"):
         verify_refine_result(candidate=forged,replay=r)
+
+
+def test_renderer_partial_write_then_exception_is_fully_cleaned(certified,tmp_path,monkeypatch):
+    """Regression: an encoder may fail AFTER producing a partial MP4."""
+    import learnflow_v3.artifact_refine as ar
+    baseline,cert,evidence,original=certified
+    target,category,bad=inject(baseline,"clip")
+    intent=intent_for_seeded_defect(
+        case_id="partial-write-fault",baseline=baseline,candidate=bad,
+        target_track_id=target,defect_category=category)
+    initial_sha=hashlib.sha256(original.read_bytes()).hexdigest()
+
+    def crash_after_creating_partial(**kwargs):
+        Path(kwargs["output_path"]).write_bytes(b"partial-h264-before-encoder-crash")
+        raise RuntimeError("injected partial output failure")
+
+    monkeypatch.setattr(ar,"render_certified_temporal_demo",
+                        crash_after_creating_partial)
+    destination=tmp_path/"partial.mp4"
+    result=refine_single_track(
+        intent=intent,baseline=baseline,baseline_certificate=cert,
+        baseline_evidence=evidence,baseline_video_path=original,
+        candidate=bad,output_path=destination)
+    assert result.status=="ROLLBACK_BLOCKED"
+    assert result.publication_blocked
+    assert not destination.exists()
+    assert list(tmp_path.iterdir())==[]
+    assert hashlib.sha256(original.read_bytes()).hexdigest()==initial_sha
