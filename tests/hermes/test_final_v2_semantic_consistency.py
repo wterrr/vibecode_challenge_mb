@@ -122,3 +122,141 @@ def test_stale_scenegraph_semantic_key_is_rejected():
             node["semantic_key"] = "concept:worked_example_in_2_5_8_12_16_23_38_search_for_16"
     with pytest.raises(SemanticConsistencyError, match="SEMANTIC_NODE_CONCEPT_KEY_MISMATCH"):
         assert_semantic_consistency(data)
+
+
+def _basic_export_source(tmp_path):
+    source = tmp_path / "input"
+    source.mkdir()
+    (source / "pilot_report.json").write_text('{"success":true}')
+    return source
+
+
+def test_export_rejects_self_ancestors_descendants_and_root_without_deletion(tmp_path):
+    source = _basic_export_source(tmp_path)
+    keep = source / "pilot_report.json"
+    for destination in (
+        source,
+        tmp_path,
+        tmp_path.parent,
+        tmp_path / "input" / "nested",
+        Path(source.anchor),
+    ):
+        with pytest.raises(ValueError, match="unsafe"):
+            export_evidence(source, destination)
+        assert keep.read_text() == '{"success":true}'
+        assert tmp_path.is_dir()
+
+
+def test_export_does_not_overwrite_caller_owned_output(tmp_path):
+    source = _basic_export_source(tmp_path)
+    dest = tmp_path / "published"
+    dest.mkdir()
+    marker = dest / "must-survive.txt"
+    marker.write_text("keep")
+    with pytest.raises(ValueError, match="already exists"):
+        export_evidence(source, dest)
+    assert marker.read_text() == "keep"
+    assert (source / "pilot_report.json").is_file()
+
+
+def test_export_rejects_existing_and_dangling_output_symlinks(tmp_path):
+    source = _basic_export_source(tmp_path)
+    external = tmp_path / "external"
+    external.mkdir()
+    marker = external / "marker"
+    marker.write_text("unchanged")
+    for target in (external, tmp_path / "nonexistent"):
+        link = tmp_path / "published"
+        link.symlink_to(target, target_is_directory=True)
+        try:
+            with pytest.raises(ValueError, match="symlinked"):
+                export_evidence(source, link)
+            assert marker.read_text() == "unchanged"
+            assert (source / "pilot_report.json").is_file()
+        finally:
+            link.unlink()
+
+
+def test_export_rejects_symlinked_lesson_runs_escape(tmp_path):
+    source = _basic_export_source(tmp_path)
+    external = tmp_path / "external"
+    run = external / "079bc93cbe4b74cb"
+    run.mkdir(parents=True)
+    marker = run / "script.json"
+    marker.write_text('{"sensitive_external":"do-not-export"}')
+    (source / "lesson-runs").symlink_to(external, target_is_directory=True)
+    dest = tmp_path / "published"
+    with pytest.raises(ValueError, match="symlinked lesson-runs"):
+        export_evidence(source, dest)
+    assert marker.is_file()
+    assert not dest.exists()
+    assert not list(tmp_path.glob(".published.staging-*"))
+
+
+def test_export_rejects_symlinked_run_and_subdirectory(tmp_path):
+    source = _basic_export_source(tmp_path)
+    external = tmp_path / "external"
+    external.mkdir()
+    run_root = source / "lesson-runs"
+    run_root.mkdir()
+    linked_run = run_root / "079bc93cbe4b74cb"
+    linked_run.symlink_to(external, target_is_directory=True)
+    dest = tmp_path / "published"
+    with pytest.raises(ValueError, match="unrecognized lesson run"):
+        export_evidence(source, dest)
+    linked_run.unlink()
+    linked_run.mkdir()
+    subdir = linked_run / "scenegraphs"
+    subdir.symlink_to(external, target_is_directory=True)
+    with pytest.raises(ValueError, match="symlinked evidence folder"):
+        export_evidence(source, dest)
+    assert not dest.exists()
+    assert not list(tmp_path.glob(".published.staging-*"))
+
+
+def test_export_rejects_allowlisted_leaf_symlink_and_preserves_external(tmp_path):
+    source = _basic_export_source(tmp_path)
+    external = tmp_path / "external.json"
+    external.write_text('{"external":"private"}')
+    (source / "model_probe.json").symlink_to(external)
+    dest = tmp_path / "published"
+    with pytest.raises(ValueError, match="symlinked evidence path"):
+        export_evidence(source, dest)
+    assert external.read_text() == '{"external":"private"}'
+    assert not dest.exists()
+
+
+def test_export_rejects_credential_without_partial_publication(tmp_path):
+    source = _basic_export_source(tmp_path)
+    run = source / "lesson-runs" / "079bc93cbe4b74cb"
+    run.mkdir(parents=True)
+    (run / "script.json").write_text('{"api_key":"fake-secret"}')
+    dest = tmp_path / "published"
+    with pytest.raises(ValueError, match="sensitive credential"):
+        export_evidence(source, dest)
+    assert not dest.exists()
+    assert not list(tmp_path.glob(".published.staging-*"))
+    assert (source / "pilot_report.json").is_file()
+
+
+def test_export_valid_empty_source_and_allowlist_atomic_publication(tmp_path):
+    source = tmp_path / "empty"
+    source.mkdir()
+    dest = tmp_path / "empty-export"
+    report = export_evidence(source, dest)
+    assert report["file_count"] == 0
+    assert (dest / "export_manifest.json").is_file()
+    assert not list(tmp_path.glob(".empty-export.staging-*"))
+    # Valid nonempty export retains allowlisted evidence and excludes auth.
+    full = _basic_export_source(tmp_path)
+    (full / "hermes-home").mkdir()
+    (full / "hermes-home" / "auth.json").write_text('{"api_key":"fake"}')
+    (full / "governance").mkdir()
+    (full / "governance" / "debug.log").write_text("private")
+    published = tmp_path / "published"
+    report = export_evidence(full, published)
+    assert report["file_count"] == 1
+    assert (published / "pilot_report.json").read_text() == '{"success":true}'
+    assert not (published / "hermes-home").exists()
+    assert not (published / "governance").exists()
+    assert not list(tmp_path.glob(".published.staging-*"))
