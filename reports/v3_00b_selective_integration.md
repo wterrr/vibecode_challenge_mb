@@ -1,6 +1,6 @@
 # V3-00B — Selective Integration Candidate & Offline Gate
 
-**State:** CANDIDATE CREATED; CI PENDING. This is an integration proposal, **not** permission to merge `main` or launch V3.
+**State:** **V3-00B OFFLINE PASS / REVIEW READY / NO MAIN MERGE**. This is an integration proposal, **not** permission to merge `main` or launch V3.
 
 ## Pinned sources
 
@@ -50,4 +50,6 @@
 
 ## Decision
 
-**CI: PENDING**. If all gates pass, mark **V3-00B PASS / PR REVIEW READY**, still **NO MAIN MERGE** pending user authorization.
+**V3-00B OFFLINE PASS — PR REVIEW READY.** [Integration CI run 37726063235](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37726063235) completed **SUCCESS** on commit `12440e4f3222d3982dff47f090d546cab79746a3`. Measured job outputs: `CORE_FREEZE=PASS`; `LIVE_V2D_CONTRACT=PASS`; **74** V2D/semantic/subtitle/redaction tests passed; renderer **14 passed, 5 skipped**. This intentionally differs from the pilot's 87 tests because paid-Luna-specific regressions were excluded from production porting. CI uses no provider secrets, and its only active job is `offline-integration`.
+
+**Main merge remains blocked** until a human reviews this PR, confirms branch and CI status, and explicitly authorizes integration. The CI validates offline code, not the opt-in short-TTS human visual output, end-to-end provider usage or 100-topic reliability.
