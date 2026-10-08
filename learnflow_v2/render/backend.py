@@ -271,6 +271,26 @@ class DeterministicPillowRenderer:
         if not isinstance(hidden_node_ids, frozenset):
             raise RenderInvalidInputError("hidden_node_ids must be a frozenset")
         scene_graph, layout_graph, motion = self.validate_scene_inputs(scene_graph, layout_graph, motion)
+        return self._render_validated_frame(
+            scene_graph, layout_graph, motion, time_s,
+            hidden_node_ids=hidden_node_ids,
+        )
+
+    def _render_validated_frame(
+        self,
+        scene_graph: SceneGraph,
+        layout_graph: LayoutGraph,
+        motion: CompiledMotionArtifact | None,
+        time_s: float,
+        *,
+        hidden_node_ids: frozenset[str] = frozenset(),
+    ) -> Image.Image:
+        """Frame loop for already-validated immutable Core artifacts.
+
+        Called only after the public validation boundary in render_scene_video.
+        Public render_frame still revalidates every call; frozen schema and
+        motion contracts are never weakened.
+        """
         node_ids = {node.id for node in scene_graph.nodes}
         unknown_hidden = set(hidden_node_ids) - node_ids
         if unknown_hidden:
@@ -345,17 +365,22 @@ class DeterministicPillowRenderer:
         emphasis = min(1.0, max(0.0, emphasis))
         if opacity <= 0.001 or reveal <= 0.001:
             return
-        layer = Image.new("RGBA", image.size, (0, 0, 0, 0))
-        draw = ImageDraw.Draw(layer)
         x0, y0, x1, y1 = _rect_tuple(rect)
         x1 = max(x0 + 1, int(round(x0 + (x1 - x0) * reveal)))
+        # Allocate only the node's occupied rectangle rather than a full-frame
+        # RGBA layer + full-frame RGB conversion for *every* node and frame.
+        # Keep original global coordinate calculations for pixel parity.
+        layer = Image.new(
+            "RGBA", (max(1, x1 - x0 + 1), max(1, y1 - y0 + 1)), (0, 0, 0, 0)
+        )
+        draw = ImageDraw.Draw(layer)
         alpha = int(round(opacity * 255))
         base = _KIND_COLORS.get(node.kind.value, (48, 55, 70))
         fill = tuple(min(255, int(c + emphasis * 26)) for c in base) + (alpha,)
         outline = (90, 200, 250, alpha) if emphasis > 0.05 else (102, 116, 139, alpha)
         border = 2 + int(round(emphasis * 4))
         radius = max(4, min(18, int(min(rect.width, rect.height) * 0.08)))
-        draw.rounded_rectangle((x0, y0, x1, y1), radius=radius, fill=fill, outline=outline, width=border)
+        draw.rounded_rectangle((0, 0, x1 - x0, y1 - y0), radius=radius, fill=fill, outline=outline, width=border)
         text = _node_text(node)
         font, lines, line_h, text_width, text_height, inner_width, inner_height, fits = _layout_text_in_rect(draw, text, rect)
         if not fits:
@@ -373,14 +398,18 @@ class DeterministicPillowRenderer:
                 bbox = draw.textbbox((0, 0), line, font=font)
                 tw = bbox[2] - bbox[0]
                 tx = x0 + max(_TEXT_PADDING_X, (full_x1 - x0 - tw) // 2)
-                draw.text((tx, ty), line, font=font, fill=_TEXT + (alpha,))
+                draw.text((tx - x0, ty - y0), line, font=font, fill=_TEXT + (alpha,))
                 ty += line_h
         mask = layer.getchannel("A")
         if reveal < 0.999:
             reveal_x = max(x0, min(int(round(rect.x + rect.width * reveal)), int(round(rect.x + rect.width))))
             mask_draw = ImageDraw.Draw(mask)
-            mask_draw.rectangle((reveal_x, y0, int(round(rect.x + rect.width)), int(round(rect.y + rect.height))), fill=0)
-        image.paste(layer.convert("RGB"), mask=mask)
+            mask_draw.rectangle(
+                (reveal_x - x0, 0, int(round(rect.x + rect.width)) - x0,
+                 int(round(rect.y + rect.height)) - y0),
+                fill=0,
+            )
+        image.paste(layer.convert("RGB"), (x0, y0), mask=mask)
 
 
 def _encode_frames(
@@ -449,8 +478,16 @@ def render_scene_video(
     rendered_duration = frame_count / profile.fps
 
     def frames() -> Iterable[Image.Image]:
+        fastpath = (
+            renderer._render_validated_frame
+            if type(renderer) is DeterministicPillowRenderer
+            else renderer.render_frame
+        )
         for index in range(frame_count):
-            yield renderer.render_frame(scene_graph, layout_graph, motion, min(index / profile.fps, motion.scene_duration))
+            yield fastpath(
+                scene_graph, layout_graph, motion,
+                min(index / profile.fps, motion.scene_duration),
+            )
 
     count, digest = _encode_frames(
         frames(), output_path=Path(output_path), width=width, height=height,

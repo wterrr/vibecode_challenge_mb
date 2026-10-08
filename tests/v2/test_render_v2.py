@@ -405,3 +405,63 @@ def test_subtitle_burn_rejects_overlap_and_out_of_duration_cues(tmp_path: Path):
             (SubtitleRenderCue(start_seconds=0.8, end_seconds=1.5, text="late"),),
             tmp_path/"bad_duration.mp4",
         )
+
+
+def test_render_node_uses_only_local_rgba_layer(monkeypatch):
+    """At 1080p the old path allocated a full video-sized layer per node/frame."""
+    from PIL import Image
+    import learnflow_v2.render.backend as backend
+
+    scene, layout, motion = _scene("s1"), _layout("s1"), _static_motion("s1")
+    renderer = DeterministicPillowRenderer()
+    allocations = []
+    original = backend.Image.new
+
+    def tracked(mode, size, *args, **kwargs):
+        if mode == "RGBA":
+            allocations.append(size)
+        return original(mode, size, *args, **kwargs)
+
+    monkeypatch.setattr(backend.Image, "new", tracked)
+    frame = renderer.render_frame(scene, layout, motion, 0.0)
+    assert frame.size == (320, 180)
+    assert len(allocations) == len(scene.nodes)
+    assert all(w * h < (320 * 180) // 2 for w, h in allocations)
+
+
+def test_validated_renderer_fastpath_matches_public_frame_bytes():
+    scene, layout, motion = _scene("s1"), _layout("s1"), _fade_motion("s1")
+    renderer = DeterministicPillowRenderer()
+    validated = renderer.validate_scene_inputs(scene, layout, motion)
+    for time_s in (0.0, 0.1, 0.2, 0.3, 0.4):
+        safe = renderer.render_frame(scene, layout, motion, time_s)
+        fast = renderer._render_validated_frame(*validated, time_s)
+        assert fast.tobytes() == safe.tobytes()
+
+
+@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg required")
+def test_scene_video_validates_once_and_matches_public_frame_digest(tmp_path: Path, monkeypatch):
+    import hashlib
+    from learnflow_v2.render import backend
+
+    scene, layout, motion = _scene("s1"), _layout("s1"), _fade_motion("s1")
+    calls = []
+    original = DeterministicPillowRenderer.validate_scene_inputs
+
+    def counted(self, *args):
+        calls.append(True)
+        return original(self, *args)
+
+    monkeypatch.setattr(DeterministicPillowRenderer, "validate_scene_inputs", counted)
+    profile = RenderProfile(profile_id="fast-parity", fps=8, preset="ultrafast")
+    artifact = render_scene_video(scene, layout, motion, tmp_path / "optimized.mp4", profile=profile)
+    assert calls == [True]
+    reference = DeterministicPillowRenderer()
+    digest = hashlib.sha256()
+    for frame_index in range(artifact.frame_count):
+        frame = reference.render_frame(
+            scene, layout, motion,
+            min(frame_index / profile.fps, motion.scene_duration),
+        )
+        digest.update(frame.convert("RGB").tobytes())
+    assert artifact.frame_digest == digest.hexdigest()
