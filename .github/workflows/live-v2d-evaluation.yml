@@ -40,9 +40,11 @@ on:
   workflow_dispatch:
     inputs:
       topic_id:
-        description: "Final V2 paid run: choose an ID from frozen LearnFlowBench corpus_v1.json"
+        description: "Final V2 preregistered topic: lfb-005-cs (Binary Search Intuition)"
         required: true
-        type: string
+        type: choice
+        options:
+          - lfb-005-cs
       confirm_final_paid_run:
         description: "Authorize the single final paid GPT-6 Luna run"
         required: true

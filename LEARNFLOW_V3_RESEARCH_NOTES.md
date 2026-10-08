@@ -2677,9 +2677,10 @@ from subtitle overlay and generic-card visual representation, so production
 success is not evidence of professional visual quality.
 
 **New budget policy:** The user wants **one final paid V2D evaluation**
-on a topic the user explicitly chooses from frozen `corpus_v1.json`.
-Recommended candidate: `lfb-005-cs` (binary search intuition, beginner,
-3-minute English lesson), **not yet confirmed by the user**.
+on frozen `corpus_v1.json` topic **`lfb-005-cs` — Binary Search Intuition**
+(beginner, 3-minute English lesson), **explicitly confirmed by the user
+on 2026-10-08**. This topic is locked for the single final paid run; no
+topic substitution after observing the result.
 Model remains `openai/gpt-6-luna`. Only explicit manual
 dispatch with positive paid-run confirmation is permitted on the isolated
 pilot branch, after offline preflight and pre-API topic validation. Do not retry paid runs automatically, including after failures;

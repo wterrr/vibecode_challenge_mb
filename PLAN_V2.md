@@ -3495,10 +3495,10 @@ cho long-running production.
 ### 2026-10-08 — Budget-constrained final V2D live acceptance
 
 User-approved scope: perform **at most one additional paid end-to-end
-OpenRouter evaluation** after offline readiness checks, using frozen
-one user-selected topic from frozen LearnFlowBench V1. The current
-recommendation is `lfb-005-cs` (binary search intuition, beginner,
-3 minutes), but the user has not yet confirmed the final topic ID.
+OpenRouter evaluation** after offline readiness checks, using exactly one preregistered frozen LearnFlowBench V1 topic:
+`lfb-005-cs` (binary search intuition, beginner, 3-minute English lesson).
+The user explicitly confirmed this topic on 2026-10-08; no switching
+topic after seeing the final paid-run outcome.
 Model remains `openai/gpt-6-luna` with no free fallback.
 
 - The paid pilot branch runs only by explicit `workflow_dispatch`
