@@ -136,12 +136,12 @@ def build_manifest(protocol:dict)->PilotManifest:
         public.append(BlindSlot(
             topic_id=topic_id,domain=t.domain.value,difficulty=t.difficulty.value,
             topic_query_sha256=compute_content_hash({"topic_id":topic_id,"query":t.query}),
-        ).model_dump(mode="json"))
+        ))
     values=dict(
         frozen_protocol_sha256=compute_content_hash(protocol),
-        topic_slots=public,
-        ablation_plan=[AblationRow(ablation_id=k,controlled_contrast=v).model_dump(mode="json")
-                       for k,v in ABLATIONS.items()],
+        topic_slots=tuple(public),
+        ablation_plan=tuple(AblationRow(ablation_id=k,controlled_contrast=v)
+                           for k,v in ABLATIONS.items()),
     )
     # defaults from PilotManifest must also be included in manifest fingerprint.
     provisional=PilotManifest.model_construct(**values)
