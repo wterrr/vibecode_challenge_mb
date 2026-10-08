@@ -1064,5 +1064,20 @@ def test_gpt6_luna_hermes_agent_inherits_reasoning_none(monkeypatch):
         agent = runner._agent(stage=stage)
         assert agent is not None
         assert constructor_args[-1]["model"] == "openai/gpt-6-luna"
-        assert constructor_args[-1]["request_overrides"]["reasoning_effort"] == "none"
+        assert constructor_args[-1]["reasoning_config"] == {
+            "enabled": False, "effort": "none"
+        }
+        assert "reasoning_effort" not in constructor_args[-1]["request_overrides"]
+        assert "reasoning" not in constructor_args[-1]["request_overrides"]
     assert constructor_args[0]["enabled_toolsets"] == ["delegation", "web"]
+
+
+def test_gpt6_luna_no_dual_reasoning_encoding_in_hermes_runner_source():
+    """Detect the exact HTTP 400 regression seen in governed live V2D #170."""
+    source = (ROOT / "live_evaluation" / "hermes_runner.py").read_text(
+        encoding="utf-8"
+    )
+    agent_block = source.split("def _agent(", 1)[1].split("def run(", 1)[0]
+    assert "reasoning_config=luna_reasoning_config" in agent_block
+    assert 'request_overrides["reasoning_effort"] = "none"' not in agent_block
+    assert '"enabled": False, "effort": "none"' in agent_block

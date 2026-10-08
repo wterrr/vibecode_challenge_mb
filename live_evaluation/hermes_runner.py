@@ -652,10 +652,15 @@ class LiveHermesStructuredRunner:
             request_overrides["response_format"] = {"type": "json_object"}
         if self.model.startswith("google/gemma-4-"):
             request_overrides["reasoning_effort"] = "medium"
-        if self.model == "openai/gpt-6-luna":
-            # Pinned Hermes passes these overrides to native Research children.
-            # Luna Chat Completions function calling requires none.
-            request_overrides["reasoning_effort"] = "none"
+        # Hermes's OpenRouter provider emits extra_body.reasoning from
+        # reasoning_config, and the native Research children inherit it.
+        # Never also send top-level reasoning_effort: OpenRouter rejects both
+        # encodings together, even if the probe with only one encoding passes.
+        luna_reasoning_config = (
+            {"enabled": False, "effort": "none"}
+            if self.model == "openai/gpt-6-luna"
+            else None
+        )
 
         agent = AIAgent(
             base_url=self.base_url,
@@ -670,6 +675,7 @@ class LiveHermesStructuredRunner:
             enabled_toolsets=enabled,
             disabled_toolsets=disabled,
             max_iterations=128 if research else 3,
+            reasoning_config=luna_reasoning_config,
             request_overrides=request_overrides,
             ephemeral_system_prompt=(
                 "You are a bounded LearnFlow evaluation agent. "
