@@ -566,7 +566,7 @@ def verify_narrated_lesson(*,source:BinaryLessonSource,folder:Path,
     profile=SequenceRenderProfile(width=W,height=H,fps=FPS,seconds_per_step=.75)
     all_frames=memoryview(raw)
     size=W*H*3
-    for emitted,expected_spec in zip(receipt.segments,_speech_lines(source),strict=True):
+    for emitted,expected_spec in zip(receipt.segments,expected,strict=True):
         span=emitted["frame_end_exclusive"]-emitted["frame_start"]
         for idx in (0,span//2,span-1):
             frame_no=emitted["frame_start"]+idx
