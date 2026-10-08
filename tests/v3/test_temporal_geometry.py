@@ -111,8 +111,13 @@ def test_subtitle_intrusion_even_if_endpoint_is_safe():
 
 
 def test_caption_must_remain_inside_its_banded_region():
+    def shifted_caption(d):
+        # The other two content motions remain valid; raise motion count to
+        # isolate caption-zone correctness from the separate motion budget.
+        d["max_simultaneously_moving"]=3
+        d["tracks"][3]["keyframes"][-1]["box"].update(y=277)
     with pytest.raises(SemanticContractError,match="CAPTION_OUTSIDE_RESERVED_BAND"):
-        certify_temporal_layout(alter(lambda d:d["tracks"][3]["keyframes"][-1]["box"].update(y=277)))
+        certify_temporal_layout(alter(shifted_caption))
 
 
 def test_intermediate_frame_clipping_is_fatal():
@@ -125,6 +130,8 @@ def test_intermediate_frame_clipping_is_fatal():
 
 def test_font_morph_would_overflow_at_narrow_intermediate_layout():
     def morph(d):
+        # Other content has two intentional simultaneous animations.
+        d["max_simultaneously_moving"]=3
         title=d["tracks"][0]
         title["keyframes"].insert(1,{
             "frame":24,"box":{"x":50,"y":30,"width":105,"height":50},
