@@ -19,7 +19,7 @@ class SemanticContractError(ValueError):
 
 
 class V3Model(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
+    model_config = ConfigDict(extra="forbid", frozen=True)  # JSON strings map to finite Enum members; unknown values fail
 
 
 class VersionedArtifact(V3Model):
@@ -85,7 +85,7 @@ class TeachingSection(V3Model):
     learner_state_after: str
     visual_teaching_goal: str
     representation_options: tuple[RepresentationType, ...] = Field(min_length=1)
-    visual_complexity_budget: int = Field(ge=1, le=10)
+    visual_complexity_budget: int = Field(strict=True, ge=1, le=10)
     hero_candidate: bool = False
 
     @model_validator(mode="after")
