@@ -54,7 +54,7 @@ class BlindSlot(V3Model):
     topic_query_sha256:str=Field(pattern=r"^[0-9a-f]{64}$")
     domain:Literal["cs","math","physics","biology","chemistry","history_general"]
     difficulty:Literal["easy","medium","hard"]
-    anonymous_slots:Literal[("A","B")]=("A","B")
+    anonymous_slots:tuple[Literal["A"],Literal["B"]]=("A","B")
     video_a:Literal[None]=None
     video_b:Literal[None]=None
     rater_instructions:Literal["ASSIGN_BLIND_DOMAIN_COMPETENT_INDEPENDENT_RATERS"]="ASSIGN_BLIND_DOMAIN_COMPETENT_INDEPENDENT_RATERS"
