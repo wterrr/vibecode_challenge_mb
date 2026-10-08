@@ -203,7 +203,7 @@ def run_integrated_binary_clip(*,source:BinaryLessonSource,out_dir:Path,
     ) or route.representation!=source.pattern.pattern_type:
         _block("V3_04_ROUTE_NOT_CERTIFIED")
     signal=audit_signal_preservation(
-        **source.params(),verified_trace_refs=(source.trace.query.source_ref,)
+        **source.params(),verified_trace_refs=(source.trace.source_ref,)
     )
     beat_manifest=compile_binary_beat_manifest(
         trace=source.trace,**source.params(),profile=profile)
@@ -322,7 +322,7 @@ def verify_integrated_binary_clip(*,source:BinaryLessonSource,
     if beat.manifest_sha256!=receipt.source_beat_manifest_sha256:
         _block("STALE_BEAT_OR_CLAIM")
     audit=audit_signal_preservation(**source.params(),
-        verified_trace_refs=(source.trace.query.source_ref,))
+        verified_trace_refs=(source.trace.source_ref,))
     if audit.audit_hash!=receipt.source_signal_audit_sha256:
         _block("STALE_SEMANTIC_SIGNAL")
     if (tuple(b.beat_id for b in beat.beats)!=receipt.downstream_beat_ids or
