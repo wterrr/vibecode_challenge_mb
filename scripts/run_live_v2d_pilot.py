@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import faulthandler
 import json
 import os
 from pathlib import Path
@@ -105,6 +106,15 @@ def _charge_probe_attempts(count: int) -> None:
     )
 
 def main() -> int:
+    # This is diagnostic-only. It prints thread stacks, not prompts or secrets,
+    # if a Luna pilot hangs without producing an agent reply.
+    if (
+        os.environ.get("LEARNFLOW_PAID_PILOT_MODEL") == "openai/gpt-6-luna"
+        and os.environ.get("GITHUB_REF")
+        == "refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot"
+    ):
+        faulthandler.enable(file=sys.stderr)
+        faulthandler.dump_traceback_later(120, repeat=True, file=sys.stderr)
     key = os.environ.get("OPENROUTER_API_KEY", "").strip()
     if not key:
         print("LIVE_V2D_PILOT=BLOCKED reason=OPENROUTER_API_KEY missing", file=sys.stderr)

@@ -128,6 +128,12 @@ jobs:
             echo "OPENROUTER_API_KEY secret is missing" >&2
             exit 2
           fi
+          if [[ "$GITHUB_REF" == "refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot" ]]; then
+            # Pinned Hermes defaults to 1800s per API request. Under this
+            # isolated paid pilot, fail slow requests before GitHub shutdown.
+            export HERMES_API_TIMEOUT=150
+            export HERMES_API_CALL_STALE_TIMEOUT=120
+          fi
           "$HPY" -u scripts/run_live_v2d_pilot.py
 
       - name: Core Freeze guard

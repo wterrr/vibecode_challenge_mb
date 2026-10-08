@@ -9,6 +9,7 @@ from dataclasses import dataclass, asdict
 from pathlib import Path
 import tempfile
 import time
+from threading import Event, Thread
 from typing import Any, TypeVar
 
 from pydantic import BaseModel, ValidationError
@@ -93,6 +94,40 @@ def _isolated_research_workspace(agent):
                 os.environ.pop("TERMINAL_CWD", None)
             else:
                 os.environ["TERMINAL_CWD"] = previous_env
+
+
+@contextmanager
+def _live_stage_heartbeat(stage: str, *, interval_seconds: float = 30.0):
+    """Keep long paid Visual requests observable without leaking prompt content.
+
+    The reporter is daemonized so it never keeps a cancelled job alive. It
+    observes elapsed time only; it cannot decide or fake API success.
+    """
+    if stage != "visual_director":
+        yield
+        return
+    stopped = Event()
+    started = time.monotonic()
+
+    def report() -> None:
+        while not stopped.wait(interval_seconds):
+            elapsed = round(time.monotonic() - started, 1)
+            print(
+                f"LIVE_STAGE_HEARTBEAT stage={stage} elapsed_seconds={elapsed}",
+                flush=True,
+            )
+
+    worker = Thread(
+        target=report,
+        name="learnflow-visual-request-heartbeat",
+        daemon=True,
+    )
+    worker.start()
+    try:
+        yield
+    finally:
+        stopped.set()
+        worker.join(timeout=1.0)
 
 
 class LiveHermesStructuredRunner:
@@ -687,6 +722,9 @@ class LiveHermesStructuredRunner:
             enabled_toolsets=enabled,
             disabled_toolsets=disabled,
             max_iterations=128 if research else 3,
+            # Bound the silent-request window in the paid pilot, leaving other
+            # models and all production agent contracts unchanged.
+            run_budget_seconds=240 if self.model == "openai/gpt-6-luna" and stage == "visual_director" else None,
             reasoning_config=luna_reasoning_config,
             request_overrides=request_overrides,
             ephemeral_system_prompt=(
@@ -750,10 +788,12 @@ class LiveHermesStructuredRunner:
                 self.stage_usage.append(usage)
                 return parsed
 
-            result = agent.run_conversation(
-                user_message=self._build_prompt(task, stage=stage),
-                task_id=f"live-eval:{stage}",
-            )
+            with _live_stage_heartbeat(stage):
+                result = agent.run_conversation(
+                    user_message=self._build_prompt(task, stage=stage),
+                    task_id=f"live-eval:{stage}",
+                )
+            print(f"LIVE_STAGE_RESPONSE_RECEIVED stage={stage} attempt=1", flush=True)
             text = str((result or {}).get("final_response") or "")
             while True:
                 try:
@@ -775,10 +815,15 @@ class LiveHermesStructuredRunner:
                     self._reserve(stage, retry=True)
                     attempts += 1
                     schema_retry_used = True
-                    result = agent.run_conversation(
-                        user_message=self._validation_retry_message(task, text, exc),
-                        conversation_history=list((result or {}).get("messages") or []),
-                        task_id=f"live-eval:{stage}:schema-retry:{attempts - 1}",
+                    with _live_stage_heartbeat(stage):
+                        result = agent.run_conversation(
+                            user_message=self._validation_retry_message(task, text, exc),
+                            conversation_history=list((result or {}).get("messages") or []),
+                            task_id=f"live-eval:{stage}:schema-retry:{attempts - 1}",
+                        )
+                    print(
+                        f"LIVE_STAGE_RESPONSE_RECEIVED stage={stage} attempt={attempts}",
+                        flush=True,
                     )
                     text = str((result or {}).get("final_response") or "")
 

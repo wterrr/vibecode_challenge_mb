@@ -1216,3 +1216,33 @@ def test_live_visual_semantic_violation_gets_one_bounded_repair(monkeypatch):
     assert len(agent.messages) == 2
     assert "VISUAL_IMPLEMENTATION_DIRECTIVE" in agent.messages[1]
     assert runner.stage_usage[0].schema_retry_used is True
+
+
+def test_paid_luna_visual_heartbeat_is_safe_and_bounded(capsys):
+    """A hanging Luna visual request emits progress without model/prompt content."""
+    import time as _time
+    from live_evaluation.hermes_runner import _live_stage_heartbeat
+
+    with _live_stage_heartbeat("visual_director", interval_seconds=0.005):
+        _time.sleep(0.025)
+    captured = capsys.readouterr().out
+    assert "LIVE_STAGE_HEARTBEAT stage=visual_director" in captured
+    assert "elapsed_seconds=" in captured
+    with _live_stage_heartbeat("script_agent", interval_seconds=0.001):
+        _time.sleep(0.003)
+    assert capsys.readouterr().out == ""
+
+
+def test_paid_luna_visual_request_is_bounded_and_instrumented():
+    from pathlib import Path
+
+    src = (ROOT / "live_evaluation" / "hermes_runner.py").read_text(encoding="utf-8")
+    action = (ROOT / ".github" / "workflows" / "live-v2d-evaluation.yml").read_text(encoding="utf-8")
+    script = (ROOT / "scripts" / "run_live_v2d_pilot.py").read_text(encoding="utf-8")
+    assert 'run_budget_seconds=240 if self.model == "openai/gpt-6-luna" and stage == "visual_director" else None' in src
+    assert src.count("with _live_stage_heartbeat(stage):") == 2
+    assert "LIVE_STAGE_RESPONSE_RECEIVED" in src
+    assert "export HERMES_API_TIMEOUT=150" in action
+    assert "export HERMES_API_CALL_STALE_TIMEOUT=120" in action
+    assert 'if [[ "$GITHUB_REF" == "refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot" ]]' in action
+    assert "faulthandler.dump_traceback_later(120" in script
