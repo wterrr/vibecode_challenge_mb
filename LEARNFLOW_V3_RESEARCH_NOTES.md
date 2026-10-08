@@ -2767,3 +2767,20 @@ Added:
 - new-session handoff instructions.
 
 Next research work should update this same file.
+
+
+---
+
+## 2026-10-08 — PLAN_V3 research-to-implementation synthesis
+
+**Status:** PLAN DRAFT PRODUCED; V3 CODE IMPLEMENTATION STILL NOT AUTHORIZED.
+
+- Primary baseline remains final governed #181: technical SUCCESS with readable shorter subtitles; 3/3 generic `CONCEPT_CARD` scenes and no executable visual search trace. Its historical "find 16" registry vs "find 24" script mismatch is a known semantic limitation, **not** retrospectively corrected.
+- The offline semantic validator and allowlisted exporter were introduced on the isolated pilot branch, passing offline #4 (87 Hermes/subtitle/semantic tests; 14 renderer PASS, 5 SKIP; Core Freeze PASS).
+- PLAN_V3 translates C1–C12 into explicit typed artifacts, capability dependencies, fail-safe fallbacks, measurable ablation hypotheses, release gates, and a one-checkpoint-at-a-time ledger.
+- Read additional literature grounding from Mayer multimedia design and 2025 meta-analysis: segmenting, signaling, temporal/spatial contiguity and coherence constrain useful visual motion. V3 must not maximize animation count.
+- Branch audit: main was `29fab1d`, isolated paid pilot was `efd19bc` and 24 commits ahead/0 behind before plan-drafting. The primary V2/Hermes PRs have merged; older unmerged PR #8/#11/#14 require supersession review, **not** blind cherry-pick. No merge is authorized as part of PLAN drafting.
+- New planning decision: prioritize identity/signal contracts, a **dynamic Binary Search golden clip** (trace + stateful visual renderer), then other representative renderers; only then expand planners, critics, repair and human comparative study.
+- V3 planner targets (e.g., ≥90% grounded essential beat coverage) are **hypotheses**, not evidence of improvement. The 100-topic live benchmark, reliable population threshold, learning transfer and matched human quality studies remain UNMEASURED/DEFERRED.
+- Code2Video, ALGOGEN, OmniManim, LLM2Manim and MINARD are design baselines; none establish unique novelty or an automatic LearnFlow performance claim.
+- Source of implementation plan: `PLAN_V3.md` (draft), using this canonical research file as upstream research record.
