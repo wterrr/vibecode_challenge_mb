@@ -1,0 +1,39 @@
+name: V3-00B Selective Offline Integration Gate
+
+on:
+  push:
+    branches:
+      - chatgpt/v3-00b-selective-integration
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "live_evaluation/**"
+      - "lesson_pipeline/**"
+      - "scripts/export_live_v2d_evidence.py"
+      - "tests/hermes/test_final_v2_*.py"
+      - ".github/workflows/live-v2d-evaluation.yml"
+      - ".github/workflows/v3-00b-selective-integration.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  offline-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install offline test dependencies (no provider)
+        run: python -m pip install "pydantic>=2" pyyaml pytest pillow "kiwisolver==1.5.1"
+      - name: Verify Core Freeze
+        run: python scripts/verify_v2_core_freeze.py
+      - name: Verify live V2D contracts without provider
+        run: python scripts/verify_live_v2d_evaluation.py
+      - name: Check V2D + semantic + subtitle + redaction regressions
+        run: pytest -q --confcutdir=tests/hermes tests/hermes/test_live_v2d_evaluation.py tests/hermes/test_final_v2_semantic_consistency.py tests/hermes/test_final_v2_subtitles.py
+      - name: Verify frozen renderer regression
+        run: pytest -q --confcutdir=tests/v2 tests/v2/test_render_v2.py

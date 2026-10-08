@@ -2668,6 +2668,53 @@ This hypothesis must be benchmarked after V2 Core.
 
 # 23. Change log
 
+## 2026-10-08 — User-approved one-paid-run V2 closure, for V3 planning only
+
+The governed V2D paid run #180 (commit
+`7c40d69d5d2f9ad5842a2be62c694ef8ed50000a`) completed
+successfully end-to-end. Its video still exposed fatal readability concerns
+from subtitle overlay and generic-card visual representation, so production
+success is not evidence of professional visual quality.
+
+**New budget policy:** The user wants **one final paid V2D evaluation**
+on frozen `corpus_v1.json` topic **`lfb-005-cs` — Binary Search Intuition**
+(beginner, 3-minute English lesson), **explicitly confirmed by the user
+on 2026-10-08**. This topic is locked for the single final paid run; no
+topic substitution after observing the result.
+Model remains `openai/gpt-6-luna`. Only explicit manual
+dispatch with positive paid-run confirmation is permitted on the isolated
+pilot branch, after offline preflight and pre-API topic validation. Do not retry paid runs automatically, including after failures;
+on HTTP 429 stop provider calls until the next day.
+
+**Reduced-scope V3 planning gate (explicit evidence waiver):**
+If the final one-topic pilot meets the frozen Core Freeze, contract gates,
+real A/V production checks, no critical text/subtitle occlusion, factual
+accuracy and a human review of the actual MP4, the user authorizes
+**drafting PLAN_V3** and prioritizing measured V2 visual-ceiling gaps.
+
+This is a deliberate waiver of the *full live benchmark requirement for
+plan drafting*, not a claim that V2 reliability or learning outcomes are
+statistically measured. The 100-topic live evaluation, V1-vs-V2 human
+comparison, TeachQuiz effects and cost-distribution estimates remain
+UNMEASURED/DEFERRED. No V3 implementation or SOTA claim follows
+automatically from a single PASS.
+
+**Final-run offline readiness (2026-10-08):** CI
+[Final V2 Offline Preflight #2](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37721412808)
+PASS (79 Hermes/caption regressions, 14 renderer regressions,
+Core Freeze PASS). Using existing governed #180 files without provider
+calls, 42 original TTS sentence cues produce 63 short pages and satisfy
+the non-overlap and subtitle-band geometry checks. A 5-second local
+sample was rendered/visually inspected with smaller subtitle typography.
+This is not an end-to-end paid Binary Search PASS or human quality
+approval. The one paid workflow_dispatch is still pending.
+
+If the final pilot fails: preserve artifact/logs, record precise NO-GO
+and outstanding defects; still no paid rerun without a new user decision.
+Do not alter historical frozen Core Gate evidence or reference artifacts.
+
+---
+
 ## 2026-10-07 — Visual-ceiling + extended 2026 research closure
 
 Added:
@@ -2720,3 +2767,38 @@ Added:
 - new-session handoff instructions.
 
 Next research work should update this same file.
+
+
+---
+
+## 2026-10-08 — PLAN_V3 research-to-implementation synthesis
+
+**Status:** PLAN DRAFT PRODUCED; V3 CODE IMPLEMENTATION STILL NOT AUTHORIZED.
+
+- Primary baseline remains final governed #181: technical SUCCESS with readable shorter subtitles; 3/3 generic `CONCEPT_CARD` scenes and no executable visual search trace. Its historical "find 16" registry vs "find 24" script mismatch is a known semantic limitation, **not** retrospectively corrected.
+- The offline semantic validator and allowlisted exporter were introduced on the isolated pilot branch, passing offline #4 (87 Hermes/subtitle/semantic tests; 14 renderer PASS, 5 SKIP; Core Freeze PASS).
+- PLAN_V3 translates C1–C12 into explicit typed artifacts, capability dependencies, fail-safe fallbacks, measurable ablation hypotheses, release gates, and a one-checkpoint-at-a-time ledger.
+- Read additional literature grounding from Mayer multimedia design and 2025 meta-analysis: segmenting, signaling, temporal/spatial contiguity and coherence constrain useful visual motion. V3 must not maximize animation count.
+- Branch audit: main was `29fab1d`, isolated paid pilot was `efd19bc` and 24 commits ahead/0 behind before plan-drafting. The primary V2/Hermes PRs have merged; older unmerged PR #8/#11/#14 require supersession review, **not** blind cherry-pick. No merge is authorized as part of PLAN drafting.
+- New planning decision: prioritize identity/signal contracts, a **dynamic Binary Search golden clip** (trace + stateful visual renderer), then other representative renderers; only then expand planners, critics, repair and human comparative study.
+- V3 planner targets (e.g., ≥90% grounded essential beat coverage) are **hypotheses**, not evidence of improvement. The 100-topic live benchmark, reliable population threshold, learning transfer and matched human quality studies remain UNMEASURED/DEFERRED.
+- Code2Video, ALGOGEN, OmniManim, LLM2Manim and MINARD are design baselines; none establish unique novelty or an automatic LearnFlow performance claim.
+- Source of implementation plan: `PLAN_V3.md` (draft), using this canonical research file as upstream research record.
+
+
+## 2026-10-08 — Reuse-first source-code policy (user decision)
+
+- **Prioritize reusing project-owned V2 modules and suitable maintained open-source code; adapt/wrap/vendored subsets before writing from scratch.** This must be documented per V3 checkpoint with a pinned upstream SHA, module-level API audit, license/NOTICE, dependency budget, compatibility test and regression proof.
+- Verified external GitHub source snapshots: Code2Video `1142d8e14cdc2806df85aedb0fbb5dca474caa0f` (MIT); Manim Community `23ae68f4dd5817d49760b338e14b92757a2369b5` (MIT); ALGOGEN-lab `1bb093c76499135ecf54fc8030219a4e7ee4424c` (**license not declared in inspected root**; study design only, do not copy code absent permission).
+- Candidate modules for follow-up inspection: Code2Video `src/scope_refine.py`, `src/agent.py`, `src/eval_AES.py`, `src/eval_TQ.py`; Manim Community's mature math/vector engine as optional typed backend; ALGOGEN VTA/RSL architecture as research reference only.
+- **Not authorization to copy wholesale:** generated arbitrary rendering code must not bypass LearnFlow typed contracts, deterministic QA, Core Freeze or artifact provenance. Upstream assets and dependencies require separate license checks.
+- `PLAN_V3.md` v3.0.1-draft section 8.3 is the authoritative development rule. V3-00 must produce merge and upstream reuse inventory; implementation remains separate and unauthorised.
+
+
+## 2026-10-08 — V3-00 Baseline & Merge Gate audit results
+
+- Source main `29fab1d5738ccb060502c8ae82e2e31f00360811`, isolated paid pilot pre-audit `a1e4e8b72f4e63e9cde0ffd4351df9a936900d9a`: 27 commits ahead / 0 behind and 23 changed files. Full inventories and 12 capability reuse decisions in `reports/v3_00_baseline_merge_gate.md` and `reports/v3_00_reuse_inventory.json`.
+- Audit classification: KEEP / EXPERIMENTAL / SUPERSEDED / EXCLUDE; **do not fast-forward all pilot changes** because `hermes/bootstrap/config.yaml` switches default to paid GPT-6 Luna and other changes are branch-gated experiments.
+- Reuse audit includes Code2Video (MIT, pin `1142d8e`), Manim Community (MIT, pin `23ae68f`) and ALGOGEN-lab (no root license/declared license, **STUDY ONLY / DO NOT COPY**, pin `1bb093c`). Direct code copying was neither attempted nor authorized.
+- **Fresh offline CI: PASS**, run https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37725705499 on commit `217bd0575e7e14141fa24fd320efa76edcf391b3`; outputs: `V3_00_BASELINE=PASS commits=27 files=23 capabilities=12`, `CORE_FREEZE=PASS`, `LIVE_V2D_CONTRACT=PASS`, 87 regressions PASS, 14 renderer PASS/5 SKIP. No paid-provider workflow ran.
+- **V3-00 audit PASS**; full pilot-to-main merge **NO-GO**; next single task, only after user authorization: **V3-00B — Selective Integration Candidate & Offline Gate**, on a non-main branch; main and frozen Core remain unchanged. V3-01 and later capability code remain unimplemented.

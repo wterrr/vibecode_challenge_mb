@@ -3492,6 +3492,46 @@ cho long-running production.
 
 **Status: DETERMINISTIC ABLATION PASS / LIVE V2D EVALUATION PENDING**
 
+### 2026-10-08 — Budget-constrained final V2D live acceptance
+
+User-approved scope: perform **at most one additional paid end-to-end
+OpenRouter evaluation** after offline readiness checks, using exactly one preregistered frozen LearnFlowBench V1 topic:
+`lfb-005-cs` (binary search intuition, beginner, 3-minute English lesson).
+The user explicitly confirmed this topic on 2026-10-08; no switching
+topic after seeing the final paid-run outcome.
+Model remains `openai/gpt-6-luna` with no free fallback.
+
+- The paid pilot branch runs only by explicit `workflow_dispatch`
+  with a typed `confirm_final_paid_run=true` consent; push and offline
+  changes must not consume paid evaluations. The chosen topic must be
+  preregistered from frozen `corpus_v1.json` and validated before any API probe.
+- First: offline regression, Core Freeze, production integrity, subtitle
+  readability/occlusion and provenance checks. Do not use paid model calls
+  during preflight. The final run requires a new end-to-end artifact.
+- **2026-10-08 offline preflight completed:** CI #2 (run 37721412808,
+  code commit d94fdd147524b789ce22bedecfc12c85ace25616) passed
+  Core Freeze and governed contract, 79 Hermes/subtitle regressions and
+  14 renderer regressions (5 skipped). Existing #180 TTS provider cues
+  were replayed offline: 42 source cues became 63 short timed pages with
+  no overlapping pages, preserving all narration text except presentation
+  Markdown markers; occupied Core layout boxes were outside the reserved
+  subtitle band. A 5-second re-burned preview was visually inspected.
+  These checks establish *offline readiness only*; human video acceptance
+  and end-to-end Binary Search remain UNMEASURED until the one final run.
+- After the **single final run**, adjudicate separately:
+  (a) technical/semantic/production readiness, and
+  (b) quality limitations to be addressed by V3. Success of (a) never
+  implies 3Blue1Brown-like visual quality.
+- A scoped one-topic acceptance can authorize **drafting** PLAN_V3, not
+  claims of >=98% population reliability, statistically valid superiority,
+  completed 100-topic live benchmarking, nor V3 implementation approval.
+  Any deferred benchmark remains explicitly UNMEASURED.
+- Fail or 429: record NO-GO and evidence, do not rerun paid evaluation
+  automatically. Stop all provider checks for the day on 429.
+
+This scope amendment does not modify the frozen deterministic V1/V2
+comparison protocol or its historical evidence.
+
 Mình sẽ không gọi LearnFlow là “SOTA” nếu chưa có benchmark.
 
 Accepted deterministic evidence: CI `37468207742` freezes LearnFlowBench V1 (100 topics), runs V1/V2A/V2B/V2C on the same three frozen LessonPlan fixtures, and runs one V2D typed fixture replay. V2A improves the narrow static-composition proxy from 66.15013163 to 72.2185595; V2C passes deterministic QA 9/9 and selective repair 9/9. This evidence is intentionally **not** the 100-topic live V2D study: TeachQuiz-style learning outcome, live provider token/USD cost, human visual quality, and full-corpus V2D generation remain UNMEASURED. Therefore SOTA claims remain blocked.
