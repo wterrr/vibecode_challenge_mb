@@ -49,7 +49,7 @@ jobs:
           python scripts/verify_v3_code_process_render.py --output-dir "$RUNNER_TEMP/v3_07_golden"
           for name in code process; do
             ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate \
-              -of default=noprint_wrappers=1 "$RUNNER_TEMP/v3_07_golden/\${name}_blackboard.mp4"
+              -of default=noprint_wrappers=1 "$RUNNER_TEMP/v3_07_golden/${name}_blackboard.mp4"
           done
       - name: Upload ONLY generated video, PNG and JSON
         if: success()
