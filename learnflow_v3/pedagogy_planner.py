@@ -369,7 +369,11 @@ def compile_pedagogy_and_hero(*, brief:LearningBrief, research:ResearchPack,
                                     for s in visual.sections),
         hero_moments=hero,ablation=ablation
     )
-    return GroundedPedagogyPlan(**data,decision_sha256=compute_content_hash(data))
+    # V2 canonical_json accepts JSON-safe structures, not nested Pydantic
+    # instances inside plain dicts. Serialize the typed artifact first.
+    candidate=GroundedPedagogyPlan(**data,decision_sha256="PENDING")
+    digest=compute_content_hash(candidate.model_dump(mode="json",exclude={"decision_sha256"}))
+    return GroundedPedagogyPlan(**data,decision_sha256=digest)
 
 
 def verify_grounded_pedagogy_plan(*, candidate:GroundedPedagogyPlan, **inputs)->None:
