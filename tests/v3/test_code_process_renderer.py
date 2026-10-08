@@ -75,10 +75,13 @@ def test_code_disallowed_python_cannot_execute(bad):
     graph,spec=code_demo()
     raw=spec.model_dump(mode="json")
     raw["lines"][2]["source"]=bad
-    raw["scenegraph_sha256"]=compute_content_hash(graph)
+    changed_graph=graph.model_dump(mode="json")
+    changed_graph["nodes"][0]["content"]="\n".join(line["source"] for line in raw["lines"])
+    changed_graph=SceneGraph.model_validate(changed_graph)
+    raw["scenegraph_sha256"]=compute_content_hash(changed_graph)
     modified=CodeWalkthrough.model_validate(raw)
     with pytest.raises(SemanticContractError,match="UNSUPPORTED_CODE_EXPRESSION|CODE_STATEMENT_NOT_ALLOWLISTED|CODE_PARSE_REJECTED"):
-        verify_code_walkthrough(modified,graph)
+        verify_code_walkthrough(modified,changed_graph)
 
 
 def test_code_source_graph_drift_rejected_even_when_trace_rehashed():
