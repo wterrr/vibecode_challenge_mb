@@ -3496,11 +3496,15 @@ cho long-running production.
 
 User-approved scope: perform **at most one additional paid end-to-end
 OpenRouter evaluation** after offline readiness checks, using frozen
-LearnFlowBench topic `lfb-005-cs` (binary search intuition, beginner,
-3 minutes). Model remains `openai/gpt-6-luna` with no free fallback.
+one user-selected topic from frozen LearnFlowBench V1. The current
+recommendation is `lfb-005-cs` (binary search intuition, beginner,
+3 minutes), but the user has not yet confirmed the final topic ID.
+Model remains `openai/gpt-6-luna` with no free fallback.
 
-- The paid pilot branch runs only by explicit `workflow_dispatch`; push
-  and offline changes must not consume paid evaluations.
+- The paid pilot branch runs only by explicit `workflow_dispatch`
+  with a typed `confirm_final_paid_run=true` consent; push and offline
+  changes must not consume paid evaluations. The chosen topic must be
+  preregistered from frozen `corpus_v1.json` and validated before any API probe.
 - First: offline regression, Core Freeze, production integrity, subtitle
   readability/occlusion and provenance checks. Do not use paid model calls
   during preflight. The final run requires a new end-to-end artifact.

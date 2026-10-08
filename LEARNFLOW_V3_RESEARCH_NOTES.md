@@ -2677,10 +2677,12 @@ from subtitle overlay and generic-card visual representation, so production
 success is not evidence of professional visual quality.
 
 **New budget policy:** The user wants **one final paid V2D evaluation**
-on frozen topic `lfb-005-cs` (binary search intuition, beginner,
-3-minute English lesson), with `openai/gpt-6-luna`. Only explicit manual
-dispatch is permitted on the isolated paid-pilot branch, after offline
-preflight. Do not retry paid runs automatically, including after failures;
+on a topic the user explicitly chooses from frozen `corpus_v1.json`.
+Recommended candidate: `lfb-005-cs` (binary search intuition, beginner,
+3-minute English lesson), **not yet confirmed by the user**.
+Model remains `openai/gpt-6-luna`. Only explicit manual
+dispatch with positive paid-run confirmation is permitted on the isolated
+pilot branch, after offline preflight and pre-API topic validation. Do not retry paid runs automatically, including after failures;
 on HTTP 429 stop provider calls until the next day.
 
 **Reduced-scope V3 planning gate (explicit evidence waiver):**
