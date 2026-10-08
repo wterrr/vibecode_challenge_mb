@@ -50,7 +50,7 @@ jobs:
       - name: Install contract dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "pydantic>=2" pyyaml pytest pillow
+          python -m pip install "pydantic>=2" pyyaml pytest pillow "kiwisolver==1.5.1"
       - name: Verify governed live-eval contract
         run: python scripts/verify_live_v2d_evaluation.py
       - name: Live-eval regressions
