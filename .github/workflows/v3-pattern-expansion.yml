@@ -1,0 +1,66 @@
+name: V3-15 Frozen-Demand Pattern Expansion Offline
+
+on:
+  push:
+    branches:
+      - chatgpt/v3-15-pattern-expansion-state-machine
+  pull_request:
+    paths:
+      - "learnflow_v3/**"
+      - "tests/v3/**"
+      - "scripts/verify_v3_pattern_coverage.py"
+      - ".github/workflows/v3-pattern-expansion.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  frozen-pilot-pattern-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned, reused CPU-only media stack
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fontconfig fonts-cmu
+          python -m pip install "pydantic>=2" pyyaml pytest "pillow==12.3.0" "kiwisolver==1.5.1"
+      - name: Verify source-bound STATE_MACHINE, adversarial corpus, ancestors
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_pattern_coverage.py tests/v3/test_artifact_refine.py \
+            tests/v3/test_artifact_critic.py tests/v3/test_publish_gate.py \
+            tests/v3/test_temporal_geometry.py tests/v3/test_beat_grounding.py \
+            tests/v3/test_contracts.py tests/v3/test_signal_preservation.py \
+            tests/v3/test_pattern_router.py tests/v3/test_binary_search_trace.py \
+            tests/v3/test_pedagogy_planning.py
+      - name: Frozen V2/Hermes and immutable pilot baseline gates
+        run: |
+          python -m pytest -q --confcutdir=tests/v2 \
+            tests/v2/test_concept_registry.py tests/v2/test_scenegraph_validation.py \
+            tests/v2/test_repair_v2_13_contracts.py
+          python -m pytest -q --confcutdir=tests/hermes \
+            tests/hermes/test_visual_director.py tests/hermes/test_final_v2_semantic_consistency.py \
+            tests/hermes/test_pedagogy_agent.py tests/hermes/test_script_agent.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Render two actual new family H264 videos and coverage/abstention audit
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_15_evidence"
+          python scripts/verify_v3_pattern_coverage.py --output-dir "$RUNNER_TEMP/v3_15_evidence"
+          ffprobe -v error -show_entries stream=codec_name,width,height,nb_frames \
+            -of default=noprint_wrappers=1 "$RUNNER_TEMP/v3_15_evidence/state_machine_lfb-006-cs.mp4"
+          ffprobe -v error -show_entries stream=codec_name,width,height,nb_frames \
+            -of default=noprint_wrappers=1 "$RUNNER_TEMP/v3_15_evidence/state_machine_lfb-016-cs.mp4"
+      - name: Retain actual media + machine-readable anti-card/source evidence
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-15-source-grounded-pattern-expansion
+          path: ${{ runner.temp }}/v3_15_evidence/
+          if-no-files-found: error
+          retention-days: 30
