@@ -27,7 +27,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
-          python -m pip install "pydantic>=2" pyyaml pytest pillow "kiwisolver==1.5.1"
+          python -m pip install "pydantic>=2" pyyaml pytest "pillow==12.3.0" "kiwisolver==1.5.1"
       - name: V3-02/03/04/05/06 real MP4 and mutation regression
         run: python -m pytest -q --confcutdir=tests/v3 tests/v3/test_contracts.py tests/v3/test_signal_preservation.py tests/v3/test_pattern_router.py tests/v3/test_binary_search_trace.py tests/v3/test_stateful_sequence_renderer.py
       - name: V2 reuse regression
