@@ -1417,7 +1417,10 @@ def test_paid_streaming_digest_is_scoped_and_core_stays_frozen():
     adapter = (ROOT / "lesson_pipeline" / "media_digest_adapter.py").read_text()
     assert 'os.environ.get("LEARNFLOW_PAID_PILOT_MODEL") == "openai/gpt-6-luna"' in src
     assert '== "refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot"' in src
-    assert "burn_subtitles_with_streaming_digest" in src
+    assert "burn_short_subtitles" in src
+    assert "stream_decoded_rgb_digest" in (
+        ROOT / "lesson_pipeline" / "subtitle_render_adapter.py"
+    ).read_text()
     assert "finally:" in adapter
     assert "digest.update(chunk)" in adapter
     assert 'subprocess.Popen(' in adapter
