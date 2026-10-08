@@ -20,7 +20,7 @@ from learnflow_v3.publication_gate import review_binary_publication
 from learnflow_v3.artifact_critic import (
     ArtifactIssue,ArtifactReviewRequest,ProposedCriticResponse,CriticReviewResult,
     SeededLabel,evaluate_seeded_labels,binary_request,geometry_request,
-    run_artifact_critic,verify_critic_review,
+    run_artifact_critic,run_video_artifact_critic,verify_critic_review,
 )
 from scripts.verify_v3_beat_grounding import generate_verified_case
 from scripts.verify_v3_temporal_geometry import demo_layout
@@ -267,3 +267,46 @@ def test_seeded_evaluation_fails_on_case_leakage_and_duplicate_predictions():
         evaluate_seeded_labels(labels,{"other":("x",)})
     with pytest.raises(SemanticContractError):
         evaluate_seeded_labels(labels,{"a":("x","x")})
+
+
+def test_authorized_reviewer_gets_actual_pixel_images_and_cannot_publish(binary):
+    args,request=binary
+    called=[]
+    def inspect(req,images):
+        assert req==request
+        assert len(images)==len(req.frame_samples)
+        assert all(frame.mode=="RGB" for _,frame in images)
+        assert tuple(i for i,_ in images)==tuple(f.frame_index for f in req.frame_samples)
+        assert tuple(hashlib.sha256(im.tobytes()).hexdigest() for _,im in images)==tuple(
+            f.rgb_sha256 for f in req.frame_samples)
+        called.append(len(images))
+        return reviewer_for(req,(make_issue(req),))
+    out=run_video_artifact_critic(
+        request,video_path=args["video_path"],reviewer=inspect)
+    assert called==[len(request.frame_samples)]
+    assert out.status=="CRITIC_REVIEW_REQUIRED"
+    assert out.publication_blocked and not out.critic_pass_certified
+
+
+def test_mutated_video_never_reaches_expensive_reviewer(binary,tmp_path):
+    args,request=binary
+    bad=tmp_path/"modified.mp4"
+    bad.write_bytes(args["video_path"].read_bytes()+b"BROKEN")
+    seen=[]
+    out=run_video_artifact_critic(
+        request,video_path=bad,
+        reviewer=lambda req,frames:seen.append("called"))
+    assert not seen
+    assert out.status=="CRITIC_REJECTED"
+    assert out.reviewer_calls==0
+    assert out.publication_blocked
+
+
+def test_provider_timeout_is_unavailable_not_pass(binary):
+    _,request=binary
+    def timeout(_):
+        raise TimeoutError("provider timed out")
+    result=run_artifact_critic(request,reviewer=timeout)
+    assert result.status=="CRITIC_UNAVAILABLE"
+    assert result.reviewer_calls==1
+    assert result.publication_blocked
