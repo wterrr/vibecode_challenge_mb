@@ -1,7 +1,7 @@
 # V3-12 — Fail-Closed QA and Publication
 
 Date: 2026-10-08.
-Initial status: IMPLEMENTED, final CI verification pending. This checkpoint proves **review-only deny-by-default policy**, not actual production publication readiness.
+Status: BOUNDED ENGINEERING PASS on implementation SHA e8b0dc6b92d186bd9c225833bf4ac68be9707ff0, final documentation HEAD CI pending. This checkpoint proves **review-only deny-by-default policy**, not actual production publication readiness.
 Parent: exact V3-11 PR #44 HEAD 3877f2a3ecf0bbe4ee317726067ac02bd09f3a0c, stacked branch chatgpt/v3-12-fail-closed-publication; no main merge, no frozen V2/Core/bench changes.
 
 ## Root cause and reuse-first decisions
@@ -31,3 +31,8 @@ Pass condition: 0 false publication candidates across fault matrix; real MP4 byt
 ## Scope and next checkpoint
 
 **BOUNDED POLICY GATE ONLY**, not an operational production publish system or an externally authenticated authorization service. Critic PASS cannot be earned before V3-13; no human comprehension or audio evidence is fabricated. Future integration into real lesson pipeline must be separately tested. Never merge into main without user permission. Exactly one next separately authorized CP after V3-12 gate: **V3-13 Artifact Critic**.
+
+
+## Verified implementation evidence — 2026-10-08
+
+[CI #37752568906](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37752568906): 185 V3, 39 frozen V2, 86 Hermes tests all PASS; V3_BENCHMARK_PREREG=PASS, LEARNFLOW_BENCH_CONTRACT=PASS, CORE_FREEZE=PASS. [Original code-head artifact #11537634901](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37752568906/artifacts/11537634901) retains genuine H264 binary-search and geometry-demo MP4s plus typed JSON quality gate lifecycle. Five policy reports: real_binary_search=DETERMINISTIC_PASS/CRITIC_UNAVAILABLE/PUBLISH_BLOCKED; real_geometry_demo=DETERMINISTIC_PASS/CRITIC_UNAVAILABLE/PUBLISH_BLOCKED; critic_unavailable=DETERMINISTIC_PASS/CRITIC_UNAVAILABLE/PUBLISH_BLOCKED; unverified_critic_pass=DETERMINISTIC_PASS/CRITIC_UNAVAILABLE/PUBLISH_BLOCKED; stale_video_evidence=DETERMINISTIC_FAIL/CRITIC_UNAVAILABLE/PUBLISH_BLOCKED. 5/5 blocked, no publication or LLM calls. No real V3-13 critic PASS or full lesson audio/geometry proof exists.
