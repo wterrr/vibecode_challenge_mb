@@ -1,0 +1,57 @@
+name: V3-09 Source-Grounded Pedagogy and Hero Planning Offline
+
+on:
+  push:
+    branches:
+      - chatgpt/v3-09-pedagogy-hero-planning
+  pull_request:
+    paths:
+      - "learnflow_v3/**"
+      - "tests/v3/**"
+      - "scripts/verify_v3_pedagogy_planning.py"
+      - ".github/workflows/v3-pedagogy-planning.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  fixed-budget-pedagogy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install offline typed contracts, test and existing renderer dependencies
+        run: |
+          python -m pip install "pydantic>=2" pyyaml pytest "pillow==12.3.0" "kiwisolver==1.5.1"
+      - name: V3-09 fixed-budget test matrix and upstream V3 contracts
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_contracts.py tests/v3/test_signal_preservation.py \
+            tests/v3/test_pattern_router.py tests/v3/test_binary_search_trace.py \
+            tests/v3/test_pedagogy_planning.py
+      - name: Frozen Hermes pedagogy and script controls
+        run: |
+          python -m pytest -q --confcutdir=tests/hermes \
+            tests/hermes/test_pedagogy_agent.py tests/hermes/test_script_agent.py
+          python -m pytest -q --confcutdir=tests/v2 \
+            tests/v2/test_concept_registry.py tests/v2/test_scenegraph_validation.py \
+            tests/v2/test_repair_v2_13_contracts.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Export honest matched-budget reproducible evidence
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_09_evidence"
+          python scripts/verify_v3_pedagogy_planning.py \
+            --output-file "$RUNNER_TEMP/v3_09_evidence/pedagogy_hero_ablation.json"
+      - name: Upload JSON evidence only, no model calls
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-09-fixed-budget-pedagogy-proof
+          path: ${{ runner.temp }}/v3_09_evidence/
+          if-no-files-found: error
+          retention-days: 30
