@@ -265,3 +265,31 @@ def test_forged_rehashed_srt_wrong_time_still_fails_source_alignment(live,tmp_pa
         values=tuple(SOURCE["values"]),target=SOURCE["target"])
     with pytest.raises(SemanticContractError,match="SUBTITLE_TEXT_OR_TIME_DRIFT"):
         verify_narrated_lesson(source=source,folder=target,receipt=forged)
+
+
+def test_rehashed_visually_wrong_oracle_state_rejected_after_decode(live,tmp_path):
+    """Rehashing a valid-looking MP4 cannot hide wrong source-state pixels."""
+    _,_,original=live
+    target=tmp_path/"fake_state";target.mkdir()
+    p=original/"narrated_binary_lesson.mp4"
+    out=target/p.name
+    subprocess.run([
+        "ffmpeg","-hide_banner","-v","error","-y","-i",str(p),
+        "-vf","drawbox=x=205:y=170:w=210:h=55:color=white:t=fill",
+        "-c:v","libx264","-preset","ultrafast","-pix_fmt","yuv420p",
+        "-c:a","copy",str(out),
+    ],check=True,timeout=70)
+    shutil.copy2(original/"narrated_binary_lesson.srt",
+                 target/"narrated_binary_lesson.srt")
+    from learnflow_v2.repair import compute_content_hash
+    data=json.loads((original/"narrated_binary_lesson.receipt.json").read_text())
+    data["video_sha256"]=hashlib.sha256(out.read_bytes()).hexdigest()
+    data["report_sha256"]=compute_content_hash({
+        k:v for k,v in data.items() if k!="report_sha256"})
+    (target/"narrated_binary_lesson.receipt.json").write_text(
+        json.dumps(data,indent=2)+"\n")
+    fake=NarratedLessonReceipt.model_validate(data)
+    source=build_binary_lesson_source(
+        values=tuple(SOURCE["values"]),target=SOURCE["target"])
+    with pytest.raises(SemanticContractError,match="DECODED_SCENE_ORACLE_SEMANTIC_PIXELS_CHANGED"):
+        verify_narrated_lesson(source=source,folder=target,receipt=fake)
