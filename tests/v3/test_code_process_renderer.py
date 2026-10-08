@@ -214,3 +214,11 @@ def test_within_beat_code_and_process_motion_are_not_static_images(profile):
     first=draw_process_frame(process,graph,1,profile,progress=0.12)
     second=draw_process_frame(process,graph,1,profile,progress=0.85)
     assert _mean_absolute_error(first,second)>0.03
+
+
+def test_dense_variable_panel_fails_before_geometry_or_encoding():
+    graph,spec=code_demo()
+    raw=spec.model_dump(mode="json")
+    raw["steps"][1]["variables"].update({f"v{i}":i for i in range(6)})
+    with pytest.raises(SemanticContractError, match="VARIABLE_PANEL_TOO_DENSE"):
+        verify_code_walkthrough(CodeWalkthrough.model_validate(raw),graph)

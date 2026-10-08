@@ -136,6 +136,8 @@ def verify_code_walkthrough(spec: CodeWalkthrough, graph: SceneGraph) -> None:
         if abs(value)>1_000_000:
             raise SemanticContractError("V3_07_CODE_VALUE_OVERFLOW")
         variables[identifier]=value
+        if len(step.variables)>6:
+            raise SemanticContractError("V3_07_VARIABLE_PANEL_TOO_DENSE")
         if variables != step.variables:
             raise SemanticContractError(f"V3_07_CODE_STATE_REPLAY_MISMATCH:{line.line_id}")
 
