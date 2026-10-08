@@ -26,6 +26,10 @@ def main() -> int:
         assert not any(x["path"].startswith("learnflow_v2/") for x in files)
         assert {x["id"] for x in capabilities} == {f"C{i}" for i in range(1,13)}
         assert all(x["internal"] and x["upstream_ref"] and x["proposed_test"] for x in capabilities)
+        for cap in capabilities:
+            for token in cap["proposed_test"].split():
+                if token.endswith(".py"):
+                    assert (ROOT / token).is_file(), f"missing proposed baseline test: {token}"
         assert len(upstreams) == 4 and all(len(x["sha"]) == 40 for x in upstreams)
         algogen=next(x for x in upstreams if x["repository"] == "MAC-AutoML/ALGOGEN-lab")
         assert algogen["decision"] == "STUDY_ONLY_NO_COPY"

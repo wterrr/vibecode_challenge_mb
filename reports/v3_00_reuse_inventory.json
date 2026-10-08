@@ -363,7 +363,7 @@
     {
       "id": "C5",
       "capability": "Pattern Library",
-      "internal": "learnflow_v2/scenegraph/schema.py; layout/router.py; render/backend.py",
+      "internal": "learnflow_v2/scenegraph/schema.py; learnflow_v2/layout/router.py; learnflow_v2/render/backend.py",
       "upstream_ref": "Manim Community 0.21 optional backend; Code2Video generated-code design only",
       "choice": "REUSE_V2_PLUS_TRUSTED_ADAPTER",
       "risk": "Current V2 paints generic cards, requiring bounded typed pattern compiler.",
@@ -377,24 +377,24 @@
       "upstream_ref": "Code2Video src/eval_AES.py and agent.py::get_mllm_feedback",
       "choice": "WRAP_EXISTING",
       "risk": "Provider-coupled upstream and possible fail-open; human-labeled issue corpus.",
-      "proposed_test": "pytest -q --confcutdir=tests/v2 tests/v2/test_critic_v2_12.py",
+      "proposed_test": "pytest -q --confcutdir=tests/v2 tests/v2/test_vlm_critic_v2_12_gate.py",
       "proposed_test_status": "NOT EXECUTED AS UPSTREAM/V3 EVIDENCE"
     },
     {
       "id": "C7",
       "capability": "ArtifactRefine",
-      "internal": "learnflow_v2/repair/engine.py; repair/artifacts.py",
+      "internal": "learnflow_v2/repair/engine.py; learnflow_v2/repair/artifacts.py",
       "upstream_ref": "Code2Video src/scope_refine.py::ScopeRefineFixer",
       "choice": "REUSE_V2_PATCH_CORE",
       "risk": "Upstream source-line patch incompatible with typed ID diff; measure isolated repair.",
-      "proposed_test": "pytest -q --confcutdir=tests/v2 tests/v2/test_repair_v2_13.py",
+      "proposed_test": "pytest -q --confcutdir=tests/v2 tests/v2/test_repair_v2_13_engine.py",
       "proposed_test_status": "NOT EXECUTED AS UPSTREAM/V3 EVIDENCE"
     },
     {
       "id": "C8",
       "capability": "Verified Algorithm Trace",
       "internal": "learnflow_v2/motion/compiler.py; SceneGraph typed nodes",
-      "upstream_ref": "ALGOGEN-lab run_pipeline.py + renderer/manym_renderer.py (NO LICENSE; study only)",
+      "upstream_ref": "ALGOGEN-lab run_pipeline.py + renderer/manim_renderer.py (NO LICENSE; study only)",
       "choice": "INDEPENDENT_NEW_ADAPTER",
       "risk": "Trace state source is new glue; avoid copying unlicensed code; oracle on binary search.",
       "proposed_test": "pytest -q --confcutdir=tests/hermes tests/hermes/test_live_v2d_evaluation.py",
@@ -423,7 +423,7 @@
     {
       "id": "C11",
       "capability": "Temporal Keyframe Layout",
-      "internal": "learnflow_v2/layout/collision.py; layout/continuity.py; motion/compiler.py",
+      "internal": "learnflow_v2/layout/collision.py; learnflow_v2/layout/continuity.py; learnflow_v2/motion/compiler.py",
       "upstream_ref": "OmniManim/SGA papers; Manim Community optional shapes",
       "choice": "REUSE_V2_PLUS_NEW_TEMPORAL_ADAPTER",
       "risk": "Swept collision is not proven by endpoint-only layout; no LLM geometry.",
