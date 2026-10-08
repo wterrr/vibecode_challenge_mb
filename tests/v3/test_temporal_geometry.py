@@ -224,7 +224,7 @@ def test_fake_source_rehashed_evidence_does_not_override_rendered_frames(rendere
         "plan_sha256":compute_content_hash(changed.model_dump(mode="json")),
         "certificate_sha256":compute_content_hash(new_cert.model_dump(mode="json")),
     })
-    with pytest.raises(SemanticContractError,match="DECODED_GEOMETRY_FRAME_MISMATCH|STALE_PIXEL_ANCHORS"):
+    with pytest.raises(SemanticContractError,match="DECODED_GEOMETRY_FRAME_MISMATCH|DECODED_OBJECT_GEOMETRY_MISMATCH|STALE_PIXEL_ANCHORS"):
         verify_temporal_render(plan=changed,certificate=new_cert,
                                evidence=forged,video_path=video)
 
