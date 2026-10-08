@@ -62,6 +62,68 @@ class V3OfflinePreviewPipeline(LearningVideoPipeline):
                 self._preview_sync,values=values,target=target
             )
 
+    async def preview_narrated_binary_search(
+        self,*,values:tuple[int,...],target:int,family:str="WORKED_EXAMPLE_BOARD",
+    )->dict:
+        decision=select_renderer(family)
+        if decision.status!="SELECTED_BY_INTEGRATION_ADAPTER":
+            raise V3PreviewRejected(
+                f"{decision.status}: {decision.reason}; no CONCEPT_CARD fallback"
+            )
+        if (
+            not isinstance(target,int) or isinstance(target,bool) or
+            any(not isinstance(v,int) or isinstance(v,bool) for v in values)
+            or not 3<=len(values)<=12 or
+            any(abs(v)>1000000 for v in values) or
+            abs(target)>1000000 or tuple(sorted(values))!=values
+        ):
+            raise V3PreviewRejected("INVALID_BINARY_SOURCE: sorted bounded integers required")
+        async with self._preview_lock:
+            return await asyncio.to_thread(self._narrated_sync,values=values,target=target)
+
+    def _narrated_sync(self,*,values:tuple[int,...],target:int)->dict:
+        # Uses existing app ArtifactStore and explicit private preview owner;
+        # never publishes final.mp4 or changes a durable legacy job status.
+        from learnflow_v3.narrated_lesson import build_narrated_lesson
+        token="v3narrated"+uuid.uuid4().hex
+        base=self.artifacts.get_job_dir(token,create=True)
+        try:
+            source=build_binary_lesson_source(values=values,target=target)
+            receipt=build_narrated_lesson(source=source,out=base)
+            video=base/"narrated_binary_lesson.mp4"
+            if not video.is_file() or video.is_symlink() or (
+                hashlib.sha256(video.read_bytes()).hexdigest()!=receipt.video_sha256
+            ):
+                raise RuntimeError("V3_19_NARRATED_MP4_NOT_VERIFIED")
+            if not (base/"narrated_binary_lesson.receipt.json").is_file():
+                raise RuntimeError("V3_19_NARRATED_RECEIPT_MISSING")
+            return {
+                "status":"OFFLINE_NARRATED_PREVIEW_QA_PASS_NOT_PUBLISHED",
+                "preview_id":token,"renderer_family":"STATEFUL_SEQUENCE_BINARY_SEARCH",
+                "source_trace_sha256":receipt.source_trace_sha256,
+                "manifest_sha256":receipt.report_sha256,
+                "video_sha256":receipt.video_sha256,
+                "subtitle_sha256":receipt.subtitle_sha256,
+                "duration_seconds":receipt.duration_seconds,
+                "frame_count":receipt.total_frames,
+                "scene_count":len(receipt.segments),
+                "scene_ids":[s["scene_id"] for s in receipt.segments],
+                "beat_ids":[s["beat_id"] for s in receipt.segments],
+                "claim_ids":["claim-01"],"object_ids":["array-01"],
+                "audio_codec":receipt.audio_codec,
+                "video_codec":receipt.video_codec,
+                "audio_origin":receipt.speech_origin,
+                "segment_alignment":receipt.segment_alignment,
+                "word_alignment":receipt.word_alignment,
+                "human_quality":"UNMEASURED",
+                "publication":"PUBLISH_BLOCKED",
+                "public_video_url":None,
+            }
+        except Exception:
+            shutil.rmtree(base,ignore_errors=True)
+            raise
+
+
     def _preview_sync(self,*,values:tuple[int,...],target:int)->dict:
         # All output remains under the existing Artifacts store. NO final.mp4,
         # no ArtifactStore.publish_final and no public download URL.
