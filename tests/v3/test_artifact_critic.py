@@ -138,7 +138,7 @@ def test_actual_video_scoped_issue_and_typed_owner(binary):
     lambda d:d["issues"][0].update(first_frame=1000,last_frame=1001),
     lambda d:d["issues"][0].update(repair_route="RESEARCH_ORCHESTRATION"),
     lambda d:d["issues"][0].update(confidence=.24),
-    lambda d:d["issues"][0].update(rationale="exec(anything)"),
+    lambda d:d["issues"][0].update(rationale=""),
     lambda d:d["issues"][0].update(issue_id="not valid spaces"),
 ])
 def test_hallucinated_or_malformed_reviewer_proposals_fail_closed(binary,tamper):
