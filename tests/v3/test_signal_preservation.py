@@ -43,7 +43,7 @@ def test_every_leaf_has_explicit_stage_or_declared_unconsumed_owner():
     assert "pattern.pattern_type" in report.declared_unconsumed_paths
     assert "ledger.steps.0.object_states.0.properties" in report.declared_unconsumed_paths
     assert all(r.consumer.startswith(("v3.", "future:")) for r in report.routes)
-    assert len(report.source_hashes) == 7
+    assert len(report.source_hashes) == 8
 
 
 def test_strict_catalog_detects_dead_signals_when_policy_mapping_removed(monkeypatch):
@@ -110,15 +110,22 @@ def test_state_value_mutation_cannot_claim_it_changed_visual_pixels():
     assert "PIXEL" in before.assurance
 
 
-def test_active_beat_visual_change_invalidation_changes_gate_hash():
+def test_declared_beat_visual_intent_changes_audit_but_not_renderer_gate():
     original = valid_objects()
     baseline = sp.audit_signal_preservation(**original)
     data = original["plan"].model_dump(mode="json")
     data["beats"][0]["expected_visible_state_change"] = "Update search window based on midpoint"
     mutated = _audit(plan=VisualTeachingPlan.model_validate(data))
     assert sp.assert_mutation_invalidation(baseline, mutated)
-    assert mutated.semantic_gate_hash != baseline.semantic_gate_hash
+    assert mutated.semantic_gate_hash == baseline.semantic_gate_hash
     assert mutated.audit_hash != baseline.audit_hash
+    assert any(
+        r.normalized_path == "plan.beats.*.expected_visible_state_change"
+        and r.status == sp.SignalStatus.DECLARED_UNCONSUMED
+        for r in mutated.routes
+    )
+    with pytest.raises(SemanticContractError, match="DEAD_SIGNAL_BLOCKED"):
+        mutated.require_render_consumption()
 
 
 def test_objective_mutation_requires_all_cross_artifact_references_to_update():
@@ -193,8 +200,13 @@ def test_forged_unmodified_downstream_fingerprint_is_detected():
     before = _audit()
     baseline = valid_objects()
     plan_data = baseline["plan"].model_dump(mode="json")
-    plan_data["beats"][0]["expected_visible_state_change"] = "Reveal pivot"
-    after = _audit(plan=VisualTeachingPlan.model_validate(plan_data))
+    plan_data["beats"][0]["beat_id"] = "beat-renamed"
+    ledger_data = baseline["ledger"].model_dump(mode="json")
+    ledger_data["steps"][0]["beat_ref"] = "beat-renamed"
+    after = _audit(
+        plan=VisualTeachingPlan.model_validate(plan_data),
+        ledger=StateLedger.model_validate(ledger_data),
+    )
     forged = after.model_copy(update={"semantic_gate_hash": before.semantic_gate_hash})
     with pytest.raises(SemanticContractError, match="STALE_SEMANTIC_GATE_FINGERPRINT"):
         sp.assert_mutation_invalidation(before, forged)
@@ -226,3 +238,13 @@ def test_no_semantic_delta_is_not_a_proof_of_invalidation():
     a = _audit()
     with pytest.raises(SemanticContractError, match="NO_SEMANTIC_MUTATION_DETECTED"):
         sp.assert_mutation_invalidation(a, a)
+
+
+def test_verified_trace_declaration_is_versioned_provenance_not_oracle_proof():
+    original = valid_objects()
+    baseline = sp.audit_signal_preservation(**original)
+    amended = _audit(verified_trace_refs=("trace:trace-01", "trace:other-02"))
+    assert baseline.source_hashes["verified_trace_refs"] != amended.source_hashes["verified_trace_refs"]
+    assert baseline.semantic_gate_hash != amended.semantic_gate_hash
+    assert baseline.audit_hash != amended.audit_hash
+    assert baseline.render_ready is False

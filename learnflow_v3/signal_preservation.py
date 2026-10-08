@@ -42,8 +42,6 @@ GATED_PATHS = frozenset((
     "plan.beats.*.concept_refs",
     "plan.beats.*.concept_refs.*.concept_id",
     "plan.beats.*.concept_refs.*.canonical_key",
-    "plan.beats.*.expected_visible_state_change",
-    "plan.beats.*.allowed_static_justification",
     "pattern.schema_version",
     "pattern.pattern_id",
     "pattern.scene_id",
@@ -76,6 +74,8 @@ DEFERRED_PATHS = {
     "plan.sections.*.representation_options.*": "future:pattern-router",
     "plan.sections.*.visual_complexity_budget": "future:pattern-router",
     "plan.sections.*.hero_candidate": "future:hero-planner",
+    "plan.beats.*.expected_visible_state_change": "future:beat-visual-binding",
+    "plan.beats.*.allowed_static_justification": "future:static-exception-proof",
     "plan.beats.*.importance": "future:beat-grounding",
     "plan.constraints.language": "future:pedagogy-planner",
     "plan.constraints.learner_level": "future:pedagogy-planner",
@@ -218,6 +218,7 @@ def audit_signal_preservation(
         "script": compute_content_hash(script),
         "storyboard": compute_content_hash(storyboard),
         "scenegraph": compute_content_hash(scenegraph),
+        "verified_trace_refs": compute_content_hash(sorted(set(verified_trace_refs))),
     }
     semantic_gate_hash = compute_content_hash({
         "compiler_version": SIGNAL_AUDIT_VERSION,
@@ -228,7 +229,7 @@ def audit_signal_preservation(
         ],
         "v2_references": {
             key: source_hashes[key]
-            for key in ("registry", "script", "storyboard", "scenegraph")
+            for key in ("registry", "script", "storyboard", "scenegraph", "verified_trace_refs")
         },
     })
     audit_hash = compute_content_hash({
