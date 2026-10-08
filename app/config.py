@@ -86,6 +86,13 @@ class Settings(BaseSettings):
     render_profile: Literal["production", "test"] = "production"
     enable_image_generation: bool = False
     # V3-18: local, non-publishing developer preview only; DEFAULT OFF.
+    # Explicit second gate for locally narrated V3 lessons; default OFF.
+    v3_narrated_lesson_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices(
+            "LEARNFLOW_V3_NARRATED_LESSON", "v3_narrated_lesson_enabled"
+        ),
+    )
     v3_binary_preview_enabled: bool = Field(
         default=False,
         validation_alias=AliasChoices(
