@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import subprocess
 from pathlib import Path
 import tempfile
 from typing import Literal
@@ -186,12 +187,12 @@ def rehearse_local_v2_route(*,root:Path,baseline_path:Path|None=None,
     or reset a GitHub ref, hence it is a limited rollback readiness drill.
     """
     from scripts.verify_v2_core_freeze import (
-        MANIFEST_PATH,EXPECTED_EVIDENCE_COMMIT,git_blob_sha,verify,
+        EXPECTED_EVIDENCE_COMMIT,git_blob_sha,verify,
     )
     if verify():
         _deny("V2_FROZEN_CORE_VERIFY_FAILED")
     baseline=root/"benchmarks/baselines/v1/baseline.json" if baseline_path is None else baseline_path
-    core=MANIFEST_PATH if core_manifest_path is None else core_manifest_path
+    core=root/"benchmarks/core_freeze/manifest.json" if core_manifest_path is None else core_manifest_path
     if not baseline.resolve().is_relative_to(root.resolve()) or not core.resolve().is_relative_to(root.resolve()):
         _deny("ROLLBACK_INPUT_OUTSIDE_REPO")
     baseline_sha=_sha(baseline);core_sha=_sha(core)
@@ -261,9 +262,60 @@ def _source_samples(*,binary_args:dict,geometry_args:dict):
     return tuple(output)
 
 
+
+def _rgb_stream_sha256(*,video:Path,width:int,height:int,count:int)->str:
+    """Hash decoded RGB pixel stream, not encoding metadata or container bytes."""
+    _sha(video)  # refuse symlinks, unreadable or absent source
+    cmd=["ffmpeg","-nostdin","-hide_banner","-v","error",
+         "-i",str(video),"-map","0:v:0","-f","rawvideo",
+         "-pix_fmt","rgb24","-vsync","0","pipe:1"]
+    proc=subprocess.Popen(cmd,stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,
+                          stderr=subprocess.DEVNULL)
+    h=hashlib.sha256()
+    size=0
+    try:
+        assert proc.stdout is not None
+        for chunk in iter(lambda:proc.stdout.read(1048576),b""):
+            size+=len(chunk)
+            if size>width*height*3*count:
+                _deny("REPLAY_FRAME_COUNT_OR_PIXEL_SIZE_OVERFLOW")
+            h.update(chunk)
+        if proc.wait(timeout=40)!=0 or size!=width*height*3*count:
+            _deny("REPLAY_FRAME_COUNT_OR_DECODE_FAILURE")
+        return h.hexdigest()
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+        proc.wait()
+
+
+def verify_independent_pixel_replay(*,binary_args:dict,geometry_args:dict,
+                                    independent_video_paths:tuple[Path,Path],
+                                    pixel_replays:tuple[ReplayProof,...])->None:
+    cases=(
+        ("BINARY_SEARCH_SAMPLE",binary_args["video_path"],independent_video_paths[0],
+         binary_args["profile"].width,binary_args["profile"].height,
+         binary_args["profile"].frames_per_step()*len(binary_args["trace"].steps)),
+        ("TEMPORAL_GEOMETRY_DEMO",geometry_args["video_path"],independent_video_paths[1],
+         geometry_args["plan"].width,geometry_args["plan"].height,
+         geometry_args["plan"].frame_count),
+    )
+    if len(pixel_replays)!=2 or len(independent_video_paths)!=2:
+        _deny("INDEPENDENT_REPLAY_MISSING")
+    for (subject,first,second,w,h,frames),proof in zip(cases,pixel_replays,strict=True):
+        if proof.subject!=subject or Path(first).resolve()==Path(second).resolve():
+            _deny("UNPAIRED_OR_IDENTICAL_REPLAY_FILE")
+        primary=_rgb_stream_sha256(video=Path(first),width=w,height=h,count=frames)
+        independently=_rgb_stream_sha256(video=Path(second),width=w,height=h,count=frames)
+        if primary!=independently or proof.primary_sha256!=primary or proof.independent_sha256!=independently:
+            _deny("INDEPENDENT_DECODED_PIXEL_REPLAY_MISMATCH")
+
+
+
 def audit_release_candidate(*,root:Path,protocol:dict,
                             binary_args:dict,geometry_args:dict,
                             pixel_replays:tuple[ReplayProof,...],
+                            independent_video_paths:tuple[Path,Path],
                             baseline_path:Path|None=None)->ReleaseAudit:
     """Recompute all bounded PASS rows from real inputs, NEVER from a claimant."""
     from scripts.verify_v3_benchmark_protocol import validate,PROTOCOL_PATH
@@ -286,6 +338,9 @@ def audit_release_candidate(*,root:Path,protocol:dict,
     for observed,record in zip(source_samples,pixel_replays,strict=True):
         if observed.subject!=record.subject:
             _deny("REPLAY_PROOF_NOT_BOUND_TO_SAMPLE")
+    verify_independent_pixel_replay(binary_args=binary_args,geometry_args=geometry_args,
+                                    independent_video_paths=independent_video_paths,
+                                    pixel_replays=pixel_replays)
     rollback=rehearse_local_v2_route(root=root,baseline_path=baseline_path)
     rows=[]
     passed={
@@ -316,16 +371,25 @@ def audit_release_candidate(*,root:Path,protocol:dict,
         gates=[x.model_dump(mode="json") for x in rows],
         blocked_reasons=list(UNMET),
     )
-    preliminary=ReleaseAudit.model_construct(**obj)
+    preliminary=ReleaseAudit.model_construct(**{
+        **obj,
+        "normalized_sample_replay":pixel_replays,
+        "source_samples":source_samples,
+        "local_rollback":rollback,
+        "gates":tuple(rows),
+        "blocked_reasons":tuple(UNMET),
+    })
     payload=preliminary.model_dump(mode="json",exclude={"report_sha256"})
     return ReleaseAudit.model_validate(payload|{"report_sha256":compute_content_hash(payload)})
 
 
 def verify_release_audit(*,candidate:ReleaseAudit,root:Path,protocol:dict,
                          binary_args:dict,geometry_args:dict,
-                         pixel_replays:tuple[ReplayProof,...])->None:
+                         pixel_replays:tuple[ReplayProof,...],
+                         independent_video_paths:tuple[Path,Path])->None:
     replay=audit_release_candidate(root=root,protocol=protocol,binary_args=binary_args,
-                                    geometry_args=geometry_args,pixel_replays=pixel_replays)
+                                    geometry_args=geometry_args,pixel_replays=pixel_replays,
+                                    independent_video_paths=independent_video_paths)
     if candidate!=replay:
         _deny("STALE_OR_REHASHED_RELEASE_AUDIT")
 
