@@ -169,8 +169,9 @@ def stable_layout(spec:StateMachineLesson,profile:SequenceRenderProfile)->dict[s
     # Renderer owns circular topology. Sorting preserves ID mapping if input reordered.
     ordered=sorted(x.state_id for x in spec.states)
     n=len(ordered)
-    cx=profile.width*.5;cy=profile.height*.50
-    rx=profile.width*.34;ry=profile.height*.29
+    cx=profile.width*.5;cy=profile.height*.54
+    # Keep every node entirely below header divider and above the event/footer strip.
+    rx=profile.width*.32;ry=profile.height*.24
     return {name:(round(cx+rx*math.cos(2*math.pi*i/n-math.pi/2)),
                   round(cy+ry*math.sin(2*math.pi*i/n-math.pi/2)))
             for i,name in enumerate(ordered)}
