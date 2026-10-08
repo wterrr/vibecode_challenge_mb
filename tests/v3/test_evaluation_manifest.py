@@ -165,7 +165,7 @@ def test_invalid_video_floor_is_one_but_unrun_is_not_one(seeded,protocol,manifes
     unrun[1]=unrun[1].model_copy(update={
         "state":"NOT_RUN","failure_code":None,"real_video_sha256":None,
         "provenance":"UNEXECUTED"})
-    with pytest.raises(SemanticContractError,match="DO_NOT_SCORE_UNRUN"):
+    with pytest.raises(SemanticContractError,match="PILOT_UNEXECUTED_CANNOT_BE_ANALYZED"):
         rehearsal_analysis(protocol=protocol,manifest=manifest,
                            attempts=tuple(unrun),ratings=ratings)
 
