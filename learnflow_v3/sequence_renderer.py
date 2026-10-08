@@ -188,7 +188,7 @@ def draw_binary_search_frame(*, trace: BinarySearchTrace, step_index: int,
             ismid = step.phase=="COMPARE" and step.mid==i
             found = step.phase=="COMPLETE" and trace.result_index==i
             if found:
-                fill,edge=(18,56,39),COLOR_ACCENT
+                fill,edge=(28,111,78),COLOR_ACCENT
             elif eligible:
                 fill,edge=(20,20,20),(115,115,115)
             else:
