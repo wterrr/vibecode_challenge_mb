@@ -223,3 +223,29 @@ def test_production_flag_refused_before_any_provider(tmp_path):
     with pytest.raises(RuntimeError,match="developer preview must not run in production"):
         create_pipeline(settings,SqliteJobRepository(str(tmp_path/"local.db")),
                         LocalArtifactStore(tmp_path))
+
+
+
+def test_regressed_renderer_rewinds_pointer_at_scene_boundary_is_rejected(tmp_path,monkeypatch):
+    """Mutation: a decoder oracle sampled only mid-scene would miss this."""
+    import learnflow_v3.narrated_lesson as narrator
+    source=build_binary_lesson_source(
+        values=(0,2,4,7,11,15,15,21,30),target=15)
+    original=narrator._narrated_frame
+
+    def rewind_at_first_observe(*,source,spec,profile,progress):
+        if spec.get("event_kind")=="OBSERVE" and spec.get("visual_step",0)>0:
+            # Reproduce old V3-19 mistake: re-run the 0→1 tween at the
+            # beginning of the NEXT observation, temporarily moving LOW back.
+            faulty={**spec,"event_kind":"LEGACY_SCENE_REWIND"}
+            return original(source=source,spec=faulty,profile=profile,progress=progress)
+        return original(source=source,spec=spec,profile=profile,progress=progress)
+
+    monkeypatch.setattr(narrator,"_narrated_frame",rewind_at_first_observe)
+    receipt=narrator.build_narrated_lesson(
+        source=source,out=tmp_path,event_aware=True)
+    assert (tmp_path/"narrated_binary_lesson.mp4").is_file()
+    with pytest.raises(SemanticContractError,
+                       match="EVENT_SCENE_BOUNDARY_REWINDS_STATE"):
+        narrator.verify_narrated_lesson(
+            source=source,folder=tmp_path,receipt=receipt)
