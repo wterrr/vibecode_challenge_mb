@@ -3,7 +3,7 @@
 Core Freeze is immutable. The frozen subtitle renderer still enforces every
 typed cue check, produces the subtitle-burned real MP4, and computes the exact
 SHA-256 of *all* decoded RGB bytes. Only the digest transport changes from a
-fully buffered subprocess.run() to streaming subprocess.Popen(). The temporary
+fully buffered decoding to incremental streaming. The temporary
 substitution is scoped to the synchronous call and always restored.
 """
 
