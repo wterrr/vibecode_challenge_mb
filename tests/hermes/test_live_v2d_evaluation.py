@@ -1246,3 +1246,109 @@ def test_paid_luna_visual_request_is_bounded_and_instrumented():
     assert "export HERMES_API_CALL_STALE_TIMEOUT=120" in action
     assert 'if [[ "$GITHUB_REF" == "refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot" ]]' in action
     assert "faulthandler.dump_traceback_later(120" in script
+
+
+def test_live_render_adapter_matches_frozen_core_rgb_pixels(monkeypatch):
+    """Exact pixels across reveal, opacity and emphasis; no quality degradation."""
+    from PIL import Image
+    from learnflow_v2.layout.schema import Rect
+    from learnflow_v2.render import DeterministicPillowRenderer
+    from learnflow_v2.scenegraph.enums import NodeKind
+    from learnflow_v2.scenegraph.schema import SceneNode
+    from lesson_pipeline.render_adapter import ProductionPillowRenderer
+    import learnflow_v2.render.backend as backend
+
+    core = DeterministicPillowRenderer()
+    optimized = ProductionPillowRenderer()
+    node = SceneNode(id="label", kind=NodeKind.CONCEPT, label="Visual Learning")
+    rect = Rect(x=24.0, y=26.0, width=260.0, height=90.0)
+    rgba_allocations = []
+    original_new = backend.Image.new
+
+    def tracked_new(mode, size, *args, **kwargs):
+        if mode == "RGBA":
+            rgba_allocations.append(size)
+        return original_new(mode, size, *args, **kwargs)
+
+    for reveal, opacity, emphasis in (
+        (1.0, 1.0, 0.0),
+        (1.0, 0.5, 0.7),
+        (0.45, 1.0, 0.0),
+        (0.67, 0.4, 1.0),
+    ):
+        expected = Image.new("RGB", (640, 360), (15, 17, 22))
+        actual = Image.new("RGB", (640, 360), (15, 17, 22))
+        core._draw_node(
+            expected, node, rect,
+            opacity=opacity, reveal=reveal, emphasis=emphasis
+        )
+        monkeypatch.setattr(backend.Image, "new", tracked_new)
+        try:
+            optimized._draw_node(
+                actual, node, rect,
+                opacity=opacity, reveal=reveal, emphasis=emphasis
+            )
+        finally:
+            monkeypatch.setattr(backend.Image, "new", original_new)
+        assert actual.tobytes() == expected.tobytes()
+    assert len(rgba_allocations) == 4
+    assert all(w * h < 640 * 360 / 2 for w, h in rgba_allocations)
+
+
+def test_live_render_adapter_caches_only_identical_validated_inputs(monkeypatch):
+    from learnflow_v2.render import DeterministicPillowRenderer
+    from lesson_pipeline.render_adapter import ProductionPillowRenderer
+
+    calls = []
+    original = DeterministicPillowRenderer.validate_scene_inputs
+
+    def counted(self, scene, layout, motion):
+        calls.append(1)
+        return original(self, scene, layout, motion)
+
+    monkeypatch.setattr(DeterministicPillowRenderer, "validate_scene_inputs", counted)
+    renderer = ProductionPillowRenderer()
+    from learnflow_v2.layout.schema import LayoutBox, LayoutGraph, LayoutStrategy, Rect
+    from learnflow_v2.motion.compiler import CompiledMotionArtifact
+    from learnflow_v2.scenegraph.enums import NodeKind
+    from learnflow_v2.scenegraph.schema import SceneGraph, SceneNode
+
+    scene = SceneGraph(scene_id="fast-1", nodes=[
+        SceneNode(id="a", kind=NodeKind.TEXT, label="Fast render")
+    ])
+    layout = LayoutGraph(
+        scene_id="fast-1",
+        frame_profile_id="test-320x180",
+        frame_width=320,
+        frame_height=180,
+        boxes=[LayoutBox(
+            node_id="a", rect=Rect(x=20, y=50, width=200, height=70),
+            zone="CONTENT"
+        )],
+        routed_edges=[],
+        strategy=LayoutStrategy.DIRECTED_GRAPH,
+        feasible=True,
+    )
+    motion = CompiledMotionArtifact(
+        scene_id="fast-1", scene_duration=1.0, events=(), tracks=()
+    )
+    validated = renderer.validate_scene_inputs(scene, layout, motion)
+    assert renderer.validate_scene_inputs(scene, layout, motion) is validated
+    assert len(calls) == 1
+    renderer.validate_scene_inputs(*validated)
+    assert len(calls) == 2
+    renderer.validate_scene_inputs(*validated)
+    assert len(calls) == 2
+
+
+def test_paid_pilot_fast_renderer_is_opt_in_and_frozen_core_is_original():
+    import hashlib
+    source = (ROOT / ".hermes" / "plugins" / "learnflow" / "tools.py").read_text()
+    assert 'render_options["renderer"] = ProductionPillowRenderer()' in source
+    assert 'os.environ.get("LEARNFLOW_PAID_PILOT_MODEL") == "openai/gpt-6-luna"' in source
+    assert '== "refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot"' in source
+    frozen = (ROOT / "learnflow_v2" / "render" / "backend.py").read_bytes()
+    prefix = b"blob " + str(len(frozen)).encode() + bytes([0])
+    assert hashlib.sha1(prefix + frozen).hexdigest() == (
+        "177fe738da68adf5bbcedc70a81f023d233a458a"
+    )

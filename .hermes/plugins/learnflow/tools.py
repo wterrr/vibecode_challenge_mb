@@ -408,12 +408,25 @@ def handle_render(args: dict[str, Any], **_kwargs: Any) -> str:
             cached = True
         else:
             render_dir.mkdir(parents=True, exist_ok=True)
+            # Render adapter is opt-in to the isolated paid pilot. The frozen
+            # public Core renderer and every production/default route stay intact.
+            pilot_fast_render = (
+                os.environ.get("LEARNFLOW_PAID_PILOT_MODEL") == "openai/gpt-6-luna"
+                and os.environ.get("GITHUB_REF")
+                == "refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot"
+            )
+            render_options: dict[str, Any] = {}
+            if pilot_fast_render:
+                from lesson_pipeline.render_adapter import ProductionPillowRenderer
+
+                render_options["renderer"] = ProductionPillowRenderer()
             artifact = core["render_scene_video"](
                 scene_graph,
                 layout_graph,
                 compiled_motion,
                 output_path,
                 profile=profile,
+                **render_options,
             )
             _atomic_write_json(artifact_path, artifact.model_dump(mode="json"))
             cached = False
