@@ -27,3 +27,7 @@ Pipeline uses existing ArtifactStore root for an opaque local preview ID. It nev
 ## Explicit NO-CLAIM and remaining work
 
 This is a single ~3-second silent Binary Search developer preview. It is NOT the normal /api/jobs publishing route, a full 60/90/120 second learner video, narrated/TTS-aligned multi-scene timeline, real model planner, entire Code/Math/Process/State Machine registry, human quality study, C6/C7 real efficacy proof or authenticated production release. It proves product HTTP entrypoint reaches the same app pipeline factory and V3's offline renderer behind a default-OFF developer guard, not production readiness. The Hermes V2D coordinator is deliberately not altered. Keep PUBLISH_BLOCKED, no V2 Core or main merge. Exact code-head CI and final artifact evidence will be appended after measured execution.
+
+## Initial CI and reachability audit correction
+
+Initial code-head workflow #37786569935: 383 V3 tests PASS and 1 preexisting V3 Integration Closure test FAIL because it demanded zero direct app→V3 imports. The new guard intentionally introduces app/pipeline/v3_preview.py; static inventory and old invariant were corrected to require the single explicit guarded preview caller and no other product V3 caller, distinguishing developer-only reference from actual V2 normal-job pipeline. This preserves a stronger honest boundary rather than weakening semantic QA. Exact final-head rerun pending.
