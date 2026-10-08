@@ -286,6 +286,47 @@ def run_artifact_critic(
         reason="BOUNDED_REVIEWER_FINDINGS_NOT_INDEPENDENTLY_VALIDATED",findings=issues,calls=1)
 
 
+def run_video_artifact_critic(
+    request:ArtifactReviewRequest,*,video_path:str|Path,
+    reviewer:Callable[[ArtifactReviewRequest,tuple[tuple[int,Image.Image],...]],object]|None=None,
+)->CriticReviewResult:
+    """Supply ACTUAL decoded image samples to a future authorized reviewer.
+
+    Revalidates SHA and each RGB pixel buffer at review time. The request
+    itself must first be constructed by binary_request / geometry_request
+    after exact V3-10/11 source replay. Reviewer controls no release action.
+    """
+    if reviewer is None:
+        return run_artifact_critic(request)
+    try:
+        video=Path(video_path)
+        if _file_hash(video)!=request.video_sha256:
+            _deny("VIDEO_CHANGED_SINCE_SOURCE_REPLAY")
+        profile=SequenceRenderProfile(
+            width=request.frame_samples[0].rgb_width,
+            height=request.frame_samples[0].rgb_height,fps=request.fps,
+        )
+        decoded=[]
+        for sample in request.frame_samples:
+            if sample.rgb_width!=profile.width or sample.rgb_height!=profile.height:
+                _deny("MIXED_FRAME_DIMENSIONS")
+            img=_decode_exact_frame(video,sample.frame_index,profile)
+            if hashlib.sha256(img.tobytes()).hexdigest()!=sample.rgb_sha256:
+                _deny("PIXEL_CHANGED_SINCE_REQUEST")
+            decoded.append((sample.frame_index,img))
+    except Exception:
+        return _make_result(
+            request=request,status="CRITIC_REJECTED",
+            reason="VIDEO_BYTES_OR_PIXELS_NO_LONGER_MATCH_APPROVED_REQUEST",
+        )
+    return run_artifact_critic(
+        request,
+        reviewer=lambda bound:reviewer(
+            bound,tuple((idx,frame.copy()) for idx,frame in decoded),
+        ),
+    )
+
+
 def verify_critic_review(*,candidate:CriticReviewResult,request:ArtifactReviewRequest,
                          reviewer:Callable|None=None)->None:
     fresh=run_artifact_critic(request,reviewer=reviewer)
