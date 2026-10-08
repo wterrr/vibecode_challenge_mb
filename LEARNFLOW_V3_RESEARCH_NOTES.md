@@ -2802,3 +2802,13 @@ Next research work should update this same file.
 - Reuse audit includes Code2Video (MIT, pin `1142d8e`), Manim Community (MIT, pin `23ae68f`) and ALGOGEN-lab (no root license/declared license, **STUDY ONLY / DO NOT COPY**, pin `1bb093c`). Direct code copying was neither attempted nor authorized.
 - **Fresh offline CI: PASS**, run https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37725705499 on commit `217bd0575e7e14141fa24fd320efa76edcf391b3`; outputs: `V3_00_BASELINE=PASS commits=27 files=23 capabilities=12`, `CORE_FREEZE=PASS`, `LIVE_V2D_CONTRACT=PASS`, 87 regressions PASS, 14 renderer PASS/5 SKIP. No paid-provider workflow ran.
 - **V3-00 audit PASS**; full pilot-to-main merge **NO-GO**; next single task, only after user authorization: **V3-00B — Selective Integration Candidate & Offline Gate**, on a non-main branch; main and frozen Core remain unchanged. V3-01 and later capability code remain unimplemented.
+
+
+## 2026-10-08 — V3-00E merged and verified
+
+- **PR #33 merged** on explicit user-requested V3-00E approval path. Exact integration merge commit on main: `be19b4819b8c23c19713b6351d384411b29bf29b`; original main was `29fab1d5738ccb060502c8ae82e2e31f00360811`. This merge was from selective integration branch, **not** the paid GPT-6 Luna pilot fast-forward.
+- Added an offline regression trigger for pushes to `main`, using the already-proven Core Freeze/V2D/semantic/subtitle/security/renderer test suite. All 11 pre-merge workflow runs at `cac628f9` passed.
+- On merge commit `be19b4819b8c23c19713b6351d384411b29bf29b`: all **10/10 GitHub Actions succeeded**; [offline gate 37728464626](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37728464626) recorded `CORE_FREEZE=PASS`, `LIVE_V2D_CONTRACT=PASS`, **82 passed** tests and **14 passed / 5 skipped** renderer tests. [Governed Live push 37728464657](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37728464657) ran contract only and **SKIPPED live-provider-pilot**.
+- Default model remains `nvidia/nemotron-3.5-lightning:free`; the paid Luna policy/default was not merged. No `learnflow_v2/**` frozen Core files or the V1 rollback/Core manifest were changed.
+- Historical #181 (run `37721597623`, artifact ID `11525814288`) remains an unchanged technical PASS with recorded semantic registry-vs-script mismatch. No paid API or new live render was invoked in this checkpoint.
+- Rollback referent is merge commit `be19b4819b8c23c19713b6351d384411b29bf29b` (a future authorized `git revert -m 1`, then rerun CI). **V3-00E PASS**; the next *single* planning task is **V3-01 Benchmark Preregistration**, not started here. Full details in `reports/v3_00e_post_merge_verification.md`.

@@ -487,6 +487,10 @@ Feature and acceptance contract
 
 **Audit PASS, full branch merge NO-GO.** Pinned main `29fab1d` vs pilot before audit `a1e4e8b`: 27 commits, 23 files; per-commit/file decisions, licensing and C1–C12 reuse inventory recorded in `reports/v3_00_baseline_merge_gate.md` and `reports/v3_00_reuse_inventory.json`. Fresh offline run [37725705499](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37725705499) passed: V3-00 inventory, Core Freeze, live-eval contract, 87 regression tests, 14 renderer tests (5 skipped). No paid workflow ran. The only authorized proposed follow-up is **V3-00B (selective integration candidate)** if the user explicitly approves; do not merge main or implement V3-01 as a side effect.
 
+### 9.2 V3-00E approved integration and post-merge gate (2026-10-08)
+
+**PASS.** [PR #33](https://github.com/wterrr/vibecode_challenge_mb/pull/33) merged with commit `be19b4819b8c23c19713b6351d384411b29bf29b`; selective production-safe V2D fixes only, **not** paid pilot defaults. All 11 PR checks and all **10** main-merge checks passed. On merge commit: [offline gate 37728464626](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37728464626) yielded Core Freeze PASS, V2D Contract PASS, 82 test passes and renderer 14 PASS / 5 SKIP; [Governed Live push 37728464657](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37728464657) **skipped** the provider job. Default model remains free; historical #181 is unchanged. See `reports/v3_00e_post_merge_verification.md` and the canonical research continuity file. V3-01 is **not** yet implemented; the next checkpoint must be separately authorized.
+
 ## 10. Security, governance and cost
 
 - No provider calls in V3 unit/fixture/offline CI. Isolate paid integration workflow with manual confirm and per-run budget, as a *new authorized protocol only*.
