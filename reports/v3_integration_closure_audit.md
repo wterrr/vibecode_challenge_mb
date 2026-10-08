@@ -64,3 +64,8 @@ The historical V3-04 `VisualPatternRoute` is always `SELECTED_UNRENDERABLE` with
 CI command (offline, CPU only): `python -m pytest -q --confcutdir=tests/v3 tests/v3/test_integration_closure.py`; `python scripts/verify_v3_integration_closure.py --output-dir /tmp/v3_integration`; `python scripts/verify_v2_core_freeze.py`.
 
 Final V3 closure acceptance is **BOUNDED_OFFLINE_VERTICAL_SLICE_PASS** only after exact PR-head CI finishes and the H264/JSON inventory artifact is downloadable. **Real app registration, provider-bearing video generation, narration/TTS timing, full scene temporal certificate, whole-lesson fact/pedagogy quality, critic accuracy, local repair economics, full 12 paired topics and human scores remain NOT ESTABLISHED.** DO NOT merge frozen main, publish, claim 3B1B parity, or treat this as product release.
+
+
+## Initial verified CI and additional partial-write repair
+
+First implementation GitHub Actions #37783540262: 364 V3 tests / 39 frozen V2 / 86 Hermes PASS. Prereg, LearnFlowBench, Core Freeze PASS. 36-frame binary clip after real FFmpeg assembly has identical 640x360 RGB decoded pixel SHA256 3c1917b5b1f6ee932f95d0663e6396fd9661344afd37796d88214f5f96d2576d in source scene and assembled MP4. 387 Python files/22 V3 module static scan returned 0 direct product imports. After this proof, patched a real V3-14 render-then-throw partial MP4 orphan risk using private staging and atomic no-clobber final link; final-head CI still needed. No production user-facing integration or release established.
