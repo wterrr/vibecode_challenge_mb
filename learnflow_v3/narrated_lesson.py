@@ -128,6 +128,59 @@ def _speech_lines(source:BinaryLessonSource)->list[dict]:
     return parts
 
 
+def _narrated_frame(*,source:BinaryLessonSource,spec:dict,
+                  profile:SequenceRenderProfile,progress:float)->Image.Image:
+    role=spec["role"]
+    # This is the original V3-06 semantic renderer for EVERY frame,
+    # not a video hold/loop, nor a fallback concept-card graphic.
+    image=draw_binary_search_frame(
+        trace=source.trace,step_index=spec["step"],
+        progress=progress,subtitle="",profile=profile)
+    d=ImageDraw.Draw(image)
+    # Distinguish pedagogical scene roles without covering the array.
+    d.rectangle((0,0,W,25),fill=BLACK)
+    phase={"INTRODUCTION":"SEARCH IN A SORTED ARRAY",
+           "EXPLANATION":"HOW BOUNDS CHANGE",
+           "WORKED_EXAMPLE":"COMPARE THE MIDDLE",
+           "RECAP":"WHAT WE LEARNED"}[role]
+    d.text((12,5),phase,font=cmu_font(14),fill=CYAN)
+    # Separate pedagogical visual transitions: the introduction
+    # walks the SORTED source indices; the explanation moves the
+    # bound/midpoint pointers; the recap revisits the TRUE oracle
+    # comparison path. Never loop/hold a 3-second animation.
+    centers=_layout(profile,len(source.trace.query.values))
+    if role=="INTRODUCTION":
+        index=min(len(centers)-1,int(progress*len(centers)))
+        px=centers[index]
+        d.rounded_rectangle((px-21,168,px+21,220),radius=7,
+                            outline=CYAN,width=2)
+    elif role=="RECAP":
+        visited=[step.mid for step in source.trace.steps if step.mid is not None]
+        upto=max(1,math.ceil(progress*len(visited)))
+        for mid in visited[:upto]:
+            px=centers[mid]
+            d.ellipse((px-8,148,px+8,164),outline=CYAN,width=2)
+    # Reserve a strict two-zone hierarchy: semantic action lives
+    # at Y=252..270, actual burned subtitles only at Y>=295. The
+    # original V3-06 bottom labels would collide with subtitles;
+    # intentionally mask and re-express the certified action.
+    d.rectangle((0,244,W,H),fill=BLACK)
+    d.line((24,245,W-24,245),fill=(45,50,58),width=1)
+    step=source.trace.steps[spec["step"]]
+    action=(
+        ("SORTED INPUT" if role=="INTRODUCTION" else "COMPARE THE MIDPOINT")
+        if role in ("INTRODUCTION","EXPLANATION") else
+        ("LEFTMOST MATCH: "+str(source.trace.result_index)
+         if role=="RECAP" and source.trace.result_index is not None else
+         ("TARGET NOT PRESENT" if role=="RECAP" else
+          step.action.replace("_"," ")))
+    )
+    d.text((24,252),action,font=cmu_font(15),fill=CYAN)
+    # Draw a small progress indicator based on elapsed spoken frames.
+    d.rectangle((0,H-5,round(W*progress),H-1),fill=CYAN)
+    return image
+
+
 def _encode_scene(*,source:BinaryLessonSource,spec:dict,n:int,
                   output:Path,profile:SequenceRenderProfile)->None:
     if n<12 or n>260:_block("SCENE_FRAME_BUDGET")
@@ -142,53 +195,7 @@ def _encode_scene(*,source:BinaryLessonSource,spec:dict,n:int,
     try:
         for j in range(n):
             progress=j/max(n-1,1)
-            # This is the original V3-06 semantic renderer for EVERY frame,
-            # not a video hold/loop, nor a fallback concept-card graphic.
-            image=draw_binary_search_frame(
-                trace=source.trace,step_index=spec["step"],
-                progress=progress,subtitle="",profile=profile)
-            d=ImageDraw.Draw(image)
-            # Distinguish pedagogical scene roles without covering the array.
-            d.rectangle((0,0,W,25),fill=BLACK)
-            phase={"INTRODUCTION":"SEARCH IN A SORTED ARRAY",
-                   "EXPLANATION":"HOW BOUNDS CHANGE",
-                   "WORKED_EXAMPLE":"COMPARE THE MIDDLE",
-                   "RECAP":"WHAT WE LEARNED"}[role]
-            d.text((12,5),phase,font=cmu_font(14),fill=CYAN)
-            # Separate pedagogical visual transitions: the introduction
-            # walks the SORTED source indices; the explanation moves the
-            # bound/midpoint pointers; the recap revisits the TRUE oracle
-            # comparison path. Never loop/hold a 3-second animation.
-            centers=_layout(profile,len(source.trace.query.values))
-            if role=="INTRODUCTION":
-                index=min(len(centers)-1,int(progress*len(centers)))
-                px=centers[index]
-                d.rounded_rectangle((px-21,168,px+21,220),radius=7,
-                                    outline=CYAN,width=2)
-            elif role=="RECAP":
-                visited=[step.mid for step in source.trace.steps if step.mid is not None]
-                upto=max(1,math.ceil(progress*len(visited)))
-                for mid in visited[:upto]:
-                    px=centers[mid]
-                    d.ellipse((px-8,148,px+8,164),outline=CYAN,width=2)
-            # Reserve a strict two-zone hierarchy: semantic action lives
-            # at Y=252..270, actual burned subtitles only at Y>=295. The
-            # original V3-06 bottom labels would collide with subtitles;
-            # intentionally mask and re-express the certified action.
-            d.rectangle((0,244,W,H),fill=BLACK)
-            d.line((24,245,W-24,245),fill=(45,50,58),width=1)
-            step=source.trace.steps[spec["step"]]
-            action=(
-                ("SORTED INPUT" if role=="INTRODUCTION" else "COMPARE THE MIDPOINT")
-                if role in ("INTRODUCTION","EXPLANATION") else
-                ("LEFTMOST MATCH: "+str(source.trace.result_index)
-                 if role=="RECAP" and source.trace.result_index is not None else
-                 ("TARGET NOT PRESENT" if role=="RECAP" else
-                  step.action.replace("_"," ")))
-            )
-            d.text((24,252),action,font=cmu_font(15),fill=CYAN)
-            # Draw a small progress indicator based on elapsed spoken frames.
-            d.rectangle((0,H-5,round(W*progress),H-1),fill=CYAN)
+            image=_narrated_frame(source=source,spec=spec,profile=profile,progress=progress)
             if proc.stdin is None:_block("FFMPEG_PIPE_CLOSED")
             proc.stdin.write(image.tobytes())
         proc.stdin.close()
@@ -496,6 +503,28 @@ def verify_narrated_lesson(*,source:BinaryLessonSource,folder:Path,
     if (abs(len(raw)//(W*H*3)-receipt.total_frames)>1 or
         len(raw)%(W*H*3)):
         _block("DECODED_PIXEL_FRAME_INCOMPLETE")
+    # Independent source/semantic pixel replay: each authored scene must
+    # match the V3-06 oracle state rendered from the certified trace.
+    # Verify three decoded frames per scene, excluding intentionally burned
+    # caption zone (Y>=244). This rejects a nice-looking but wrong-state clip.
+    from PIL import ImageChops,ImageStat
+    profile=SequenceRenderProfile(width=W,height=H,fps=FPS,seconds_per_step=.75)
+    all_frames=memoryview(raw)
+    size=W*H*3
+    for emitted,expected_spec in zip(receipt.segments,_speech_lines(source),strict=True):
+        span=emitted["frame_end_exclusive"]-emitted["frame_start"]
+        for idx in (0,span//2,span-1):
+            frame_no=emitted["frame_start"]+idx
+            raw_frame=bytes(all_frames[frame_no*size:(frame_no+1)*size])
+            frame=Image.frombytes("RGB",(W,H),raw_frame)
+            oracle=_narrated_frame(
+                source=source,spec=expected_spec,profile=profile,
+                progress=idx/max(span-1,1))
+            compare=ImageChops.difference(
+                frame.crop((0,0,W,239)),oracle.crop((0,0,W,239)))
+            mae=sum(ImageStat.Stat(compare).mean)/3
+            if mae>22.0:
+                _block("DECODED_SCENE_ORACLE_SEMANTIC_PIXELS_CHANGED")
     # Visual QA: inspect decoded output (after SRT burn) to guarantee a
     # deliberate BLACK gutter between source action label (Y=252..270) and
     # real spoken subtitles (nominal Y>=300). Catch the V3-19 original
