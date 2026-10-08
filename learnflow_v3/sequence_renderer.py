@@ -15,11 +15,15 @@ import time
 from PIL import Image, ImageDraw, ImageFont
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.rendering.canvas import (
-    COLOR_BG, COLOR_PRIMARY, COLOR_ACCENT, COLOR_HIGHLIGHT,
-    COLOR_TEXT_MAIN, COLOR_TEXT_MUTED,
-)
-from app.rendering.typography import get_system_font
+# V2 uses the same open Pillow + FFmpeg stack; avoid importing
+# app.rendering.__init__ which eagerly pulls provider SDKs and settings.
+# Project-owned palette constants are mirrored for an isolated CPU renderer.
+COLOR_BG = (15, 23, 42)
+COLOR_PRIMARY = (56, 189, 248)
+COLOR_ACCENT = (52, 211, 153)
+COLOR_HIGHLIGHT = (251, 191, 36)
+COLOR_TEXT_MAIN = (248, 250, 252)
+COLOR_TEXT_MUTED = (148, 163, 184)
 from learnflow_v2.repair import compute_content_hash
 from .binary_search_trace import (
     BinarySearchTrace, certify_and_route_binary_search,
@@ -94,7 +98,14 @@ def _layout(profile: SequenceRenderProfile, length: int) -> tuple[int, ...]:
 
 
 def _font(size: int) -> ImageFont.ImageFont:
-    return get_system_font(max(11, round(size)))
+    size=max(11,round(size))
+    for path in ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                 "/usr/share/fonts/dejavu/DejaVuSans.ttf","DejaVuSans.ttf"):
+        try:
+            return ImageFont.truetype(path, size=size)
+        except OSError:
+            continue
+    raise SemanticContractError("V3_06_DEJAVU_FONT_UNAVAILABLE")
 
 
 def _center_text(draw: ImageDraw.ImageDraw, x: int, y: int, value: str,
