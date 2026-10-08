@@ -514,23 +514,56 @@ def build_production_media(
                 for cue in narration.subtitle_cues
             ],
         )
+        # Isolated one-shot paid V2 evaluation: use provider sentence timing,
+        # not one giant ScriptSegment caption per scene. Fail closed on unsafe
+        # text or geometry; the frozen Core and other routes remain unchanged.
+        paid_caption_policy = (
+            os.environ.get("LEARNFLOW_PAID_PILOT_MODEL") == "openai/gpt-6-luna"
+            and os.environ.get("GITHUB_REF")
+            == "refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot"
+        )
         cues: list[SubtitleRenderCue] = []
-        for phrase_index, phrase in enumerate(beat_map.phrases):
-            text = (
-                subtitle_texts[phrase_index]
-                if phrase_index < len(subtitle_texts)
-                else phrase.text
+        if paid_caption_policy:
+            from lesson_pipeline.subtitle_policy import (
+                check_safe_subtitle_band,
+                normalize_tts_subtitles,
             )
-            end = min(float(phrase.end), artifact.duration)
-            start = min(float(phrase.start), max(0.0, end - 1e-3))
-            if end > start + 1e-4:
-                cues.append(
-                    SubtitleRenderCue(
-                        start_seconds=start,
-                        end_seconds=end,
-                        text=text,
-                    )
+            check_safe_subtitle_band(layout)
+            try:
+                pages = normalize_tts_subtitles(
+                    narration.subtitle_cues,
+                    audio_duration=narration.duration_seconds,
+                    scene_duration=artifact.duration,
                 )
+            except ValueError as exc:
+                raise ProductionOutputGateError(
+                    f"unsafe timed subtitle cues for {scene.scene_id}: {exc}"
+                ) from exc
+            cues.extend(
+                SubtitleRenderCue(
+                    start_seconds=page.start_seconds,
+                    end_seconds=page.end_seconds,
+                    text=page.text,
+                )
+                for page in pages
+            )
+        else:
+            for phrase_index, phrase in enumerate(beat_map.phrases):
+                text = (
+                    subtitle_texts[phrase_index]
+                    if phrase_index < len(subtitle_texts)
+                    else phrase.text
+                )
+                end = min(float(phrase.end), artifact.duration)
+                start = min(float(phrase.start), max(0.0, end - 1e-3))
+                if end > start + 1e-4:
+                    cues.append(
+                        SubtitleRenderCue(
+                            start_seconds=start,
+                            end_seconds=end,
+                            text=text,
+                        )
+                    )
 
         scene_artifacts.append(artifact)
         scene_layouts.append(layout)
@@ -547,7 +580,10 @@ def build_production_media(
                 "motion_event_count": len(compiled.events),
                 "subtitle_cue_count": len(cues),
                 "provider_subtitle_cue_count": len(narration.subtitle_cues),
-                "subtitle_timing_source": "deterministic_script_segments",
+                "subtitle_timing_source": (
+                    "tts_sentence_short_pages_v1" if paid_caption_policy
+                    else "deterministic_script_segments"
+                ),
                 "layout_intent": graph.layout_intent.type.value,
             }
         )
@@ -667,11 +703,9 @@ def build_production_media(
         == "refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot"
     )
     if paid_streaming_digest:
-        from lesson_pipeline.media_digest_adapter import (
-            burn_subtitles_with_streaming_digest,
-        )
+        from lesson_pipeline.subtitle_render_adapter import burn_short_subtitles
 
-        final_artifact = burn_subtitles_with_streaming_digest(
+        final_artifact = burn_short_subtitles(
             av_artifact,
             global_cues,
             root / "final.mp4",
@@ -704,6 +738,12 @@ def build_production_media(
         "motion_every_scene": all(count > 0 for count in scene_motion_counts),
         "transition_coverage": len(transitions) == max(0, len(scene_artifacts) - 1),
         "subtitle_coverage": len(global_cues) >= len(result.lesson_script.segments),
+        "subtitle_short_pages": (
+            not paid_streaming_digest or (
+                len(global_cues) > len(result.lesson_script.segments)
+                and all(len(cue.text) <= 72 and len(cue.text.split()) <= 12 for cue in global_cues)
+            )
+        ),
         "audio_timeline_covers_video": (
             abs(assembled_audio_duration - final_artifact.duration) <= 0.35
         ),
