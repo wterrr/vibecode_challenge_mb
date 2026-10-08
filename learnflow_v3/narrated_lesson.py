@@ -480,6 +480,21 @@ def verify_narrated_lesson(*,source:BinaryLessonSource,folder:Path,
     if (abs(len(raw)//(W*H*3)-receipt.total_frames)>1 or
         len(raw)%(W*H*3)):
         _block("DECODED_PIXEL_FRAME_INCOMPLETE")
+    # Visual QA: inspect decoded output (after SRT burn) to guarantee a
+    # deliberate BLACK gutter between source action label (Y=252..270) and
+    # real spoken subtitles (nominal Y>=300). Catch the V3-19 original
+    # overlay bug which a successful FFmpeg exit cannot detect.
+    decoded=memoryview(raw)
+    pixels_per_frame=W*H*3
+    for seg in receipt.segments:
+        frame_idx=(seg["frame_start"]+seg["frame_end_exclusive"])//2
+        frame=decoded[frame_idx*pixels_per_frame:(frame_idx+1)*pixels_per_frame]
+        suspicious=0
+        for y in range(280,295):
+            strip=frame[(y*W+30)*3:(y*W+W-30)*3]
+            suspicious+=sum(1 for x in strip if x>145)
+        if suspicious>90:
+            _block("SUBTITLE_OVERLAPS_ACTION_SAFE_ZONE")
     # Actual non-silent speech must be present in every final AAC scene.
     from array import array
     for e in receipt.segments:
