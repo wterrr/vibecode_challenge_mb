@@ -133,9 +133,15 @@ def _narrated_frame(*,source:BinaryLessonSource,spec:dict,
     role=spec["role"]
     # This is the original V3-06 semantic renderer for EVERY frame,
     # not a video hold/loop, nor a fallback concept-card graphic.
+    # Across an APPLY→OBSERVE or APPLY→RESULT cut, the settled oracle
+    # state MUST persist. Replaying V3-06's 0→1 step tween in a new OBSERVE
+    # scene would momentarily rewind LOW/HIGH/MID and violate continuity.
+    # Only APPLY is allowed to animate between adjacent certified states.
+    stable_scene=spec.get("event_kind") in ("OBSERVE","RESULT")
     image=draw_binary_search_frame(
         trace=source.trace,step_index=spec.get("visual_step",spec["step"]),
-        progress=progress,subtitle="",profile=profile)
+        progress=(1.0 if stable_scene else progress),
+        subtitle="",profile=profile)
     d=ImageDraw.Draw(image)
     # Distinguish pedagogical scene roles without covering the array.
     d.rectangle((0,0,W,25),fill=BLACK)
@@ -580,6 +586,30 @@ def verify_narrated_lesson(*,source:BinaryLessonSource,folder:Path,
             mae=sum(ImageStat.Stat(compare).mean)/3
             if mae>22.0:
                 _block("DECODED_SCENE_ORACLE_SEMANTIC_PIXELS_CHANGED")
+    # Verify actual decoded frames immediately adjacent to every
+    # APPLY→OBSERVE/RESULT cut: the same certified visual step must not
+    # replay its old LOW/HIGH/MID tween. This caught a real 20.000s
+    # visual rewind missed by 3-anchor-per-scene tests.
+    if is_event_aligned:
+        for i,part in enumerate(receipt.segments[:-1]):
+            following=receipt.segments[i+1]
+            if (part.get("event_kind")!="APPLY" or
+                following.get("event_kind") not in ("OBSERVE","RESULT")):
+                continue
+            if part["visual_step"]!=following["visual_step"]:
+                _block("EVENT_SCENE_ORACLE_STEP_DISCONTINUITY")
+            old_frame=part["frame_end_exclusive"]-1
+            new_frame=following["frame_start"]
+            if new_frame!=old_frame+1:
+                _block("EVENT_SCENE_FRAME_GAP")
+            images=[]
+            for frame_num in (old_frame,new_frame):
+                z=bytes(all_frames[frame_num*size:(frame_num+1)*size])
+                images.append(Image.frombytes("RGB",(W,H),z).crop((0,80,W,235)))
+            diff=ImageChops.difference(images[0],images[1])
+            mae=sum(ImageStat.Stat(diff).mean)/3.0
+            if mae>5.0:
+                _block("EVENT_SCENE_BOUNDARY_REWINDS_STATE")
     # Visual QA: inspect decoded output (after SRT burn) to guarantee a
     # deliberate BLACK gutter between source action label (Y=252..270) and
     # real spoken subtitles (nominal Y>=300). Catch the V3-19 original
