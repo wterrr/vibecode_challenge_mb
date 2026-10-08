@@ -2784,3 +2784,12 @@ Next research work should update this same file.
 - V3 planner targets (e.g., ≥90% grounded essential beat coverage) are **hypotheses**, not evidence of improvement. The 100-topic live benchmark, reliable population threshold, learning transfer and matched human quality studies remain UNMEASURED/DEFERRED.
 - Code2Video, ALGOGEN, OmniManim, LLM2Manim and MINARD are design baselines; none establish unique novelty or an automatic LearnFlow performance claim.
 - Source of implementation plan: `PLAN_V3.md` (draft), using this canonical research file as upstream research record.
+
+
+## 2026-10-08 — Reuse-first source-code policy (user decision)
+
+- **Prioritize reusing project-owned V2 modules and suitable maintained open-source code; adapt/wrap/vendored subsets before writing from scratch.** This must be documented per V3 checkpoint with a pinned upstream SHA, module-level API audit, license/NOTICE, dependency budget, compatibility test and regression proof.
+- Verified external GitHub source snapshots: Code2Video `1142d8e14cdc2806df85aedb0fbb5dca474caa0f` (MIT); Manim Community `23ae68f4dd5817d49760b338e14b92757a2369b5` (MIT); ALGOGEN-lab `1bb093c76499135ecf54fc8030219a4e7ee4424c` (**license not declared in inspected root**; study design only, do not copy code absent permission).
+- Candidate modules for follow-up inspection: Code2Video `src/scope_refine.py`, `src/agent.py`, `src/eval_AES.py`, `src/eval_TQ.py`; Manim Community's mature math/vector engine as optional typed backend; ALGOGEN VTA/RSL architecture as research reference only.
+- **Not authorization to copy wholesale:** generated arbitrary rendering code must not bypass LearnFlow typed contracts, deterministic QA, Core Freeze or artifact provenance. Upstream assets and dependencies require separate license checks.
+- `PLAN_V3.md` v3.0.1-draft section 8.3 is the authoritative development rule. V3-00 must produce merge and upstream reuse inventory; implementation remains separate and unauthorised.

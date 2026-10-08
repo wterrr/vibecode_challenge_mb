@@ -1,6 +1,6 @@
 # LearnFlow V3 — Evidence-Gated Implementation Plan
 
-**Version:** 3.0.0-draft | **Date:** 2026-10-08 | **Status:** PLAN DRAFTED / IMPLEMENTATION NOT AUTHORIZED  
+**Version:** 3.0.1-draft | **Date:** 2026-10-08 | **Status:** PLAN DRAFTED / IMPLEMENTATION NOT AUTHORIZED  
 **Authority:** User requested a complete V3 plan after the single paid final V2D run. This authorizes documentation and research only, **not** automatic implementation or merge to main.  
 **Development branch at drafting:** `chatgpt/live-v2d-gpt6-luna-paid-pilot`. Frozen V2 Core and historical #181 artifacts remain immutable.
 
@@ -371,7 +371,7 @@ Randomize order and blind human evaluators to system identity. If paired data sp
 
 | Checkpoint | Dependency | Required deliverable and acceptance | Repro command after implemented |
 | --- | --- | --- | --- |
-| V3-00 Baseline & Merge Gate | #181 and offline #4 | lineage audit, complete V2 evidence manifest, protected Core hash, branch strategy, preserved historical #181 | `python scripts/verify_v3_baseline.py` |
+| V3-00 Baseline & Merge Gate | #181 and offline #4 | lineage audit, complete V2 evidence manifest, protected Core hash, branch strategy, **upstream reuse/license inventory**, preserved historical #181 | `python scripts/verify_v3_baseline.py` |
 | V3-01 Benchmark preregistration | V3-00 | frozen topic IDs, pilot rubric, control variables, human protocol and limits; no data leakage | `python scripts/verify_v3_benchmark_protocol.py` |
 | V3-02 Canonical semantic contracts | V3-00 | Versioned VisualTeachingPlan/PatternSpec/StateLedger, ID/ref validation, three-way worked example agreement | `pytest -q tests/v3/test_contracts.py` |
 | V3-03 Signal-preservation proof | V3-02 | mutation dependency/canonical hashes; ignored fields fail, no frozen V2 edit | `pytest -q tests/v3/test_signal_preservation.py` |
@@ -397,6 +397,7 @@ Randomize order and blind human evaluators to system identity. If paired data sp
 ```text
 Identifier + motivation/root cause
 Prior-work evidence and the remaining technical gap
+Upstream reuse/license audit: import vs adapter vs vendor vs new code
 Parent commit and allowed files
 Typed schema / invariants / ownership boundary
 Implementation diff and renderer artifact if relevant
@@ -417,9 +418,54 @@ Compare main to chatgpt/live-v2d-gpt6-luna-paid-pilot at pinned commits.
 Classify every unmerged change as KEEP, ISOLATE-EXPERIMENTAL, SUPERSEDED, or EXCLUDE.
 Protect all V2 benchmark fixtures and data; run Core Freeze and offline regressions.
 Produce a merge-readiness report with per-file inventory and selected target base.
+Also audit reusable upstream components, pinned commits, licensing and integration-vs-reimplementation tradeoffs under section 8.3.
 Do not merge without authorization; do not call paid APIs.
 If blockers exist, stop with an evidence-backed FIX proposal.
 ```
+
+### 8.3 Reuse-first implementation policy — mandatory before every V3 checkpoint
+
+**Decision (2026-10-08): REUSE → ADAPT → IMPLEMENT FROM SCRATCH.** Do not rewrite mature, fit-for-purpose modules merely to follow the planned architecture. Preserve the established V2 typed/renderer-neutral boundary while borrowing implementation proven elsewhere.
+
+**Selection priority:**
+1. **Reuse existing LearnFlow V2** capabilities from versioned, frozen public APIs via V3 adapters (layout solver, collision metrics, motion, subtitles, ffmpeg assembly, provenance, renderer primitives). Do not modify frozen Core.
+2. **Reuse maintained open-source libraries as pinned dependencies** when their license, API, performance and output can be verified. Example: use Manim Community as an **optional bounded rendering backend**, through trusted templates and typed plans, *not* by letting agents execute arbitrary generated Python.
+3. **Vendor/copy small, well-isolated third-party modules** when direct dependencies would be unnecessarily heavy or the module requires adaptation. Preserve upstream copyright notices, required LICENSE text, source URL, pinned commit, modification notes and local regression tests; prefer a wrapper when possible.
+4. **Write only the genuinely missing glue/novel logic** (typed representation compilation, identity-preserving trace binding, frame/beat proof, governance) or when an existing library fails compatibility/performance/security gates. Provide evidence before selecting from-scratch.
+5. **Never treat a public repository as automatically reusable.** If license is absent, ambiguous, incompatible, or specific assets have different terms, classify source as **STUDY ONLY / LICENSE BLOCKED** until permission or a compatible license is established. No copying code or assets while blocked.
+
+**Initial audited external candidates (candidate, NOT integration approval):**
+
+| Repository / source | License finding on 2026-10-08 | Candidate modules or mechanisms | Allowed decision today |
+| --- | --- | --- | --- |
+| [Code2Video](https://github.com/showlab/Code2Video), commit `1142d8e14cdc2806df85aedb0fbb5dca474caa0f` | MIT at repository root | `src/scope_refine.py`, `src/agent.py`, `src/eval_AES.py`, `src/eval_TQ.py` — review for bounded scope repair, planning/evaluation, prompt contracts | **REUSE/ADAPT CANDIDATE** after line-level dependency, test, compatibility and attribution audit; generated arbitrary Manim code cannot become canonical LearnFlow IR |
+| [Manim Community](https://github.com/ManimCommunity/manim), commit `23ae68f4dd5817d49760b338e14b92757a2369b5` | MIT repository license | mature vector objects, equations, graph/geometry animation, composition | **OPTIONAL BACKEND CANDIDATE**, compare full install cost and deterministic render against existing Pillow/FFmpeg stack; avoid assuming all sample assets have permissive licenses |
+| [ALGOGEN-lab](https://github.com/MAC-AutoML/ALGOGEN-lab), commit `1bb093c76499135ecf54fc8030219a4e7ee4424c` | **NO LICENSE DECLARED / NO ROOT LICENSE FILE FOUND** in inspected public repository | `renderer/`, `toolmaker/`, VTA/RSL trace design, validation ideas | **STUDY ONLY; DO NOT COPY SOURCE** without documented license/permission. Independent implementation of ideas is distinct from copying source code |
+| LearnFlow existing V2 modules, pinned by current integration base | project-owned | `learnflow_v2/layout`, `motion`, `render`, `qa`; `lesson_pipeline`, `visual_director` | **REUSE FIRST through compatibility adapters**, preserve Core Freeze |
+
+**Candidate audit required per checkpoint before code modifications:**
+
+```text
+Feature and acceptance contract
+=> search internal V2 implementation and 2-5 strongest maintained upstream options
+=> inventory exact module/file/function, pinned SHA, license & transitive/asset licenses
+=> run minimum upstream tests/smoke on pinned version and inspect real output
+=> compare API/schema fit, determinism, rendering quality, security, dependency footprint
+=> score REUSE_DIRECT | WRAP/ADAPT | VENDOR_SUBSET | REIMPLEMENT | DEFER/UNLICENSED
+=> justify chosen method with evidence, estimated integration effort and maintenance cost
+=> record origin, authorship/NOTICE, changes, regression commands and rollback path
+```
+
+**Mandatory acceptance for reused code:** project-owned typed interface remains the authority; new adapter has positive, negative, determinism and visual-golden tests; no arbitrary code execution; no secret exfiltration or unallowlisted network calls; quality at least matches a measured baseline; project dependency budget and LICENSE/NOTICE files are respected. The fact that a feature renders in upstream demos is not enough.
+
+**Checkpoint alignment:**
+- **V3-00** extends its audit to a **pinned upstream component/reuse inventory** and merge-safe integration recommendations. This audit is **documentation and inspection**, not dependency installation or vendor-copy authorization.
+- **V3-02–05** first seek typed schemas/state/trace logic already owned by V2 and maintained packages. ALGOGEN algorithms can inform tests/contract design, not supply code until permitted.
+- **V3-06–08** explicitly compare existing renderer+adapter, bounded Manim backend, and any small reusable Code2Video renderer utilities before building a renderer from scratch. Include a short vertical spike and side-by-side output.
+- **V3-09–14** review Code2Video planning/ScopeRefine/evaluation modules before re-creating their mechanisms; adapt them to typed artifact IDs and fail-closed QA.
+- **Every coding-agent prompt** must include: "Inspect reusable upstream implementation and license first; identify exactly what to import/wrap/vendor and what remains genuinely new. Do not reimplement without evidence."
+
+**Optimization criterion:** minimize **total validated engineering time**, not lines of handwritten code. Prefer direct reuse when stable and testable, but choose small in-house adapters over pulling in a large incompatible framework. Measure correctness, visual quality, runtime, dependency size and ongoing repair burden.
 
 ## 9. Branch migration and V2 compatibility gate
 
