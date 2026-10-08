@@ -85,6 +85,13 @@ class Settings(BaseSettings):
 
     render_profile: Literal["production", "test"] = "production"
     enable_image_generation: bool = False
+    # V3-18: local, non-publishing developer preview only; DEFAULT OFF.
+    v3_binary_preview_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices(
+            "LEARNFLOW_V3_BINARY_PREVIEW", "v3_binary_preview_enabled"
+        ),
+    )
 
     def __repr__(self) -> str:
         data = self.model_dump()
