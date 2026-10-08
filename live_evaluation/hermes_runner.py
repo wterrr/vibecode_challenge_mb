@@ -555,12 +555,14 @@ class LiveHermesStructuredRunner:
                 + str(fanout_decision.get("message") or "blocked")
             )
 
+        print(f"LIVE_RESEARCH_FANOUT_BEGIN tasks={len(hermes_tasks)}", flush=True)
         with _isolated_research_workspace(agent):
             raw = delegate_task(
                 tasks=hermes_tasks,
                 background=False,
                 parent_agent=agent,
             )
+        print("LIVE_RESEARCH_FANOUT_FINISHED", flush=True)
         try:
             delegation_payload = json.loads(raw)
         except json.JSONDecodeError as exc:
@@ -650,6 +652,10 @@ class LiveHermesStructuredRunner:
             request_overrides["response_format"] = {"type": "json_object"}
         if self.model.startswith("google/gemma-4-"):
             request_overrides["reasoning_effort"] = "medium"
+        if self.model == "openai/gpt-6-luna":
+            # Pinned Hermes passes these overrides to native Research children.
+            # Luna Chat Completions function calling requires none.
+            request_overrides["reasoning_effort"] = "none"
 
         agent = AIAgent(
             base_url=self.base_url,
@@ -685,6 +691,7 @@ class LiveHermesStructuredRunner:
         if stage not in self._STAGE_RESERVATIONS:
             raise RuntimeError(f"live runner refuses unknown stage {stage!r}")
 
+        print(f"LIVE_STAGE_BEGIN stage={stage} model={self.model}", flush=True)
         self._reserve(stage)
         agent = self._agent(stage=stage)
         t0 = time.perf_counter()

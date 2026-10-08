@@ -975,7 +975,9 @@ def test_paid_luna_is_allowed_only_for_isolated_one_off_workflow(monkeypatch):
 def test_gpt6_luna_probe_omits_unsupported_temperature_but_preserves_strict_tools(monkeypatch):
     from live_evaluation import model_probe
 
-    assert model_probe._probe_sampling_parameters("openai/gpt-6-luna") == {}
+    assert model_probe._probe_sampling_parameters("openai/gpt-6-luna") == {
+        "reasoning_effort": "none"
+    }
     assert model_probe._probe_sampling_parameters("google/gemma-4-31b-it:free") == {
         "temperature": 0
     }
@@ -1024,6 +1026,43 @@ def test_gpt6_luna_probe_omits_unsupported_temperature_but_preserves_strict_tool
     assert result.passed and result.request_count == 2
     assert len(requests) == 2
     assert all("temperature" not in request for request in requests)
+    assert all(request["reasoning_effort"] == "none" for request in requests)
     assert all(request["provider"]["require_parameters"] for request in requests)
     assert requests[0]["tools"][0]["function"]["name"] == "probe_noop"
     assert requests[1]["messages"][2]["tool_call_id"] == "call_test"
+
+
+def test_gpt6_luna_hermes_agent_inherits_reasoning_none(monkeypatch):
+    import sys
+    from types import SimpleNamespace
+    from live_evaluation.hermes_runner import LiveHermesStructuredRunner
+
+    constructor_args = []
+
+    class FakeAgent:
+        def __init__(self, **kwargs):
+            constructor_args.append(kwargs)
+
+    monkeypatch.setitem(sys.modules, "run_agent", SimpleNamespace(AIAgent=FakeAgent))
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.setenv(
+        "GITHUB_REF", "refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot"
+    )
+    monkeypatch.setenv("LEARNFLOW_PAID_PILOT_MODEL", "openai/gpt-6-luna")
+
+    runner = LiveHermesStructuredRunner(
+        model="openai/gpt-6-luna",
+        api_key="fake-key",
+        repo_root=ROOT,
+    )
+    for stage in (
+        "research_orchestration",
+        "pedagogy_agent",
+        "script_agent",
+        "visual_director",
+    ):
+        agent = runner._agent(stage=stage)
+        assert agent is not None
+        assert constructor_args[-1]["model"] == "openai/gpt-6-luna"
+        assert constructor_args[-1]["request_overrides"]["reasoning_effort"] == "none"
+    assert constructor_args[0]["enabled_toolsets"] == ["delegation", "web"]

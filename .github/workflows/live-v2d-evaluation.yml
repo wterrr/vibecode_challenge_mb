@@ -128,7 +128,7 @@ jobs:
             echo "OPENROUTER_API_KEY secret is missing" >&2
             exit 2
           fi
-          "$HPY" scripts/run_live_v2d_pilot.py
+          "$HPY" -u scripts/run_live_v2d_pilot.py
 
       - name: Core Freeze guard
         shell: bash

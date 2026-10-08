@@ -144,14 +144,11 @@ def _extract_text(message: Any) -> str:
 
 
 def _probe_sampling_parameters(model: str) -> dict[str, Any]:
-    """Do not send unsupported sampling knobs to strict OpenRouter endpoints.
-
-    GPT-6 Luna does not advertise the 'temperature' parameter. Under
-    provider.require_parameters=True, including it causes a routing HTTP 404
-    before tools or structured-output capability can be evaluated.
-    """
+    """Match OpenRouter's strict Chat Completions parameter capabilities."""
     if model == "openai/gpt-6-luna":
-        return {}
+        # Chat Completions function calling requires reasoning_effort=none.
+        # This model also does not advertise the temperature sampling knob.
+        return {"reasoning_effort": "none"}
     return {"temperature": 0}
 
 
@@ -369,8 +366,14 @@ def select_live_model(
         if not model or model in seen:
             continue
         seen.add(model)
+        print(f"LIVE_MODEL_PROBE_BEGIN model={model}", flush=True)
         result = _probe_one(api_key=api_key, model=model)
         probes.append(result)
+        print(
+            f"LIVE_MODEL_PROBE_RESULT model={model} status={result.status} "
+            f"requests={result.request_count}",
+            flush=True,
+        )
         if result.passed:
             return ModelSelection(selected_model=model, probes=tuple(probes))
     raise ModelProbeError("no live model passed the OpenRouter capability probe", probes)
