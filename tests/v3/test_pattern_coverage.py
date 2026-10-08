@@ -105,6 +105,21 @@ def test_unique_render_centers_stable_if_state_declaration_order_mutated():
     assert stable_layout(spec,PROFILE)==stable_layout(changed,PROFILE)
 
 
+@pytest.mark.parametrize("topic_id",["lfb-006-cs","lfb-016-cs"])
+def test_all_state_boxes_clear_header_and_footer_bands(topic_id):
+    spec=_good(topic_id)
+    centers=stable_layout(spec,PROFILE)
+    # The drawn header divider is y=103/540*height; the footer starts at y=476/540*height.
+    y_divider=103*PROFILE.height/540
+    footer=476*PROFILE.height/540
+    half_h=26*PROFILE.height/540
+    for x,y in centers.values():
+        assert y-half_h > y_divider+8
+        assert y+half_h < footer-8
+        assert x-77*PROFILE.width/960 > 10
+        assert x+77*PROFILE.width/960 < PROFILE.width-10
+
+
 def test_hidden_concept_card_variant_and_prod_router_claim_rejected():
     _invalid("lfb-006-cs",lambda d:d.update(renderer_family="CONCEPT_CARD"))
     _invalid("lfb-006-cs",lambda d:d.update(no_concept_card_fallback=False))
