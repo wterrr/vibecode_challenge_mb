@@ -275,7 +275,7 @@ def test_rehashed_visually_wrong_oracle_state_rejected_after_decode(live,tmp_pat
     out=target/p.name
     subprocess.run([
         "ffmpeg","-hide_banner","-v","error","-y","-i",str(p),
-        "-vf","drawbox=x=205:y=170:w=210:h=55:color=white:t=fill",
+        "-vf","drawbox=x=120:y=110:w=400:h=110:color=white:t=fill",
         "-c:v","libx264","-preset","ultrafast","-pix_fmt","yuv420p",
         "-c:a","copy",str(out),
     ],check=True,timeout=70)
