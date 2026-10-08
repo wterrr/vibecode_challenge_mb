@@ -33,7 +33,8 @@ def main(out:Path)->None:
         json.dumps(inventory,ensure_ascii=False,indent=2)+"\n",encoding="utf-8"
     )
     assert inventory["module_count"]>=20
-    assert inventory["production_v3_imports_found"]==0
+    callers={caller for row in inventory["rows"] for caller in row["production_callers"]}
+    assert callers=={"app/pipeline/v3_preview.py"}  # sole guarded app entrypoint
     assert receipt.publication=="PUBLISH_BLOCKED"
     assert receipt.web_pipeline_connected is False
     print("V3_INTEGRATION_ROUTE=PASS legacy_router=SELECTED_UNRENDERABLE "
