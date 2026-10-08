@@ -7,6 +7,7 @@ renderer instructions. V3-05 replay + semantic binding is always re-run.
 from __future__ import annotations
 
 import hashlib
+import os
 from pathlib import Path
 import subprocess
 import time
@@ -225,6 +226,8 @@ def render_certified_binary_search_video(*, trace: BinarySearchTrace, plan,
                                           verify_decoded: bool=True) -> SequenceRenderEvidence:
     """No fallback to CONCEPT_CARD. Re-certification is mandatory at the boundary."""
     start=time.monotonic()
+    if not verify_decoded:
+        raise SemanticContractError("V3_06_PIXEL_VERIFICATION_REQUIRED")
     if not isinstance(profile,SequenceRenderProfile):
         profile=SequenceRenderProfile.model_validate(profile)
     certified=certify_and_route_binary_search(
@@ -305,7 +308,13 @@ def render_certified_binary_search_video(*, trace: BinarySearchTrace, plan,
             deltas.append(round(delta,3))
             if delta<MIN_FRAME_DELTA:
                 raise SemanticContractError(f"V3_06_NO_SEMANTIC_PIXEL_CHANGE delta={delta:.3f}")
-        tmp.rename(output)
+        # Atomic no-clobber publication: do not overwrite a concurrently
+        # created target (including a late symlink).
+        try:
+            os.link(tmp,output)
+        except FileExistsError as exc:
+            raise SemanticContractError("V3_06_OUTPUT_RACE_DETECTED") from exc
+        tmp.unlink()
     except Exception:
         if proc and proc.poll() is None: proc.kill()
         if proc: proc.wait()

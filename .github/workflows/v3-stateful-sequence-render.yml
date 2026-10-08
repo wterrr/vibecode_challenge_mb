@@ -1,0 +1,55 @@
+name: V3-06 Stateful Sequence Renderer Offline
+
+on:
+  push:
+    branches:
+      - chatgpt/v3-06-stateful-sequence-renderer
+  pull_request:
+    paths:
+      - "learnflow_v3/**"
+      - "tests/v3/**"
+      - "scripts/verify_v3_binary_search_render.py"
+      - ".github/workflows/v3-stateful-sequence-render.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  real-mp4-golden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Reuse FFmpeg, Pillow and bundled DejaVu font
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+          python -m pip install "pydantic>=2" pyyaml pytest pillow "kiwisolver==1.5.1"
+      - name: V3-02/03/04/05/06 real MP4 and mutation regression
+        run: python -m pytest -q --confcutdir=tests/v3 tests/v3/test_contracts.py tests/v3/test_signal_preservation.py tests/v3/test_pattern_router.py tests/v3/test_binary_search_trace.py tests/v3/test_stateful_sequence_renderer.py
+      - name: V2 reuse regression
+        run: |
+          python -m pytest -q --confcutdir=tests/v2 tests/v2/test_concept_registry.py tests/v2/test_scenegraph_validation.py tests/v2/test_repair_v2_13_contracts.py
+          python -m pytest -q --confcutdir=tests/hermes tests/hermes/test_visual_director.py tests/hermes/test_final_v2_semantic_consistency.py
+      - name: Benchmark and frozen Core
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Generate REAL clips, posters and decoded evidence
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_06_golden"
+          python scripts/verify_v3_binary_search_render.py --output-dir "$RUNNER_TEMP/v3_06_golden" --width 960 --height 540 --fps 18 --seconds-per-step 0.8
+          ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate -of default=noprint_wrappers=1 "$RUNNER_TEMP/v3_06_golden/binary_search_duplicate.mp4"
+          find "$RUNNER_TEMP/v3_06_golden" -maxdepth 1 -type f -printf '%f %k KiB\n'
+      - name: Upload allowlisted golden MP4 + PNG + JSON only
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-06-certified-binary-search-golden
+          path: ${{ runner.temp }}/v3_06_golden/
+          if-no-files-found: error
+          retention-days: 30
