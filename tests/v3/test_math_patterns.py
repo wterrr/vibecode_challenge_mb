@@ -14,6 +14,7 @@ from learnflow_v2.scenegraph import SceneGraph
 from learnflow_v3.blackboard_style import BLACK, cmu_font
 from learnflow_v3.math_renderer import (
     EquationDerivation, FunctionGraph, parse_polynomial, graph_source,
+    pretty_polynomial, pretty_expression,
     verify_function_graph, verify_equation_derivation,
     draw_function_frame, draw_equation_frame,
     render_function_graph, render_equation_derivation,
@@ -91,6 +92,14 @@ def test_algebra_symbolic_equivalence_not_sampled_heuristic():
     assert parse_polynomial("x*x+2*x+2*x+4")==(4,4,1)
     assert parse_polynomial("x**2+4*x+5")!=(4,4,1)
 
+
+
+def test_math_display_uses_conventional_not_programming_notation():
+    assert pretty_polynomial((-4,0,1))=="f(x) = x² − 4"
+    assert pretty_polynomial((0,0,0))=="f(x) = 0"
+    assert pretty_expression("(x+2)*(x+2)")=="(x + 2)(x + 2)"
+    assert pretty_expression("x*x+2*x+2*x+4")=="x² + 2x + 2x + 4"
+    assert pretty_expression("x**2+4*x+4")=="x² + 4x + 4"
 
 def test_equation_source_typed_chain_verified():
     graph,spec=equation_demo()
