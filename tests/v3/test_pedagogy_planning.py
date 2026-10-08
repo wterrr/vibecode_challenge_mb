@@ -96,11 +96,12 @@ def test_wrong_correction_segment_claims_do_not_pass():
 
 def test_rehashed_fact_report_cannot_turn_blocked_claim_into_approved_source():
     data=inputs()
-    raw=data["fact_report"].model_dump(mode="json")
-    for claim in raw["claims"]:
-        if claim["claim_id"]=="C2":
-            claim["issues"]=[]
-    data["fact_report"]=type(data["fact_report"]).model_validate(raw)
+    # computed_field values are derived, not valid constructor inputs.
+    # Rebuild typed claims instead of feeding serialized derived fields back.
+    report=data["fact_report"]
+    changed=tuple(c.model_copy(update={"issues":()}) if c.claim_id=="C2" else c
+                  for c in report.claims)
+    data["fact_report"]=report.model_copy(update={"claims":changed})
     with pytest.raises(SemanticContractError,match="UPSTREAM_PEDAGOGY_SCRIPT_GATE_FAILED"):
         compile_pedagogy_and_hero(**data)
 
