@@ -199,8 +199,17 @@ def refine_single_track(*,intent:LocalRepairIntent,baseline:TemporalLayoutPlan,
     # Prove the bad plan is actually rejected by the original V3-11 oracle.
     try:
         certify_temporal_layout(candidate)
-    except (SemanticContractError,ValueError):
-        pass
+    except (SemanticContractError,ValueError) as exc:
+        problem=str(exc)
+        category_tokens={
+            "TEMPORAL_OCCLUSION":("FRAME_COLLISION","SWEPT_COLLISION","INTERMEDIATE_COLLISION"),
+            "SUBTITLE_INTRUSION":("SUBTITLE_INTRUSION","CAPTION_OUTSIDE_RESERVED_BAND"),
+            "FRAME_CLIPPING":("FRAME_CLIPPING",),
+            "TEXT_OVERFLOW":("INTERMEDIATE_TEXT_OVERFLOW",),
+            "EXCESSIVE_MOTION":("EXCESSIVE_MOTION",),
+        }
+        if not any(token in problem for token in category_tokens[intent.defect_category]):
+            _block("DEFECT_CATEGORY_NOT_PROVEN_BY_ORACLE")
     else:
         _block("CANDIDATE_NOT_PROVEN_DEFECTIVE")
     raw=_result(intent,baseline,candidate,success=False,
