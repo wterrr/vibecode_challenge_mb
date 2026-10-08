@@ -129,7 +129,7 @@ def test_duplicate_graph_identity_rejected():
 def test_guarded_branch_and_terminal_semantics_fail_closed():
     _invalid("lfb-016-cs",lambda d:d["transitions"][0].update(target_id="invented"))
     _invalid("lfb-016-cs",lambda d:d["transitions"][0].update(source_id="commit"))
-    _invalid("lfb-016-cs",lambda d:d["states"][-1].update(terminal=False))
+    _invalid("lfb-016-cs",lambda d:next(x for x in d["states"] if x["state_id"]=="commit").update(terminal=False))
     _invalid("lfb-016-cs",lambda d:d["transitions"].append({
         "transition_id":"extra","source_id":"commit","target_id":"prepare","trigger":"undo"}))
     _invalid("lfb-016-cs",lambda d:d["transitions"].append({
