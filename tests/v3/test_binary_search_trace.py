@@ -52,6 +52,14 @@ def _binding():
         trace=trace, pattern=bundle["pattern"], beat_refs=beats,
     )
     bundle["ledger"] = ledger
+    example = "Binary search for 3 in [3]"
+    script_dict = bundle["script"].model_dump(mode="json")
+    script_dict["segments"][0]["spoken_text"] = example
+    script_dict["segments"][0]["subtitle_text"] = example
+    bundle["script"] = type(bundle["script"]).model_validate(script_dict)
+    sb_dict = bundle["storyboard"].model_dump(mode="json")
+    sb_dict["scenes"][0]["visual_intent"] = example
+    bundle["storyboard"] = type(bundle["storyboard"]).model_validate(sb_dict)
     return bundle, trace
 
 
@@ -314,3 +322,53 @@ def test_no_api_no_renderer_implementation_added():
     assert "OPENROUTER_API_KEY" not in src
     assert "render_scene_video" not in src
     assert "subprocess" not in src
+
+
+
+def test_trace_algorithm_correct_but_wrong_taught_target_must_fail_closed():
+    bundle, trace = _binding()
+    sb = bundle["storyboard"].model_dump(mode="json")
+    sb["scenes"][0]["visual_intent"] = "Binary search for 4 in [3]"
+    bundle["storyboard"] = type(bundle["storyboard"]).model_validate(sb)
+    with pytest.raises(SemanticContractError, match="BINARY_SEARCH_SEMANTIC_INPUT_MISMATCH"):
+        certify_and_route_binary_search(trace=trace, **{
+            key: value for key, value in bundle.items() if key != "verified_trace_refs"
+        })
+
+
+def test_unmentioned_binary_search_example_cannot_be_inferred_from_valid_trace():
+    bundle, trace = _binding()
+    d = bundle["script"].model_dump(mode="json")
+    d["segments"][0]["spoken_text"] = "Today we learn binary search."
+    d["segments"][0]["subtitle_text"] = "Today we learn binary search."
+    bundle["script"] = type(bundle["script"]).model_validate(d)
+    with pytest.raises(SemanticContractError, match="BINARY_SEARCH_CANONICAL_INPUT_UNGROUNDED"):
+        certify_and_route_binary_search(trace=trace, **{
+            key: value for key, value in bundle.items() if key != "verified_trace_refs"
+        })
+
+
+def test_malformed_explicit_example_rejected_not_silently_discarded():
+    from learnflow_v3.binary_search_trace import _explicit_binary_search_example
+    with pytest.raises(SemanticContractError, match="EXAMPLE_INVALID_INTEGER"):
+        _explicit_binary_search_example("Binary search for 3 in [3, oops]")
+    with pytest.raises(SemanticContractError, match="EXAMPLE_AMBIGUOUS_OR_MALFORMED"):
+        _explicit_binary_search_example("Binary search for 3 in [1] and binary search for 5 in [5]")
+    assert _explicit_binary_search_example("Binary search for 5 in []").values == ()
+
+
+def test_explicit_registry_example_if_present_must_match_trace():
+    from learnflow_v2.concepts.schema import ConceptEntry
+    from learnflow_v2.concepts import ConceptRegistry
+    from learnflow_v3.binary_search_trace import verify_binary_search_teaching_binding
+    bundle, trace = _binding()
+    registry = ConceptRegistry()
+    registry.register(ConceptEntry(
+        concept_id="c_alg", canonical_key="concept:algorithm",
+        label="Worked example: Binary search for 4 in [3]",
+    ))
+    with pytest.raises(SemanticContractError, match="SEMANTIC_INPUT_MISMATCH"):
+        verify_binary_search_teaching_binding(
+            trace=trace, pattern=bundle["pattern"], registry=registry,
+            script=bundle["script"], storyboard=bundle["storyboard"],
+        )

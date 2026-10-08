@@ -6,6 +6,7 @@ A V3 VERIFIED_TRACE ref alone is never treated as algorithmic proof.
 from __future__ import annotations
 
 from bisect import bisect_left
+import re
 from typing import Literal
 
 from pydantic import Field, StrictInt, model_validator
@@ -248,6 +249,65 @@ def verify_binary_search_ledger(
     return proof
 
 
+def _explicit_binary_search_example(value: str) -> BinarySearchInput | None:
+    """Parse one bounded, unambiguous explicit teaching example; never infer."""
+    if "binary search for" not in value.casefold():
+        return None
+    expression = re.compile(
+        r"\bbinary\s+search\s+for\s+(-?\d+)\s+in\s+\[([^\]]*)\]",
+        re.IGNORECASE,
+    )
+    matches = expression.findall(value)
+    if len(matches) != 1:
+        raise SemanticContractError("BINARY_SEARCH_EXAMPLE_AMBIGUOUS_OR_MALFORMED")
+    target, raw_values = matches[0]
+    parts = [s.strip() for s in raw_values.split(",")] if raw_values.strip() else []
+    if any(not re.fullmatch(r"-?\d+", x) for x in parts):
+        raise SemanticContractError("BINARY_SEARCH_EXAMPLE_INVALID_INTEGER")
+    try:
+        return BinarySearchInput(values=tuple(int(x) for x in parts), target=int(target))
+    except ValueError as exc:
+        raise SemanticContractError("BINARY_SEARCH_EXAMPLE_INVALID_INPUT") from exc
+
+
+def verify_binary_search_teaching_binding(*, trace: BinarySearchTrace, pattern: VisualPatternSpec,
+                                          registry, script, storyboard) -> None:
+    """Require actual matching array/target in script AND storyboard.
+
+    Neither correctness of the algorithm alone nor an LLM's verified flag
+    can prove that the taught example is the same as the trace input.
+    """
+    source_ids = {s.removeprefix("script:") for s in pattern.source_refs if s.startswith("script:")}
+    script_examples = []
+    for segment in script.segments:
+        if segment.segment_id in source_ids:
+            for value in (segment.spoken_text, segment.subtitle_text):
+                parsed = _explicit_binary_search_example(value)
+                if parsed is not None:
+                    script_examples.append(parsed)
+    storyboard_examples = []
+    for scene in storyboard.scenes:
+        if scene.scene_id == pattern.scene_id:
+            parsed = _explicit_binary_search_example(scene.visual_intent)
+            if parsed is not None:
+                storyboard_examples.append(parsed)
+    if not script_examples or not storyboard_examples:
+        raise SemanticContractError("BINARY_SEARCH_CANONICAL_INPUT_UNGROUNDED")
+    registry_examples = []
+    for ref in pattern.concept_refs:
+        try:
+            label = registry.get(ref.concept_id).label
+        except Exception as exc:
+            raise SemanticContractError("BINARY_SEARCH_CONCEPT_REF_UNKNOWN") from exc
+        parsed = _explicit_binary_search_example(label)
+        if parsed is not None:
+            registry_examples.append(parsed)
+    if any(candidate != trace.query for candidate in (
+        *script_examples, *storyboard_examples, *registry_examples
+    )):
+        raise SemanticContractError("BINARY_SEARCH_SEMANTIC_INPUT_MISMATCH")
+
+
 def certify_and_route_binary_search(
     *,
     trace: BinarySearchTrace,
@@ -263,6 +323,10 @@ def certify_and_route_binary_search(
     beat_refs = tuple(b.beat_id for b in plan.beats)
     proof = verify_binary_search_ledger(
         trace=trace, pattern=pattern, ledger=ledger, beat_refs=beat_refs,
+    )
+    verify_binary_search_teaching_binding(
+        trace=trace, pattern=pattern, registry=registry,
+        script=script, storyboard=storyboard,
     )
     route = route_visual_pattern(
         plan=plan, pattern=pattern, ledger=ledger,
