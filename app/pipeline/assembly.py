@@ -65,10 +65,13 @@ class VideoAssembler:
         fps: int = 24,
         font_path: str = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         timeout_seconds: float = 180.0,
+        subtitle_force_style: str | None = None,
     ):
         self.fps = fps
         self.font_path = font_path
         self.timeout_seconds = timeout_seconds
+        # V3-19 opt-in override; None preserves the existing V2 font/size EXACTLY.
+        self.subtitle_force_style = subtitle_force_style
 
     async def assemble(
         self,
@@ -134,6 +137,12 @@ class VideoAssembler:
             f"Fontname=DejaVu Sans,Fontsize=22,PrimaryColour=&H00FFFFFF&,"
             f"OutlineColour=&H00000000&,Outline=2,Shadow=0,MarginV=36,Alignment=2"
         )
+        if self.subtitle_force_style is not None:
+            if not self.subtitle_force_style or any(c in self.subtitle_force_style for c in ("'", "\\", "\n", "\r")):
+                raise PipelineExecutionError(
+                    code="assembly_failed",message="Invalid subtitle style",
+                    stage=JobStage.ASSEMBLING,retryable=False)
+            force_style=self.subtitle_force_style
         sub_filter = f"subtitles='{escaped_srt_path}':force_style='{force_style}'"
 
         # If srt file has no cues, avoid applying empty subtitle filter which might warn or fail
