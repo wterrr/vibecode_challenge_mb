@@ -155,9 +155,22 @@ def _encode_scene(*,source:BinaryLessonSource,spec:dict,n:int,
                    "WORKED_EXAMPLE":"COMPARE THE MIDDLE",
                    "RECAP":"WHAT WE LEARNED"}[role]
             d.text((12,5),phase,font=cmu_font(14),fill=CYAN)
-            # Reserve a clean baseline for the REAL muxed subtitles;
-            # never double print faux narration in scene frames.
-            d.rectangle((0,H-60,W,H),fill=BLACK)
+            # Reserve a strict two-zone hierarchy: semantic action lives
+            # at Y=252..270, actual burned subtitles only at Y>=295. The
+            # original V3-06 bottom labels would collide with subtitles;
+            # intentionally mask and re-express the certified action.
+            d.rectangle((0,244,W,H),fill=BLACK)
+            d.line((24,245,W-24,245),fill=(45,50,58),width=1)
+            step=source.trace.steps[spec["step"]]
+            action=(
+                ("SORTED INPUT" if role=="INTRODUCTION" else "COMPARE THE MIDPOINT")
+                if role in ("INTRODUCTION","EXPLANATION") else
+                ("LEFTMOST MATCH: "+str(source.trace.result_index)
+                 if role=="RECAP" and source.trace.result_index is not None else
+                 ("TARGET NOT PRESENT" if role=="RECAP" else
+                  step.action.replace("_"," ")))
+            )
+            d.text((24,252),action,font=cmu_font(15),fill=CYAN)
             # Draw a small progress indicator based on elapsed spoken frames.
             d.rectangle((0,H-5,round(W*progress),H-1),fill=CYAN)
             if proc.stdin is None:_block("FFMPEG_PIPE_CLOSED")
@@ -346,7 +359,13 @@ def build_narrated_lesson(*,source:BinaryLessonSource,out:Path,
         if fault=="AFTER_SCENES_RENDERED":
             _block("INJECTED_FAIL_AFTER_SCENES")
         staged_mp4=stage/"narrated.pending.mp4"
-        assembler=VideoAssembler(fps=FPS,timeout_seconds=240)
+        assembler=VideoAssembler(
+            fps=FPS,timeout_seconds=240,
+            subtitle_force_style=(
+                "Fontname=CMU Serif,Fontsize=14,PrimaryColour=&H00FFFFFF&,"
+                "OutlineColour=&H00000000&,Outline=1,Shadow=0,MarginV=18,Alignment=2"
+            ),
+        )
         asyncio.run(assembler.assemble(
             job_id="v3_19_local_demo",scene_video_paths=scene_files,
             timeline=timeline,output_path=staged_mp4,subtitles_path=stage/"subtitles.srt"))
