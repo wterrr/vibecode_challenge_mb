@@ -18,19 +18,20 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 # V2 uses the same open Pillow + FFmpeg stack; avoid importing
 # app.rendering.__init__ which eagerly pulls provider SDKs and settings.
 # Project-owned palette constants are mirrored for an isolated CPU renderer.
-COLOR_BG = (15, 23, 42)
-COLOR_PRIMARY = (56, 189, 248)
-COLOR_ACCENT = (52, 211, 153)
-COLOR_HIGHLIGHT = (251, 191, 36)
-COLOR_TEXT_MAIN = (248, 250, 252)
-COLOR_TEXT_MUTED = (148, 163, 184)
+from .blackboard_style import BLACK, WHITE, GREY, YELLOW, CYAN, GREEN, cmu_font
+COLOR_BG = BLACK
+COLOR_PRIMARY = CYAN
+COLOR_ACCENT = GREEN
+COLOR_HIGHLIGHT = YELLOW
+COLOR_TEXT_MAIN = WHITE
+COLOR_TEXT_MUTED = GREY
 from learnflow_v2.repair import compute_content_hash
 from .binary_search_trace import (
     BinarySearchTrace, certify_and_route_binary_search,
 )
 from .models import SemanticContractError
 
-RENDERER_VERSION = "v3-06-certified-sequence-v1"
+RENDERER_VERSION = "v3-06-certified-sequence-blackboard-v2"
 MAX_VISIBLE_ITEMS = 16
 MAX_FRAMES = 960
 MIN_FRAME_DELTA = 1.25
@@ -123,14 +124,7 @@ def _validate_visual_labels(profile: SequenceRenderProfile, values: tuple[int, .
 
 
 def _font(size: int) -> ImageFont.ImageFont:
-    size=max(11,round(size))
-    for path in ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-                 "/usr/share/fonts/dejavu/DejaVuSans.ttf","DejaVuSans.ttf"):
-        try:
-            return ImageFont.truetype(path, size=size)
-        except OSError:
-            continue
-    raise SemanticContractError("V3_06_DEJAVU_FONT_UNAVAILABLE")
+    return cmu_font(max(11, round(size)))
 
 
 def _center_text(draw: ImageDraw.ImageDraw, x: int, y: int, value: str,
@@ -164,9 +158,10 @@ def draw_binary_search_frame(*, trace: BinarySearchTrace, step_index: int,
     sx, sy = w/960, h/540
     image = Image.new("RGB", (w,h), COLOR_BG)
     d=ImageDraw.Draw(image)
+    FAINT_COLOR = (61,61,61)
     text=_font(24*sy); title=_font(34*sy); small=_font(17*sy); valfont=_font(25*sy)
     pad=round(60*sx)
-    d.line((pad,round(97*sy),w-pad,round(97*sy)),fill=(41,62,80),width=max(1,round(2*sy)))
+    d.line((pad,round(97*sy),w-pad,round(97*sy)),fill=FAINT_COLOR,width=max(1,round(2*sy)))
     d.text((pad,round(28*sy)),"BINARY SEARCH",font=title,fill=COLOR_TEXT_MAIN)
     d.text((pad,round(71*sy)),"Verified leftmost-index trace  /  immutable item IDs",font=small,fill=COLOR_TEXT_MUTED)
     _center_text(d,w-round(125*sx),round(56*sy),f"TARGET  {trace.query.target}",text,COLOR_HIGHLIGHT)
@@ -193,13 +188,13 @@ def draw_binary_search_frame(*, trace: BinarySearchTrace, step_index: int,
             ismid = step.phase=="COMPARE" and step.mid==i
             found = step.phase=="COMPLETE" and trace.result_index==i
             if found:
-                fill,edge=(18,91,74),COLOR_ACCENT
+                fill,edge=(18,56,39),COLOR_ACCENT
             elif eligible:
-                fill,edge=(25,47,72),(65,113,148)
+                fill,edge=(20,20,20),(115,115,115)
             else:
-                fill,edge=(19,29,42),(41,58,72)
+                fill,edge=(7,7,7),(49,49,49)
             if ismid and progress>=0.32:
-                fill,edge=(73,60,22),COLOR_HIGHLIGHT
+                fill,edge=(54,47,9),COLOR_HIGHLIGHT
             rect=(x-boxhalf,board_y-round(34*sy),x+boxhalf,board_y+round(34*sy))
             d.rounded_rectangle(rect,radius=round(10*sy),fill=fill,outline=edge,width=max(2,round(2*sy)))
             _center_text(d,x,board_y-1,str(v),valfont,COLOR_TEXT_MAIN if eligible or found or ismid else (96,115,134))
@@ -220,7 +215,7 @@ def draw_binary_search_frame(*, trace: BinarySearchTrace, step_index: int,
         marker(high,round(215*sy),"HIGH",(166,146,250))
         if step.phase=="COMPARE" or (step.phase=="COMPLETE" and step.candidate_index is not None):
             marker(pointer,round(254*sy),"MID" if step.phase=="COMPARE" else "FOUND",COLOR_HIGHLIGHT if step.phase=="COMPARE" else COLOR_ACCENT)
-    d.line((pad,round(376*sy),w-pad,round(376*sy)), fill=(45,66,83), width=max(1,round(2*sy)))
+    d.line((pad,round(376*sy),w-pad,round(376*sy)), fill=FAINT_COLOR, width=max(1,round(2*sy)))
     if step.phase=="COMPARE":
         detail=f"LOW {step.low}    HIGH {step.high}    MID {step.mid}    VALUE {step.observed}"
         decision=step.action.replace("_"," ")
