@@ -626,6 +626,20 @@ Observed FIRST RUN (before subtitle fix): 7 separate scenes, 44.833 s, 538 video
 
 **Caveat:** eSpeak-NG uses an open-source distro voice/program but commercial downstream rights require separate verification; this is offline engineering evidence only, not guaranteed commercial voice licensing. Human instructional quality, pronunciation, forced phoneme alignment, scene-by-scene semantic adequacy, full V3 product release readiness and 3Blue1Brown parity are NOT established. V3-16 human pilot and V3-17 publish authority remain BLOCKED; no production promotion.
 
+### 9.23 V3-20 — Narration–Visual Event Alignment & Lesson Quality Gate (2026-10-08)
+
+**Stacked PR #54 on PR #53 HEAD 6847850f48249d82b857380bec8751f2466fa964.** Main a06e0b0b5f35e9147b4081da7ed7f7934affe0c6 and V2 Core unchanged; no merge, deployment, paid API or users. Code-HEAD CI proof and final before/after artifact pending.
+
+**Actual V3-19 media review:** original final H264/AAC 640x360, 12fps, 538 frames, 44.833sec. At timestamp **14.5s**, the action DISCARD LEFT was already on screen even though the voice was only announcing observed midpoint, before explaining Move the low bound. Two duplicate-match steps had similar early candidate/action labels (~20–33sec). The exact timestamped issue matrix and 16-frame video contact-sheet review are documented in reports/v3_20_narration_visual_alignment_audit.md. Video quality is NOT the same as instruction correctness; original trace was mathematically correct.
+
+**Reuse-first V3-20 method:** original source-grounded V3-05 trace and V3-06 H264 blackboard render, V3-19 local espeak-ng WAV, actual PCM sample counts, FFmpeg VideoAssembler, SRT, V3-10 beat pixel QA, V3-12 publication BLOCKED. New learnflow_v3/event_alignment.py emits OBSERVE and APPLY for every oracle-certified COMPARE step, retains beat, segment, claim, object and trace identities. OBSERVE remains at old LOW/HIGH/MID; APPLY only starts next certified state at start of independently synthesised, physically counted next WAV utterance. No character-proportional/fabricated word timestamps. Typed source/event/frame/PCM/SRT proof must replay even when claimant re-hashes input or shifts audio; source-expected frames decoded and checked. V3-19 old endpoint remains unchanged by default.
+
+**Scope honesty:** exact phrase/utterance boundary alignment, NOT recognized word/phoneme onsets, independent transcript-as-heard ASR, expert aesthetics, independent pedagogy or human comprehension. All corresponding claims UNMEASURED, PUBLISH_BLOCKED. eSpeak-NG engine GPL-3.0-or-later (official espeak-ng GitHub); per-voice/output distribution rights require separate review. No external API or downloaded ASR checkpoint.
+
+**App:** LEARNFLOW_V3_EVENT_ALIGNMENT feature flag OFF by default, requires BOTH existing V3-18/19 preview flags; only local development/test; production refuses; unsupported family HTTP 422 ABSTAIN without ConceptCard. POST /api/v3/offline/binary-search-event-aligned uses existing app.state.pipeline wrapper, receipt only, never final.mp4, normal /api/jobs or public URL. Tests tests/v3/test_event_alignment_quality.py cover real HTTP video/audio/source and fake timestamp, missing WAV/proof, wrong segment state, forced word-alignment fraud, shifted SRT, crash-after-write and production/remote guards. CLI scripts/verify_v3_event_alignment.py generates real same-source before/after H264/AAC/SRT and machine event proofs. New CI .github/workflows/v3-event-alignment.yml runs antecedents and original V2/Hermes. First CI #37797446360 FAIL from verifier still replaying original seven-scene source against the new multi-utterance source; fixed verifier selection rather than weakening source/pixel QA.
+
+**NO-GO outside engineering:** actual audio rights, full human quality/learning study, word forced alignment, production routing and release authorization remain BLOCKED/UNMEASURED. Do not merge stacked PRs or claim 3Blue1Brown equivalence.
+
 ## 10. Security, governance and cost
 
 - No provider calls in V3 unit/fixture/offline CI. Isolate paid integration workflow with manual confirm and per-run budget, as a *new authorized protocol only*.
