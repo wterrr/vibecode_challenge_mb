@@ -970,3 +970,60 @@ def test_paid_luna_is_allowed_only_for_isolated_one_off_workflow(monkeypatch):
     monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
     with pytest.raises(ValueError, match="Paid OpenRouter model"):
         require_free_openrouter_model(luna)
+
+
+def test_gpt6_luna_probe_omits_unsupported_temperature_but_preserves_strict_tools(monkeypatch):
+    from live_evaluation import model_probe
+
+    assert model_probe._probe_sampling_parameters("openai/gpt-6-luna") == {}
+    assert model_probe._probe_sampling_parameters("google/gemma-4-31b-it:free") == {
+        "temperature": 0
+    }
+
+    requests = []
+
+    class Response:
+        def __init__(self, payload):
+            self.payload = payload
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def read(self):
+            return json.dumps(self.payload).encode("utf-8")
+
+    def fake_urlopen(request, timeout):
+        payload = json.loads(request.data.decode("utf-8"))
+        requests.append(payload)
+        if len(requests) == 1:
+            return Response({
+                "choices": [{
+                    "message": {
+                        "content": "",
+                        "tool_calls": [{
+                            "id": "call_test",
+                            "type": "function",
+                            "function": {"name": "probe_noop", "arguments": "{}"},
+                        }],
+                    }
+                }]
+            })
+        return Response({
+            "choices": [{
+                "message": {
+                    "content": json.dumps(model_probe._SPECIALIST_PROBE_OBJECT),
+                }
+            }]
+        })
+
+    monkeypatch.setattr(model_probe, "urlopen", fake_urlopen)
+    result = model_probe._probe_one(api_key="fake-key", model="openai/gpt-6-luna")
+    assert result.passed and result.request_count == 2
+    assert len(requests) == 2
+    assert all("temperature" not in request for request in requests)
+    assert all(request["provider"]["require_parameters"] for request in requests)
+    assert requests[0]["tools"][0]["function"]["name"] == "probe_noop"
+    assert requests[1]["messages"][2]["tool_call_id"] == "call_test"

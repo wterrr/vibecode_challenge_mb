@@ -143,6 +143,18 @@ def _extract_text(message: Any) -> str:
     return ""
 
 
+def _probe_sampling_parameters(model: str) -> dict[str, Any]:
+    """Do not send unsupported sampling knobs to strict OpenRouter endpoints.
+
+    GPT-6 Luna does not advertise the 'temperature' parameter. Under
+    provider.require_parameters=True, including it causes a routing HTTP 404
+    before tools or structured-output capability can be evaluated.
+    """
+    if model == "openai/gpt-6-luna":
+        return {}
+    return {"temperature": 0}
+
+
 def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> ModelProbeResult:
     """Probe both native function calling and structured specialist JSON.
 
@@ -210,7 +222,7 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
         "model": model,
         "messages": [{"role": "user", "content": tool_prompt}],
         "max_tokens": 4096,
-        "temperature": 0,
+        **_probe_sampling_parameters(model),
         "tools": [tool_definition],
         # Match pinned Hermes ChatCompletionsTransport: expose tools but do not
         # force tool_choice. Passing a forced function here rejects otherwise
@@ -289,7 +301,7 @@ def _probe_one(*, api_key: str, model: str, timeout_seconds: float = 30.0) -> Mo
             {"role": "user", "content": final_prompt},
         ],
         "max_tokens": 4096,
-        "temperature": 0,
+        **_probe_sampling_parameters(model),
         "provider": {"require_parameters": True},
     }
     if model.startswith(_RESPONSE_FORMAT_MODELS):
