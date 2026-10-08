@@ -108,6 +108,13 @@ def test_full_24_attempt_denominator_including_failures_and_unmeasured_cost(seed
     assert result.provider_cost_total_usd is None
     assert result.wall_seconds_total is None
     assert result.critical_safety_errors is None
+    assert result.primary_quadratic_weighted_kappa is not None
+    assert 0<=result.primary_quadratic_weighted_kappa<=1
+    assert len(result.stratified_effects)==9
+    assert sum(x.topic_count for x in result.stratified_effects if x.group=="domain")==12
+    assert sum(x.topic_count for x in result.stratified_effects if x.group=="difficulty")==12
+    assert result.provider_cost_p50_usd is None and result.provider_cost_p95_usd is None
+    assert result.wall_seconds_p50 is None and result.wall_seconds_p95 is None
     assert result.independent_human_data is False
     assert result.real_pilot_pass is False and result.publication_blocked
     assert result.actual_human_quality_effect=="UNMEASURED"
@@ -293,3 +300,30 @@ def test_actual_cli_outputs_only_public_blind_template_and_seeded_analysis(tmp_p
     assert seeded_data["evidence_type"]=="AUTHOR_SEEDED_SYNTHETIC_NO_HUMAN_NO_REAL_VIDEO"
     assert seeded_data["rehearsal_analysis"]["real_pilot_pass"] is False
     assert analysis.status=="AUTHOR_SEEDED_REHEARSAL_ONLY_NOT_HUMAN_EVIDENCE"
+
+
+def test_complete_synthetic_cost_and_runtime_percentiles_are_transparent(
+    seeded,protocol,manifest
+):
+    attempts,ratings,_=seeded
+    all_observed=tuple(a.model_copy(update={
+        "actual_usd_cost":1.25,"wall_seconds":2.5,
+    }) for a in attempts)
+    analysis=rehearsal_analysis(
+        protocol=protocol,manifest=manifest,attempts=all_observed,ratings=ratings,
+    )
+    assert analysis.provider_cost_total_usd==30.0
+    assert analysis.wall_seconds_total==60.0
+    assert analysis.provider_cost_p50_usd==analysis.provider_cost_p95_usd==1.25
+    assert analysis.wall_seconds_p50==analysis.wall_seconds_p95==2.5
+    assert analysis.real_pilot_pass is False
+
+
+def test_kappa_and_strata_are_fixed_to_primary_human_scoring_structure(seeded):
+    result=seeded[2]
+    assert result.primary_quadratic_weighted_kappa is not None
+    assert len(result.stratified_effects)==9
+    assert {s.group for s in result.stratified_effects}=={"domain","difficulty"}
+    assert all(set((s.clarity_mean_paired_delta,s.representation_mean_paired_delta))
+               for s in result.stratified_effects)
+    assert result.independent_human_data is False
