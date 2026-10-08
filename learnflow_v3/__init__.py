@@ -7,6 +7,7 @@ from .models import (
     VisualPatternSpec, VisualTeachingConstraints, VisualTeachingPlan,
 )
 from .validation import validate_semantic_bundle
+from .pattern_router import RouteReason, RouteStatus, VariantAttempt, VisualPatternRoute, route_visual_pattern
 
 __all__ = [
     "V3_SCHEMA_VERSION", "CanonicalConceptRef", "LedgerStep",
@@ -14,4 +15,5 @@ __all__ = [
     "SemanticObject", "StateLedger", "StateSource", "StateSourceKind",
     "TeachingBeat", "TeachingSection", "VisualPatternSpec",
     "VisualTeachingConstraints", "VisualTeachingPlan", "validate_semantic_bundle",
+    "RouteReason", "RouteStatus", "VariantAttempt", "VisualPatternRoute", "route_visual_pattern",
 ]
