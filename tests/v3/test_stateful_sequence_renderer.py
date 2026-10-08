@@ -155,3 +155,15 @@ def test_unchecked_pixel_mode_rejected_and_invalid_profile_fails(profile,tmp_pat
             trace=trace,**{k:v for k,v in b.items() if k!="verified_trace_refs"},
             output_path=tmp_path/"unchecked.mp4",profile=profile,verify_decoded=False,
         )
+
+
+def test_numeric_label_overflow_and_wrong_aspect_fail_before_encoding(profile,tmp_path):
+    with pytest.raises(ValidationError, match="16_9_ASPECT_RATIO_REQUIRED"):
+        SequenceRenderProfile(width=640,height=400)
+    b,trace=create_certified_demo_bundle(values=(10**22,),target=10**22)
+    with pytest.raises(SemanticContractError,match="NUMERIC_LABEL_OVERLAP|TARGET_LABEL_OVERLAP"):
+        render_certified_binary_search_video(
+            trace=trace,**{k:v for k,v in b.items() if k!="verified_trace_refs"},
+            output_path=tmp_path/"overflow.mp4",profile=profile,
+        )
+    assert not (tmp_path/"overflow.mp4").exists()

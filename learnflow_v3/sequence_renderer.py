@@ -13,7 +13,7 @@ import subprocess
 import time
 
 from PIL import Image, ImageDraw, ImageFont
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 # V2 uses the same open Pillow + FFmpeg stack; avoid importing
 # app.rendering.__init__ which eagerly pulls provider SDKs and settings.
@@ -42,6 +42,12 @@ class SequenceRenderProfile(BaseModel):
     height: int = Field(default=540, ge=360, le=1080, multiple_of=2)
     fps: int = Field(default=18, ge=12, le=30)
     seconds_per_step: float = Field(default=1.0, ge=0.7, le=2.5)
+
+    @model_validator(mode="after")
+    def _aspect(self):
+        if self.width * 9 != self.height * 16:
+            raise ValueError("V3_06_16_9_ASPECT_RATIO_REQUIRED")
+        return self
 
     def frames_per_step(self) -> int:
         return round(self.seconds_per_step * self.fps)
@@ -95,6 +101,25 @@ def _layout(profile: SequenceRenderProfile, length: int) -> tuple[int, ...]:
     if len(centers) > 1 and min(y-x for x,y in zip(centers,centers[1:])) < 30 * profile.width/960:
         raise SemanticContractError("V3_06_ARRAY_LABEL_COLLISION")
     return centers
+
+
+def _validate_visual_labels(profile: SequenceRenderProfile, values: tuple[int, ...], target: int) -> None:
+    """Reject illegible digit strings rather than drawing overlapped labels."""
+    centers = _layout(profile, len(values))
+    scale = profile.width / 960
+    half = min(round(34*scale),
+               round((centers[1]-centers[0])*0.42) if len(centers)>1 else round(34*scale))
+    half = max(10, half)
+    draw = ImageDraw.Draw(Image.new("RGB", (4,4)))
+    font = _font(25*profile.height/540)
+    for number in values:
+        box = draw.textbbox((0,0),str(number),font=font)
+        if box[2]-box[0] > 2*half-10:
+            raise SemanticContractError("V3_06_NUMERIC_LABEL_OVERLAP")
+    target_font = _font(24*profile.height/540)
+    box=draw.textbbox((0,0),f"TARGET  {target}",font=target_font)
+    if box[2]-box[0] > 220*scale:
+        raise SemanticContractError("V3_06_TARGET_LABEL_OVERLAP")
 
 
 def _font(size: int) -> ImageFont.ImageFont:
@@ -257,7 +282,7 @@ def render_certified_binary_search_video(*, trace: BinarySearchTrace, plan,
         raise SemanticContractError("V3_06_BINARY_SEQUENCE_PATTERN_ABSTAIN")
     if len(trace.query.values)>MAX_VISIBLE_ITEMS:
         raise SemanticContractError("V3_06_VISIBLE_ARRAY_CAP_EXCEEDED")
-    _layout(profile,len(trace.query.values))
+    _validate_visual_labels(profile, trace.query.values, trace.query.target)
     frame_per=profile.frames_per_step()
     count=frame_per*len(trace.steps)
     if count>MAX_FRAMES: raise SemanticContractError("V3_06_FRAME_BUDGET_EXCEEDED")
