@@ -3508,6 +3508,16 @@ Model remains `openai/gpt-6-luna` with no free fallback.
 - First: offline regression, Core Freeze, production integrity, subtitle
   readability/occlusion and provenance checks. Do not use paid model calls
   during preflight. The final run requires a new end-to-end artifact.
+- **2026-10-08 offline preflight completed:** CI #2 (run 37721412808,
+  code commit d94fdd147524b789ce22bedecfc12c85ace25616) passed
+  Core Freeze and governed contract, 79 Hermes/subtitle regressions and
+  14 renderer regressions (5 skipped). Existing #180 TTS provider cues
+  were replayed offline: 42 source cues became 63 short timed pages with
+  no overlapping pages, preserving all narration text except presentation
+  Markdown markers; occupied Core layout boxes were outside the reserved
+  subtitle band. A 5-second re-burned preview was visually inspected.
+  These checks establish *offline readiness only*; human video acceptance
+  and end-to-end Binary Search remain UNMEASURED until the one final run.
 - After the **single final run**, adjudicate separately:
   (a) technical/semantic/production readiness, and
   (b) quality limitations to be addressed by V3. Success of (a) never

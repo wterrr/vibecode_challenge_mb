@@ -2699,6 +2699,16 @@ comparison, TeachQuiz effects and cost-distribution estimates remain
 UNMEASURED/DEFERRED. No V3 implementation or SOTA claim follows
 automatically from a single PASS.
 
+**Final-run offline readiness (2026-10-08):** CI
+[Final V2 Offline Preflight #2](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37721412808)
+PASS (79 Hermes/caption regressions, 14 renderer regressions,
+Core Freeze PASS). Using existing governed #180 files without provider
+calls, 42 original TTS sentence cues produce 63 short pages and satisfy
+the non-overlap and subtitle-band geometry checks. A 5-second local
+sample was rendered/visually inspected with smaller subtitle typography.
+This is not an end-to-end paid Binary Search PASS or human quality
+approval. The one paid workflow_dispatch is still pending.
+
 If the final pilot fails: preserve artifact/logs, record precise NO-GO
 and outstanding defects; still no paid rerun without a new user decision.
 Do not alter historical frozen Core Gate evidence or reference artifacts.
