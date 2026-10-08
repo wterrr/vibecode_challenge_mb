@@ -1081,3 +1081,122 @@ def test_gpt6_luna_no_dual_reasoning_encoding_in_hermes_runner_source():
     assert "reasoning_config=luna_reasoning_config" in agent_block
     assert 'request_overrides["reasoning_effort"] = "none"' not in agent_block
     assert '"enabled": False, "effort": "none"' in agent_block
+
+
+def test_live_visual_parser_rejects_semantic_implementation_directives_before_core(monkeypatch):
+    """#171: same gate must run inside the retryable Visual Director parse path."""
+    from agent_contracts import AgentContractError
+    from scripts.verify_script_agent import build_fixture, build_script
+    from scripts.verify_visual_director import build_visual_output
+    from visual_director import (
+        VisualDirectorOutput, build_visual_concept_registry,
+        build_visual_director_task,
+    )
+    import visual_director
+    from live_evaluation.hermes_runner import LiveHermesStructuredRunner
+
+    brief, pack, evidence_graph, report, pedagogy = build_fixture()
+    script = build_script(pedagogy)
+    registry = build_visual_concept_registry(pedagogy)
+    task = build_visual_director_task(
+        brief, pack, evidence_graph, report, pedagogy, script
+    )
+    good = build_visual_output(script, registry)
+    scenes = list(good.storyboard.scenes)
+    scenes[0] = scenes[0].model_copy(update={
+        "visual_intent": "Put the title at 120px using FFmpeg."
+    })
+    bad = good.model_copy(update={
+        "storyboard": good.storyboard.model_copy(update={"scenes": tuple(scenes)})
+    })
+
+    # Keep semantic validation real; mock only wire assembly and frozen Core
+    # layout (covered independently by deterministic layout regressions).
+    monkeypatch.setattr(
+        visual_director, "assemble_visual_director_wire",
+        lambda *args, **kwargs: bad,
+    )
+    monkeypatch.setattr(
+        LiveHermesStructuredRunner, "_require_frozen_core_layout_compatible",
+        staticmethod(lambda output: output),
+    )
+    with pytest.raises(AgentContractError, match="VISUAL_IMPLEMENTATION_DIRECTIVE"):
+        LiveHermesStructuredRunner._parse_output(
+            "{}", VisualDirectorOutput, stage="visual_director", task=task
+        )
+    monkeypatch.setattr(
+        visual_director, "assemble_visual_director_wire",
+        lambda *args, **kwargs: good,
+    )
+    accepted = LiveHermesStructuredRunner._parse_output(
+        "{}", VisualDirectorOutput, stage="visual_director", task=task
+    )
+    assert accepted.storyboard.storyboard_id == good.storyboard.storyboard_id
+
+
+def test_live_visual_semantic_violation_gets_one_bounded_repair(monkeypatch):
+    """#171: repair semantic leakage before accepting, rather than failing downstream."""
+    from scripts.verify_script_agent import build_fixture, build_script
+    from scripts.verify_visual_director import build_visual_output
+    from visual_director import (
+        VisualDirectorOutput, build_visual_concept_registry,
+        build_visual_director_task,
+    )
+    import visual_director
+    from live_evaluation.hermes_runner import LiveHermesStructuredRunner
+
+    brief, pack, evidence_graph, report, pedagogy = build_fixture()
+    script = build_script(pedagogy)
+    registry = build_visual_concept_registry(pedagogy)
+    task = build_visual_director_task(
+        brief, pack, evidence_graph, report, pedagogy, script
+    )
+    good = build_visual_output(script, registry)
+    scenes = list(good.storyboard.scenes)
+    scenes[0] = scenes[0].model_copy(update={
+        "visual_intent": "Place a title at x=120, y=80."
+    })
+    bad = good.model_copy(update={
+        "storyboard": good.storyboard.model_copy(update={"scenes": tuple(scenes)})
+    })
+    monkeypatch.setattr(
+        visual_director, "assemble_visual_director_wire",
+        lambda payload, **kwargs: bad if payload.get("case") == "bad" else good,
+    )
+    monkeypatch.setattr(
+        LiveHermesStructuredRunner, "_require_frozen_core_layout_compatible",
+        staticmethod(lambda output: output),
+    )
+    class FakeAgent:
+        def __init__(self):
+            self.messages = []
+
+        def run_conversation(self, *, user_message, **kwargs):
+            self.messages.append(user_message)
+            return {
+                "final_response": (
+                    '{"case":"bad"}' if len(self.messages) == 1
+                    else '{"case":"good"}'
+                ),
+                "messages": [],
+                "api_calls": 1,
+            }
+
+        def close(self):
+            pass
+
+    agent = FakeAgent()
+    runner = object.__new__(LiveHermesStructuredRunner)
+    runner.model = "openai/gpt-6-luna"
+    runner.stage_usage = []
+    reservations = []
+    monkeypatch.setattr(runner, "_agent", lambda *, stage: agent)
+    monkeypatch.setattr(
+        runner, "_reserve", lambda stage, *, retry=False: reservations.append(retry)
+    )
+    accepted = runner.run(stage="visual_director", task=task, output_model=VisualDirectorOutput)
+    assert accepted.storyboard.storyboard_id == good.storyboard.storyboard_id
+    assert reservations == [False, True]
+    assert len(agent.messages) == 2
+    assert "VISUAL_IMPLEMENTATION_DIRECTIVE" in agent.messages[1]
+    assert runner.stage_usage[0].schema_retry_used is True

@@ -319,7 +319,11 @@ class LiveHermesStructuredRunner:
         if stage == "visual_director":
             from agent_contracts import LessonScript
             from learnflow_v2.concepts import ConceptRegistry, ConceptRegistrySchema
-            from visual_director import assemble_visual_director_wire
+            from visual_director import (
+                assemble_visual_director_wire,
+                require_core_ready,
+                validate_visual_director_output,
+            )
 
             payload = json.loads(candidate)
             context = json.loads(str(task["context"]))
@@ -339,6 +343,14 @@ class LiveHermesStructuredRunner:
             validated = LiveHermesStructuredRunner._require_frozen_core_layout_compatible(
                 validated
             )
+            # Run the SAME semantic/boundary gate as Lesson Pipeline while the
+            # bounded schema/contract repair loop still owns the model reply.
+            # Otherwise implementation directives escape the retry loop and
+            # fail only at the coordinator, even for a repairable single scene.
+            validation = validate_visual_director_output(
+                validated, script=script, registry=registry
+            )
+            require_core_ready(validation)
             return validated
         return output_model.model_validate_json(candidate)
 
@@ -755,6 +767,11 @@ class LiveHermesStructuredRunner:
                 except (ValidationError, json.JSONDecodeError, ValueError) as exc:
                     if attempts >= 3:
                         raise
+                    print(
+                        f"LIVE_STAGE_CONTRACT_REPAIR stage={stage} "
+                        f"attempt={attempts + 1} error_type={type(exc).__name__}",
+                        flush=True,
+                    )
                     self._reserve(stage, retry=True)
                     attempts += 1
                     schema_retry_used = True
