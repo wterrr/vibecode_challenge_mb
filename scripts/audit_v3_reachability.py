@@ -94,7 +94,9 @@ def build_inventory()->dict:
         internal=sorted(x for x in actual if x.startswith("learnflow_v3/"))
         # No static import from production directly/indirectly into V3.
         # Treat internal code / test-only conservatively, NOT as unused/dead.
-        if production:state="PRODUCTION_REFERENCED_REQUIRES_RUNTIME_PROOF"
+        if production and set(production)=={"app/pipeline/v3_preview.py"}:
+            state="GUARDED_DEV_APP_PREVIEW_ONLY_NOT_PUBLIC_JOB_ROUTE"
+        elif production:state="PRODUCTION_REFERENCED_REQUIRES_RUNTIME_PROOF"
         elif integration:state="OFFLINE_INTEGRATION_ONLY"
         elif mod in EXPLICIT_SAFETY_OFFLINE:state="INTENTIONALLY_OFFLINE_SAFETY_GATE"
         elif demos or tests:state="DEMO_OR_TEST_ONLY"

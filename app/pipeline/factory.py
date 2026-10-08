@@ -48,6 +48,17 @@ class UnconfiguredPlanner(LessonPlanner):
         return await self.create_plan(request)
 
 
+def _attach_v3_preview(
+    *, settings: Settings, pipeline: LearningVideoPipeline, artifact_store: ArtifactStore,
+) -> LearningVideoPipeline:
+    if not settings.v3_binary_preview_enabled:
+        return pipeline  # no imports or changes whatsoever for OFF flag
+    if settings.environment.strip().lower() not in ("development", "test"):
+        raise RuntimeError("V3 preview forbidden outside development/test")
+    from app.pipeline.v3_preview import V3OfflinePreviewPipeline
+    return V3OfflinePreviewPipeline(legacy=pipeline, artifacts=artifact_store)
+
+
 def create_pipeline(
     settings: Settings,
     repository: JobRepository,
@@ -56,13 +67,17 @@ def create_pipeline(
     """Construct a LearningVideoPipeline (real, demo, or fake) matching the settings."""
     mode = settings.pipeline_mode.lower().strip()
     logger.info("Initializing pipeline in mode: %s", mode)
+    if (settings.v3_binary_preview_enabled and
+        settings.environment.strip().lower() not in ("development", "test")):
+        raise RuntimeError("V3 developer preview must not run in production")
 
     if mode == "fake":
         if settings.environment == "production":
             raise ValueError(
                 "FakePipeline cannot be used when environment=production. Set LEARNFLOW_PIPELINE_MODE=real or demo."
             )
-        return FakePipeline()
+        return _attach_v3_preview(settings=settings, pipeline=FakePipeline(),
+                                  artifact_store=artifact_store)
 
     # Determine render profile dimensions and limits
     if settings.render_profile == "test":
@@ -141,7 +156,7 @@ def create_pipeline(
     )
 
     # 6. RealVideoPipeline
-    return RealVideoPipeline(
+    built = RealVideoPipeline(
         planning_service=planning_service,
         timeline_builder=timeline_builder,
         renderer_router=renderer_router,
@@ -150,3 +165,5 @@ def create_pipeline(
         artifact_store=artifact_store,
         repository=repository,
     )
+    return _attach_v3_preview(settings=settings,pipeline=built,
+                              artifact_store=artifact_store)
