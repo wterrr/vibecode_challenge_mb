@@ -231,7 +231,15 @@ def render_certified_binary_search_video(*, trace: BinarySearchTrace, plan,
         trace=trace,plan=plan,pattern=pattern,ledger=ledger,registry=registry,
         script=script,storyboard=storyboard,scenegraph=scenegraph,
     )
-    if certified.route.selected_variant not in ("TRACE_SPOTLIGHT","TRACE_COMPACT"):
+    # Empty input has a valid oracle-certified terminal-only trace; V3-04
+    # correctly abstains from claiming stateful motion. Permit a one-state
+    # specialized EMPTY ARRAY clip, never a CONCEPT_CARD conversion.
+    empty_terminal = (
+        not trace.query.values and len(trace.steps) == 1
+        and trace.steps[0].phase == "COMPLETE"
+        and certified.route.status.value == "ABSTAIN"
+    )
+    if certified.route.selected_variant not in ("TRACE_SPOTLIGHT","TRACE_COMPACT") and not empty_terminal:
         raise SemanticContractError("V3_06_BINARY_SEQUENCE_PATTERN_ABSTAIN")
     if len(trace.query.values)>MAX_VISIBLE_ITEMS:
         raise SemanticContractError("V3_06_VISIBLE_ARRAY_CAP_EXCEEDED")
