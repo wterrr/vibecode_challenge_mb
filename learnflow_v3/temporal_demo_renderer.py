@@ -11,7 +11,9 @@ from pathlib import Path
 import subprocess
 
 from PIL import Image, ImageDraw
-from pydantic import Field, Literal
+from typing import Literal
+
+from pydantic import Field
 
 from learnflow_v2.repair import compute_content_hash
 from .blackboard_style import BLACK, GREY, WHITE, CYAN, GREEN, YELLOW, cmu_font
