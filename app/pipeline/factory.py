@@ -51,6 +51,10 @@ class UnconfiguredPlanner(LessonPlanner):
 def _attach_v3_preview(
     *, settings: Settings, pipeline: LearningVideoPipeline, artifact_store: ArtifactStore,
 ) -> LearningVideoPipeline:
+    if settings.v3_event_alignment_enabled and not (
+        settings.v3_narrated_lesson_enabled and settings.v3_binary_preview_enabled
+    ):
+        raise RuntimeError("V3-20 requires BOTH binary and narrated developer previews")
     if settings.v3_narrated_lesson_enabled and not settings.v3_binary_preview_enabled:
         raise RuntimeError("V3-19 requires explicit V3 binary preview enabled")
     if not settings.v3_binary_preview_enabled:
@@ -69,7 +73,8 @@ def create_pipeline(
     """Construct a LearningVideoPipeline (real, demo, or fake) matching the settings."""
     mode = settings.pipeline_mode.lower().strip()
     logger.info("Initializing pipeline in mode: %s", mode)
-    if ((settings.v3_binary_preview_enabled or settings.v3_narrated_lesson_enabled) and
+    if ((settings.v3_binary_preview_enabled or settings.v3_narrated_lesson_enabled or
+         settings.v3_event_alignment_enabled) and
         settings.environment.strip().lower() not in ("development", "test")):
         raise RuntimeError("V3 developer preview must not run in production")
 
