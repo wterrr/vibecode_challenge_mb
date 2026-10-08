@@ -43,7 +43,7 @@ No default SOTA, 3Blue1Brown-equivalence or ≥98% real-world success claim. Tre
 | #181 MP4 135.37 s, 1280x720/30fps H.264 + AAC, 3 scenes, 41 short subtitle cues, 22 motion events, 2 scene transitions | MEASURED from prior final audit | basic A/V deliverable | cognitive learning gain / professional cinematic video |
 | All 3 scenes `CONCEPT_CARD`, 0 persistent transitions, no running visual interval/pointer trace | MEASURED | representation bottleneck persists | "animation count = pedagogy" |
 | #181 registry "find 16" vs script/scene video "find 24" | MEASURED | cross-artifact semantics drifted despite technical PASS | flawless semantic provenance |
-| Offline #4: Core Freeze PASS, contract PASS, 87 Hermione/subtitle/semantic tests PASS, renderer 14 PASS 5 SKIP | MEASURED | narrow regression guard now exists | automatically corrected #181 model output |
+| Offline #4: Core Freeze PASS, contract PASS, 87 Hermes/subtitle/semantic tests PASS, renderer 14 PASS 5 SKIP | MEASURED | narrow regression guard now exists | automatically corrected #181 model output |
 | Frozen V1/V2A/V2B/V2C three-fixture deterministic proxy, +6.0684 V2A vs V1 | MEASURED, limited | proxy improved for those fixtures | human aesthetic quality |
 | 100-topic live generation, true success distribution, educational learning outcomes, human preference, cost distribution | UNMEASURED / DEFERRED | cannot claim improvement | ≥98%, SOTA or "3Blue1Brown-like" |
 
