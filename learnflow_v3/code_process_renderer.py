@@ -79,6 +79,7 @@ class MotionEvidence(V3Model):
     sample_frames: tuple[int, ...]
     decoded_mae: tuple[float, ...]
     semantic_roi_delta: tuple[float, ...]
+    within_beat_motion_delta: tuple[float, ...]
     stable_object_centers: dict[str, tuple[int, int]]
     video_checks_pass: Literal[True] = True
     wall_seconds: float
@@ -217,7 +218,7 @@ def _header(draw, profile, title: str):
     return sx,sy
 
 
-def draw_code_frame(spec: CodeWalkthrough, graph: SceneGraph, step_index: int, profile: SequenceRenderProfile)->Image.Image:
+def draw_code_frame(spec: CodeWalkthrough, graph: SceneGraph, step_index: int, profile: SequenceRenderProfile, progress: float=1.0)->Image.Image:
     if not 0<=step_index<len(spec.steps):
         raise SemanticContractError("V3_07_CODE_FRAME_OUT_OF_RANGE")
     w,h=profile.width,profile.height
@@ -237,6 +238,10 @@ def draw_code_frame(spec: CodeWalkthrough, graph: SceneGraph, step_index: int, p
         if i==step_index:
             d.rectangle((round(62*sx),y-2,round(540*sx),y+round(29*sy)),fill=(25,22,4))
             d.line((round(62*sx),y-2,round(62*sx),y+round(29*sy)),fill=YELLOW,width=max(2,round(4*sx)))
+            # Animated progress underline: spans the selected line during the beat.
+            bar_end=round((76+450*_ease(progress))*sx)
+            d.line((round(76*sx),y+round(30*sy),bar_end,y+round(30*sy)),
+                   fill=YELLOW,width=max(2,round(3*sy)))
         d.text((x,y),line.source,font=mono,fill=YELLOW if i==step_index else WHITE if i<step_index else GREY)
     d.line((round(584*sx),round(136*sy),round(584*sx),round(470*sy)),fill=FAINT,width=1)
     for j,(name,value) in enumerate(sorted(step.variables.items())):
@@ -247,7 +252,7 @@ def draw_code_frame(spec: CodeWalkthrough, graph: SceneGraph, step_index: int, p
     return im
 
 
-def draw_process_frame(spec: ProcessWalkthrough, graph: SceneGraph, step_index: int, profile: SequenceRenderProfile)->Image.Image:
+def draw_process_frame(spec: ProcessWalkthrough, graph: SceneGraph, step_index: int, profile: SequenceRenderProfile, progress: float=1.0)->Image.Image:
     if not 0<=step_index<len(spec.steps):
         raise SemanticContractError("V3_07_PROCESS_FRAME_OUT_OF_RANGE")
     coords=layout_process(graph,profile)
@@ -266,7 +271,13 @@ def draw_process_frame(spec: ProcessWalkthrough, graph: SceneGraph, step_index: 
         x1=a[0]+round(72*sx);x2=b[0]-round(72*sx)
         if x2<=x1:
             x1=a[0];x2=b[0]
-        d.line((x1,a[1],x2,b[1]),fill=color,width=max(1,round((3 if active else 2)*sy)))
+        d.line((x1,a[1],x2,b[1]),fill=color if rel.id!=spec.steps[step_index].via_edge_id else FAINT,
+               width=max(1,round((3 if active else 2)*sy)))
+        # Edge traversal is an in-beat animation, not a static slide cut.
+        if rel.id==spec.steps[step_index].via_edge_id:
+            t=_ease(progress)
+            d.line((x1,a[1],round(x1+(x2-x1)*t),round(a[1]+(b[1]-a[1])*t)),
+                   fill=YELLOW,width=max(2,round(4*sy)))
         dx=x2-x1;dy=b[1]-a[1]
         mag=max(1,(dx*dx+dy*dy)**.5)
         ux,uy=dx/mag,dy/mag
@@ -281,7 +292,8 @@ def draw_process_frame(spec: ProcessWalkthrough, graph: SceneGraph, step_index: 
         border=YELLOW if active else GREEN if node.id in reached else GREY
         fill=(27,24,3) if active else BLACK
         rect=(x-round(72*sx),y-round(37*sy),x+round(72*sx),y+round(37*sy))
-        d.rounded_rectangle(rect,radius=round(5*sy),fill=fill,outline=border,width=max(2,round(2*sy)))
+        d.rounded_rectangle(rect,radius=round(5*sy),fill=fill,outline=border,
+                            width=max(2,round((2+2*_ease(progress) if active else 2)*sy)))
         assert_fits(d,node.label,font,round(132*sx),role="PROCESS_NODE")
         d.text((x,y),node.label,font=font,fill=border if active else WHITE,anchor="mm")
     d.text((round(60*sx),round(485*sy)),
@@ -314,7 +326,8 @@ def _encode_mp4(*, family: Literal["CODE_WALKTHROUGH","PROCESS_FLOW"], spec, gra
         assert p.stdin
         for i in range(count):
             step=i//profile.frames_per_step()
-            im=frame_drawer(spec,graph,step,profile)
+            phase=(i%profile.frames_per_step()+0.5)/profile.frames_per_step()
+            im=frame_drawer(spec,graph,step,profile,phase)
             p.stdin.write(im.tobytes())
         p.stdin.close()
         assert p.stderr
@@ -323,10 +336,11 @@ def _encode_mp4(*, family: Literal["CODE_WALKTHROUGH","PROCESS_FLOW"], spec, gra
             raise SemanticContractError("V3_07_FFMPEG_FAILURE:"+error[-150:].decode(errors="replace"))
         indices=tuple(i*profile.frames_per_step()+max(1,profile.frames_per_step()//2)
                       for i in range(len(spec.steps)))
-        decoded=[];maes=[];deltas=[]
+        decoded=[];maes=[];deltas=[];inside=[]
         for i,k in enumerate(indices):
             frame=_ffmpeg_anchor(tmp,at=(k+0.4)/profile.fps,profile=profile)
-            ideal=frame_drawer(spec,graph,i,profile)
+            phase=(k%profile.frames_per_step()+0.5)/profile.frames_per_step()
+            ideal=frame_drawer(spec,graph,i,profile,phase)
             error=_mean_absolute_error(frame,ideal)
             if error>8.0:
                 raise SemanticContractError(f"V3_07_DECODED_FRAME_MISMATCH:{family}:{i}:{error:.3f}")
@@ -338,6 +352,18 @@ def _encode_mp4(*, family: Literal["CODE_WALKTHROUGH","PROCESS_FLOW"], spec, gra
             if delta<1.15:
                 raise SemanticContractError(f"V3_07_NO_VISIBLE_STATE_CHANGE:{family}:{delta:.3f}")
             deltas.append(round(delta,3))
+        # Independent MP4 decode within the same beat must observe motion,
+        # not just the hard cut between two static cards.
+        for i in range(len(spec.steps)):
+            n=profile.frames_per_step()
+            early=i*n+max(1,round(n*.12))
+            late=i*n+max(2,round(n*.82))
+            a=_ffmpeg_anchor(tmp,at=(early+.4)/profile.fps,profile=profile)
+            b=_ffmpeg_anchor(tmp,at=(late+.4)/profile.fps,profile=profile)
+            d=_mean_absolute_error(a,b,rect=roi)
+            if d<0.035:
+                raise SemanticContractError(f"V3_07_NO_WITHIN_BEAT_MOTION:{family}:{i}:{d:.4f}")
+            inside.append(round(d,3))
         try:os.link(tmp,output)
         except FileExistsError as exc:raise SemanticContractError("V3_07_OUTPUT_RACE") from exc
         tmp.unlink()
@@ -352,7 +378,7 @@ def _encode_mp4(*, family: Literal["CODE_WALKTHROUGH","PROCESS_FLOW"], spec, gra
         scenegraph_hash=compute_content_hash(graph),frame_count=count,fps=profile.fps,
         duration_seconds=count/profile.fps,sample_frames=indices,
         decoded_mae=tuple(maes),semantic_roi_delta=tuple(deltas),
-        stable_object_centers=stable_centers,wall_seconds=round(time.monotonic()-start,3))
+        within_beat_motion_delta=tuple(inside),stable_object_centers=stable_centers,wall_seconds=round(time.monotonic()-start,3))
 
 
 def render_code_walkthrough(*, spec: CodeWalkthrough, graph: SceneGraph,

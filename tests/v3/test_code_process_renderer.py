@@ -170,10 +170,13 @@ def test_real_mp4_frame_decode_and_per_state_pixel_qa(tmp_path,profile,family):
     assert len(evidence.sample_frames)==len(spec.steps)
     assert all(m<8 for m in evidence.decoded_mae)
     assert all(d>1.15 for d in evidence.semantic_roi_delta)
+    assert len(evidence.within_beat_motion_delta)==len(spec.steps)
+    assert all(d>0.035 for d in evidence.within_beat_motion_delta)
     assert len(evidence.stable_object_centers)==(len(spec.lines) if family=="code" else len(graph.nodes))
     for i,k in enumerate(evidence.sample_frames):
         decoded=_ffmpeg_anchor(out,at=(k+0.4)/profile.fps,profile=profile)
-        ideal=drawer(spec,graph,i,profile)
+        ideal=drawer(spec,graph,i,profile,
+                     (k%profile.frames_per_step()+.5)/profile.frames_per_step())
         assert _mean_absolute_error(decoded,ideal)<8.0
 
 
@@ -200,3 +203,14 @@ def test_dynamic_state_changes_source_digest_even_same_code():
     assert compute_content_hash(spec)!=compute_content_hash(forged)
     with pytest.raises(SemanticContractError,match="STATE_REPLAY_MISMATCH"):
         verify_code_walkthrough(forged,graph)
+
+
+def test_within_beat_code_and_process_motion_are_not_static_images(profile):
+    graph,code=code_demo()
+    first=draw_code_frame(code,graph,2,profile,progress=0.12)
+    second=draw_code_frame(code,graph,2,profile,progress=0.85)
+    assert _mean_absolute_error(first,second)>0.06
+    graph,process=process_demo()
+    first=draw_process_frame(process,graph,1,profile,progress=0.12)
+    second=draw_process_frame(process,graph,1,profile,progress=0.85)
+    assert _mean_absolute_error(first,second)>0.03
