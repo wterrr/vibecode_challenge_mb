@@ -1083,6 +1083,20 @@ def test_gpt6_luna_no_dual_reasoning_encoding_in_hermes_runner_source():
     assert '"enabled": False, "effort": "none"' in agent_block
 
 
+def _mock_hermes_output_schema_for_offline_tests(monkeypatch):
+    """Offline contract CI does not install the pinned Hermes runtime."""
+    import sys
+    from types import ModuleType
+
+    hermes_tools = ModuleType("tools")
+    hermes_tools.__path__ = []
+    delegation = ModuleType("tools.delegation_output_schema")
+    delegation.extract_json_candidate = lambda value: value
+    delegation.append_output_contract = lambda context, output_schema: context
+    monkeypatch.setitem(sys.modules, "tools", hermes_tools)
+    monkeypatch.setitem(sys.modules, "tools.delegation_output_schema", delegation)
+
+
 def test_live_visual_parser_rejects_semantic_implementation_directives_before_core(monkeypatch):
     """#171: same gate must run inside the retryable Visual Director parse path."""
     from agent_contracts import AgentContractError
@@ -1095,6 +1109,7 @@ def test_live_visual_parser_rejects_semantic_implementation_directives_before_co
     import visual_director
     from live_evaluation.hermes_runner import LiveHermesStructuredRunner
 
+    _mock_hermes_output_schema_for_offline_tests(monkeypatch)
     brief, pack, evidence_graph, report, pedagogy = build_fixture()
     script = build_script(pedagogy)
     registry = build_visual_concept_registry(pedagogy)
@@ -1145,6 +1160,7 @@ def test_live_visual_semantic_violation_gets_one_bounded_repair(monkeypatch):
     import visual_director
     from live_evaluation.hermes_runner import LiveHermesStructuredRunner
 
+    _mock_hermes_output_schema_for_offline_tests(monkeypatch)
     brief, pack, evidence_graph, report, pedagogy = build_fixture()
     script = build_script(pedagogy)
     registry = build_visual_concept_registry(pedagogy)
