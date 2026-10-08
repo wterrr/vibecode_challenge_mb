@@ -9,6 +9,8 @@ from dataclasses import dataclass
 import re
 from typing import Any
 
+from learnflow_v2.concepts.normalize import normalize_canonical_key, deterministic_concept_id
+
 
 class SemanticConsistencyError(ValueError):
     """A referenced worked example changed meaning across stage boundaries."""
@@ -56,6 +58,17 @@ def assert_semantic_consistency(result: Any) -> None:
             label = str(_get(entry, "label", ""))
             if not label.casefold().startswith("worked example:"):
                 continue
+            # These IDs and canonical keys are deterministic products of the
+            # registry label. Detect stale keys even when the label is repaired.
+            canonical_key = _get(entry, "canonical_key")
+            if canonical_key is not None and canonical_key != normalize_canonical_key(label):
+                raise SemanticConsistencyError(
+                    f"SEMANTIC_REGISTRY_KEY_LABEL_MISMATCH scene={scene_id} concept_ref={concept_id}"
+                )
+            if canonical_key is not None and concept_id != deterministic_concept_id(canonical_key):
+                raise SemanticConsistencyError(
+                    f"SEMANTIC_REGISTRY_ID_KEY_MISMATCH scene={scene_id} concept_ref={concept_id}"
+                )
             canonical = _numbered_example(label)
             if canonical is None:
                 continue  # Non-numeric worked examples remain outside this pilot contract.
@@ -80,6 +93,12 @@ def assert_semantic_consistency(result: Any) -> None:
                     f"SEMANTIC_WORKED_EXAMPLE_UNVERIFIABLE scene={scene_id} concept_ref={concept_id}"
                 )
             for node in nodes:
+                if _get(node, "concept_ref") == concept_id and canonical_key is not None:
+                    node_key = _get(node, "semantic_key")
+                    if node_key is not None and node_key != canonical_key:
+                        raise SemanticConsistencyError(
+                            f"SEMANTIC_NODE_CONCEPT_KEY_MISMATCH scene={scene_id} node={_get(node, 'id')}"
+                        )
                 role = str(_get(node, "semantic_role", "")).casefold()
                 content = str(_get(node, "content", ""))
                 if role == "search_target" and re.fullmatch(r"\s*-?\d+\s*", content):

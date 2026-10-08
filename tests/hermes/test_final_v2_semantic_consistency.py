@@ -93,3 +93,32 @@ def test_evidence_export_fails_closed_on_credential_in_allowlisted_file(tmp_path
     (root / "pilot_report.json").write_text('{"api_key":"fake-secret"}')
     with pytest.raises(ValueError, match="sensitive credential"):
         export_evidence(root, tmp_path / "out")
+
+def test_stale_registry_key_is_rejected_even_when_label_is_repaired():
+    data = action181_repro()
+    data["concept_registry"]["concepts"][0]["label"] = (
+        "Worked example: In [3, 7, 12, 18, 24, 31, 40], search for 24."
+    )
+    data["concept_registry"]["concepts"][0]["canonical_key"] = (
+        "concept:worked_example_in_2_5_8_12_16_23_38_search_for_16"
+    )
+    with pytest.raises(SemanticConsistencyError, match="SEMANTIC_REGISTRY_KEY_LABEL_MISMATCH"):
+        assert_semantic_consistency(data)
+
+
+def test_stale_scenegraph_semantic_key_is_rejected():
+    from learnflow_v2.concepts.normalize import normalize_canonical_key, deterministic_concept_id
+    data = action181_repro()
+    label = "Worked example: In [3, 7, 12, 18, 24, 31, 40], search for 24."
+    key = normalize_canonical_key(label)
+    cid = deterministic_concept_id(key)
+    entry = data["concept_registry"]["concepts"][0]
+    previous_id = entry["concept_id"]
+    entry.update({"label": label, "concept_id": cid, "canonical_key": key})
+    data["storyboard"]["scenes"][0]["concept_refs"] = [cid]
+    for node in data["scenegraphs"][0]["nodes"]:
+        if node.get("concept_ref") == previous_id:
+            node["concept_ref"] = cid
+            node["semantic_key"] = "concept:worked_example_in_2_5_8_12_16_23_38_search_for_16"
+    with pytest.raises(SemanticConsistencyError, match="SEMANTIC_NODE_CONCEPT_KEY_MISMATCH"):
+        assert_semantic_consistency(data)
