@@ -107,7 +107,7 @@ async def offline_event_aligned_binary_lesson(payload:BinaryPreviewInput,request
     except V3PreviewRejected as exc:
         raise HTTPException(status_code=422,detail=str(exc)) from None
     except Exception as exc:
-        log.error("V3-20 event alignment failed closed (%s)",type(exc).__name__)
+        log.exception("V3-20 internal dev-only event alignment failed closed")
         raise HTTPException(
             status_code=500,
             detail="V3-20 source/speech/event/video QA blocked; nothing published",
