@@ -1,8 +1,9 @@
-name: V3-00B Selective Offline Integration Gate
+name: Governed V2D Offline Regression Gate
 
 on:
   push:
     branches:
+      - main
       - chatgpt/v3-00b-selective-integration
   pull_request:
     branches:
