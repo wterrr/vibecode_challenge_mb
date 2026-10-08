@@ -12,7 +12,6 @@ from typing import Annotated
 from fastapi import APIRouter,HTTPException,Request
 from pydantic import BaseModel,Field,StrictInt
 
-from app.pipeline.v3_preview import V3OfflinePreviewPipeline,V3PreviewRejected
 
 log=logging.getLogger(__name__)
 router=APIRouter(prefix="/api/v3/offline",tags=["v3-offline-preview"])
@@ -33,6 +32,8 @@ async def offline_binary_search(payload:BinaryPreviewInput,request:Request)->dic
     client_host=request.client.host if request.client else None
     if client_host not in ("testclient","127.0.0.1","::1","localhost"):
         raise HTTPException(status_code=403,detail="Local developer request required")
+    # Delay V3 renderer imports until AFTER all OFF/nonlocal gates.
+    from app.pipeline.v3_preview import V3OfflinePreviewPipeline,V3PreviewRejected
     pipeline=request.app.state.pipeline
     if not isinstance(pipeline,V3OfflinePreviewPipeline):
         raise HTTPException(status_code=503,detail="V3 adapter not installed")
