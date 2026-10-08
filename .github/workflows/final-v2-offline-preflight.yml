@@ -6,6 +6,9 @@ on:
       - chatgpt/live-v2d-gpt6-luna-paid-pilot
     paths:
       - "lesson_pipeline/**"
+      - "live_evaluation/**"
+      - "scripts/export_live_v2d_evidence.py"
+      - "tests/hermes/test_final_v2_semantic_consistency.py"
       - "tests/hermes/test_final_v2_subtitles.py"
       - "tests/hermes/test_live_v2d_evaluation.py"
       - ".github/workflows/final-v2-offline-preflight.yml"
@@ -27,6 +30,6 @@ jobs:
       - name: Verify V2 evaluation contracts
         run: python scripts/verify_live_v2d_evaluation.py
       - name: Regression test paid pilot and short subtitles
-        run: pytest -q --confcutdir=tests/hermes tests/hermes/test_live_v2d_evaluation.py tests/hermes/test_final_v2_subtitles.py
+        run: pytest -q --confcutdir=tests/hermes tests/hermes/test_live_v2d_evaluation.py tests/hermes/test_final_v2_subtitles.py tests/hermes/test_final_v2_semantic_consistency.py
       - name: Renderer regression
         run: pytest -q --confcutdir=tests/v2 tests/v2/test_render_v2.py

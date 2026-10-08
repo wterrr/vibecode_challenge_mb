@@ -162,11 +162,15 @@ jobs:
         run: |
           "$HPY" scripts/verify_v2_core_freeze.py
 
+      - name: Export allowlisted redacted evidence
+        if: always()
+        run: python scripts/export_live_v2d_evidence.py --source .hermes_runtime/live-v2d-evaluation --output .hermes_runtime/approved-live-v2d-evidence
+
       - name: Upload redacted live-eval evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: governed-live-v2d-pilot
-          path: .hermes_runtime/live-v2d-evaluation
+          path: .hermes_runtime/approved-live-v2d-evidence
           if-no-files-found: warn
           retention-days: 14

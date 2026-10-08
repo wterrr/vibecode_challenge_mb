@@ -236,6 +236,11 @@ def run_live_v2d_pilot(
         runtime_root=runtime / "lesson-runs",
     )
 
+    # Fail closed on typed semantic drift before any TTS or final video work.
+    # Keep the frozen V2 Core and canonical historical artifacts untouched.
+    from .semantic_consistency import assert_semantic_consistency
+    assert_semantic_consistency(result)
+
     # The first Core pass above is a semantic/capability integration pass. The
     # production media pass reuses the accepted typed artifacts, adds real TTS,
     # narration-resolved Tier-1 motion, inter-scene transitions, subtitles, and
