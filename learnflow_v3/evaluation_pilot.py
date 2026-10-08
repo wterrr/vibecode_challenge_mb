@@ -244,7 +244,7 @@ class SyntheticRehearsal(V3Model):
     provider_cost_total_usd:float|None
     wall_seconds_total:float|None
     mean_absolute_rater_disagreement:float|None
-    critical_safety_errors:Literal[0]=0
+    critical_safety_errors:Literal[None]=None
     independent_human_data:Literal[False]=False
     actual_human_quality_effect:Literal["UNMEASURED"]="UNMEASURED"
     real_pilot_pass:Literal[False]=False
@@ -272,7 +272,7 @@ def _score_system(attempt:GenerationAttempt,ratings:list[BlindedRating]):
     if len(ids)!=len(set(ids)) or len(ratings) not in (2,3):
         _reject("RATERS_NOT_INDEPENDENT_OR_MISSING")
     a,b=ratings[:2]
-    needs_third=any(abs(a.ratings[k]-b.ratings[k])>=2 for k in RUBRIC)
+    needs_third=any(abs(a.ratings[k]-b.ratings[k])>=2 for k in PRIMARY)
     if needs_third!=(len(ratings)==3):
         _reject("ADJUDICATION_NOT_MATCHED_TO_DISAGREEMENT")
     out={}
@@ -333,11 +333,12 @@ def rehearsal_analysis(*,protocol:dict,manifest:PilotManifest,
     for metric in PRIMARY:
         arr=[p.delta[metric] for p in pairs]
         wins=sum(x>0 for x in arr)
+        ci=_bootstrap(arr,protocol["analysis"]["bootstrap_seed"]+"|"+metric)
         effects.append(PrimaryEffect(
             metric=metric,mean_paired_delta=round(statistics.mean(arr),4),
             wins=wins,ties=sum(x==0 for x in arr),
-            ci_low=_bootstrap(arr,protocol["analysis"]["bootstrap_seed"]+"|"+metric)[0],
-            ci_high=_bootstrap(arr,protocol["analysis"]["bootstrap_seed"]+"|"+metric)[1],
+            ci_low=ci[0],
+            ci_high=ci[1],
             threshold_mean_reached=statistics.mean(arr)>=.5,
             threshold_wins_reached=wins>=8,
         ))
@@ -352,7 +353,7 @@ def rehearsal_analysis(*,protocol:dict,manifest:PilotManifest,
         provider_cost_total_usd=round(sum(costs),6) if all(v is not None for v in costs) else None,
         wall_seconds_total=round(sum(durations),4) if all(v is not None for v in durations) else None,
         mean_absolute_rater_disagreement=round(statistics.mean(disagree),4) if disagree else None,
-        critical_safety_errors=0,independent_human_data=False,
+        critical_safety_errors=None,independent_human_data=False,
         actual_human_quality_effect="UNMEASURED",real_pilot_pass=False,publication_blocked=True,
     )
     values["result_sha256"]=compute_content_hash(values)
