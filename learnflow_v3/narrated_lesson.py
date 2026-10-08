@@ -29,7 +29,7 @@ from .blackboard_style import BLACK,CYAN,WHITE,cmu_font
 from .binary_search_trace import certify_and_route_binary_search
 from .integration_slice import run_integrated_binary_clip,IntegratedClipReceipt
 from .offline_lesson_source import BinaryLessonSource
-from .sequence_renderer import SequenceRenderProfile,draw_binary_search_frame
+from .sequence_renderer import SequenceRenderProfile,draw_binary_search_frame,_layout
 from .models import SemanticContractError
 
 VERSION="v3-19-narrated-multi-scene-offline-v1"
@@ -155,6 +155,22 @@ def _encode_scene(*,source:BinaryLessonSource,spec:dict,n:int,
                    "WORKED_EXAMPLE":"COMPARE THE MIDDLE",
                    "RECAP":"WHAT WE LEARNED"}[role]
             d.text((12,5),phase,font=cmu_font(14),fill=CYAN)
+            # Separate pedagogical visual transitions: the introduction
+            # walks the SORTED source indices; the explanation moves the
+            # bound/midpoint pointers; the recap revisits the TRUE oracle
+            # comparison path. Never loop/hold a 3-second animation.
+            centers=_layout(profile,len(source.trace.query.values))
+            if role=="INTRODUCTION":
+                index=min(len(centers)-1,int(progress*len(centers)))
+                px=centers[index]
+                d.rounded_rectangle((px-21,168,px+21,220),radius=7,
+                                    outline=CYAN,width=2)
+            elif role=="RECAP":
+                visited=[step.mid for step in source.trace.steps if step.mid is not None]
+                upto=max(1,math.ceil(progress*len(visited)))
+                for mid in visited[:upto]:
+                    px=centers[mid]
+                    d.ellipse((px-8,148,px+8,164),outline=CYAN,width=2)
             # Reserve a strict two-zone hierarchy: semantic action lives
             # at Y=252..270, actual burned subtitles only at Y>=295. The
             # original V3-06 bottom labels would collide with subtitles;
