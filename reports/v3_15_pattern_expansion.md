@@ -1,6 +1,6 @@
 # V3-15 — Evidence-gated Pattern Expansion: cyclic STATE_MACHINE
 
-**Date:** 2026-10-08. **Verdict:** code implemented, CI verification in progress. This checkpoint validates a **bounded standalone candidate renderer** and explicitly does not authorize changing the frozen V3-04 canonical router, production publishing, or the locked 12-topic evaluation.
+**Date:** 2026-10-08. **Verdict:** initial 2-golden/243-test bounded engineering PASS; exact layout-corrected PR-head CI pending. This checkpoint validates a **bounded standalone candidate renderer** and explicitly does not authorize changing the frozen V3-04 canonical router, production publishing, or the locked 12-topic evaluation.
 **Stack:** PR #48 from PR #47 head `f34ad2fdf342cb7e0a057e788517905aec843c6c`. Frozen main remains `a06e0b0b5f35e9147b4081da7ed7f7934affe0c6`; no merge.
 
 ## 1. Demand first — frozen source, not ad hoc examples
@@ -37,3 +37,10 @@ Conclusive code-head CI/real metrics must be appended after completion. Hard gat
 **Not established:** independently rated representation appropriateness, C5 ≥70% specialized pattern usage, C5 low card-collapse on a real 12-topic end-to-end pilot, voice-aligned pedagogy, real instructions vs synthetic traces, historical/scientific truth of arbitrary topic source, multi-family automated routing, human comprehension, 3Blue1Brown visual parity, and full video lesson quality. This is **one** evidence-gated experimental family, not indiscriminate pattern expansion. V3-13 critic and V3-14 real incremental repair efficacy research gaps remain OPEN.
 
 Next single separately authorized CP from PLAN_V3.md: **V3-16 Human pilot/ablation (protocol and authorization gates only unless separately authorized to run real participants/APIs).**
+
+
+## Initial measured code-head, actual screenshot inspection and layout correction
+
+[Initial revised-source workflow #37757306255](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37757306255) passed **243 V3, 39 frozen V2, 86 Hermes** tests and immutable prereg/Bench/Core Freeze. Its two actual H264 MP4 clips encode **70 frames HTTP / 50 frames distributed transactions**, 640×360 12 fps, respectively; min decoded cross-state ROI MAE **2.499 / 2.023** and min within-beat transition ROI MAE **0.163 / 0.210**. [Artifact #11540916348](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37757306255/artifacts/11540916348) archived actual videos/source graph JSON. Both MP4s were downloaded and ffprobe independently confirmed H264 frame counts. The sampled screenshots showed actual active state highlights/edge movement but also a *visual geometry bug*: upper node box intersected header divider at y=103/540 screen height, despite decoded pixel PASS. Renderer-owned radial layout y center/radius corrected to keep node bounding boxes entirely between title divider and lower event footer; added header/footer 16:9 node-box clearance tests, and rerun on final PR head required. The bounded blackboard illustration is still relatively sparse and not evidence of human-rated visual excellence.
+
+C5 70% real pilot usage, general learner preferences, instruction correctness, V2 improvement, independent factual validation, synchronized narrated full lesson, critic/genuine human study and any production router registration are **NOT ESTABLISHED**.
