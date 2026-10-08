@@ -214,6 +214,29 @@ class NarratedLessonReceipt(BaseModel):
 
     @model_validator(mode="after")
     def _guard(self):
+        cursor=0
+        seen=set()
+        if self.total_frames<24 or self.duration_seconds<=0:
+            raise ValueError("V3_19_INVALID_TIMELINE")
+        for seg in self.segments:
+            if (seg["scene_id"] in seen or
+                seg["frame_start"]!=cursor or
+                seg["frame_end_exclusive"]<=cursor or
+                seg["source_trace_sha256"]!=self.source_trace_sha256 or
+                not seg["text"].strip() or
+                seg["claim_refs"]!=["claim-01"] or
+                seg["object_ids"]!=["array-01"] or
+                abs(seg["seconds_start"]-cursor/FPS)>1e-6 or
+                abs(seg["seconds_end"]-seg["frame_end_exclusive"]/FPS)>1e-6 or
+                abs(seg["subtitle_start"]-seg["seconds_start"])>1e-6 or
+                abs(seg["subtitle_end"]-seg["subtitle_start"]-
+                    seg["raw_spoken_duration_seconds"])>1e-5 or
+                seg["speech_energy_rms"]<.006):
+                raise ValueError("V3_19_UNGROUNDED_SCENE_OR_AUDIO_BOUNDARY")
+            seen.add(seg["scene_id"])
+            cursor=seg["frame_end_exclusive"]
+        if len(self.segments)<4 or abs(cursor-self.total_frames)>1:
+            raise ValueError("V3_19_MULTISCENE_FRAME_CONTINUITY_FAILED")
         if (self.publication!="PUBLISH_BLOCKED" or
             self.segment_alignment!="MEASURED_AUDIO_SAMPLES_SCENE_BOUNDARIES" or
             self.word_alignment!="UNMEASURED_NOT_FORCED_ALIGNMENT" or
@@ -386,3 +409,67 @@ def build_narrated_lesson(*,source:BinaryLessonSource,out:Path,
             for p in linked:p.unlink(missing_ok=True)
             raise
     return receipt
+
+
+def verify_narrated_lesson(*,source:BinaryLessonSource,folder:Path,
+                           receipt:NarratedLessonReceipt)->None:
+    """Replay source, subtitles, video frames, and actual per-scene AAC voice.
+
+    Word/phoneme alignment and spoken-content ASR fidelity remain UNMEASURED.
+    """
+    root=Path(folder)
+    video=root/"narrated_binary_lesson.mp4"
+    subtitles=root/"narrated_binary_lesson.srt"
+    manifest=root/"narrated_binary_lesson.receipt.json"
+    if any(not p.is_file() or p.is_symlink() for p in (video,subtitles,manifest)):
+        _block("MISSING_FINAL_VIDEO_SUBS_OR_MANIFEST")
+    if (_sha(video)!=receipt.video_sha256 or
+        hashlib.sha256(subtitles.read_bytes()).hexdigest()!=receipt.subtitle_sha256):
+        _block("STALE_AUDIO_VIDEO_OR_SUBTITLE_FILE")
+    replay=NarratedLessonReceipt.model_validate_json(manifest.read_text(encoding="utf-8"))
+    if receipt!=replay:_block("STALE_MANIFEST_OR_SOURCE")
+    original=certify_and_route_binary_search(trace=source.trace,**source.params())
+    if (receipt.source_trace_sha256!=source.trace.trace_sha256 or
+        receipt.baseline_route_sha256!=original.route.decision_hash):
+        _block("SOURCE_TRACE_OR_ROUTE_CHANGED")
+    expected=_speech_lines(source)
+    if len(expected)!=len(receipt.segments):_block("SCENE_COUNT_OR_SOURCE_CHANGED")
+    for emitted,orig in zip(receipt.segments,expected,strict=True):
+        if any(emitted[k]!=orig[k] for k in (
+            "scene_id","role","step","text","beat_id","segment_id"
+        )):
+            _block("NARRATION_OR_BEAT_SOURCE_CHANGED")
+    srt=subtitles.read_text(encoding="utf-8")
+    from app.pipeline.assembly import format_srt_timestamp
+    for i,e in enumerate(receipt.segments,1):
+        cue=(f"{i}\n{format_srt_timestamp(e['subtitle_start'])} --> "
+             f"{format_srt_timestamp(e['subtitle_end'])}\n{e['text']}\n")
+        if cue not in srt:_block("SUBTITLE_TEXT_OR_TIME_DRIFT")
+    info=_probe(video)
+    vids=[x for x in info["streams"] if x["codec_type"]=="video"]
+    audio=[x for x in info["streams"] if x["codec_type"]=="audio"]
+    if (len(vids)!=1 or len(audio)!=1 or
+        vids[0]["codec_name"]!="h264" or audio[0]["codec_name"]!="aac"):
+        _block("MISSING_REAL_VIDEO_OR_SPOKEN_AUDIO")
+    if abs(int(vids[0]["nb_frames"])-receipt.total_frames)>1:
+        _block("FRAME_COUNT_DRIFT")
+    if abs(float(info["format"]["duration"])-receipt.duration_seconds)>.03:
+        _block("AV_DURATION_DRIFT")
+    # Decode ALL pixels, not just trust MP4 container metadata.
+    raw=_exec(["ffmpeg","-nostdin","-v","error","-i",str(video),
+               "-map","0:v:0","-f","rawvideo","-pix_fmt","rgb24","pipe:1"],timeout=150).stdout
+    if (abs(len(raw)//(W*H*3)-receipt.total_frames)>1 or
+        len(raw)%(W*H*3)):
+        _block("DECODED_PIXEL_FRAME_INCOMPLETE")
+    # Actual non-silent speech must be present in every final AAC scene.
+    from array import array
+    for e in receipt.segments:
+        pcm=_exec(["ffmpeg","-nostdin","-v","error",
+                   "-ss",f"{e['seconds_start']:.5f}","-t",
+                   f"{e['raw_spoken_duration_seconds']:.5f}",
+                   "-i",str(video),"-map","0:a:0","-ar","16000","-ac","1",
+                   "-f","s16le","pipe:1"],timeout=30).stdout
+        a=array("h");a.frombytes(pcm[:len(pcm)//2*2])
+        if (len(a)<6000 or
+            math.sqrt(sum(int(x)*int(x) for x in a)/len(a))/32768<.004):
+            _block("FINAL_SEGMENT_AUDIO_SILENT_OR_MISALIGNED")
