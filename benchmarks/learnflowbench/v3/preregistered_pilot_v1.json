@@ -1,0 +1,265 @@
+{
+  "schema_version": "v3-preregistered-pilot-v1",
+  "protocol_id": "learnflow-v3-01-tier1-20261008",
+  "state": "FROZEN_PROTOCOL_UNEXECUTED",
+  "created_date": "2026-10-08",
+  "source": {
+    "corpus_path": "benchmarks/learnflowbench/corpus_v1.json",
+    "corpus_id": "learnflowbench-v1-100",
+    "corpus_sha256": "4f0e0fc81dee7580df93a1d912b9485de7e5eb1c9fdda699576b48729bf4ab8f",
+    "baseline_commit": "a06e0b0b5f35e9147b4081da7ed7f7934affe0c6",
+    "topic_count": 100
+  },
+  "sampling": {
+    "seed": "learnflow-v3-01-20261008-stratified-v1",
+    "method": "minimum_SHA256(seed|topic_id)_per_locked_domain_difficulty_stratum",
+    "strata": [
+      {
+        "domain": "cs",
+        "difficulty": "easy"
+      },
+      {
+        "domain": "cs",
+        "difficulty": "hard"
+      },
+      {
+        "domain": "math",
+        "difficulty": "easy"
+      },
+      {
+        "domain": "math",
+        "difficulty": "medium"
+      },
+      {
+        "domain": "physics",
+        "difficulty": "medium"
+      },
+      {
+        "domain": "physics",
+        "difficulty": "hard"
+      },
+      {
+        "domain": "biology",
+        "difficulty": "easy"
+      },
+      {
+        "domain": "biology",
+        "difficulty": "hard"
+      },
+      {
+        "domain": "chemistry",
+        "difficulty": "easy"
+      },
+      {
+        "domain": "chemistry",
+        "difficulty": "medium"
+      },
+      {
+        "domain": "history_general",
+        "difficulty": "medium"
+      },
+      {
+        "domain": "history_general",
+        "difficulty": "hard"
+      }
+    ],
+    "excluded_diagnostic_ids": [
+      "lfb-005-cs"
+    ],
+    "diagnostic_exclusion_reason": "Action #181 binary search exposure and known registry/script mismatch",
+    "topic_ids": [
+      "lfb-006-cs",
+      "lfb-016-cs",
+      "lfb-019-math",
+      "lfb-026-math",
+      "lfb-046-physics",
+      "lfb-050-physics",
+      "lfb-052-biology",
+      "lfb-064-biology",
+      "lfb-069-chemistry",
+      "lfb-078-chemistry",
+      "lfb-092-history-general",
+      "lfb-094-history-general"
+    ],
+    "selection_count": 12,
+    "replacements_allowed": false
+  },
+  "comparisons": {
+    "systems": [
+      "v2d_frozen",
+      "v3_candidate"
+    ],
+    "v2d_implementation_ref": "a06e0b0b5f35e9147b4081da7ed7f7934affe0c6",
+    "v3_implementation_state": "NOT_IMPLEMENTED",
+    "mode": "FUTURE_NOT_RUN",
+    "denominator": "ALL_12_ASSIGNED_PAIRS",
+    "representation_ablation": "same evidence, script, audio, timing, lesson objective, seed; only specialized visual treatment changes",
+    "end_to_end_comparison": "same untouched corpus input, learner level, topic, language, provider+model version, seed, one attempt; script may differ and is an outcome",
+    "free_model_policy": {
+      "provider": "openrouter",
+      "model_slug": "nvidia/nemotron-3.5-lightning:free",
+      "availability": "UNVERIFIED_NOT_PROBED",
+      "same_model_for_paired_systems": true,
+      "allow_paid": false,
+      "allow_paid_fallback": false,
+      "attempts_per_topic_per_system": 1,
+      "auto_retry": false,
+      "if_unavailable": "STOP_AND_VERSION_AMEND_BEFORE_RUNNING"
+    }
+  },
+  "human": {
+    "min_blinded_raters": 2,
+    "independent": true,
+    "domain_expertise": true,
+    "order_rule": "SHA256(seed|presentation|topic_id) parity; isolate mapping from raters",
+    "third_rater_if_absolute_difference_ge": 2,
+    "identity_key_kept_blind": true,
+    "anchors": {
+      "1": "unusable or incorrect",
+      "2": "confusing",
+      "3": "understandable with meaningful weaknesses",
+      "4": "clear and well integrated",
+      "5": "exemplary clear and accurate"
+    },
+    "dimensions": [
+      "clarity",
+      "representation_adequacy",
+      "pedagogy_sequence",
+      "subtitle_readability",
+      "cognitive_load"
+    ],
+    "score_invalid_video": 1,
+    "unrun_data": "UNMEASURED",
+    "no_complete_case_only_headline": true
+  },
+  "metrics": [
+    {
+      "id": "clarity",
+      "primary": true,
+      "status": "UNMEASURED"
+    },
+    {
+      "id": "representation_adequacy",
+      "primary": true,
+      "status": "UNMEASURED"
+    },
+    {
+      "id": "semantic_factual_integrity",
+      "primary": false,
+      "status": "UNMEASURED"
+    },
+    {
+      "id": "e2e_mp4_success",
+      "primary": false,
+      "status": "UNMEASURED"
+    },
+    {
+      "id": "beat_visual_coverage",
+      "primary": false,
+      "status": "UNMEASURED"
+    },
+    {
+      "id": "visual_event_alignment",
+      "primary": false,
+      "status": "UNMEASURED"
+    },
+    {
+      "id": "fatal_geometry",
+      "primary": false,
+      "status": "UNMEASURED"
+    },
+    {
+      "id": "card_collapse",
+      "primary": false,
+      "status": "UNMEASURED"
+    },
+    {
+      "id": "pedagogy_sequence",
+      "primary": false,
+      "status": "UNMEASURED"
+    },
+    {
+      "id": "subtitle_readability",
+      "primary": false,
+      "status": "UNMEASURED"
+    },
+    {
+      "id": "cognitive_load",
+      "primary": false,
+      "status": "UNMEASURED"
+    },
+    {
+      "id": "actual_usd_cost",
+      "primary": false,
+      "status": "UNMEASURED"
+    },
+    {
+      "id": "render_wall_seconds",
+      "primary": false,
+      "status": "UNMEASURED"
+    },
+    {
+      "id": "transfer_learning",
+      "primary": false,
+      "status": "UNMEASURED"
+    }
+  ],
+  "analysis": {
+    "unit": "paired_topic_n12",
+    "primary": [
+      "clarity",
+      "representation_adequacy"
+    ],
+    "both_mean_deltas_at_least": 0.5,
+    "min_topic_wins_each": 8,
+    "confidence_interval": "paired bootstrap 10000 resamples 95% percentile with fixed seed",
+    "bootstrap_seed": "lf-v3-paired-bootstrap-20261008",
+    "stratified_slices": [
+      "domain",
+      "difficulty"
+    ],
+    "report_rater_agreement": true,
+    "hard_safety_noninferiority": true,
+    "statistical_scope": "engineering exploratory pilot only; no population reliability, learning gain or SOTA claim"
+  },
+  "hard_gates": {
+    "critical_semantic_errors_max": 0,
+    "fatal_geometry_or_caption_errors_max": 0,
+    "unsafe_export_max": 0,
+    "core_freeze_required": true,
+    "unmeasured_cannot_pass": true
+  },
+  "outcome_records": {
+    "fields": [
+      "topic_id",
+      "candidate_id",
+      "attempt_id",
+      "git_sha",
+      "input_hash",
+      "model_slug",
+      "model_revision_if_known",
+      "seed",
+      "renderer_profile",
+      "provider_roundtrips",
+      "failure_code",
+      "completed_mp4",
+      "artifact_manifest_sha256",
+      "tokens_if_measured",
+      "usd_cost_if_measured",
+      "wall_seconds"
+    ],
+    "include_failed_attempts": true,
+    "drop_failures": false,
+    "substitute_topics": false,
+    "primary_quality_only_human": true
+  },
+  "permission": {
+    "preregistration_authorized": true,
+    "live_generation_authorized": false,
+    "paid_api_authorized": false,
+    "human_participants_authorized": false,
+    "publish_authorized": false,
+    "cost_cap_usd": "UNSET_REQUIRES_EXPLICIT_APPROVAL"
+  },
+  "selection_policy": "no posthoc edits; new version with disclosure and explicit approval required before any outcomes"
+}
