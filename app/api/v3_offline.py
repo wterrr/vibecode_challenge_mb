@@ -50,3 +50,31 @@ async def offline_binary_search(payload:BinaryPreviewInput,request:Request)->dic
             status_code=500,
             detail="V3 preview was rejected by source/renderer/QA; nothing published",
         ) from None
+
+
+@router.post("/binary-search-lesson",status_code=200)
+async def offline_narrated_binary_lesson(payload:BinaryPreviewInput,request:Request)->dict:
+    """Developer-only narrated lesson. Never registers a public video URL."""
+    settings=request.app.state.settings
+    if (not settings.v3_binary_preview_enabled or
+        not settings.v3_narrated_lesson_enabled or
+        settings.environment.strip().lower() not in ("test","development")):
+        raise HTTPException(status_code=404,detail="V3 narrated lesson disabled")
+    client_host=request.client.host if request.client else None
+    if client_host not in ("testclient","127.0.0.1","::1","localhost"):
+        raise HTTPException(status_code=403,detail="Local developer request required")
+    from app.pipeline.v3_preview import V3OfflinePreviewPipeline,V3PreviewRejected
+    pipeline=request.app.state.pipeline
+    if not isinstance(pipeline,V3OfflinePreviewPipeline):
+        raise HTTPException(status_code=503,detail="V3 adapter unavailable")
+    try:
+        return await pipeline.preview_narrated_binary_search(
+            values=payload.values,target=payload.target,family=payload.family)
+    except V3PreviewRejected as exc:
+        raise HTTPException(status_code=422,detail=str(exc)) from None
+    except Exception as exc:
+        log.error("V3-19 narrated QA fail-closed (%s)",type(exc).__name__)
+        raise HTTPException(
+            status_code=500,
+            detail="V3 narrated preview was blocked by source/audio/timeline/QA; not published",
+        ) from None
