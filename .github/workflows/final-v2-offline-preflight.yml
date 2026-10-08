@@ -6,6 +6,7 @@ on:
       - chatgpt/live-v2d-gpt6-luna-paid-pilot
     paths:
       - "lesson_pipeline/**"
+      - "scripts/verify_v3_baseline.py"
       - "live_evaluation/**"
       - "scripts/export_live_v2d_evidence.py"
       - "tests/hermes/test_final_v2_semantic_consistency.py"
@@ -25,6 +26,8 @@ jobs:
           python-version: "3.12"
       - name: Install offline test dependencies
         run: python -m pip install "pydantic>=2" pyyaml pytest pillow "kiwisolver==1.5.1"
+      - name: Verify V3-00 audit baseline
+        run: python scripts/verify_v3_baseline.py
       - name: Verify Core Freeze
         run: python scripts/verify_v2_core_freeze.py
       - name: Verify V2 evaluation contracts
