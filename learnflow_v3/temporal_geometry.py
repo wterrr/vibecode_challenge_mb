@@ -290,9 +290,17 @@ def certify_temporal_layout(plan:TemporalLayoutPlan)->TemporalGeometryCertificat
             for start,end in zip(points,points[1:]):
                 a0=_state(a,float(start))[0];a1=_state(a,float(end))[0]
                 b0=_state(b,float(start))[0];b1=_state(b,float(end))[0]
-                if a.interpolation==b.interpolation:
-                    # Both use SAME parametric easing on this segment; even
-                    # smoothstep is affine in their common eased parameter.
+                same_ease_window = (
+                    a.interpolation==b.interpolation=="SMOOTHSTEP"
+                    and any(k.frame==start for k in a.keyframes)
+                    and any(k.frame==end for k in a.keyframes)
+                    and any(k.frame==start for k in b.keyframes)
+                    and any(k.frame==end for k in b.keyframes)
+                )
+                if (a.interpolation==b.interpolation=="LINEAR") or same_ease_window:
+                    # For a shared easing window both poses are affine in the
+                    # same monotone parameter. Different eased intervals are
+                    # NOT affine in a common parameter: use conservative QA.
                     if _continuous_linear_collision(a0,a1,b0,b1):
                         _fail("SWEPT_COLLISION:"+a.object_id+":"+b.object_id)
                     analytic+=1
