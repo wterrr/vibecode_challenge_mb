@@ -346,37 +346,39 @@ def render_state_machine(*,spec:StateMachineLesson,topic,
         err=proc.stderr.read()
         if proc.wait(timeout=90)!=0 or not tmp.is_file() or tmp.stat().st_size<1000:
             _fail("H264_ENCODE_FAILED:"+err[-120:].decode(errors="replace"))
-        # Publish-to-output atomically without overwriting any existing file.
-        try:os.link(tmp,path)
-        except FileExistsError as exc:raise SemanticContractError("V3_15_OUTPUT_RACE") from exc
-        tmp.unlink()
+        # Do NOT link to target until decoded pixels and graph state pass QA.
     except Exception:
         if proc and proc.poll() is None:proc.kill()
         if proc:proc.wait()
         tmp.unlink(missing_ok=True)
         raise
-    anchors=tuple(i*n+round(n*.7) for i in range(len(spec.beats)))
-    roi=(round(profile.width*.09),round(profile.height*.15),
-         round(profile.width*.91),round(profile.height*.78))
-    frames=[_real_frame(path,k,profile) for k in anchors]
-    errors=tuple(round(_mean_absolute_error(frame,
-        draw_state_frame(spec,i,(anchors[i]%n+.5)/n,profile),rect=roi),3)
-        for i,frame in enumerate(frames))
-    deltas=tuple(round(_mean_absolute_error(a,b,rect=roi),3)
-                 for a,b in zip(frames,frames[1:]))
-    within=[]
-    for i in range(1,len(spec.beats)):
-        a=_real_frame(path,i*n+max(1,round(n*.15)),profile)
-        b=_real_frame(path,i*n+min(n-1,round(n*.8)),profile)
-        within.append(round(_mean_absolute_error(a,b,rect=roi),3))
-    result=StateMachineRenderEvidence(
-        video_path=str(path),
-        video_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
-        source_sha256=source,topic_query_sha256=spec.topic_query_sha256,
-        frame_count=count,fps=profile.fps,
-        decoded_beat_indices=anchors,decoded_anchor_mae=errors,
-        decoded_state_roi_delta=deltas,decoded_within_beat_motion=tuple(within),
-        stable_node_centers=stable_layout(spec,profile),
-    )
-    verify_state_machine_video(spec=spec,topic=topic,video_path=path,evidence=result,profile=profile)
-    return result
+    try:
+        anchors=tuple(i*n+round(n*.7) for i in range(len(spec.beats)))
+        roi=(round(profile.width*.09),round(profile.height*.15),
+             round(profile.width*.91),round(profile.height*.78))
+        frames=[_real_frame(tmp,k,profile) for k in anchors]
+        errors=tuple(round(_mean_absolute_error(frame,
+            draw_state_frame(spec,i,(anchors[i]%n+.5)/n,profile),rect=roi),3)
+            for i,frame in enumerate(frames))
+        deltas=tuple(round(_mean_absolute_error(a,b,rect=roi),3)
+                     for a,b in zip(frames,frames[1:]))
+        within=[]
+        for i in range(1,len(spec.beats)):
+            a=_real_frame(tmp,i*n+max(1,round(n*.15)),profile)
+            b=_real_frame(tmp,i*n+min(n-1,round(n*.8)),profile)
+            within.append(round(_mean_absolute_error(a,b,rect=roi),3))
+        result=StateMachineRenderEvidence(
+            video_path=str(path),
+            video_sha256=hashlib.sha256(tmp.read_bytes()).hexdigest(),
+            source_sha256=source,topic_query_sha256=spec.topic_query_sha256,
+            frame_count=count,fps=profile.fps,
+            decoded_beat_indices=anchors,decoded_anchor_mae=errors,
+            decoded_state_roi_delta=deltas,decoded_within_beat_motion=tuple(within),
+            stable_node_centers=stable_layout(spec,profile),
+        )
+        verify_state_machine_video(spec=spec,topic=topic,video_path=tmp,evidence=result,profile=profile)
+        try:os.link(tmp,path)
+        except FileExistsError as exc:raise SemanticContractError("V3_15_OUTPUT_RACE") from exc
+        return result
+    finally:
+        tmp.unlink(missing_ok=True)
