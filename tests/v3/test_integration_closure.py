@@ -209,7 +209,7 @@ def test_reachability_inventory_separates_product_from_offline_and_names_api():
     assert "learnflow_v3.sequence_renderer" in by_name
     assert "learnflow_v3.integration_slice" in by_name
     assert "learnflow_v3.evaluation_pilot" in by_name
-    assert by_name["learnflow_v3.integration_slice"]["status"]=="PRODUCTION_REFERENCED_REQUIRES_RUNTIME_PROOF"
+    assert by_name["learnflow_v3.integration_slice"]["status"]=="GUARDED_DEV_APP_PREVIEW_ONLY_NOT_PUBLIC_JOB_ROUTE"
     assert by_name["learnflow_v3.integration_slice"]["production_callers"]==["app/pipeline/v3_preview.py"]
     assert by_name["learnflow_v3.evaluation_pilot"]["status"]=="INTENTIONALLY_OFFLINE_SAFETY_GATE"
     assert a["production_v3_imports_found"]>0
