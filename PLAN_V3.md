@@ -483,6 +483,10 @@ Feature and acceptance contract
 
 **Rollback:** preserve V2 default route and video renderer in parallel; feature flag `LEARNFLOW_V3_ENABLED` defaults false until release gate. Rollback means flipping versioned routing, not deleting history or rewriting data. V3 ArtifactManifest has full hash chain; never migrate old artifact schemas in place.
 
+### 9.1 V3-00 audit result (2026-10-08)
+
+**Audit PASS, full branch merge NO-GO.** Pinned main `29fab1d` vs pilot before audit `a1e4e8b`: 27 commits, 23 files; per-commit/file decisions, licensing and C1–C12 reuse inventory recorded in `reports/v3_00_baseline_merge_gate.md` and `reports/v3_00_reuse_inventory.json`. Fresh offline run [37725705499](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37725705499) passed: V3-00 inventory, Core Freeze, live-eval contract, 87 regression tests, 14 renderer tests (5 skipped). No paid workflow ran. The only authorized proposed follow-up is **V3-00B (selective integration candidate)** if the user explicitly approves; do not merge main or implement V3-01 as a side effect.
+
 ## 10. Security, governance and cost
 
 - No provider calls in V3 unit/fixture/offline CI. Isolate paid integration workflow with manual confirm and per-run budget, as a *new authorized protocol only*.

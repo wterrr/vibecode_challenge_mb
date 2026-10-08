@@ -1,6 +1,6 @@
 # V3-00 — Baseline, Branch Merge Gate & Reuse Inventory
 
-**Status:** Audit produced; fresh offline CI **PENDING** at first commit, final PASS/FAIL belongs to linked workflow logs.  
+**Status:** **V3-00 AUDIT PASS / FULL FAST-FORWARD NO-GO / SELECTIVE INTEGRATION REQUIRES APPROVAL.** Fresh offline CI passed on audit HEAD.  
 **Scope:** V3-00 only. **NO MERGE**, no V3 capability implementation, no paid model call and no changes to frozen V2 Core.  
 **Evidence time:** 2026-10-08. Branch HEAD prior to audit: `a1e4e8b72f4e63e9cde0ffd4351df9a936900d9a`. Main HEAD: `29fab1d5738ccb060502c8ae82e2e31f00360811`.
 
@@ -144,11 +144,24 @@ pytest -q --confcutdir=tests/hermes tests/hermes/test_live_v2d_evaluation.py tes
 pytest -q --confcutdir=tests/v2 tests/v2/test_render_v2.py
 ```
 
-Verifier validates snapshot/coverage (27 commits, 23 files, C1–C12, no protected Core changes, no unlicensed-copy approval). **Core Freeze script independently validates exact frozen Git blob SHA and full protected-file set**. The workflow must remain strictly offline: no API key env, no model/provider calls. If the CI rerun does not complete successfully, status is **FIX/NO-GO**, not inherited PASS from #181.
+Verifier validates snapshot/coverage (27 commits, 23 files, C1–C12, no protected Core changes, no unlicensed-copy approval) **and now checks every recommended baseline test path exists**. **Core Freeze script independently validates exact frozen Git blob SHA and full protected-file set**. The workflow remains strictly offline: no API key env or model/provider calls.
+
+**Fresh definitive run: [Final V2 Offline Preflight #37725705499](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37725705499), code/inventory HEAD `217bd0575e7e14141fa24fd320efa76edcf391b3`.** Log-confirmed results:
+
+| Gate | Verified output |
+| --- | --- |
+| V3-00 inventory baseline | `V3_00_BASELINE=PASS commits=27 files=23 capabilities=12` |
+| Frozen Core | `CORE_FREEZE=PASS` |
+| V2D contract | `LIVE_V2D_CONTRACT=PASS` |
+| Offline Hermes/subtitle/semantic regression | `87 passed` |
+| Offline renderer regression | `14 passed, 5 skipped` |
+| Provider-paid workflow | Not triggered; `Final V2 Offline Preflight` only |
+
+**Interpretation:** V3-00 audit is a **PASS**, while selection+safe merge remains **BLOCKED pending explicit approval**, and blanket pilot→main fast-forward is **NO-GO**. This is not a new V3 quality outcome, nor a test of upstream Manim runtime.
 
 ## E. Gate decision and candidate integration protocol
 
-**V3-00 audit completion** requires full categorized inventories, verified license status, explicit branch-risk blockers, and a fresh offline CI PASS. The standalone V2D `#181` remains technical-only historical evidence with known semantic drift.
+**V3-00 audit completion: PASS.** Completed full categorized inventories, verified license findings, documented production-merge blockers and a fresh offline CI PASS. The standalone V2D `#181` remains technical-only historical evidence with known semantic drift.
 
 **Straight merge `pilot → main`: NO-GO** due to paid-default config and branch-specific experimental changes. **Safe selective integration: CONDITIONAL GO to PREPARE ONLY**, subject to explicit user authorization.
 

@@ -442,7 +442,7 @@
     }
   ],
   "gate": {
-    "audit": "PENDING_FRESH_CI",
+    "audit": "PASS",
     "straight_fast_forward": "NO_GO",
     "selective_integration": "REQUIRES_APPROVAL",
     "paid_api_calls": 0,
@@ -452,6 +452,12 @@
       14
     ],
     "frozen_core_paths_changed": 0,
-    "post_v3_build_authorized": false
+    "post_v3_build_authorized": false,
+    "offline_ci_run_id": 37725705499,
+    "offline_ci_head_sha": "217bd0575e7e14141fa24fd320efa76edcf391b3",
+    "offline_core_freeze": "PASS",
+    "offline_regression": "87_pass",
+    "offline_renderer": "14_pass_5_skip",
+    "next_checkpoint": "V3-00B"
   }
 }

@@ -2793,3 +2793,12 @@ Next research work should update this same file.
 - Candidate modules for follow-up inspection: Code2Video `src/scope_refine.py`, `src/agent.py`, `src/eval_AES.py`, `src/eval_TQ.py`; Manim Community's mature math/vector engine as optional typed backend; ALGOGEN VTA/RSL architecture as research reference only.
 - **Not authorization to copy wholesale:** generated arbitrary rendering code must not bypass LearnFlow typed contracts, deterministic QA, Core Freeze or artifact provenance. Upstream assets and dependencies require separate license checks.
 - `PLAN_V3.md` v3.0.1-draft section 8.3 is the authoritative development rule. V3-00 must produce merge and upstream reuse inventory; implementation remains separate and unauthorised.
+
+
+## 2026-10-08 — V3-00 Baseline & Merge Gate audit results
+
+- Source main `29fab1d5738ccb060502c8ae82e2e31f00360811`, isolated paid pilot pre-audit `a1e4e8b72f4e63e9cde0ffd4351df9a936900d9a`: 27 commits ahead / 0 behind and 23 changed files. Full inventories and 12 capability reuse decisions in `reports/v3_00_baseline_merge_gate.md` and `reports/v3_00_reuse_inventory.json`.
+- Audit classification: KEEP / EXPERIMENTAL / SUPERSEDED / EXCLUDE; **do not fast-forward all pilot changes** because `hermes/bootstrap/config.yaml` switches default to paid GPT-6 Luna and other changes are branch-gated experiments.
+- Reuse audit includes Code2Video (MIT, pin `1142d8e`), Manim Community (MIT, pin `23ae68f`) and ALGOGEN-lab (no root license/declared license, **STUDY ONLY / DO NOT COPY**, pin `1bb093c`). Direct code copying was neither attempted nor authorized.
+- **Fresh offline CI: PASS**, run https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37725705499 on commit `217bd0575e7e14141fa24fd320efa76edcf391b3`; outputs: `V3_00_BASELINE=PASS commits=27 files=23 capabilities=12`, `CORE_FREEZE=PASS`, `LIVE_V2D_CONTRACT=PASS`, 87 regressions PASS, 14 renderer PASS/5 SKIP. No paid-provider workflow ran.
+- **V3-00 audit PASS**; full pilot-to-main merge **NO-GO**; next single task, only after user authorization: **V3-00B — Selective Integration Candidate & Offline Gate**, on a non-main branch; main and frozen Core remain unchanged. V3-01 and later capability code remain unimplemented.
