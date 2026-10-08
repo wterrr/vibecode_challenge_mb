@@ -211,6 +211,60 @@ def verify_equation_derivation(spec: EquationDerivation, graph: SceneGraph) -> P
     return polys[0]
 
 
+
+def pretty_polynomial(coefficients: Poly) -> str:
+    """Conventional printed algebra; source/provenance remains canonical."""
+    terms = []
+    for power, coefficient in ((2, coefficients[2]), (1, coefficients[1]), (0, coefficients[0])):
+        if not coefficient:
+            continue
+        magnitude = abs(coefficient)
+        factor = ("x²" if power == 2 else "x" if power == 1 else "")
+        label = ("" if magnitude == 1 and power else str(magnitude)) + factor
+        if not terms:
+            terms.append(("-" if coefficient < 0 else "") + label)
+        else:
+            terms.append((" − " if coefficient < 0 else " + ") + label)
+    return "f(x) = " + ("".join(terms) if terms else "0")
+
+
+def pretty_expression(expression: str) -> str:
+    """Typography for an *already verified* AST. Not a symbolic proof engine."""
+    root = ast.parse(expression, mode="eval").body
+
+    def show(node, parent_precedence=0):
+        if isinstance(node, ast.Constant) and type(node.value) is int:
+            return str(node.value)
+        if isinstance(node, ast.Name) and node.id == "x":
+            return "x"
+        if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.USub, ast.UAdd)):
+            value = ("−" if isinstance(node.op, ast.USub) else "+") + show(node.operand, 3)
+            return f"({value})" if 3 < parent_precedence else value
+        if isinstance(node, ast.BinOp):
+            if isinstance(node.op, ast.Pow):
+                base = show(node.left, 4)
+                return base + {0: "⁰", 1: "¹", 2: "²"}[node.right.value]
+            if isinstance(node.op, (ast.Add, ast.Sub)):
+                prec = 1
+                op = " + " if isinstance(node.op, ast.Add) else " − "
+                value = show(node.left, prec) + op + show(node.right, prec + (1 if isinstance(node.op, ast.Sub) else 0))
+            elif isinstance(node.op, ast.Mult):
+                prec = 2
+                if all(isinstance(x, ast.Name) and x.id == "x" for x in (node.left, node.right)):
+                    value = "x²"
+                elif isinstance(node.left, ast.Constant) and isinstance(node.right, ast.Name):
+                    value = show(node.left, prec) + show(node.right, prec)
+                elif isinstance(node.left, ast.BinOp) and isinstance(node.right, ast.BinOp):
+                    value = show(node.left, prec + 1) + show(node.right, prec + 1)
+                else:
+                    value = show(node.left, prec + 1) + "·" + show(node.right, prec + 1)
+            else:
+                raise SemanticContractError("V3_08_PRETTY_EXPRESSION_UNSUPPORTED")
+            return f"({value})" if prec < parent_precedence else value
+        raise SemanticContractError("V3_08_PRETTY_EXPRESSION_UNSUPPORTED")
+
+    return show(root)
+
 def _draw_header(d: ImageDraw.ImageDraw, profile: SequenceRenderProfile, heading: str):
     sx, sy = profile.width / 960, profile.height / 540
     font = cmu_font(max(12, round(33 * sy)))
@@ -236,7 +290,7 @@ def draw_function_frame(spec: FunctionGraph, graph: SceneGraph, step_index: int,
     sx, sy = _draw_header(d, profile, "A function, traced point by point")
     minor = cmu_font(max(11, round(17 * sy)))
     label = cmu_font(max(12, round(22 * sy)))
-    formula = f"f(x) = {spec.coefficients[2]}x² + {spec.coefficients[1]}x + {spec.coefficients[0]}"
+    formula = pretty_polynomial(spec.coefficients)
     assert_fits(d, formula, label, round(750 * sx), role="FUNCTION_LABEL")
     d.text((round(80 * sx), round(112 * sy)), formula, font=label, fill=CYAN)
     x0, y0 = _graph_pixel(profile, -4, 0)
@@ -300,20 +354,23 @@ def draw_equation_frame(spec: EquationDerivation, graph: SceneGraph, step_index:
         y = round((158 + i * 54) * sy)
         if y > round(450 * sy):
             raise SemanticContractError("V3_08_EQUATION_ROW_OVERFLOW")
-        assert_fits(d, step.expression, font, round(740 * sx), role="EQUATION")
-        d.text((round(120 * sx), y), step.expression, font=font,
+        expression = pretty_expression(step.expression)
+        assert_fits(d, expression, font, round(740 * sx), role="EQUATION")
+        center = round(480 * sx)
+        glyph = d.textbbox((0, 0), expression, font=font)
+        half = (glyph[2] - glyph[0]) / 2
+        left = round(center - half)
+        d.text((center, y), expression, font=font, anchor="mt",
                fill=WHITE if i == step_index else GREEN if i < step_index else GREY)
-        d.text((round(80 * sx), y), f"{i + 1:02d}", font=small,
+        d.text((round(148 * sx), y), f"{i + 1:02d}", font=small,
                fill=YELLOW if i == step_index else GREY)
         if i == step_index:
-            under = round((120 + 650 * _ease(progress)) * sx)
-            d.line((round(120 * sx), y + round(39 * sy), under, y + round(39 * sy)),
+            end = round(left + 2 * half * _ease(progress))
+            d.line((left, y + round(32 * sy), end, y + round(32 * sy)),
                    fill=YELLOW, width=max(2, round(3 * sy)))
         if i < len(spec.steps) - 1:
-            arrow_y = y + round(44 * sy)
-            d.line((round(105 * sx), arrow_y - round(6 * sy),
-                    round(105 * sx), arrow_y + round(3 * sy)), fill=CYAN,
-                   width=max(1, round(2 * sy)))
+            d.text((center, y + round(37 * sy)), "=", font=small, fill=CYAN,
+                   anchor="mt")
     d.text((round(65 * sx), round(497 * sy)),
            f"Equivalent for every x  |  Transformation {step_index + 1}/{len(spec.steps)}",
            font=small, fill=GREY)
@@ -424,7 +481,7 @@ def render_equation_derivation(*, spec: EquationDerivation, graph: SceneGraph,
                                output_path: str | Path,
                                profile: SequenceRenderProfile = SequenceRenderProfile()) -> MathRenderEvidence:
     verify_equation_derivation(spec, graph)
-    centers = {s.step_id: (round(120*profile.width/960), round((158+i*54)*profile.height/540))
+    centers = {s.step_id: (round(480*profile.width/960), round((158+i*54)*profile.height/540))
                for i, s in enumerate(spec.steps)}
     return _encode_math(family="EQUATION_DERIVATION", spec=spec, graph=graph,
                         drawer=draw_equation_frame, centers=centers,
