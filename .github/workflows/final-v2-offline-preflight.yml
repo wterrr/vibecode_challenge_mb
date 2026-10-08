@@ -7,6 +7,7 @@ on:
     paths:
       - "lesson_pipeline/**"
       - "tests/hermes/test_final_v2_subtitles.py"
+      - "tests/hermes/test_live_v2d_evaluation.py"
       - ".github/workflows/final-v2-offline-preflight.yml"
   workflow_dispatch:
 
