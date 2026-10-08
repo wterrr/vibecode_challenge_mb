@@ -87,6 +87,13 @@ class Settings(BaseSettings):
     enable_image_generation: bool = False
     # V3-18: local, non-publishing developer preview only; DEFAULT OFF.
     # Explicit second gate for locally narrated V3 lessons; default OFF.
+    # V3-20: separately pronounced/physically measured semantic event preview.
+    v3_event_alignment_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices(
+            "LEARNFLOW_V3_EVENT_ALIGNMENT", "v3_event_alignment_enabled"
+        ),
+    )
     v3_narrated_lesson_enabled: bool = Field(
         default=False,
         validation_alias=AliasChoices(
