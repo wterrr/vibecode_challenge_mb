@@ -1352,3 +1352,73 @@ def test_paid_pilot_fast_renderer_is_opt_in_and_frozen_core_is_original():
     assert hashlib.sha1(prefix + frozen).hexdigest() == (
         "177fe738da68adf5bbcedc70a81f023d233a458a"
     )
+
+
+def test_streamed_rgb_checksum_uses_bounded_chunks_and_exact_sha(monkeypatch, tmp_path):
+    """#178: bytes digest is unchanged, but never buffers decoded full video."""
+    import hashlib
+    from io import BytesIO
+    import lesson_pipeline.media_digest_adapter as streaming
+
+    video_bytes = b"RGB" * (1024 * 1024 + 17)
+    class DummyProcess:
+        def __init__(self):
+            self.stdout = BytesIO(video_bytes)
+            self.was_waited = False
+
+        def wait(self):
+            self.was_waited = True
+            return 0
+
+        def kill(self):
+            raise AssertionError("unexpected kill")
+
+    seen = []
+    proc = DummyProcess()
+    def popen(command, *, stdout, stderr):
+        seen.append((command, stdout, stderr))
+        return proc
+
+    monkeypatch.setattr(streaming.subprocess, "Popen", popen)
+    result = streaming.stream_decoded_rgb_digest(tmp_path / "not-rendered.mp4")
+    assert result == hashlib.sha256(video_bytes).hexdigest()
+    assert seen[0][0][-3:] == ["-pix_fmt", "rgb24", "-"]
+    assert proc.was_waited
+    assert proc.stdout.closed
+
+
+def test_paid_subtitle_streaming_adapter_restores_frozen_decoder(monkeypatch):
+    """Even a failed subtitle burn must leave Core's function untouched."""
+    import learnflow_v2.render.assembly as core_assembly
+    import lesson_pipeline.media_digest_adapter as streaming
+
+    frozen_decoder = core_assembly._decoded_rgb_digest
+
+    def successful_stub(*args):
+        assert core_assembly._decoded_rgb_digest is streaming.stream_decoded_rgb_digest
+        return "artifact"
+
+    monkeypatch.setattr(streaming, "burn_subtitles", successful_stub)
+    assert streaming.burn_subtitles_with_streaming_digest(None, (), "out.mp4") == "artifact"
+    assert core_assembly._decoded_rgb_digest is frozen_decoder
+
+    def failing_stub(*args):
+        assert core_assembly._decoded_rgb_digest is streaming.stream_decoded_rgb_digest
+        raise ValueError("simulated subtitle error")
+
+    monkeypatch.setattr(streaming, "burn_subtitles", failing_stub)
+    with pytest.raises(ValueError, match="simulated subtitle error"):
+        streaming.burn_subtitles_with_streaming_digest(None, (), "out.mp4")
+    assert core_assembly._decoded_rgb_digest is frozen_decoder
+
+
+def test_paid_streaming_digest_is_scoped_and_core_stays_frozen():
+    src = (ROOT / "lesson_pipeline" / "production.py").read_text()
+    adapter = (ROOT / "lesson_pipeline" / "media_digest_adapter.py").read_text()
+    assert 'os.environ.get("LEARNFLOW_PAID_PILOT_MODEL") == "openai/gpt-6-luna"' in src
+    assert '== "refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot"' in src
+    assert "burn_subtitles_with_streaming_digest" in src
+    assert "finally:" in adapter
+    assert "digest.update(chunk)" in adapter
+    assert 'subprocess.Popen(' in adapter
+    assert "subprocess.run(" not in adapter

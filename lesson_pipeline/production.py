@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -656,11 +657,31 @@ def build_production_media(
         lesson_audio_path,
         root / "final.av.mp4",
     )
-    final_artifact = burn_subtitles(
-        av_artifact,
-        global_cues,
-        root / "final.mp4",
+    # The frozen implementation buffers the entire decoded RGB stream in RAM
+    # solely for SHA-256 (many GiB at 1080p/30fps). In this isolated GPT-6
+    # Luna experiment use a bounded reader while retaining exact SHA-256,
+    # frozen cue validation, and subtitle burn-in behavior.
+    paid_streaming_digest = (
+        os.environ.get("LEARNFLOW_PAID_PILOT_MODEL") == "openai/gpt-6-luna"
+        and os.environ.get("GITHUB_REF")
+        == "refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot"
     )
+    if paid_streaming_digest:
+        from lesson_pipeline.media_digest_adapter import (
+            burn_subtitles_with_streaming_digest,
+        )
+
+        final_artifact = burn_subtitles_with_streaming_digest(
+            av_artifact,
+            global_cues,
+            root / "final.mp4",
+        )
+    else:
+        final_artifact = burn_subtitles(
+            av_artifact,
+            global_cues,
+            root / "final.mp4",
+        )
 
     stream_types = _probe_stream_types(final_artifact.path)
     target_duration = result.learning_brief.target_duration_minutes * 60.0
