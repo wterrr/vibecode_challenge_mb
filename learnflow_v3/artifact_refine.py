@@ -8,6 +8,8 @@ Re-encodes whole clip, so does NOT claim incremental video reuse.
 from __future__ import annotations
 
 import hashlib
+import os
+import tempfile
 from pathlib import Path
 from typing import Literal
 
@@ -168,6 +170,8 @@ def refine_single_track(*,intent:LocalRepairIntent,baseline:TemporalLayoutPlan,
     dest=Path(output_path)
     if dest.exists() or dest.is_symlink() or dest.resolve()==orig.resolve():
         _block("OUTPUT_DESTINATION_UNSAFE")
+    if not dest.parent.is_dir() or any(p.is_symlink() for p in (dest.parent,*dest.parent.parents)):
+        _block("OUTPUT_DIRECTORY_UNSAFE")
     verify_temporal_render(plan=baseline,certificate=baseline_certificate,
                            evidence=baseline_evidence,video_path=orig)
     original_digest=hashlib.sha256(orig.read_bytes()).hexdigest()
@@ -231,12 +235,22 @@ def refine_single_track(*,intent:LocalRepairIntent,baseline:TemporalLayoutPlan,
             _block("UNTOUCHED_TRACK_IDENTITY_VIOLATED")
         cert=certify_temporal_layout(restored)
         verify_temporal_certificate(plan=restored,candidate=cert)
-        evidence=render_certified_temporal_demo(
-            plan=restored,certificate=cert,output_path=dest)
-        created=True
-        verify_temporal_render(plan=restored,certificate=cert,evidence=evidence,video_path=dest)
-        if hashlib.sha256(orig.read_bytes()).hexdigest()!=original_digest:
-            _block("ORIGINAL_VIDEO_MODIFIED")
+        # The renderer may produce a partial MP4 and THEN raise, before
+        # returning evidence. A private per-attempt directory owns that file
+        # and is always deleted; never leave an untracked broken destination.
+        with tempfile.TemporaryDirectory(prefix=".v3_14_repair_",dir=dest.parent) as work:
+            staged=Path(work)/"certified_repair.mp4"
+            evidence=render_certified_temporal_demo(
+                plan=restored,certificate=cert,output_path=staged)
+            verify_temporal_render(
+                plan=restored,certificate=cert,evidence=evidence,video_path=staged)
+            if hashlib.sha256(orig.read_bytes()).hexdigest()!=original_digest:
+                _block("ORIGINAL_VIDEO_MODIFIED")
+            try:
+                os.link(staged,dest)  # no overwrite, even under a late race
+            except FileExistsError:
+                _block("OUTPUT_DESTINATION_RACE")
+            created=True
         raw=_result(intent,baseline,candidate,success=True,
                     reason="ONE_TRACK_RESTORED_AND_REPLAY_CERTIFIED",
                     target=altered,stable=stable,
