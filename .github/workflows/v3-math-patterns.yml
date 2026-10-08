@@ -53,7 +53,7 @@ jobs:
           python scripts/verify_v3_math_patterns.py --output-dir "$RUNNER_TEMP/v3_08_golden"
           for name in function_graph equation_derivation; do
             ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate \
-              -of default=noprint_wrappers=1 "$RUNNER_TEMP/v3_08_golden/\${name}.mp4"
+              -of default=noprint_wrappers=1 "$RUNNER_TEMP/v3_08_golden/${name}.mp4"
           done
       - name: Upload MP4, PNG and JSON proof only
         if: success()
