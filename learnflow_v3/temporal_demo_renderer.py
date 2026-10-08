@@ -78,7 +78,7 @@ def _decode_exact_frame(video:Path,frame:int,profile:SequenceRenderProfile)->Ima
     # Seeking by timestamp is unstable at the final H264 frame. Decode the
     # exact ordinal frame and do not silently accept the preceding frame.
     cmd=["ffmpeg","-nostdin","-v","error","-i",str(video),
-         "-vf",f"select=eq(n\\\\,{frame})","-vsync","0",
+         "-vf",f"select=eq(n\\,{frame})","-vsync","0",
          "-frames:v","1","-pix_fmt","rgb24","-f","rawvideo","pipe:1"]
     try:
         done=subprocess.run(cmd,capture_output=True,timeout=30)
