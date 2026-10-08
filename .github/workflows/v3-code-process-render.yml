@@ -1,0 +1,61 @@
+name: V3-07 Code and Process Blackboard Renderers Offline
+
+on:
+  push:
+    branches:
+      - chatgpt/v3-07-code-process-blackboard
+  pull_request:
+    paths:
+      - "learnflow_v3/**"
+      - "tests/v3/**"
+      - "scripts/verify_v3_code_process_render.py"
+      - ".github/workflows/v3-code-process-render.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  real-blackboard-mp4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned CPU renderer stack with Computer Modern Unicode
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fontconfig fonts-cmu
+          python -m pip install "pydantic>=2" pyyaml pytest "pillow==12.3.0" "kiwisolver==1.5.1"
+          fc-match -f '%{family}\n' "CMU Serif"
+          fc-match -f '%{family}\n' "CMU Typewriter Text"
+      - name: V3-02 through V3-07 and blackboard mutation tests
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_contracts.py tests/v3/test_signal_preservation.py \
+            tests/v3/test_pattern_router.py tests/v3/test_binary_search_trace.py \
+            tests/v3/test_stateful_sequence_renderer.py tests/v3/test_code_process_renderer.py
+      - name: Frozen V2 regression
+        run: |
+          python -m pytest -q --confcutdir=tests/v2 tests/v2/test_concept_registry.py tests/v2/test_scenegraph_validation.py tests/v2/test_repair_v2_13_contracts.py
+          python -m pytest -q --confcutdir=tests/hermes tests/hermes/test_visual_director.py tests/hermes/test_final_v2_semantic_consistency.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Generate actual code/process H264 MP4 and proof JSON
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_07_golden"
+          python scripts/verify_v3_code_process_render.py --output-dir "$RUNNER_TEMP/v3_07_golden"
+          for name in code process; do
+            ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate \
+              -of default=noprint_wrappers=1 "$RUNNER_TEMP/v3_07_golden/\${name}_blackboard.mp4"
+          done
+      - name: Upload ONLY generated video, PNG and JSON
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-07-computer-modern-code-process-golden
+          path: \${{ runner.temp }}/v3_07_golden/
+          if-no-files-found: error
+          retention-days: 30
