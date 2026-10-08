@@ -275,6 +275,9 @@ def run_artifact_critic(
         raw=reviewer(request)
         parsed=ProposedCriticResponse.model_validate(raw)
         issues=_validate_response(parsed,request)
+    except (TimeoutError, ConnectionError, OSError):
+        return _make_result(request=request,status="CRITIC_UNAVAILABLE",
+                            reason="REVIEWER_OUTAGE_OR_TIMEOUT",calls=1)
     except Exception:
         return _make_result(request=request,status="CRITIC_REJECTED",
                             reason="UNTRUSTED_REVIEWER_EXCEPTION_OR_INVALID_SCOPE",calls=1)
