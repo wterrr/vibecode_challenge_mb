@@ -1,0 +1,463 @@
+{
+  "schema_version": "v3-00-baseline-inventory-v1",
+  "generated_date": "2026-10-08",
+  "scope": "AUDIT_ONLY",
+  "main_sha": "29fab1d5738ccb060502c8ae82e2e31f00360811",
+  "pilot_sha": "a1e4e8b72f4e63e9cde0ffd4351df9a936900d9a",
+  "merge_base_sha": "29fab1d5738ccb060502c8ae82e2e31f00360811",
+  "ahead": 27,
+  "behind": 0,
+  "files": [
+    {
+      "path": ".github/workflows/final-v2-offline-preflight.yml",
+      "decision": "KEEP",
+      "rationale": "Only offline Core/contract/renderer regression runner; extend with V3-00 audit check, no provider calls"
+    },
+    {
+      "path": ".github/workflows/live-v2d-evaluation.yml",
+      "decision": "EXPERIMENTAL",
+      "rationale": "Preserve as historic isolated paid/manual pilot; do NOT merge dispatch settings to production"
+    },
+    {
+      "path": ".hermes/plugins/learnflow/tools.py",
+      "decision": "EXPERIMENTAL",
+      "rationale": "Contains pilot-only optimized renderer injection; split adapter from generic plugin first"
+    },
+    {
+      "path": "LEARNFLOW_V3_RESEARCH_NOTES.md",
+      "decision": "KEEP",
+      "rationale": "Canonical research continuity, include licensing and evidence limitations"
+    },
+    {
+      "path": "PLAN_V2.md",
+      "decision": "KEEP",
+      "rationale": "Historical scope/waiver documentation; no relaxation of frozen technical evidence"
+    },
+    {
+      "path": "PLAN_V3.md",
+      "decision": "KEEP",
+      "rationale": "Reviewed V3 plan document only; no implementation authorization"
+    },
+    {
+      "path": "hermes/bootstrap/config.yaml",
+      "decision": "EXCLUDE",
+      "rationale": "Paid openai/gpt-6-luna set as default: unacceptable promotion to main/default model"
+    },
+    {
+      "path": "lesson_pipeline/media_digest_adapter.py",
+      "decision": "EXPERIMENTAL",
+      "rationale": "Pilot-only memory-bounded RGB digest; candidate for separately benchmarked portable backend"
+    },
+    {
+      "path": "lesson_pipeline/production.py",
+      "decision": "EXPERIMENTAL",
+      "rationale": "Contains branch/env-conditional paid caption and streaming behavior; split normal subtitle policy before production"
+    },
+    {
+      "path": "lesson_pipeline/render_adapter.py",
+      "decision": "EXPERIMENTAL",
+      "rationale": "Pilot-only raster optimization; parity tests passed but policy tied to Luna branch"
+    },
+    {
+      "path": "lesson_pipeline/subtitle_policy.py",
+      "decision": "KEEP",
+      "rationale": "Pure short-caption timing and safe-band policy, portable behind explicit production flag and tests"
+    },
+    {
+      "path": "lesson_pipeline/subtitle_render_adapter.py",
+      "decision": "EXPERIMENTAL",
+      "rationale": "Paid-branch ffmpeg subtitle style override, needs accessibility/device QA and backend independence"
+    },
+    {
+      "path": "live_evaluation/hermes_runner.py",
+      "decision": "EXPERIMENTAL",
+      "rationale": "Mixed general semantic preflight and paid Luna reasoning/timeouts; separate changes before main"
+    },
+    {
+      "path": "live_evaluation/model_probe.py",
+      "decision": "EXPERIMENTAL",
+      "rationale": "Specific GPT-6 Luna protocol compatibility; isolate from production default candidates"
+    },
+    {
+      "path": "live_evaluation/pilot.py",
+      "decision": "KEEP",
+      "rationale": "Narrow numeric example drift guard before TTS; keep pilot scope and document limited generality"
+    },
+    {
+      "path": "live_evaluation/semantic_consistency.py",
+      "decision": "KEEP",
+      "rationale": "Portable fail-closed worked-example gate, but not general proof of semantic correctness"
+    },
+    {
+      "path": "openrouter_policy.py",
+      "decision": "EXPERIMENTAL",
+      "rationale": "Paid model exception gated to pilot GitHub ref; keep only in isolated evaluation path, not general production"
+    },
+    {
+      "path": "reports/v2_final_semantic_consistency_offline_audit.md",
+      "decision": "KEEP",
+      "rationale": "Reproducible historical #181 and CI evidence; never retroactively overwrite"
+    },
+    {
+      "path": "scripts/export_live_v2d_evidence.py",
+      "decision": "KEEP",
+      "rationale": "Allowlisted evidence export, excludes Hermes auth/runtime; security review still required"
+    },
+    {
+      "path": "scripts/run_live_v2d_pilot.py",
+      "decision": "EXPERIMENTAL",
+      "rationale": "Paid-specific traceback watchdog and pilot model selection, isolated evaluation only"
+    },
+    {
+      "path": "tests/hermes/test_final_v2_semantic_consistency.py",
+      "decision": "KEEP",
+      "rationale": "Positive/negative regression tests, credential and identity checks"
+    },
+    {
+      "path": "tests/hermes/test_final_v2_subtitles.py",
+      "decision": "KEEP",
+      "rationale": "Caption safety and Core Freeze regression tests"
+    },
+    {
+      "path": "tests/hermes/test_live_v2d_evaluation.py",
+      "decision": "EXPERIMENTAL",
+      "rationale": "Mixed standard and Luna-specific tests; retain for pilot, cherry-pick reusable assertions"
+    }
+  ],
+  "commits": [
+    {
+      "sha": "32bcbd02954f87b14c58126fd3983ce06cc706b3",
+      "summary": "test(live-v2d): isolated one-off GPT-6 Luna paid pilot",
+      "decision": "EXPERIMENTAL"
+    },
+    {
+      "sha": "ce8e4d9c1ad54224bf0d9d2d2d13d010744bf848",
+      "summary": "fix(live-v2d): omit unsupported temperature in GPT-6 Luna capability probe",
+      "decision": "EXPERIMENTAL"
+    },
+    {
+      "sha": "36c3c6a63dcac771eceb59942a0f8d0092691a89",
+      "summary": "fix(live-v2d): enable GPT-6 Luna tool calls and emit unbuffered diagnostics",
+      "decision": "EXPERIMENTAL"
+    },
+    {
+      "sha": "49dfa2dd3b6762eb41b71eee37f508a44f70aeda",
+      "summary": "fix(live-v2d): use canonical Hermes reasoning config for GPT-6 Luna",
+      "decision": "EXPERIMENTAL"
+    },
+    {
+      "sha": "481dc52f45060980211518a35543d0a28cefdba6",
+      "summary": "fix(live-v2d): repair Visual Director semantic gate failures within bounded loop",
+      "decision": "KEEP"
+    },
+    {
+      "sha": "4c2c17b508f86dbbf9d56e56ee96a8d4bac74af5",
+      "summary": "test(live-v2d): mock Hermes output-schema module in offline semantic repair regressions",
+      "decision": "KEEP"
+    },
+    {
+      "sha": "9cc69e2e69dd1431cfb4d09476f51777f0480f52",
+      "summary": "fix(live-v2d): bound Luna Visual requests and capture hang diagnostics",
+      "decision": "EXPERIMENTAL"
+    },
+    {
+      "sha": "3e59e24f4697377df600ac2fcdfbf03be50fb2a1",
+      "summary": "perf(render): crop node alpha layers and validate immutable scene inputs once per render",
+      "decision": "EXPERIMENTAL"
+    },
+    {
+      "sha": "98a7338a26455bae962f8eaf1221d080ffae7c3b",
+      "summary": "ci(live-v2d): gate expensive Luna pilot on render pixel-parity tests",
+      "decision": "KEEP"
+    },
+    {
+      "sha": "ba659bca933bb1e7e62b0ecb509392da23ebb2f3",
+      "summary": "ci(live-v2d): install Kiwi layout dependency before renderer tests",
+      "decision": "KEEP"
+    },
+    {
+      "sha": "ee59422593db68188cc6088cd3cb504f0858324e",
+      "summary": "perf(live-v2d): restore frozen Core; optimize paid-pilot rendering in isolated adapter",
+      "decision": "EXPERIMENTAL"
+    },
+    {
+      "sha": "4ecce3ac0f8fd89a1ea3adbae87720d476bd2404",
+      "summary": "fix(live-v2d): stream decoded RGB checksum without buffering entire production video",
+      "decision": "EXPERIMENTAL"
+    },
+    {
+      "sha": "7c40d69d5d2f9ad5842a2be62c694ef8ed50000a",
+      "summary": "test(live-v2d): make streaming-only guard robust to adapter docstring",
+      "decision": "KEEP"
+    },
+    {
+      "sha": "1c94a87cbce8b3743f9f992523f8064c8b45ebf1",
+      "summary": "ci(live-v2d): reserve single paid final topic for manual dispatch only",
+      "decision": "EXPERIMENTAL"
+    },
+    {
+      "sha": "0ce06f84029bbb6f5d9c27807cc34cd5cd75dbaa",
+      "summary": "docs(v2): record single paid final benchmark and scoped V3 planning gate",
+      "decision": "KEEP"
+    },
+    {
+      "sha": "a5b99c7150f66f2defc326ff6376eae16b5fcd49",
+      "summary": "docs(ci): require explicit user topic selection and paid one-shot confirmation",
+      "decision": "SUPERSEDED"
+    },
+    {
+      "sha": "b97df802bcac6d773cde9579087f01a2ebb1416c",
+      "summary": "docs(ci): lock preregistered Binary Search topic for final paid V2 gate",
+      "decision": "KEEP"
+    },
+    {
+      "sha": "9c0243a1735aff974b934496dd7bb9a8e8bdce5b",
+      "summary": "fix(v2-final): short timed TTS subtitles with safe band and offline-only preflight",
+      "decision": "KEEP"
+    },
+    {
+      "sha": "813e6b4ca4074f62a3c16dfdb23a5615026326ce",
+      "summary": "test(v2-final): align streaming checksum regression with readable subtitle adapter",
+      "decision": "KEEP"
+    },
+    {
+      "sha": "d94fdd147524b789ce22bedecfc12c85ace25616",
+      "summary": "ci(v2-final): rerun offline preflight when legacy regression guard changes",
+      "decision": "KEEP"
+    },
+    {
+      "sha": "cb605dc1104e87f9ac8640db2a6c49ceb27a159b",
+      "summary": "docs(v2-final): record offline subtitle replay and passing preflight evidence",
+      "decision": "KEEP"
+    },
+    {
+      "sha": "373bf557b5d24f738fb4e8472f874130db972e5f",
+      "summary": "fix(v2d): fail closed on cross-artifact worked-example drift; redact pilot evidence by allowlist",
+      "decision": "KEEP"
+    },
+    {
+      "sha": "0113b3a526a33d520a98f5dcf7d6a46b1ce09abd",
+      "summary": "test(v2d): enforce registry key and node semantic identity on worked examples",
+      "decision": "KEEP"
+    },
+    {
+      "sha": "efd19bc4bb3b8f2bf8e79ea50cf3e4e7e10c6b53",
+      "summary": "docs(v2-final): record offline semantic gate, redaction proof, and V3 conditions",
+      "decision": "KEEP"
+    },
+    {
+      "sha": "7a8a8df051a42234aa97b2375346a108ce593b19",
+      "summary": "docs(v3): add evidence-gated architecture plan and research synthesis",
+      "decision": "KEEP"
+    },
+    {
+      "sha": "f13e87d18a8ce4e09157ef95b53b254833d83207",
+      "summary": "docs(v3): correct baseline regression terminology",
+      "decision": "SUPERSEDED"
+    },
+    {
+      "sha": "a1e4e8b72f4e63e9cde0ffd4351df9a936900d9a",
+      "summary": "docs(v3): require licensed upstream reuse audit before new implementation",
+      "decision": "KEEP"
+    }
+  ],
+  "upstream": [
+    {
+      "repository": "showlab/Code2Video",
+      "sha": "1142d8e14cdc2806df85aedb0fbb5dca474caa0f",
+      "license": "MIT",
+      "evidence": "LICENSE; src/agent.py, scope_refine.py, eval_AES.py, eval_TQ.py, src/requirements.txt",
+      "dependencies": [
+        "manim==0.19.0",
+        "openai==1.90.0",
+        "numpy==2.2.6",
+        "scipy==1.15.3"
+      ],
+      "decision": "ADAPT_DESIGN_OR_SMALL_SUBSET_ONLY",
+      "risk": "Source-line-number Manim repair and provider-coupled evaluator; do not run arbitrary agent code or copy full pipeline."
+    },
+    {
+      "repository": "ManimCommunity/manim",
+      "sha": "23ae68f4dd5817d49760b338e14b92757a2369b5",
+      "license": "MIT + LICENSE.community review",
+      "evidence": "LICENSE; pyproject.toml declares 0.21.0, Python>=3.11",
+      "dependencies": [
+        "Cairo/Pango",
+        "ffmpeg",
+        "OpenGL stack",
+        "Manim Community >=0.21.0 selected candidate"
+      ],
+      "decision": "OPTIONAL_PINNED_BACKEND_SPIKE",
+      "risk": "Native system dependencies, text/font parity, render time, compatibility gap with Code2Video 0.19.0 and ALGOGEN 0.18.1."
+    },
+    {
+      "repository": "MAC-AutoML/ALGOGEN-lab",
+      "sha": "1bb093c76499135ecf54fc8030219a4e7ee4424c",
+      "license": "NO LICENSE FOUND (root, GitHub repository metadata)",
+      "evidence": "renderer/manim_renderer.py; run_pipeline.py; requirements.txt pinned manim==0.18.1",
+      "dependencies": [
+        "manim==0.18.1",
+        "numpy==1.26.4",
+        "jsonschema==4.20.0"
+      ],
+      "decision": "STUDY_ONLY_NO_COPY",
+      "risk": "No permission demonstrated to copy source; design/behavior may be studied and independently implemented."
+    },
+    {
+      "repository": "wterrr/vibecode_challenge_mb",
+      "sha": "29fab1d5738ccb060502c8ae82e2e31f00360811",
+      "license": "PROJECT OWNED (verify collaborators' contributions before redistribution)",
+      "evidence": "benchmarks/core_freeze/manifest.json and learnflow_v2 typed modules",
+      "dependencies": [
+        "Pydantic v2",
+        "Kiwi 1.5.1",
+        "Graphviz/ELK",
+        "Pillow",
+        "FFmpeg"
+      ],
+      "decision": "REUSE_EXISTING_V2_API_FIRST",
+      "risk": "Frozen namespaces may only be consumed, not modified."
+    }
+  ],
+  "capabilities": [
+    {
+      "id": "C1",
+      "capability": "Pedagogy Planner",
+      "internal": "pedagogy_agent/models.py; agent_contracts/lesson.py",
+      "upstream_ref": "Code2Video src/agent.py::generate_outline",
+      "choice": "ADAPT",
+      "risk": "No pedagogical-performance transfer from upstream; bounded typed plan.",
+      "proposed_test": "pytest -q --confcutdir=tests/hermes tests/hermes/test_pedagogy_agent.py",
+      "proposed_test_status": "NOT EXECUTED AS UPSTREAM/V3 EVIDENCE"
+    },
+    {
+      "id": "C2",
+      "capability": "Hero Section Allocation",
+      "internal": "agent_contracts/lesson.py; pedagogy_agent/*",
+      "upstream_ref": "Code2Video src/agent.py::generate_storyboard",
+      "choice": "ADAPT",
+      "risk": "No new full agent; fixed animation-budget ablation needed.",
+      "proposed_test": "pytest -q --confcutdir=tests/hermes tests/hermes/test_pedagogy_agent.py",
+      "proposed_test_status": "NOT EXECUTED AS UPSTREAM/V3 EVIDENCE"
+    },
+    {
+      "id": "C3",
+      "capability": "Visual Director",
+      "internal": "visual_director/gate.py; visual_director/models.py",
+      "upstream_ref": "Code2Video src/agent.py; external planning semantics",
+      "choice": "REUSE_V2_AND_ADAPT",
+      "risk": "Representation choice must stay semantic, not raw coordinates.",
+      "proposed_test": "pytest -q --confcutdir=tests/hermes tests/hermes/test_visual_director.py",
+      "proposed_test_status": "NOT EXECUTED AS UPSTREAM/V3 EVIDENCE"
+    },
+    {
+      "id": "C4",
+      "capability": "Beat-Visual Goal Binding",
+      "internal": "learnflow_v2/motion/beats.py; lesson_pipeline/production.py",
+      "upstream_ref": "MINARD grounded narration (paper only)",
+      "choice": "REUSE_V2_AND_ADAPT",
+      "risk": "Caption timing alone does not prove meaningful visual state.",
+      "proposed_test": "pytest -q --confcutdir=tests/hermes tests/hermes/test_lesson_pipeline.py",
+      "proposed_test_status": "NOT EXECUTED AS UPSTREAM/V3 EVIDENCE"
+    },
+    {
+      "id": "C5",
+      "capability": "Pattern Library",
+      "internal": "learnflow_v2/scenegraph/schema.py; learnflow_v2/layout/router.py; learnflow_v2/render/backend.py",
+      "upstream_ref": "Manim Community 0.21 optional backend; Code2Video generated-code design only",
+      "choice": "REUSE_V2_PLUS_TRUSTED_ADAPTER",
+      "risk": "Current V2 paints generic cards, requiring bounded typed pattern compiler.",
+      "proposed_test": "pytest -q --confcutdir=tests/v2 tests/v2/test_render_v2.py",
+      "proposed_test_status": "NOT EXECUTED AS UPSTREAM/V3 EVIDENCE"
+    },
+    {
+      "id": "C6",
+      "capability": "Artifact Critic",
+      "internal": "learnflow_v2/qa/critic.py; learnflow_v2/videoqa/critic.py",
+      "upstream_ref": "Code2Video src/eval_AES.py and agent.py::get_mllm_feedback",
+      "choice": "WRAP_EXISTING",
+      "risk": "Provider-coupled upstream and possible fail-open; human-labeled issue corpus.",
+      "proposed_test": "pytest -q --confcutdir=tests/v2 tests/v2/test_vlm_critic_v2_12_gate.py",
+      "proposed_test_status": "NOT EXECUTED AS UPSTREAM/V3 EVIDENCE"
+    },
+    {
+      "id": "C7",
+      "capability": "ArtifactRefine",
+      "internal": "learnflow_v2/repair/engine.py; learnflow_v2/repair/artifacts.py",
+      "upstream_ref": "Code2Video src/scope_refine.py::ScopeRefineFixer",
+      "choice": "REUSE_V2_PATCH_CORE",
+      "risk": "Upstream source-line patch incompatible with typed ID diff; measure isolated repair.",
+      "proposed_test": "pytest -q --confcutdir=tests/v2 tests/v2/test_repair_v2_13_engine.py",
+      "proposed_test_status": "NOT EXECUTED AS UPSTREAM/V3 EVIDENCE"
+    },
+    {
+      "id": "C8",
+      "capability": "Verified Algorithm Trace",
+      "internal": "learnflow_v2/motion/compiler.py; SceneGraph typed nodes",
+      "upstream_ref": "ALGOGEN-lab run_pipeline.py + renderer/manim_renderer.py (NO LICENSE; study only)",
+      "choice": "INDEPENDENT_NEW_ADAPTER",
+      "risk": "Trace state source is new glue; avoid copying unlicensed code; oracle on binary search.",
+      "proposed_test": "pytest -q --confcutdir=tests/hermes tests/hermes/test_live_v2d_evaluation.py",
+      "proposed_test_status": "NOT EXECUTED AS UPSTREAM/V3 EVIDENCE"
+    },
+    {
+      "id": "C9",
+      "capability": "Signal Preservation",
+      "internal": "learnflow_v2/concepts/registry.py; live_evaluation/semantic_consistency.py",
+      "upstream_ref": "ALGOGEN RSL dead-field finding (research only)",
+      "choice": "REUSE_V2_PLUS_TESTS",
+      "risk": "Validator is narrow for numeric worked examples; structural+mutation tests needed.",
+      "proposed_test": "pytest -q --confcutdir=tests/hermes tests/hermes/test_final_v2_semantic_consistency.py",
+      "proposed_test_status": "NOT EXECUTED AS UPSTREAM/V3 EVIDENCE"
+    },
+    {
+      "id": "C10",
+      "capability": "Fail-Closed QA & Publication",
+      "internal": "learnflow_v2/qa/analyzer.py; runtime_governance/*",
+      "upstream_ref": "Code2Video critic fail-open patterns as negative case",
+      "choice": "REUSE_V2_AND_HARDEN",
+      "risk": "Make CRITIC_UNAVAILABLE explicit; do not promote deterministic PASS.",
+      "proposed_test": "python scripts/verify_v2_core_freeze.py",
+      "proposed_test_status": "NOT EXECUTED AS UPSTREAM/V3 EVIDENCE"
+    },
+    {
+      "id": "C11",
+      "capability": "Temporal Keyframe Layout",
+      "internal": "learnflow_v2/layout/collision.py; learnflow_v2/layout/continuity.py; learnflow_v2/motion/compiler.py",
+      "upstream_ref": "OmniManim/SGA papers; Manim Community optional shapes",
+      "choice": "REUSE_V2_PLUS_NEW_TEMPORAL_ADAPTER",
+      "risk": "Swept collision is not proven by endpoint-only layout; no LLM geometry.",
+      "proposed_test": "pytest -q --confcutdir=tests/v2 tests/v2/test_render_v2.py",
+      "proposed_test_status": "NOT EXECUTED AS UPSTREAM/V3 EVIDENCE"
+    },
+    {
+      "id": "C12",
+      "capability": "Beat-to-Visual Evidence",
+      "internal": "learnflow_v2/motion/beats.py; lesson_pipeline/production.py; videoqa/*",
+      "upstream_ref": "MINARD and ManiBench measurement ideas (papers only)",
+      "choice": "ADAPT_WITH_RENDER_PROOF",
+      "risk": "Pixel-level visual event proof requires a new per-beat trace; speech/text sync insufficient.",
+      "proposed_test": "pytest -q --confcutdir=tests/hermes tests/hermes/test_lesson_pipeline.py",
+      "proposed_test_status": "NOT EXECUTED AS UPSTREAM/V3 EVIDENCE"
+    }
+  ],
+  "gate": {
+    "audit": "PASS",
+    "straight_fast_forward": "NO_GO",
+    "selective_integration": "REQUIRES_APPROVAL",
+    "paid_api_calls": 0,
+    "unmerged_prs": [
+      8,
+      11,
+      14
+    ],
+    "frozen_core_paths_changed": 0,
+    "post_v3_build_authorized": false,
+    "offline_ci_run_id": 37725705499,
+    "offline_ci_head_sha": "217bd0575e7e14141fa24fd320efa76edcf391b3",
+    "offline_core_freeze": "PASS",
+    "offline_regression": "87_pass",
+    "offline_renderer": "14_pass_5_skip",
+    "next_checkpoint": "V3-00B"
+  }
+}

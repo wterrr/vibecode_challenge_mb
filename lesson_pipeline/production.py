@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -513,23 +514,50 @@ def build_production_media(
                 for cue in narration.subtitle_cues
             ],
         )
+        # Optional production-neutral short-TTS policy. The legacy subtitle
+        # path stays the default and the frozen V2 renderer is not modified.
+        # Enabling requires explicit opt-in and safe layout/TTS timing.
+        use_short_cues = os.environ.get("LEARNFLOW_SHORT_TTS_SUBTITLES") == "1"
         cues: list[SubtitleRenderCue] = []
-        for phrase_index, phrase in enumerate(beat_map.phrases):
-            text = (
-                subtitle_texts[phrase_index]
-                if phrase_index < len(subtitle_texts)
-                else phrase.text
-            )
-            end = min(float(phrase.end), artifact.duration)
-            start = min(float(phrase.start), max(0.0, end - 1e-3))
-            if end > start + 1e-4:
-                cues.append(
-                    SubtitleRenderCue(
-                        start_seconds=start,
-                        end_seconds=end,
-                        text=text,
-                    )
+        if use_short_cues:
+            from .subtitle_policy import check_safe_subtitle_band, normalize_tts_subtitles
+
+            check_safe_subtitle_band(layout)
+            try:
+                pages = normalize_tts_subtitles(
+                    narration.subtitle_cues,
+                    audio_duration=narration.duration_seconds,
+                    scene_duration=artifact.duration,
                 )
+            except ValueError as exc:
+                raise ProductionOutputGateError(
+                    f"unsafe timed TTS subtitle cues for {scene.scene_id}: {exc}"
+                ) from exc
+            cues.extend(
+                SubtitleRenderCue(
+                    start_seconds=page.start_seconds,
+                    end_seconds=page.end_seconds,
+                    text=page.text,
+                )
+                for page in pages
+            )
+        else:
+            for phrase_index, phrase in enumerate(beat_map.phrases):
+                text = (
+                    subtitle_texts[phrase_index]
+                    if phrase_index < len(subtitle_texts)
+                    else phrase.text
+                )
+                end = min(float(phrase.end), artifact.duration)
+                start = min(float(phrase.start), max(0.0, end - 1e-3))
+                if end > start + 1e-4:
+                    cues.append(
+                        SubtitleRenderCue(
+                            start_seconds=start,
+                            end_seconds=end,
+                            text=text,
+                        )
+                    )
 
         scene_artifacts.append(artifact)
         scene_layouts.append(layout)
@@ -546,7 +574,10 @@ def build_production_media(
                 "motion_event_count": len(compiled.events),
                 "subtitle_cue_count": len(cues),
                 "provider_subtitle_cue_count": len(narration.subtitle_cues),
-                "subtitle_timing_source": "deterministic_script_segments",
+                "subtitle_timing_source": (
+                    "tts_short_pages_opt_in_v1" if use_short_cues
+                    else "deterministic_script_segments"
+                ),
                 "layout_intent": graph.layout_intent.type.value,
             }
         )
