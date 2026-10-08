@@ -64,6 +64,7 @@ class V3OfflinePreviewPipeline(LearningVideoPipeline):
 
     async def preview_narrated_binary_search(
         self,*,values:tuple[int,...],target:int,family:str="WORKED_EXAMPLE_BOARD",
+        event_aligned:bool=False,
     )->dict:
         decision=select_renderer(family)
         if decision.status!="SELECTED_BY_INTEGRATION_ADAPTER":
@@ -79,9 +80,11 @@ class V3OfflinePreviewPipeline(LearningVideoPipeline):
         ):
             raise V3PreviewRejected("INVALID_BINARY_SOURCE: sorted bounded integers required")
         async with self._preview_lock:
-            return await asyncio.to_thread(self._narrated_sync,values=values,target=target)
+            return await asyncio.to_thread(self._narrated_sync,values=values,target=target,
+                                           event_aligned=event_aligned)
 
-    def _narrated_sync(self,*,values:tuple[int,...],target:int)->dict:
+    def _narrated_sync(self,*,values:tuple[int,...],target:int,
+                       event_aligned:bool=False)->dict:
         # Uses existing app ArtifactStore and explicit private preview owner;
         # never publishes final.mp4 or changes a durable legacy job status.
         from learnflow_v3.narrated_lesson import build_narrated_lesson
@@ -89,7 +92,7 @@ class V3OfflinePreviewPipeline(LearningVideoPipeline):
         base=self.artifacts.get_job_dir(token,create=True)
         try:
             source=build_binary_lesson_source(values=values,target=target)
-            receipt=build_narrated_lesson(source=source,out=base)
+            receipt=build_narrated_lesson(source=source,out=base,event_aware=event_aligned)
             video=base/"narrated_binary_lesson.mp4"
             if not video.is_file() or video.is_symlink() or (
                 hashlib.sha256(video.read_bytes()).hexdigest()!=receipt.video_sha256
@@ -97,8 +100,18 @@ class V3OfflinePreviewPipeline(LearningVideoPipeline):
                 raise RuntimeError("V3_19_NARRATED_MP4_NOT_VERIFIED")
             if not (base/"narrated_binary_lesson.receipt.json").is_file():
                 raise RuntimeError("V3_19_NARRATED_RECEIPT_MISSING")
+            if event_aligned:
+                from learnflow_v3.narrated_lesson import verify_narrated_lesson
+                verify_narrated_lesson(source=source,folder=base,receipt=receipt)
+                if not (base/"narrated_binary_lesson.event_proof.json").is_file():
+                    raise RuntimeError("V3_20_EVENT_BOUNDARY_PROOF_MISSING")
             return {
-                "status":"OFFLINE_NARRATED_PREVIEW_QA_PASS_NOT_PUBLISHED",
+                "event_boundary_alignment":receipt.event_boundary_alignment,
+                "event_proof_sha256":receipt.event_proof_sha256,
+                "semantic_event_count":len(receipt.segments) if event_aligned else None,
+                "lexical_transcript_as_heard":"UNMEASURED",
+                "status":("OFFLINE_EVENT_ALIGNED_QA_PASS_NOT_PUBLISHED" if event_aligned
+                          else "OFFLINE_NARRATED_PREVIEW_QA_PASS_NOT_PUBLISHED"),
                 "preview_id":token,"renderer_family":"STATEFUL_SEQUENCE_BINARY_SEARCH",
                 "source_trace_sha256":receipt.source_trace_sha256,
                 "manifest_sha256":receipt.report_sha256,
