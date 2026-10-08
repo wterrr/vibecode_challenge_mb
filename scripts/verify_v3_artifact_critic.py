@@ -15,7 +15,7 @@ from learnflow_v3.sequence_renderer import SequenceRenderProfile
 from learnflow_v3.temporal_geometry import certify_temporal_layout
 from learnflow_v3.temporal_demo_renderer import render_certified_temporal_demo
 from learnflow_v3.artifact_critic import (
-    binary_request,geometry_request,run_artifact_critic,
+    binary_request,geometry_request,run_artifact_critic,run_video_artifact_critic,
     SeededLabel,evaluate_seeded_labels,CATEGORY_OWNER,
 )
 from scripts.verify_v3_beat_grounding import generate_verified_case
@@ -64,7 +64,13 @@ def demo(directory:Path):
         "rationale":"Author-seeded perceptual question; independent reviewer has NOT confirmed it",
         "repair_route":CATEGORY_OWNER["VISUAL_LEGIBILITY"],
     }
-    seeded=run_artifact_critic(binary,reviewer=lambda r:_response(r,[issue]))
+    def author_seeded_pixel_reviewer(request,decoded):
+        # Actual Pillow RGB images, never just alleged caller-supplied frame hashes.
+        assert len(decoded)==len(request.frame_samples)
+        assert all(image.mode=="RGB" for _,image in decoded)
+        return _response(request,[issue])
+    seeded=run_video_artifact_critic(
+        binary,video_path=video,reviewer=author_seeded_pixel_reviewer)
     altered={**issue,"object_ids":["invented_object"]}
     invalid=run_artifact_critic(binary,reviewer=lambda r:_response(r,[altered]))
     unavailable=run_artifact_critic(binary,reviewer=lambda r:(_ for _ in ()).throw(TimeoutError("injected")))
