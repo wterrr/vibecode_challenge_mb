@@ -11,6 +11,7 @@ from pathlib import Path
 import subprocess
 
 from PIL import Image, ImageDraw
+import math
 from typing import Literal
 
 from pydantic import Field
@@ -18,7 +19,7 @@ from pydantic import Field
 from learnflow_v2.repair import compute_content_hash
 from .blackboard_style import BLACK, GREY, WHITE, CYAN, GREEN, YELLOW, cmu_font
 from .models import SemanticContractError, V3Model
-from .sequence_renderer import SequenceRenderProfile, _ffmpeg_anchor, _mean_absolute_error
+from .sequence_renderer import SequenceRenderProfile, _mean_absolute_error
 from .temporal_geometry import (
     TemporalLayoutPlan,TemporalGeometryCertificate,
     certify_temporal_layout,verify_temporal_certificate,sample_layout,
@@ -73,17 +74,43 @@ def _anchors(plan):
                              (3*plan.frame_count)//4,plan.frame_count-1))))
 
 
+def _decode_exact_frame(video:Path,frame:int,profile:SequenceRenderProfile)->Image.Image:
+    # Seeking by timestamp is unstable at the final H264 frame. Decode the
+    # exact ordinal frame and do not silently accept the preceding frame.
+    cmd=["ffmpeg","-nostdin","-v","error","-i",str(video),
+         "-vf",f"select=eq(n\\\\,{frame})","-vsync","0",
+         "-frames:v","1","-pix_fmt","rgb24","-f","rawvideo","pipe:1"]
+    try:
+        done=subprocess.run(cmd,capture_output=True,timeout=30)
+    except (OSError,subprocess.TimeoutExpired) as exc:
+        raise SemanticContractError("V3_11_EXACT_FRAME_DECODE_ERROR") from exc
+    if done.returncode!=0 or len(done.stdout)!=profile.width*profile.height*3:
+        raise SemanticContractError("V3_11_EXACT_FRAME_DECODE_MISMATCH:"+done.stderr[-160:].decode(errors="replace"))
+    return Image.frombytes("RGB",(profile.width,profile.height),done.stdout)
+
+
 def _validate_video(*,plan:TemporalLayoutPlan,video:Path,anchors):
     profile=_profile(plan)
     from .beat_grounding import _probe
     _probe(video,profile,plan.frame_count)
     mae=[]
     for frame in anchors:
-        decoded=_ffmpeg_anchor(video,at=(frame+.4)/plan.fps,profile=profile)
+        decoded=_decode_exact_frame(video,frame,profile)
         expected=draw_temporal_frame(plan,frame)
         err=_mean_absolute_error(decoded,expected)
         if err>8.0:
             raise SemanticContractError(f"V3_11_DECODED_GEOMETRY_FRAME_MISMATCH frame={frame} mae={err:.3f}")
+        # Also compare each exact object geometry ROI: a tiny moving object
+        # must not disappear inside a reassuring whole-frame mean error.
+        for track,box,_,_ in sample_layout(plan,frame):
+            roi=(max(0,math.floor(box.x-6)),max(0,math.floor(box.y-6)),
+                 min(plan.width,math.ceil(box.right+6)),
+                 min(plan.height,math.ceil(box.bottom+6)))
+            local=_mean_absolute_error(decoded,expected,rect=roi)
+            if local>4.0:
+                raise SemanticContractError(
+                    f"V3_11_DECODED_OBJECT_GEOMETRY_MISMATCH object={track.object_id} "
+                    f"frame={frame} mae={local:.3f}")
         mae.append(round(err,3))
     return tuple(mae)
 
