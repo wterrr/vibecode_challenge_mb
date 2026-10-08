@@ -1,7 +1,7 @@
 # V3-17 — Release Candidate Readiness & Local V2 Rollback
 
 **Date:** 2026-10-08.  
-**Status:** OFFLINE ENGINEERING IMPLEMENTATION; exact-source CI pending. **NO PRODUCTION RELEASE.**  
+**Status:** BOUNDED OFFLINE ENGINEERING PASS on code head 5e34b89d6504f9966a14ef9966fd7cb057948a39, exact-final documentation head CI pending. **NO PRODUCTION RELEASE.**  
 **Stacked parent:** PR #49 exact head \`0479d6a4c7c99b447d6bcf03b9f938042623e380\`. Frozen \`main\` \`a06e0b0b5f35e9147b4081da7ed7f7934affe0c6\` preserved. Never merge, deploy, promote provider configuration or enable paid/participant workflow via this checkpoint.
 
 ## Reuse-first and original release scope
@@ -39,3 +39,10 @@ python scripts/verify_v2_core_freeze.py
 \`\`\`
 
 **Next:** no automatic production deploy/merge. Require human scientific gate and release approvals to be explicitly granted before any next live or user-facing publication action.
+
+
+## Implemented code-head CI and media provenance (2026-10-08)
+
+[CI #37779748591](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37779748591): **279 V3 / 39 frozen V2 / 86 Hermes tests PASS**; \`V3_BENCHMARK_PREREG=PASS\`, \`LEARNFLOW_BENCH_CONTRACT=PASS\`, \`CORE_FREEZE=PASS\`, \`V3_17_RELEASE_GATE=PASS engineering_rows=5/5 blocked_gates=7/7\`. Four independently created actual H264 MP4s: two 36-frame BinarySearch and two 49-frame Temporal Geometry; full decoded-RGB digest primary vs independent \`3c1917b5b1f6ee932f95d0663e6396fd9661344afd37796d88214f5f96d2576d\` and \`110e143a1359c09132993f385231037dc5a4e16ace21c9d3471fa252e32916d8\`. Frozen V1 git blob \`b7da44db1653e81276a272fe84996665b5d4e410\`. [Source-bound artifact #11551224040](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37779748591/artifacts/11551224040).
+
+**Do not confuse successful offline prerelease checks with permission to ship.** Reproducible complete application build, independent production rollback and human-grade release acceptance are expressly NOT ESTABLISHED. Exact final PR-head workflow must be checked again.
