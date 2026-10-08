@@ -944,3 +944,29 @@ def test_host_drops_only_implementation_bearing_style_refs():
     assert cleaned["nodes"][0]["style_refs"] == ["emphasis.high"]
     assert cleaned["relations"][0]["style_refs"] == ["edge.strong"]
     assert cleaned["nodes"][0]["semantic_role"] == "DETAIL"
+
+
+def test_paid_luna_is_allowed_only_for_isolated_one_off_workflow(monkeypatch):
+    from openrouter_policy import require_free_openrouter_model
+
+    luna = "openai/gpt-6-luna"
+    assert require_free_openrouter_model("google/gemma-4-31b-it:free") == "google/gemma-4-31b-it:free"
+    monkeypatch.delenv("LEARNFLOW_PAID_PILOT_MODEL", raising=False)
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.setenv("GITHUB_REF", "refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot")
+    with pytest.raises(ValueError, match="Paid OpenRouter model"):
+        require_free_openrouter_model(luna)
+
+    monkeypatch.setenv("LEARNFLOW_PAID_PILOT_MODEL", luna)
+    assert require_free_openrouter_model(luna) == luna
+    with pytest.raises(ValueError, match="Paid OpenRouter model"):
+        require_free_openrouter_model("openai/gpt-6-sol")
+
+    monkeypatch.setenv("GITHUB_REF", "refs/heads/main")
+    with pytest.raises(ValueError, match="Paid OpenRouter model"):
+        require_free_openrouter_model(luna)
+
+    monkeypatch.setenv("GITHUB_REF", "refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot")
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
+    with pytest.raises(ValueError, match="Paid OpenRouter model"):
+        require_free_openrouter_model(luna)

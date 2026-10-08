@@ -9,6 +9,7 @@ on:
     branches:
       - main
       - chatgpt/live-v2d-evaluation
+      - chatgpt/live-v2d-gpt6-luna-paid-pilot
     paths:
       - "live_evaluation/**"
       - ".hermes/plugins/learnflow/**"
@@ -61,14 +62,17 @@ jobs:
     if: >-
       (github.event_name == 'push' &&
        (github.ref == 'refs/heads/main' ||
-        github.ref == 'refs/heads/chatgpt/live-v2d-evaluation')) ||
+        github.ref == 'refs/heads/chatgpt/live-v2d-evaluation' ||
+        github.ref == 'refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot')) ||
       (github.event_name == 'workflow_dispatch' &&
        (github.ref == 'refs/heads/main' ||
-        github.ref == 'refs/heads/chatgpt/live-v2d-evaluation'))
+        github.ref == 'refs/heads/chatgpt/live-v2d-evaluation' ||
+        github.ref == 'refs/heads/chatgpt/live-v2d-gpt6-luna-paid-pilot'))
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      LEARNFLOW_LIVE_MODEL_CANDIDATES: google/gemma-4-31b-it:free,poolside/laguna-s-2.1:free,nvidia/nemotron-3-ultra-550b-a55b:free,apodex/apodex-1.1-mini:free
+      LEARNFLOW_LIVE_MODEL_CANDIDATES: openai/gpt-6-luna
+      LEARNFLOW_PAID_PILOT_MODEL: openai/gpt-6-luna
       LEARNFLOW_LIVE_TOPIC_ID: lfb-001-cs
     steps:
       - uses: actions/checkout@v4
