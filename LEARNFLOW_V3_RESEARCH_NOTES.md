@@ -2668,6 +2668,40 @@ This hypothesis must be benchmarked after V2 Core.
 
 # 23. Change log
 
+## 2026-10-08 — User-approved one-paid-run V2 closure, for V3 planning only
+
+The governed V2D paid run #180 (commit
+`7c40d69d5d2f9ad5842a2be62c694ef8ed50000a`) completed
+successfully end-to-end. Its video still exposed fatal readability concerns
+from subtitle overlay and generic-card visual representation, so production
+success is not evidence of professional visual quality.
+
+**New budget policy:** The user wants **one final paid V2D evaluation**
+on frozen topic `lfb-005-cs` (binary search intuition, beginner,
+3-minute English lesson), with `openai/gpt-6-luna`. Only explicit manual
+dispatch is permitted on the isolated paid-pilot branch, after offline
+preflight. Do not retry paid runs automatically, including after failures;
+on HTTP 429 stop provider calls until the next day.
+
+**Reduced-scope V3 planning gate (explicit evidence waiver):**
+If the final one-topic pilot meets the frozen Core Freeze, contract gates,
+real A/V production checks, no critical text/subtitle occlusion, factual
+accuracy and a human review of the actual MP4, the user authorizes
+**drafting PLAN_V3** and prioritizing measured V2 visual-ceiling gaps.
+
+This is a deliberate waiver of the *full live benchmark requirement for
+plan drafting*, not a claim that V2 reliability or learning outcomes are
+statistically measured. The 100-topic live evaluation, V1-vs-V2 human
+comparison, TeachQuiz effects and cost-distribution estimates remain
+UNMEASURED/DEFERRED. No V3 implementation or SOTA claim follows
+automatically from a single PASS.
+
+If the final pilot fails: preserve artifact/logs, record precise NO-GO
+and outstanding defects; still no paid rerun without a new user decision.
+Do not alter historical frozen Core Gate evidence or reference artifacts.
+
+---
+
 ## 2026-10-07 — Visual-ceiling + extended 2026 research closure
 
 Added:
