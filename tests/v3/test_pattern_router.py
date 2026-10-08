@@ -122,13 +122,15 @@ def _fixture_static(family="PROCESS_FLOW", *, budget=6, branched=False):
         graph["layout_intent"]["type"] = "CONCEPT_CARD"
         graph["purpose"] = "RECAP"
         script = b["script"]
-        b["script"] = script.model_copy(update={"segments": (
-            script.segments[0].model_copy(update={"teaching_function": "SUMMARIZE"}),
-        )})
+        typed_seg = ScriptSegment.model_validate({
+            **script.segments[0].model_dump(mode="json"), "teaching_function": "SUMMARIZE",
+        })
+        b["script"] = script.model_copy(update={"segments": (typed_seg,)})
         sb = b["storyboard"]
-        b["storyboard"] = sb.model_copy(update={"scenes": (
-            sb.scenes[0].model_copy(update={"teaching_function": "SUMMARIZE"}),
-        )})
+        typed_scene = StoryboardScene.model_validate({
+            **sb.scenes[0].model_dump(mode="json"), "teaching_function": "SUMMARIZE",
+        })
+        b["storyboard"] = sb.model_copy(update={"scenes": (typed_scene,)})
     b["scenegraph"] = SceneGraph.model_validate(graph)
     b["verified_trace_refs"] = ()
     return b
@@ -205,9 +207,8 @@ def test_intentional_recap_card_is_only_explicit_static_recap():
 def test_non_recap_card_abstains_even_when_scene_layout_is_card():
     b = _fixture_static("CONCEPT_CARD")
     b["scenegraph"] = _updated(b["scenegraph"], {"purpose": "DEMONSTRATE"})
-    result = _route(b)
-    assert result.status == RouteStatus.ABSTAIN
-    assert result.reason == RouteReason.MISMATCHED_SCENE_PURPOSE
+    with pytest.raises(SemanticContractError, match="V2_VISUAL_DIRECTOR_GATE_FAILED"):
+        _route(b)
 
 
 def test_fallback_to_concept_card_is_blocked_as_cross_family():
@@ -305,3 +306,18 @@ def test_repeatability_across_reconstruction_and_no_external_apis():
     assert "OPENROUTER_API_KEY" not in source
     assert "subprocess" not in source
     assert "render_scene_video" not in source
+
+
+def test_linear_process_even_with_high_budget_keeps_linear_semantics():
+    result = _route(_fixture_static("PROCESS_FLOW", budget=6))
+    assert result.status == RouteStatus.SELECTED_UNRENDERABLE
+    assert result.selected_variant == "PROCESS_LINEAR"
+    assert result.fallback_used
+
+
+def test_v2_visual_director_purpose_mismatch_fails_before_router():
+    b = _fixture_worked()
+    # V3-02 alone checks reference agreement, not full Visual Director intent.
+    b["scenegraph"] = _updated(b["scenegraph"], {"purpose": "RECAP"})
+    with pytest.raises(SemanticContractError, match="V2_VISUAL_DIRECTOR_GATE_FAILED"):
+        _route(b)

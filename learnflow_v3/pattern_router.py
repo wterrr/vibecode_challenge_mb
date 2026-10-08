@@ -19,6 +19,8 @@ from .models import (
     StateSourceKind, VisualPatternSpec, VisualTeachingPlan,
 )
 from .signal_preservation import SignalAudit, audit_signal_preservation
+from visual_director.gate import validate_visual_director_output
+from visual_director.models import VisualDirectorOutput
 
 ROUTER_VERSION = "v3-04-pattern-router-v1"
 
@@ -167,10 +169,7 @@ def _semantic_reason(*, plan, pattern, ledger, scenegraph) -> RouteReason | None
     elif family == RepresentationType.CONCEPT_CARD:
         if (
             not _static(plan)
-            or not all(
-                section.representation_options == (RepresentationType.CONCEPT_CARD,)
-                for _ in (0,)
-            )
+            or section.representation_options != (RepresentationType.CONCEPT_CARD,)
             or any(o.kind not in (ObjectKind.LABEL,) for o in pattern.semantic_objects)
             or pattern.state_source.kind != StateSourceKind.STATIC
             or pattern.renderer_requirement != "STATIC"
@@ -179,6 +178,40 @@ def _semantic_reason(*, plan, pattern, ledger, scenegraph) -> RouteReason | None
     else:
         return RouteReason.NO_SUPPORTED_VARIANT
     return None
+
+
+def _supported_topology(*, family: RepresentationType, variant: str, scenegraph) -> bool:
+    """Never flatten branching semantics into a linear flow as a fallback."""
+    if family != RepresentationType.PROCESS_FLOW:
+        return True
+    edges = [r for r in scenegraph.relations if r.kind in (
+        RelationKind.FLOW, RelationKind.SEQUENCE_BEFORE,
+    )]
+    ins = {n.id: 0 for n in scenegraph.nodes}
+    outs = {n.id: 0 for n in scenegraph.nodes}
+    for rel in edges:
+        outs[rel.source] += 1
+        ins[rel.target] += 1
+    branches = any(n > 1 for n in (*ins.values(), *outs.values()))
+    if variant == "PROCESS_NETWORK":
+        return branches
+    if variant == "PROCESS_LINEAR":
+        if branches or len(edges) != len(scenegraph.nodes) - 1:
+            return False
+        starts = [node for node in ins if ins[node] == 0]
+        ends = [node for node in outs if outs[node] == 0]
+        if len(starts) != 1 or len(ends) != 1:
+            return False
+        adjacency = {rel.source: rel.target for rel in edges}
+        reached = {starts[0]}
+        cur = starts[0]
+        while cur in adjacency:
+            cur = adjacency[cur]
+            if cur in reached:
+                return False
+            reached.add(cur)
+        return len(reached) == len(scenegraph.nodes) and cur == ends[0]
+    return False
 
 
 def route_visual_pattern(
@@ -197,6 +230,15 @@ def route_visual_pattern(
     The input PatternSpec and relevant V2 evidence must already exist, as the
     router cannot invent trustworthy semantic objects or a V3 renderer.
     """
+    # Reuse V2 Visual Director's teaching-function/purpose/semantic gate.
+    # A valid SceneGraph alone need not match its storyboard scene purpose.
+    visual_output = VisualDirectorOutput(storyboard=storyboard, scenegraphs=(scenegraph,))
+    reviewed = validate_visual_director_output(visual_output, script=script, registry=registry)
+    if not reviewed.ready_for_core:
+        raise SemanticContractError(
+            "V2_VISUAL_DIRECTOR_GATE_FAILED: "
+            + ", ".join(issue.value for issue in reviewed.issues)
+        )
     audit: SignalAudit = audit_signal_preservation(
         plan=plan, pattern=pattern, ledger=ledger, registry=registry,
         script=script, storyboard=storyboard, scenegraph=scenegraph,
@@ -210,10 +252,14 @@ def route_visual_pattern(
     if issue is None:
         budget = plan.sections[0].visual_complexity_budget
         for variant, min_budget in VARIANT_TABLE[family]:
-            accepted = budget >= min_budget
+            enough_budget = budget >= min_budget
+            topology_ok = _supported_topology(family=family, variant=variant, scenegraph=scenegraph)
+            accepted = enough_budget and topology_ok
             attempts.append(VariantAttempt(
                 variant=variant, family=family, accepted=accepted,
-                reason=RouteReason.ELIGIBLE if accepted else RouteReason.TOO_LITTLE_VISUAL_BUDGET,
+                reason=(RouteReason.ELIGIBLE if accepted
+                        else (RouteReason.TOO_LITTLE_VISUAL_BUDGET if not enough_budget
+                              else RouteReason.NO_SUPPORTED_VARIANT)),
             ))
             if accepted:
                 chosen = variant
@@ -221,7 +267,9 @@ def route_visual_pattern(
         if chosen is not None:
             reason = RouteReason.FALLBACK_WITHIN_FAMILY if len(attempts) > 1 else RouteReason.ELIGIBLE
         else:
-            reason = RouteReason.TOO_LITTLE_VISUAL_BUDGET
+            reason = (RouteReason.TOO_LITTLE_VISUAL_BUDGET
+                      if all(a.reason == RouteReason.TOO_LITTLE_VISUAL_BUDGET for a in attempts)
+                      else RouteReason.NO_SUPPORTED_VARIANT)
     status = RouteStatus.SELECTED_UNRENDERABLE if chosen else RouteStatus.ABSTAIN
     fallback = bool(chosen and len(attempts) > 1)
     content = {
