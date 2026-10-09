@@ -84,6 +84,28 @@ def certified_visible_candidate(source, part: dict) -> int | None:
     raise QualityEvidenceError("V3_24_UNEXPECTED_EVENT_KIND")
 
 
+def candidate_cell_geometry(centers:tuple[int,...], candidate:int,
+                            profile=PROFILE)->tuple[tuple[int,int,int,int],int,int]:
+    """Use the exact V3-06 native sequence-cell geometry for the green border.
+
+    See sequence_renderer.draw_binary_search_frame slot calculation.
+    Avoid fixed x±46/y341..425, which is wider and shorter than the
+    actual gray cell at 720p and breaks for a different array density.
+    """
+    _require(bool(centers) and 0<=candidate<len(centers),
+             "INVALID_CANDIDATE_CELL")
+    sx,sy=profile.width/960,profile.height/540
+    boxhalf=min(round(34*sx),
+                round((centers[1]-centers[0])*0.42)
+                if len(centers)>1 else round(34*sx))
+    boxhalf=max(10,boxhalf)
+    cy=round(288*sy)
+    halfheight=round(34*sy)
+    rect=(centers[candidate]-boxhalf,cy-halfheight,
+          centers[candidate]+boxhalf,cy+halfheight)
+    return rect,round(10*sy),max(2,round(2*sy))
+
+
 def teaching_frame(source, part: dict, *, fraction: float,
                    caption_visible: bool) -> Image.Image:
     """Draw every native frame from source; no bitmap resize or card fallback."""
@@ -133,12 +155,14 @@ def teaching_frame(source, part: dict, *, fraction: float,
         live=active[0]<=i<=active[1]
         d.text((x,465),str(i),font=cmu_font(INDEX_FONT),
                fill=(183,201,223) if live else (117,136,154),anchor="mm")
-    # Source-certified candidate only; no fabricated additional search step.
+    # Match the native gray sequence cell in width, height, corner radius and
+    # border thickness. This outline is a color change, not a larger overlay.
     candidate=certified_visible_candidate(source,part)
     if candidate is not None:
-        x=center_values[candidate]
-        d.rounded_rectangle((x-46,341,x+46,425),radius=10,
-                            outline=(111,231,162),width=3)
+        bounds,radius,stroke=candidate_cell_geometry(
+            center_values,candidate,PROFILE)
+        d.rounded_rectangle(bounds,radius=radius,
+                            outline=(111,231,162),width=stroke)
     # Rework information hierarchy without changing original narrated WAV/SRT.
     d.rectangle((0,490,WIDTH,HEIGHT),fill=BLACK)
     d.line((48,495,WIDTH-48,495),fill=(63,73,79),width=2)
