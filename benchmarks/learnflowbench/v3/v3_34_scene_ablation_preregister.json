@@ -1,0 +1,54 @@
+{
+  "checkpoint": "V3-34",
+  "title": "Generative Scene Authoring & Controlled Ablation",
+  "preimplementation_locked": true,
+  "base_pr": 67,
+  "base_commit": "a5b1f73b8015d041e8cfb418c3598ebd2ee1df11",
+  "topic_id": "lfb-018-math",
+  "topic_query_sha256": "376a06049a51990ddb7fe7a340ef42222b8d89ed601fa8a22dfe971524cf113d",
+  "domain": "math",
+  "topic": "fractions and ratios",
+  "original_topic_selection": "Frozen V3-33 six unseen domain manifest; fixed Math row (first row) selected without looking at render result",
+  "allowed_fact_ids": [
+    "F1",
+    "F2",
+    "F3"
+  ],
+  "fact_source": "Exact arithmetic certified using Python fractions.Fraction; no external textbook source retrieved by this pilot; independent semantic review NOT RUN",
+  "factual_claims": {
+    "F1": "One half equals two quarters.",
+    "F2": "Multiplying numerator and denominator by the same nonzero number preserves the fraction value.",
+    "F3": "Two shaded parts out of four equally sized parts represent one half."
+  },
+  "arms": {
+    "A": "Frozen V3-33 existing typed source-to-renderer, no additional source family; may ABSTAIN",
+    "B": "Model scene plan, old typed renderer only; no new primitives; may ABSTAIN",
+    "C": "Same model-authored scene plan compiled to bounded Manim primitive code and rendered in sandbox; no generic arbitrary Python"
+  },
+  "model": "openai/gpt-6-luna",
+  "provider_requests_cap": 1,
+  "provider_fallback": false,
+  "provider_retries": 0,
+  "offline_first": true,
+  "live_authorization": "One explicitly requested trial after certified offline negative and sandbox checks, opt-in tagged push only",
+  "fixed_style": {
+    "width": 1280,
+    "height": 720,
+    "fps": 15,
+    "background": "#000000",
+    "target_beats": 4
+  },
+  "assessment": {
+    "media": "Actual decoded 720p MP4+AAC with source SHA and SRT, no blank scenes, no missing audio",
+    "semantics": "All spoken nontrivial factual claims bound to F1/F2/F3; exact fraction arithmetic",
+    "educational": "No human score without independent reviewers",
+    "model_freedom": "Model chooses primitives, positions, actions, order, narration. Host validates only facts and executable safety."
+  },
+  "pass_policies": [
+    "A/B/C technical outcome separately stated; ABSTAIN not FAIL or PASS",
+    "No claim of quality superiority without blinded human review",
+    "No retries or paid fallback",
+    "No production release without rights/human QA",
+    "No unrestricted model Python execution on runner"
+  ]
+}
