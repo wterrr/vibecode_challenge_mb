@@ -33,11 +33,18 @@ jobs:
         run: |
           timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
             -r requirements.txt pytest-asyncio pyyaml
-      - name: Strict output and anti-drift mutation tests
+      - name: Strict output, provider catalog and anti-drift mutation tests
         run: |
           python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_35_public_provider_catalog.py \
             tests/v3/test_v3_35_structured_scene.py \
             tests/v3/test_v3_34_generative_ablation.py
+      - name: Public no-key catalog diagnostic (no inference, never a release gate)
+        continue-on-error: true
+        timeout-minutes: 1
+        run: |
+          python -m learnflow_v3.provider_catalog_preflight \
+            --output "$RUNNER_TEMP/v3_35_catalog/public_endpoints.json"
       - name: V3-33 V3-32 frozen benchmark and core regressions
         run: |
           python -m pytest -q --confcutdir=tests/v3 \
@@ -56,6 +63,13 @@ jobs:
         run: |
           python scripts/run_v3_34_ablation.py --mode offline-smoke \
             --output-dir "$RUNNER_TEMP/v3_35_preflight"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-35-public-provider-catalog-no-inference
+          path: ${{ runner.temp }}/v3_35_catalog/
+          retention-days: 14
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:
