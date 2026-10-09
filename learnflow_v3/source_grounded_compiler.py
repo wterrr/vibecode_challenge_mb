@@ -47,11 +47,15 @@ def canonical_claim(*,seed:dict,point)->str:
     slope=seed["slope"]
     if seed["model_kind"]=="LINEAR_SLOPE":
         base=f"For x equals {_snum(point.x)}, the value of y is {_snum(point.y)}."
-        return (base+f" The slope is {_snum(slope)} units per step."
+        suffix="unit" if abs(slope)==1 else "units"
+        return (base+f" The slope is {_snum(slope)} {suffix} per step."
                 if final else base)
-    base=(f"At {_snum(point.x)} seconds, velocity is "
-          f"{_snum(point.y)} meters per second.")
-    return (base+f" The acceleration is {_snum(slope)} meter per second squared."
+    when="second" if abs(point.x)==1 else "seconds"
+    unit="meter" if abs(point.y)==1 else "meters"
+    base=(f"At {_snum(point.x)} {when}, velocity is "
+          f"{_snum(point.y)} {unit} per second.")
+    accelunit="meter" if abs(slope)==1 else "meters"
+    return (base+f" The acceleration is {_snum(slope)} {accelunit} per second squared."
             if final else base)
 
 def author_seeded_contracts(*,topic:dict,seed:dict)->dict:

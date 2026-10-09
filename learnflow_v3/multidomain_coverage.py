@@ -145,8 +145,14 @@ def _render_frame(spec,graph,beat,phase:float,profile:SequenceRenderProfile)->Im
         is_physics=domain=="PHYSICS_VELOCITY_TIME"
         heading=("Velocity changes under constant acceleration" if is_physics
                  else "Slope is the rate of change")
-        formula=(f"v(t) = {slope}t + {intercept}     a = {slope} m/s²"
-                 if is_physics else f"y = {slope}x + {intercept}")
+        factor=abs(slope)
+        term=("t" if is_physics else "x")
+        variable=(term if factor==1 else str(factor)+term)
+        # Show source-certified algebra in readable slope/intercept form.
+        formula=(f"v(t) = {intercept} {'+' if slope>0 else '−'} {variable}"
+                 f"     |     a = {slope} m/s²"
+                 if is_physics else
+                 f"y = {intercept} {'+' if slope>0 else '−'} {variable}")
         large=cmu_font(43);small=cmu_font(29)
         guard(draw.textbbox((0,0),heading,font=large)[2]<w-150
               and draw.textbbox((0,0),formula,font=small)[2]<w-150,

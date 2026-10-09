@@ -150,3 +150,21 @@ def test_rendered_physics_display_is_source_bound_and_unit_labeled(source_cases)
     tampered={**events[0],"source_slope":-2}
     with pytest.raises(ValueError,match="V3_27_DISPLAY_SOURCE_MODEL_DRIFT"):
         _render_frame(bundle["spec"],bundle["graph"],tampered,.5,profile)
+
+
+def test_units_singular_plural_and_formula_identity(source_cases):
+    from learnflow_v3.multidomain_coverage import _render_frame
+    from learnflow_v3.sequence_renderer import SequenceRenderProfile
+    topic,seed=source_cases[1]
+    bundle=author_seeded_contracts(topic=topic,seed=seed)
+    events,_=compile_linear_source_bound(bundle=bundle)
+    assert "At 0 seconds, velocity is 1 meter per second." == events[0]["text"]
+    assert "At 1 second, velocity is 2 meters per second." == events[1]["text"]
+    assert events[-1]["text"].endswith(
+        "The acceleration is 1 meter per second squared.")
+    math_topic,math_seed=source_cases[0]
+    math=author_seeded_contracts(topic=math_topic,seed=math_seed)
+    math_events,_=compile_linear_source_bound(bundle=math)
+    assert math_events[-1]["text"].endswith("The slope is 1 unit per step.")
+    profile=SequenceRenderProfile(width=1280,height=720,fps=18,seconds_per_step=1)
+    assert _render_frame(bundle["spec"],bundle["graph"],events[-1],.5,profile).size==(1280,720)
