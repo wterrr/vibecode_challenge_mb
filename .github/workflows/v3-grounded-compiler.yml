@@ -1,0 +1,80 @@
+name: V3-28 Source Grounded Compiler Actual Hermes/VD Gates and Two Native AVs
+
+on:
+  push:
+    branches: [chatgpt/v3-28-grounded-general-lesson-compiler]
+  pull_request:
+    paths:
+      - "learnflow_v3/source_grounded_compiler.py"
+      - "learnflow_v3/multidomain_coverage.py"
+      - "benchmarks/learnflowbench/v3/v3_28_offline_source_seeds.json"
+      - "scripts/verify_v3_28_grounded_compiler.py"
+      - "tests/v3/**"
+      - ".github/workflows/v3-grounded-compiler.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  bounded-contract-compiler-and-native-two-domain-h264-aac:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install renderer font, local real speech, codec and existing Python deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng fonts-cmu fontconfig
+          python -m pip install -r requirements.txt pytest-asyncio pyyaml
+      - name: Check frozen benchmark and V2 core before any authored demo
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Compile two frozen OpenStax author-seeded topic inputs via REAL upstream contract gates and encode real AV
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_28_compiler"
+          python scripts/verify_v3_28_grounded_compiler.py --output-dir "$RUNNER_TEMP/v3_28_compiler"
+      - name: Factual/claim/segment/beat mutation gates and physically decoded MP4 verification
+        env:
+          V3_28_MEDIA_DIR: ${{ runner.temp }}/v3_28_compiler
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_source_grounded_compiler.py
+          for domain in lfb-020-math lfb-036-physics; do
+            ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate,nb_frames \
+              -of default=noprint_wrappers=1 \
+              "$RUNNER_TEMP/v3_28_compiler/$domain/compiled_linear_narrated_720p.mp4"
+          done
+      - name: Preserve V3-27 no-cherry-pick and frozen V3/V2/Hermes regressions
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_math_patterns.py \
+            tests/v3/test_pedagogy_planning.py \
+            tests/v3/test_code_process_renderer.py \
+            tests/v3/test_narrated_full_lesson.py \
+            tests/v3/test_contracts.py
+          python -m pytest -q --confcutdir=tests/v2 \
+            tests/v2/test_concept_registry.py tests/v2/test_scenegraph_validation.py \
+            tests/v2/test_repair_v2_13_contracts.py
+          python -m pytest -q --confcutdir=tests/hermes \
+            tests/hermes/test_pedagogy_agent.py tests/hermes/test_script_agent.py \
+            tests/hermes/test_visual_director.py tests/hermes/test_final_v2_semantic_consistency.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Upload actual two source-tied MP4/AAC and all ABSTAINs, no synthetic human scores
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-28-real-source-gated-MATH-PHYSICS-audio-video-and-six-domain-NO-GO
+          path: |
+            ${{ runner.temp }}/v3_28_compiler/v3_28_compiler_coverage.json
+            ${{ runner.temp }}/v3_28_compiler/lfb-020-math/*
+            ${{ runner.temp }}/v3_28_compiler/lfb-036-physics/*
+          retention-days: 30
+          if-no-files-found: warn

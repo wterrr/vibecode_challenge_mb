@@ -223,21 +223,43 @@ def _qa(*,video:Path,srt:Path,profile:SequenceRenderProfile,
             "caption_source":"EXACT_AUTHORED_UTTERANCE_PER_PHYSICAL_WAV_BEAT",
             "word_alignment":"UNMEASURED"}
 
-def render_math(*,topic:dict,output:Path)->dict:
-    """Generic certified linear-graph narration. No topic ID conditional."""
-    guard(topic["domain"]=="math"
-          and "slope of a line" in topic["query"].casefold(),
-          "NO_CERTIFIED_TOPIC_TO_MATH_ADAPTER")
+def render_math(*,topic:dict,output:Path,compiled_spec=None,
+                compiled_events:list[dict]|None=None,
+                compiler_provenance:dict|None=None)->dict:
+    """Generic graph playback, optionally driven by *validated script* beats.
+
+    Default is frozen V3-27 author-template demo. In compiled mode, the
+    V3-28 compiler already certified all Hermes/Pedagogy/visual input and
+    same-point semantic bindings before passing source-authored spoken text.
+    Rendering never invents narration, claim IDs or renderer family.
+    """
+    authored=compiled_events is None
+    if authored:
+        guard(topic["domain"]=="math"
+              and "slope of a line" in topic["query"].casefold(),
+              "NO_CERTIFIED_TOPIC_TO_MATH_ADAPTER")
+    else:
+        guard(topic["domain"] in ("math","physics")
+              and compiled_spec is not None and compiler_provenance is not None
+              and compiler_provenance.get("status")=="VALIDATED_SOURCE_BOUND_LINEAR_BEATS",
+              "UNCERTIFIED_COMPILER_INPUT")
     guard(output.is_dir() and not output.is_symlink() and not list(output.iterdir()),
           "NONEMPTY_OUTPUT_FOLDER")
-    # Family parameters are authored controls, not one MP4 path/video script.
-    graph,spec=make_linear_graph(slope=1,intercept=1)
+    graph,spec=(make_linear_graph(slope=1,intercept=1) if authored
+                else compiled_spec)
     profile=SequenceRenderProfile(width=1280,height=720,fps=FPS,
                                    seconds_per_step=1.0)
-    events=semantic_narration(spec)
-    video=output/"bounded_math_slope_narrated_720p.mp4"
-    srt=output/"bounded_math_slope_narrated_720p.srt"
-    receipt=output/"math_partial_lesson_evidence.json"
+    events=semantic_narration(spec) if authored else compiled_events
+    guard(all(type(b["visual_step"]) is int and 0<=b["visual_step"]<len(spec.steps)
+              and b["source_point_id"]==spec.steps[b["visual_step"]].point_id
+              and b["source_value"]==spec.steps[b["visual_step"]].y
+              for b in events),"COMPILED_BEAT_POINT_IDENTITY_DRIFT")
+    video=output/("bounded_math_slope_narrated_720p.mp4" if authored
+                 else "compiled_linear_narrated_720p.mp4")
+    srt=output/("bounded_math_slope_narrated_720p.srt" if authored
+               else "compiled_linear_narrated_720p.srt")
+    receipt=output/("math_partial_lesson_evidence.json" if authored
+                   else "compiled_linear_lesson_evidence.json")
     with tempfile.TemporaryDirectory(prefix=".v3_27_",dir=output) as td:
         stage=Path(td)
         beats=[];wav_rate=None;audio_parts=[]
@@ -307,9 +329,13 @@ def render_math(*,topic:dict,output:Path)->dict:
                 "width":1280,"height":720,"fps":FPS,"frames":running,
                 "beats":beats,"real_h264_aac":True,
                 "local_espeak_rights":"COMMERCIAL_USE_UNVERIFIED",
-                "source_grounding":"POLYNOMIAL_ARITHMETIC_CERTIFIED_NOT_EXTERNAL_RESEARCH",
-                "research_agent":"NOT_EXECUTED","script_agent":"TEMPLATE_NOT_GENERAL_MODEL",
-                "pedagogy_agent":"NOT_EXECUTED","visual_director_agent":"NOT_EXECUTED",
+                "source_grounding":("POLYNOMIAL_ARITHMETIC_CERTIFIED_NOT_EXTERNAL_RESEARCH"
+                                    if authored else "HERMES_APPROVED_SOURCE_REFS_AND_EXACT_LINEAR_REPLAY"),
+                "research_agent":"NOT_EXECUTED",
+                "script_agent":("TEMPLATE_NOT_GENERAL_MODEL" if authored else "VERIFIED_INPUT_NOT_MODEL_GENERATED"),
+                "pedagogy_agent":("NOT_EXECUTED" if authored else "V3_09_CONTRACT_COMPILER_EXECUTED"),
+                "visual_director_agent":("NOT_EXECUTED" if authored else "VD_CONTRACT_GATE_EXECUTED_NO_LIVE_MODEL"),
+                "compiler_provenance":(None if authored else compiler_provenance),
                 "scene_graph":"V3_08_SOURCE_CERTIFIED_GENERIC_LINEAR_GRAPH",
                 "teacher_quality":"UNMEASURED","production":"BLOCKED",
                 "audible_human_transcript":"UNMEASURED",**proof}
@@ -324,7 +350,8 @@ def render_math(*,topic:dict,output:Path)->dict:
         canvas=Image.new("RGB",(thumbw*2,thumbh*math.ceil(len(frames)/2)),BLACK)
         for i,im in enumerate(frames):
             canvas.paste(im.resize((thumbw,thumbh)),((i%2)*thumbw,(i//2)*thumbh))
-        canvas.save(output/"math_all_beats_decoded_contact_sheet.jpg",quality=90)
+        canvas.save(output/("math_all_beats_decoded_contact_sheet.jpg" if authored
+                            else "compiled_all_beats_decoded_contact_sheet.jpg"),quality=90)
         return result
 
 def run_coverage(*,root:Path,output:Path)->dict:
