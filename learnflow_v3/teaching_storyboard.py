@@ -90,9 +90,15 @@ def teaching_frame(source, part: dict, *, fraction: float,
     img = _native_frame(source,part,fraction=fraction,caption_visible=False)
     d=ImageDraw.Draw(img)
     # Remove developer-only microcopy while leaving true semantic chart intact.
-    d.rectangle((77,88,975,133),fill=BLACK)
+    d.rectangle((77,88,975,125),fill=BLACK)
+    # The V3-06 source also draws a horizontal rule at y≈129. Clearing
+    # only the text area previously cut that rule halfway across the video.
+    # Erase the entire old rule below target/title, redraw one uninterrupted
+    # separator across the canvas at a stable source-independent y=151.
+    d.rectangle((48,126,WIDTH-48,152),fill=BLACK)
     micro="Every comparison narrows the search"
     d.text((80,92),micro,font=cmu_font(28),fill=(190,199,209))
+    d.line((80,151,WIDTH-80,151),fill=(59,66,73),width=2)
     # Lift small pointer legends to reader-scale CMU text; retain the original
     # pixel positions and semantic dots (LOW/HIGH/MID do NOT change identity).
     center_values=_layout(PROFILE,len(source.trace.query.values))
@@ -138,6 +144,14 @@ def teaching_frame(source, part: dict, *, fraction: float,
     d.line((48,495,WIDTH-48,495),fill=(63,73,79),width=2)
     key,explanation,semantic_action=teaching_callout(source,part)
     d.text((50,505),key,font=cmu_font(26),fill=CYAN)
+    # Explicit legend for the green candidate outline. Without this,
+    # source-correct green index 6 is difficult to interpret by novices.
+    if candidate is not None:
+        tag = (f"FIRST MATCH  /  INDEX {candidate}"
+               if part["event_kind"] in ("RESULT","RECAP") else
+               f"BEST SO FAR  /  INDEX {candidate}")
+        d.text((WIDTH-52,506),tag,font=cmu_font(27),fill=(121,239,171),
+               anchor="ra")
     headline_font=cmu_font(35)
     line=_wrapped(d,explanation,headline_font,WIDTH-104)
     _require(len(line)==1,"STORYLINE_HEADLINE_OVERFLOW")

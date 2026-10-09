@@ -109,3 +109,15 @@ def test_real_teaching_frame_sample_has_native_bounds_and_text(folder):
     img=teaching_frame(source,event,fraction=.5,caption_visible=True)
     assert img.size==(WIDTH,HEIGHT)
     assert isinstance(img,Image.Image)
+    # Final native pixel geometry: no broken top separator line.
+    assert img.getpixel((90,151))==(59,66,73)
+    assert img.getpixel((750,151))==(59,66,73)
+    assert img.getpixel((1190,151))==(59,66,73)
+    # Candidate explanation appears only at the certified APPLY event.
+    premature=next(p for p in receipt["segments"]
+                   if p["event_kind"]=="OBSERVE" and p["step"]==1)
+    old=teaching_frame(source,premature,fraction=.5,caption_visible=False)
+    badge_box=(875,500,1230,538)
+    def bright_count(image):
+        return sum(v>110 for v in image.crop(badge_box).convert("L").getdata())
+    assert bright_count(img)>bright_count(old)+150
