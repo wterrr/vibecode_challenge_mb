@@ -69,7 +69,7 @@ def test_typed_contract_rejects_claim_beats_research_and_narration_drift():
         obj=deepcopy(data)
         if field=="wrong_value":obj["beats"][3]["spoken_text"]=obj["beats"][3]["spoken_text"].replace("equals 5","equals 6")
         if field=="wrong_claim":obj["beats"][2]["claim_ids"]=["C_RETURN"]
-        if field=="missing_evaluate":obj["beats"].pop(3)
+        if field=="missing_evaluate":obj["beats"]=tuple(b for i,b in enumerate(obj["beats"]) if i!=3)
         if field=="wrong_state":obj["beats"][1]["visual_state_key"]="state-return"
         if field=="wrong_source":obj["claims"][0]["sha256_source"]="0"*64
         with pytest.raises(ValidationError):
