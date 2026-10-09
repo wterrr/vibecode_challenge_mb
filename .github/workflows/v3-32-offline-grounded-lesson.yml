@@ -1,0 +1,55 @@
+name: V3-32 Offline Grounded Lesson Planning Five-Beat QA
+on:
+  push:
+    branches: [chatgpt/v3-32-grounded-lesson-events]
+  pull_request:
+    paths:
+      - "learnflow_v3/lesson_semantic_contract.py"
+      - "learnflow_v3/grounded_lesson_video.py"
+      - "tests/v3/test_v3_32_grounded_lesson.py"
+      - "scripts/run_v3_32_grounded_lesson.py"
+      - ".github/workflows/v3-32-offline-grounded-lesson.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  five-stage-source-contract-and-decoded-media:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Shared bounded real native codecs/CMU
+        timeout-minutes: 8
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Existing project Python requirements only, bounded
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt pytest-asyncio pyyaml
+      - name: Typed source/worked example/research/script/visual negative tests
+        run: python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_32_grounded_lesson.py
+      - name: Regress V3-31 V3-30 V3-07 and untouched frozen core
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_31_code_state_lesson.py \
+            tests/v3/test_v3_30_paid_cs_lesson.py \
+            tests/v3/test_code_process_renderer.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Render 5-stage 720p H264/AAC real audio and decoded frame QA, no provider
+        run: |
+          python scripts/run_v3_32_grounded_lesson.py \
+            --output-dir "$RUNNER_TEMP/v3_32_offline"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-32-real-five-stage-code-state-video-evidence
+          path: ${{ runner.temp }}/v3_32_offline/
+          retention-days: 14
+          if-no-files-found: warn
