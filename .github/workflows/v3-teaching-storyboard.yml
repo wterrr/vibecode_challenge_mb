@@ -1,0 +1,72 @@
+name: V3-24 Real Lesson Storytelling Refinement Offline
+
+on:
+  push:
+    branches: [chatgpt/v3-24-visual-storytelling-refinement]
+  pull_request:
+    paths:
+      - "learnflow_v3/**"
+      - "scripts/verify_v3_teaching_storyboard.py"
+      - "tests/v3/**"
+      - ".github/workflows/v3-teaching-storyboard.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  source-replayed-teaching-visuals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install original CPU media and local voice dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fontconfig fonts-cmu espeak-ng
+          python -m pip install -r requirements.txt pytest-asyncio pyyaml
+      - name: Render actual V3-20 source, native V3-22 and NEW V3-24 H264+AAC
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_24_evidence"
+          python scripts/verify_v3_teaching_storyboard.py --output-dir "$RUNNER_TEMP/v3_24_evidence"
+          ffprobe -v error -select_streams v:0 \
+            -show_entries stream=width,height,r_frame_rate,nb_frames \
+            -of default=noprint_wrappers=1 \
+            "$RUNNER_TEMP/v3_24_evidence/native_pedagogical/v3_24_leftmost_teaching_720p.mp4"
+      - name: Source/mutation/render testing on actual V3-24 mp4
+        env:
+          V3_24_MEDIA_DIR: ${{ runner.temp }}/v3_24_evidence
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_teaching_storyboard.py
+      - name: Guard native V3-22, event V3-20, frozen V2/Hermes and Bench
+        env:
+          V3_22_OUTPUT_DIR: ${{ runner.temp }}/v3_24_evidence
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_native_hd_lesson.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_event_alignment_quality.py
+          python -m pytest -q --confcutdir=tests/v2 tests/v2/test_concept_registry.py tests/v2/test_scenegraph_validation.py tests/v2/test_repair_v2_13_contracts.py
+          python -m pytest -q --confcutdir=tests/hermes tests/hermes/test_visual_director.py tests/hermes/test_final_v2_semantic_consistency.py tests/hermes/test_pedagogy_agent.py tests/hermes/test_script_agent.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Attach actual before/after MP4, full frame contact sheet and proof
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-24-teaching-refinement-real-source-before-after
+          path: |
+            ${{ runner.temp }}/v3_24_evidence/source_v3_20/*.json
+            ${{ runner.temp }}/v3_24_evidence/source_v3_20/*.srt
+            ${{ runner.temp }}/v3_24_evidence/source_v3_20/*.mp4
+            ${{ runner.temp }}/v3_24_evidence/native_hd/*.json
+            ${{ runner.temp }}/v3_24_evidence/native_hd/*.mp4
+            ${{ runner.temp }}/v3_24_evidence/native_pedagogical/*.json
+            ${{ runner.temp }}/v3_24_evidence/native_pedagogical/*.mp4
+            ${{ runner.temp }}/v3_24_evidence/*.json
+            ${{ runner.temp }}/v3_24_evidence/*.jpg
+          retention-days: 30
+          if-no-files-found: error
