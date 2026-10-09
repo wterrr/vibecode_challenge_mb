@@ -776,3 +776,8 @@ This draft is a **prospective proposal**, not retrospective evidence. Update thi
 - https://github.com/wterrr/vibecode_challenge_mb/blob/chatgpt/live-v2d-gpt6-luna-paid-pilot/LEARNFLOW_V3_RESEARCH_NOTES.md
 
 **External:** Code2Video (2025/ICML 2026); ALGOGEN (ACL Findings 2026); OmniManim (2026); LLM2Manim (2026); MINARD (2026); SGA (2026); EduVisAgent (2025); Mayer (2017) and Multimedia Learning meta-analysis (2025). Check precise benchmark and success boundaries before citing claims in papers or marketing.
+
+
+### V3-26 code-HEAD acceptance snapshot (2026-10-09)
+
+At implementation SHA 2f22aa52e48eb00992f119d1c2197d20ab2c2f0e, 26/26 GitHub Actions PASS including REAL Google Chrome Stable Playwright file:// reviewer HTML tests #37877573061. The first Chromium Headless Shell job failed to decode H264/AAC, so the runtime was changed to codec-capable Chrome, never a mock/JS syntax substitute. R01/R02 played both source-matched clips, browser screenshots of decoded MP4s and FFmpeg decode of AAC were retained, UI missing-input regressions PASSED, real browser Download JSON passed through the SHA-attested offline importer. Synthetic answers were deleted. Zero actual human participants/ratings; human comprehension/aesthetic preference, V3-16 human study and rights UNMEASURED; release BLOCKED. Actual GitHub artifacts and the independent review SOP: reports/v3_26_real_browser_independent_review.md. This note is documentation; a subsequent documentation commit needs separate exact HEAD CI.
