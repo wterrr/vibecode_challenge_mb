@@ -1,0 +1,111 @@
+name: V3-30 Official Python Source and Paid Luna CS Lesson (opt-in)
+
+on:
+  push:
+    branches: [chatgpt/v3-30-paid-luna-sourced-cs-lesson]
+  pull_request:
+    paths:
+      - "learnflow_v3/paid_cs_lesson.py"
+      - "tests/v3/test_v3_30_paid_cs_lesson.py"
+      - "scripts/verify_v3_30_paid_cs.py"
+      - ".github/workflows/v3-30-paid-luna-cs-lesson.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-source-and-negative-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Actual Computer Modern for unchanged frozen pixel QA
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-cmu fontconfig ffmpeg espeak-ng
+      - name: Install existing project dependencies only
+        run: python -m pip install -r requirements.txt pyyaml pytest-asyncio
+      - name: V3-30 offline mocked provider and source negative proofs
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_30_paid_cs_lesson.py
+      - name: Existing V3-07 Code and Process source/decoded tests
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_code_process_renderer.py
+      - name: Preserve V3-27 to V3-29, V2 Core and frozen V3-16 contract
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_29_live_source_producer.py \
+            tests/v3/test_source_grounded_compiler.py -k 'not decoded_real_compiled_mp4'
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+
+  independent-official-python-document-source:
+    needs: offline-source-and-negative-contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install only local project requirements
+        run: python -m pip install -r requirements.txt
+      - name: Fetch exact official Python tutorial, verify three published claim passages
+        run: |
+          python scripts/verify_v3_30_paid_cs.py --mode source-check \
+            --output-dir "$RUNNER_TEMP/v3_30_source"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-30-official-source-quote-evidence-not-expert-review
+          path: ${{ runner.temp }}/v3_30_source/v3_30_official_python_source.json
+          if-no-files-found: warn
+
+  opt-in-single-paid-gpt6-luna-cs-video:
+    needs: [offline-source-and-negative-contracts, independent-official-python-document-source]
+    # One user-authorized paid GPT-6 Luna attempt for a dev topic; not V3-16.
+    # Never spend on normal PR/push. Manual dispatch or one unique tagged commit.
+    if: >-
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'push' &&
+        contains(github.event.head_commit.message, '[v3-30-paid-one-shot]'))) &&
+      github.ref == 'refs/heads/chatgpt/v3-30-paid-luna-sourced-cs-lesson'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install real native speech, codecs and Computer Modern
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng fonts-cmu fontconfig
+          python -m pip install -r requirements.txt
+      - name: EXACT model openai/gpt-6-luna, two calls, no fallback/retry
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python scripts/verify_v3_30_paid_cs.py --mode live-paid \
+            --output-dir "$RUNNER_TEMP/v3_30_paid_one_shot"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-30-paid-real-research-script-cs-h264-aac-or-BLOCKED
+          path: |
+            ${{ runner.temp }}/v3_30_paid_one_shot/v3_30_live_receipt.json
+            ${{ runner.temp }}/v3_30_paid_one_shot/v3_30_live_failure.json
+            ${{ runner.temp }}/v3_30_paid_one_shot/lfb-002-cs/*
+          retention-days: 14
+          if-no-files-found: warn
