@@ -29,7 +29,11 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg fontconfig fonts-cmu espeak-ng
           python -m pip install -r requirements.txt pytest-asyncio pyyaml playwright==1.55.0
-          python -m playwright install --with-deps chromium
+          # Playwright bundled Chromium Headless Shell lacks reliable
+          # proprietary H264/AAC codec support. Use real Google Chrome stable
+          # for a production-representative MP4 playback test.
+          python -m playwright install chrome
+          google-chrome --version
       - name: Render EXACT real source, V3-22 and corrected V3-24 MP4s
         run: |
           mkdir -p "$RUNNER_TEMP/v3_26_media" "$RUNNER_TEMP/v3_26_raters" "$RUNNER_TEMP/v3_26_browser"
@@ -71,7 +75,7 @@ jobs:
           python scripts/verify_learnflow_bench.py
           python scripts/verify_v2_core_freeze.py
       - name: Retain genuine browser playback screenshots and safe machine-only QA receipt
-        if: success()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: v3-26-chromium-real-browser-E2E-NOT-human-ratings
@@ -79,7 +83,7 @@ jobs:
             ${{ runner.temp }}/v3_26_browser/*.png
             ${{ runner.temp }}/v3_26_browser/v3_26_browser_engineering_receipt.json
           retention-days: 30
-          if-no-files-found: error
+          if-no-files-found: warn
       - name: Reviewer R01 package only, never admin mapping
         if: success()
         uses: actions/upload-artifact@v4

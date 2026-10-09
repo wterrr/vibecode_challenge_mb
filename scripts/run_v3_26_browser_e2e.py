@@ -48,11 +48,23 @@ def audio_probe(path):
 
 def open_video(page,index,code,out):
     video=page.locator("video").nth(index)
-    page.wait_for_function("""i=>{
-      const v=document.querySelectorAll('video')[i];
-      return v && v.readyState>=2 && Number.isFinite(v.duration)
-        && v.videoWidth===1280 && v.videoHeight===720;
-    }""",arg=index,timeout=20000)
+    try:
+        page.wait_for_function("""i=>{
+          const v=document.querySelectorAll('video')[i];
+          return v && v.readyState>=2 && Number.isFinite(v.duration)
+            && v.videoWidth===1280 && v.videoHeight===720;
+        }""",arg=index,timeout=18000)
+    except Exception as e:
+        debug=video.evaluate("""v=>({
+          currentSrc:v.currentSrc,readyState:v.readyState,networkState:v.networkState,
+          duration:v.duration,width:v.videoWidth,height:v.videoHeight,
+          errorCode:v.error?v.error.code:null,
+          errorMessage:v.error?v.error.message:null,
+          canH264Aac:v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"'),
+          userAgent:navigator.userAgent
+        })""")
+        print("V3_26_BROWSER_MEDIA_DIAGNOSTIC="+json.dumps(debug),flush=True)
+        raise AssertionError("V3_26_REAL_BROWSER_MEDIA_NOT_DECODED") from e
     m=video.evaluate("""v=>({duration:v.duration,
       width:v.videoWidth,height:v.videoHeight,
       aac_supported:v.canPlayType('audio/mp4; codecs="mp4a.40.2"')})""")
@@ -190,7 +202,8 @@ def run(media,packets,output):
     browser_records=[];paths=[]
     with sync_playwright() as playwright:
         browser=playwright.chromium.launch(
-            headless=True,args=["--no-sandbox","--autoplay-policy=no-user-gesture-required",
+            channel="chrome",headless=True,
+            args=["--no-sandbox","--autoplay-policy=no-user-gesture-required",
                                 "--allow-file-access-from-files","--disable-dev-shm-usage"])
         try:
             for rid in RATERS:
