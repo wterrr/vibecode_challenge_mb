@@ -26,3 +26,16 @@ Both source schemas hold a finite integer slope/intercept and a bounded certifie
 - Frozen V3-16 12-topic protocol, V2 Core/main, provider costs, release permissions unchanged.
 
 **CI evidence / actual results to be appended after run.**
+
+
+## Actual two-domain H264/AAC audit and scientific disposition (2026-10-09)
+
+Implementation SHA 504381d0afe448ee3256cec60163ac00c8e41431, [V3-28 exact-code Actions #37882057811](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37882057811): dedicated workflow SUCCESS. All actual math and physics media come from offline-author-seeded OpenStax citations and finite source-verified integer line models; Hermes typed ResearchPack/EvidenceGraph/fact verifier and real Script gate, V3-09 Pedagogy and Visual Director validators execute on those seeded inputs. Research/Script/Visual Director LLM agents were NOT RUN; a source URL is not proof of externally reviewed claim semantics.
+
+First real video inspection revealed inappropriate generic function title/axes on the physics graph. We changed domain title, time and velocity units, v(t) formula and acceleration value from the certified graph model, and added domain-specific pixel/mutation regression. Second real inspection found '1 meters per second' and '1 units per step' audible and in subtitle files; we corrected the SOURCE claim constructor, so approved Research claim, Script, SRT and WAV use identical corrected words, and added grammar regression. The final code video was re-rendered, not retouched.
+
+[Exact-code artifact #11594433622](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37882057811/artifacts/11594433622) downloaded and independently ZIP CRC inspected, 11/11 files. Math lfb-020-math: 377 source replayed H264 1280x720 18fps frames, 5 physical PCM speech beats, original-script subtitles, decoded max image MAE 0.114; SHA receipt equals actual bytes, AAC sample RMS above 0.08 in every beat. Physics lfb-036-physics: 404 source-replayed H264 1280x720 18fps frames, 5 physical PCM speech beats, max image MAE 0.147, AAC sample RMS above 0.07 per beat; source-certified v(t)=1+t and a=1 m/s², axes time (s) and velocity (m/s). All ten authored SRT captions are derived from source claim-provenance-bounded Script segments.
+
+Full initial-six-topic denominator: 2 bounded author-seeded source-to-script-to-V3-09-to-VD-to-renderer plus narration MP4 outcomes, 4 ABSTAIN (CS/Biology/Chemistry/History), 0 actual execution failures, 0 autonomous full-stack Research/Script/Director-generated lessons. V3-16 frozen protocol untouched; main unchanged, no paid API, no human participants, commercial voice/source licensing unverified, production BLOCKED. This is BOUNDED CONTRACT INTEGRATION ENGINEERING evidence, NOT full 6-domain generation PASS, general factual certification, human-rated teaching quality or 3Blue1Brown parity. Full release and autonomous generation remain NO-GO.
+
+Next single capability gap: a real controlled Research-to-Script-to-Visual content producer with independent source/semantic evaluation and an additional explicitly certified representation family. Not started. A docs-only final HEAD requires its own exact SHA CI.
