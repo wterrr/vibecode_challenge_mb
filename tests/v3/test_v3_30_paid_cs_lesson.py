@@ -186,7 +186,7 @@ def test_model_cannot_make_unverified_numeric_fact_look_valid(tmp_path):
     m["segments"][3]["spoken_text"] = WORDS[3].replace("five", "nine")
     out = source()
     def sender(request, timeout):
-        response = research(out) if b'"C_DEFINE"' not in request.data else m
+        response = m if b'verified_research' in request.data else research(out)
         return FakeResponse(json.dumps({"choices": [{"finish_reason": "stop",
                     "message": {"content": json.dumps(response)}}]}).encode())
     with pytest.raises(Blocked):
