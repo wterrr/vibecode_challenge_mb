@@ -1,0 +1,109 @@
+name: V3-35 Structured Creative Scene One-Shot and Manim
+
+on:
+  push:
+    branches: [chatgpt/v3-35-structured-scene-authoring]
+  pull_request:
+    paths:
+      - "learnflow_v3/structured_scene_authoring.py"
+      - "learnflow_v3/creative_manim_runner.py"
+      - "tests/v3/test_v3_35_structured_scene.py"
+      - ".github/workflows/v3-35-structured-scene.yml"
+      - "benchmarks/learnflowbench/v3/v3_35_structured_scene_preregister.json"
+
+permissions:
+  contents: read
+
+jobs:
+  offline-schema-source-negatives-and-sandbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Native codecs, narrator, CMU
+        timeout-minutes: 8
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Project dependency installation bounded
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt pytest-asyncio pyyaml
+      - name: Strict output and anti-drift mutation tests
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_35_structured_scene.py \
+            tests/v3/test_v3_34_generative_ablation.py
+      - name: V3-33 V3-32 frozen benchmark and core regressions
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_33_generalization.py \
+            tests/v3/test_v3_32_grounded_lesson.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Pull V3-34 pinned Manim sandbox image
+        timeout-minutes: 12
+        run: |
+          timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+          docker image inspect manimcommunity/manim:v0.19.0 --format '{{.Id}}'
+      - name: Offline Manim H264/AAC synthetic-only fixture
+        timeout-minutes: 8
+        run: |
+          python scripts/run_v3_34_ablation.py --mode offline-smoke \
+            --output-dir "$RUNNER_TEMP/v3_35_preflight"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-35-offline-preflight-synthetic-not-real-model
+          path: ${{ runner.temp }}/v3_35_preflight/
+          retention-days: 14
+          if-no-files-found: warn
+
+  opt-in-one-new-strict-json-gpt6-luna:
+    needs: offline-schema-source-negatives-and-sandbox
+    # Unique authorization, distinct from already consumed V3-34 one shot.
+    # No dispatch, no automatic PR paid calls, no schema-healing retry.
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/chatgpt/v3-35-structured-scene-authoring' &&
+      contains(github.event.head_commit.message, '[v3-35-one-shot]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Native offline media dependencies
+        timeout-minutes: 8
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Project Python requirements only
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt
+      - name: Preinstalled sandbox Manim native image
+        timeout-minutes: 12
+        run: |
+          timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Exactly one GPT-6 Luna strict JSON request, no fallback or retry
+        timeout-minutes: 10
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python scripts/run_v3_34_ablation.py --mode live-structured \
+            --output-dir "$RUNNER_TEMP/v3_35_live"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-35-one-real-structured-model-scene-or-BLOCKED
+          path: ${{ runner.temp }}/v3_35_live/
+          retention-days: 14
+          if-no-files-found: warn
