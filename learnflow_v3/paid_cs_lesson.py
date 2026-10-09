@@ -329,12 +329,15 @@ def _sha(path: Path) -> str:
     return sha256(path.read_bytes()).hexdigest()
 
 
-def render_lesson(bundle: dict, output: Path) -> dict:
+def render_lesson(bundle: dict, output: Path, *, frame_drawer=None, video_stem="cs_function_parameters_luna_720p") -> dict:
     if not output.is_dir() or output.is_symlink() or any(output.iterdir()):
         raise Blocked("V330_OUTPUT_MUST_BE_EMPTY")
     profile = SequenceRenderProfile(width=SIZE[0], height=SIZE[1], fps=FPS, seconds_per_step=1.0)
     verify_process_walkthrough(bundle["spec"], bundle["graph"])
     script = bundle["script"]
+    drawer = _draw if frame_drawer is None else frame_drawer
+    if not re.fullmatch(r"[a-z][a-z0-9_]{3,72}", video_stem):
+        raise Blocked("V330_UNSAFE_VIDEO_STEM")
     with tempfile.TemporaryDirectory(prefix="v3_30_", dir=output) as scratch:
         stage = Path(scratch)
         beats, audio = [], []
@@ -372,7 +375,7 @@ def render_lesson(bundle: dict, output: Path) -> dict:
         try:
             for index, beat in enumerate(beats):
                 for k in range(beat["frames"]):
-                    frame = _draw(bundle, index, (k + .5) / beat["frames"],
+                    frame = drawer(bundle, index, (k + .5) / beat["frames"],
                                   profile, beat["text"])
                     proc.stdin.write(frame.tobytes())
             proc.stdin.close()
@@ -395,7 +398,7 @@ def render_lesson(bundle: dict, output: Path) -> dict:
             end = start + beat["raw_wav_samples"] / beat["wav_rate"]
             subtitles.append(f"{i+1}\n{_srt_clock(start)} --> {_srt_clock(end)}\n{beat['text']}\n")
             k = beat["frame_start"] + beat["frames"] // 2
-            expected = _draw(bundle, i, (beat["frames"]//2+.5)/beat["frames"],
+            expected = drawer(bundle, i, (beat["frames"]//2+.5)/beat["frames"],
                              profile, beat["text"])
             frame = _ffmpeg_anchor(film, at=(k + .4) / FPS, profile=profile)
             mae = _mean_absolute_error(frame, expected)
@@ -420,8 +423,8 @@ def render_lesson(bundle: dict, output: Path) -> dict:
               "CS_MP4_STREAM_OR_FRAME_MISMATCH")
         srt = stage / "captions.srt"
         srt.write_text("\n".join(subtitles), encoding="utf-8")
-        video = output / "cs_function_parameters_luna_720p.mp4"
-        final_srt = output / "cs_function_parameters_luna_720p.srt"
+        video = output / (video_stem + ".mp4")
+        final_srt = output / (video_stem + ".srt")
         os.link(film, video)
         os.link(srt, final_srt)
         contact = Image.new("RGB", (1280, 720), BLACK)
@@ -429,7 +432,7 @@ def render_lesson(bundle: dict, output: Path) -> dict:
             k = beat["frame_start"] + beat["frames"] // 2
             frame = _ffmpeg_anchor(video, at=(k + .4) / FPS, profile=profile)
             contact.paste(frame.resize((640, 360)), ((i % 2)*640, (i//2)*360))
-        contact.save(output / "cs_all_four_decoded_beats.jpg", quality=90)
+        contact.save(output / (video_stem + "_contact.jpg"), quality=90)
         result = {
             "status": "BOUNDED_LIVE_SOURCE_SCRIPT_PROCESS_AV_PASS",
             "topic_id": TOPIC_ID, "model": MODEL,
