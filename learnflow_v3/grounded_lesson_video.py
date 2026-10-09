@@ -266,9 +266,12 @@ def render_offline(root:Path,out:Path,contract:LessonSemanticContract|None=None,
         for idx,beat in enumerate(beats):
             start=beat["frame_start"]/FPS;end=start+beat["wav_samples"]/beat["wav_rate"]
             subtitles.append(f"{idx+1}\n{_clock(start)} --> {_clock(end)}\n{beat['spoken_text']}\n")
-            k=beat["frame_start"]+beat["frames"]//2
+            # Contact/replay frames are sampled AFTER each event reveal.
+            # At the midpoint, a late RETURN event would still be hidden.
+            within=min(beat["frames"]-2,max(1,math.floor(beat["frames"]*.78)))
+            k=beat["frame_start"]+within
             frame=_ffmpeg_anchor(video,at=(k+.4)/FPS,profile=p)
-            expected=draw_frame(contract,idx,(beat["frames"]//2+.5)/beat["frames"],p,beat["spoken_text"])
+            expected=draw_frame(contract,idx,(within+.5)/beat["frames"],p,beat["spoken_text"])
             err=_mean_absolute_error(frame,expected)
             if err>=8:raise Blocked("V332_DECODED_SOURCE_PIXEL_MISMATCH")
             decoded.append({"stage":beat["stage"],"frame":k,"decoded_mae":round(err,3)})
@@ -334,6 +337,7 @@ def render_offline(root:Path,out:Path,contract:LessonSemanticContract|None=None,
             "research_explanations":list(contract.research_explanations),
             "stage_names":list(STAGES),
             "beat_events":events,"beat_times":beats,
+            "decoded_checkpoints":"POST_EVENT_STABLE_78_PERCENT_OF_PHYSICAL_BEAT",
             "decoded_rgb_source_mae":decoded,"audio_aac_rms_per_beat":rms,
             "decoded_state_roi_deltas":[round(x,3) for x in deltas],
             "decoded_event_reveal_checks":event_visual_delta,
