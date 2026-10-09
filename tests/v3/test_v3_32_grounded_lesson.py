@@ -125,3 +125,17 @@ def test_timeline_forgery_out_of_order_wrong_duration_or_event_identity_is_block
         if bad=="stage":modified[4]["stage"]="evaluate"
         with pytest.raises(Blocked):
             assert_temporal_events(c,beats,modified)
+
+def test_audio_derived_event_reveals_state_only_after_causal_boundary():
+    c,_=load_contract(ROOT)
+    profile=SequenceRenderProfile(width=1280,height=720,fps=18,seconds_per_step=1)
+    roi={
+        "call":(1007,218,1202,271),"bind":(1007,272,1202,326),
+        "evaluate":(1007,325,1202,380),"return":(1007,432,1202,486),
+    }
+    for index in range(1,5):
+        beat=c.beats[index]
+        before=draw_frame(c,index,max(0.01,beat.event_fraction-.06),profile,beat.spoken_text)
+        after=draw_frame(c,index,min(.95,beat.event_fraction+.06),profile,beat.spoken_text)
+        change=_mean_absolute_error(before.crop(roi[beat.stage]),after.crop(roi[beat.stage]))
+        assert change>.45, (beat.stage,change)
