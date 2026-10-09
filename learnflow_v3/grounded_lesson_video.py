@@ -90,6 +90,11 @@ def draw_frame(c:LessonSemanticContract,index:int,phase:float,profile:SequenceRe
     state=state_for(c,index)
     if beat.stage!=state["stage"] or beat.visual_state_key!=state["visual_state_key"]:
         raise Blocked("V332_BEAT_VISUAL_STATE_DRIFT")
+    # Causal state is NOT allowed to appear before the physically timed event.
+    # Beat fractions are planned relative to measured waveform duration, never
+    # passed off as word/phoneme timestamps.
+    revealed=phase>=beat.event_fraction
+    visible=state if revealed else state_for(c,max(0,index-1))
     e=c.example
     im=Image.new("RGB",SIZE,BLACK)
     d=ImageDraw.Draw(im)
@@ -115,13 +120,13 @@ def draw_frame(c:LessonSemanticContract,index:int,phase:float,profile:SequenceRe
         _print(d,(93,y),line_number,small,fill=GREY)
         _print(d,(138,y),line,mono,fill=YELLOW if is_active else WHITE,max_width=566,role="CODE")
     rows=[
-      ("ARGUMENT",state["argument"],.0),
-      ("PARAMETER "+e.parameter,state["parameter"],.0),
-      ("EVALUATE",state["expression"],.0),
-      ("RETURN",state["return_value"],.0),
-      (e.destination.upper(),state["destination_value"],.0)
+      ("ARGUMENT",visible["argument"],.0),
+      ("PARAMETER "+e.parameter,visible["parameter"],.0),
+      ("EVALUATE",visible["expression"],.0),
+      ("RETURN",visible["return_value"],.0),
+      (e.destination.upper(),visible["destination_value"],.0)
     ]
-    focus={"define":None,"call":0,"bind":1,"evaluate":2,"return":4}[beat.stage]
+    focus={"define":None,"call":0,"bind":1,"evaluate":2,"return":4}[beat.stage] if revealed else None
     for i,(label,value,_) in enumerate(rows):
         y=218+i*54
         if focus==i:
@@ -184,9 +189,12 @@ def _region_diff(a:Image.Image,b:Image.Image,region=(775,204,1198,504))->float:
 def assert_temporal_events(c:LessonSemanticContract,beats:list[dict],events:list[dict])->None:
     if len(beats)!=5 or len(events)!=5:raise Blocked("V332_BEAT_EVENT_CARDINALITY")
     previous=-1
-    for beat,evt,expected in zip(beats,events,STAGES):
+    for index,(beat,evt,expected) in enumerate(zip(beats,events,STAGES)):
         if beat["stage"]!=expected or evt["stage"]!=expected or evt["beat_start_frame"]!=beat["frame_start"]:
             raise Blocked("V332_EVENT_OR_STAGE_MISMATCH")
+        expected_frame=beat["frame_start"]+min(beat["frames"]-1,max(1,round(c.beats[index].event_fraction*beat["frames"])))
+        if evt["frame"]!=expected_frame:
+            raise Blocked("V332_EVENT_NOT_DERIVED_FROM_AUDIO_BEAT")
         if evt["frame"]<=previous or not (beat["frame_start"]<evt["frame"]<beat["frame_start"]+beat["frames"]):
             raise Blocked("V332_CAUSAL_TIMELINE_ORDER")
         if evt["event_id"]!="event-"+expected or evt["visual_state_key"]!="state-"+expected:
@@ -273,8 +281,8 @@ def render_offline(root:Path,out:Path,contract:LessonSemanticContract|None=None,
             value=math.sqrt(sum(x*x for x in sample)/max(1,len(sample)))/32768
             if value<AUDIO_GATE:raise Blocked("V332_AAC_AUDIBLE_BEAT_GATE")
             rms.append(round(value,5))
-            f0=draw_frame(contract,idx,.15,p,beat["spoken_text"])
-            f1=draw_frame(contract,idx,.80,p,beat["spoken_text"])
+            f0=draw_frame(contract,idx,.10,p,beat["spoken_text"])
+            f1=draw_frame(contract,idx,.90,p,beat["spoken_text"])
             motion=_mean_absolute_error(f0,f1)
             if motion<=.045:raise Blocked("V332_CAUSAL_ANIMATION_IS_STATIC")
             earlylate.append(round(motion,3))
@@ -284,6 +292,29 @@ def render_offline(root:Path,out:Path,contract:LessonSemanticContract|None=None,
             raise Blocked("V332_ACTUAL_AV_CODEC_OR_FRAMES")
         deltas=[_region_diff(a,b) for a,b in zip(samples_images,samples_images[1:])]
         if min(deltas)<=.8:raise Blocked("V332_STATE_NOT_VISIBLE_IN_DECODED_MP4")
+        # Verify the event is causally materialized in ACTUAL encoded video.
+        # Sample well before/after each fractional event inside its real beat.
+        event_visual_delta=[]
+        highlight_boxes={
+            "call":(1007,218,1202,271),
+            "bind":(1007,272,1202,326),
+            "evaluate":(1007,325,1202,380),
+            "return":(1007,432,1202,486),
+        }
+        for index in range(1,len(beats)):
+            b=beats[index];evt=events[index]
+            before_frame=max(b["frame_start"]+1,evt["frame"]-min(5,max(2,b["frames"]//9)))
+            after_frame=min(b["frame_start"]+b["frames"]-2,evt["frame"]+min(5,max(2,b["frames"]//9)))
+            if before_frame>=evt["frame"] or after_frame<=evt["frame"]:
+                raise Blocked("V332_EVENT_VISUAL_SAMPLE_BOUNDS")
+            before_img=_ffmpeg_anchor(video,at=(before_frame+.4)/FPS,profile=p)
+            after_img=_ffmpeg_anchor(video,at=(after_frame+.4)/FPS,profile=p)
+            roi=highlight_boxes[b["stage"]]
+            delta=_mean_absolute_error(before_img.crop(roi),after_img.crop(roi))
+            if delta<=.45:raise Blocked("V332_EVENT_HAS_NO_DECODED_STATE_REVEAL")
+            event_visual_delta.append({"stage":b["stage"],"frame":evt["frame"],
+                                       "actual_encoded_roi_delta":round(delta,3)})
+
         srt=out/(STEM+".srt");srt.write_text("\n".join(subtitles),encoding="utf-8")
         contact=Image.new("RGB",(1920,720),BLACK)
         for i,frame in enumerate(samples_images):
@@ -305,6 +336,7 @@ def render_offline(root:Path,out:Path,contract:LessonSemanticContract|None=None,
             "beat_events":events,"beat_times":beats,
             "decoded_rgb_source_mae":decoded,"audio_aac_rms_per_beat":rms,
             "decoded_state_roi_deltas":[round(x,3) for x in deltas],
+            "decoded_event_reveal_checks":event_visual_delta,
             "intra_beat_caused_motion_mae":earlylate,
             "video_sha256":_checksum(video),"subtitle_sha256":_checksum(srt),
             "width":SIZE[0],"height":SIZE[1],"fps":FPS,"frames":offset,
