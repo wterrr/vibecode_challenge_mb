@@ -305,6 +305,18 @@ def render_v331(root: Path, input_path: Path, output: Path) -> dict:
     bundle=build_certified_bundle(root,record,repair=True)
     result=render_lesson(bundle,output,frame_drawer=draw_code_state_frame,
                          video_stem=AUDIO_STEM)
+    # The reused V3-30 encoder writes a historical live-labelled receipt.
+    # Re-label the generated *offline* encoder evidence to avoid incorrectly
+    # implying that the V3-31 checkpoint made new provider calls.
+    reused_path=output/"cs_live_media_receipt.json"
+    encoder_receipt=json.loads(reused_path.read_text())
+    encoder_receipt["status"]="REUSED_V330_ENCODER_OFFLINE_TECHNICAL_PASS"
+    encoder_receipt["checkpoint"]="V3-31_ENCODER_SUBCOMPONENT"
+    encoder_receipt["v331_provider_requests"]=0
+    encoder_receipt["script_provenance"]="ORIGINAL_REAL_V330_LUNA_TEXT_REUSED"
+    (output/"v3_31_encoder_receipt.json").write_text(
+        json.dumps(encoder_receipt,indent=2)+"\n")
+    reused_path.unlink()
     # Pixel-level semantic-state distinctions are independently checked on
     # actual decoded encoded video, not just source storyboard metadata.
     profile=SequenceRenderProfile(width=1280,height=720,fps=18,seconds_per_step=1.0)
