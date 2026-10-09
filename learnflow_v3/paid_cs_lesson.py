@@ -196,6 +196,7 @@ def validate_script(payload: dict, claims: list[dict]) -> list[dict]:
         "bind": ("parameter",),
         "return": ("return",),
     }
+    accepted = []
     texts = []
     for index, (item, stage) in enumerate(zip(payload["segments"], STAGES, strict=True)):
         if (not isinstance(item, dict) or set(item) != {"segment_id", "claim_ids", "spoken_text"}
@@ -203,21 +204,39 @@ def validate_script(payload: dict, claims: list[dict]) -> list[dict]:
             or item["claim_ids"] != [CLAIM_FOR_STAGE[index]]):
             raise Blocked("V330_SCRIPT_CLAIM_OR_ORDER_DRIFT")
         text = item["spoken_text"]
-        if (not isinstance(text, str) or not 10 <= len(text.split()) <= 35
-            or len(text) > 225 or "\n" in text
-            or not re.fullmatch(r"[A-Za-z0-9 ,.!?:;()'+=/-]+", text)
-            or any(term not in text.casefold() for term in expected[stage])
-            or set(re.findall(r"\b\d+\b", text)) - {"2", "3", "5"}
-            or any(text.casefold() == c["explanation"].casefold() for c in claims)):
-            raise Blocked("V330_SCRIPT_UNSAFE_UNGROUNDED_OR_COPY")
-        if stage in ("call", "bind") and not re.search(r"\b(3|three)\b", text, re.I):
+        if not isinstance(text, str):
+            raise Blocked("V330_SCRIPT_NON_TEXT")
+        if any(ord(ch) < 32 or ord(ch) == 127 for ch in text):
+            raise Blocked("V330_SCRIPT_CONTROL_CHARACTERS")
+        # Typography only, never rewrite source/claims/state.
+        # Verbatim provider JSON is independently hashed before this operation.
+        punctuation = str.maketrans({
+            "\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"',
+            "\u2013": "-", "\u2014": " - ", "\u2026": "...", "\u00a0": " ",
+        })
+        rendered = " ".join(text.translate(punctuation).replace(chr(96), "").split())
+        if not 10 <= len(rendered.split()) <= 35:
+            raise Blocked("V330_SCRIPT_WORD_COUNT_OUT_OF_BOUNDS")
+        if len(rendered) > 225:
+            raise Blocked("V330_SCRIPT_CAPTION_TOO_LONG")
+        # Identifier underscores are needed for the certified add_two example.
+        if not re.fullmatch(r"[A-Za-z0-9 _.,!?:;()'\"+=/-]+", rendered):
+            raise Blocked("V330_SCRIPT_DISALLOWED_CHARACTERS")
+        if any(term not in rendered.casefold() for term in expected[stage]):
+            raise Blocked("V330_SCRIPT_STAGE_SEMANTICS_MISSING_" + stage.upper())
+        if set(re.findall(r"\b\d+\b", rendered)) - {"2", "3", "5"}:
+            raise Blocked("V330_SCRIPT_UNSUPPORTED_NUMERIC_CLAIM")
+        if any(rendered.casefold() == c["explanation"].casefold() for c in claims):
+            raise Blocked("V330_SCRIPT_NOT_NOVEL")
+        if stage in ("call", "bind") and not re.search(r"\b(3|three)\b", rendered, re.I):
             raise Blocked("V330_EXAMPLE_ARGUMENT_NOT_GROUNDED")
-        if stage == "return" and not re.search(r"\b(5|five)\b", text, re.I):
+        if stage == "return" and not re.search(r"\b(5|five)\b", rendered, re.I):
             raise Blocked("V330_EXAMPLE_RETURN_NOT_GROUNDED")
-        texts.append(text)
-    if len(set(texts)) != 4:
+        texts.append(rendered)
+        accepted.append({**item, "spoken_text": rendered})
+    if len({x.casefold() for x in texts}) != 4:
         raise Blocked("V330_SCRIPT_DUPLICATE_UTTERANCE")
-    return payload["segments"]
+    return accepted
 
 
 def build_contracts(*, topic: dict, certificate: dict, claims: list[dict], segments: list[dict]):

@@ -118,12 +118,51 @@ def test_script_new_narration_nonidentical_and_fail_closed():
         validate_script(forged, claims)
     forged = copy.deepcopy(script())
     forged["segments"][2]["spoken_text"] += " The output is 999."
-    with pytest.raises(Blocked, match="SCRIPT_UNSAFE"):
+    with pytest.raises(Blocked, match="UNSUPPORTED_NUMERIC"):
         validate_script(forged, claims)
     forged = copy.deepcopy(script())
     forged["segments"][3]["spoken_text"] = "return"
-    with pytest.raises(Blocked, match="SCRIPT_UNSAFE"):
+    with pytest.raises(Blocked, match="WORD_COUNT"):
         validate_script(forged, claims)
+
+
+def test_script_code_identifier_and_typographic_quotes_are_display_safe():
+    cert = source()
+    claims = validate_research(research(cert), cert)
+    payload = copy.deepcopy(script())
+    payload["segments"][0]["spoken_text"] = (
+        "We use \u201cdef\u201d to declare the function \u2018add_two\u2019, which adds two to a given input.")
+    payload["segments"][1]["spoken_text"] = (
+        "Call \u2018add_two\u2019 with argument 3 \u2014 it now moves into the function\u2019s body.")
+    accepted = validate_script(payload, claims)
+    assert chr(96) not in accepted[0]["spoken_text"]
+    assert "add_two" in accepted[0]["spoken_text"]
+    assert "\u2014" not in accepted[1]["spoken_text"]
+    assert "function's body" in accepted[1]["spoken_text"]
+    hostile = copy.deepcopy(script())
+    hostile["segments"][1]["spoken_text"] += " <script>alert(7)</script>"
+    with pytest.raises(Blocked, match="DISALLOWED_CHARACTERS"):
+        validate_script(hostile, claims)
+
+
+def test_mocked_original_script_real_native_process_audio_video(tmp_path):
+    """Real local H264/AAC with mock narration: NOT live LLM."""
+    from learnflow_v3.paid_cs_lesson import render_lesson
+    cert = source()
+    topic = next(x for x in read_source(ROOT)[0] if x["topic_id"] == "lfb-002-cs")
+    claims = validate_research(research(cert), cert)
+    spoken = validate_script(script(), claims)
+    bundle = build_contracts(topic=topic, certificate=cert,
+                             claims=claims, segments=spoken)
+    result = render_lesson(bundle, tmp_path)
+    assert result["status"] == "BOUNDED_LIVE_SOURCE_SCRIPT_PROCESS_AV_PASS"
+    assert result["frames"] > 50
+    assert len(result["decoded_replay"]) == 4
+    assert len(result["aac_rms_per_actual_beat"]) == 4
+    assert all(r > 0.003 for r in result["aac_rms_per_actual_beat"])
+    assert result["production"] == "BLOCKED"
+    mp4 = tmp_path / "cs_function_parameters_luna_720p.mp4"
+    assert mp4.is_file() and mp4.read_bytes()[4:8] == b"ftyp"
 
 
 def test_host_process_is_finite_and_scenegraph_tampering_fails():
