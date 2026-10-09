@@ -31,3 +31,9 @@ Up-to-date official OpenRouter structured output documentation: https://openrout
 - If validated, perform REAL sandboxed Manim MP4 and inspect decoded frames / quality issues with timestamps. Engineering GO != teaching-quality GO.
 
 **Pre-run verdict:** PENDING exact CI and live. See later notes for verdict.
+
+## Exact CI success and one separately preregistered request authorization (2026-10-09)
+
+At commit `0d63d68f04faf79e84bd8051f837949585542c21`, [offline exact-head CI #37911213001](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37911213001) SUCCESS: **27/27** new V3-35 + V3-34 tests, **27 regression PASS + 1 skipped**, frozen benchmark/Core, H264/AAC synthetic HOST Manim rendered from no-network Docker. [Artifact #11606722490](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37911213001/artifacts/11606722490) retrieved and independently inspected; fixture byte fingerprint `4c347a69b11611081da05949129b94945873bd069af4d276015a5ad43953ec5f`. ZERO provider calls so far.
+
+The following unique tagged commit `[v3-35-one-shot]` authorizes ONLY one new GPT-6 Luna JSON-schema strict call following successful offline same-commit dependency. No retries or fallback and no further opt-in tagged commits; save actual request receipt and failure on any model/semantic/render blocker. **Full model-authored video remains PENDING before running this one-shot.**
