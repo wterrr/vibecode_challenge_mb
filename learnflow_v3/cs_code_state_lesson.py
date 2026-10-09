@@ -257,8 +257,14 @@ def draw_code_state_frame(bundle: dict, index: int, phase: float,
         ("EVALUATE", state["calculation"] or "—"),
         ("RETURNED", "5" if state["returned"] is not None else "—"),
     ]
+    # In each beat, spotlight the newly revealed semantic value so learners
+    # can follow argument -> parameter -> return, not stare at four static boxes.
+    focused_row = {"define": None, "call": 0, "bind": 1, "return": 3}[state["stage"]]
     for i, (label, value) in enumerate(entries):
         y=239+i*59
+        if i == focused_row:
+            d.rounded_rectangle((1008, y-12, 1194, y+40), radius=9,
+                                fill=(20, 64, 47), outline=GREEN, width=2)
         d.text((785, y), label, font=small, fill=GREY)
         _render_text(d, (1175, y-1), value, cmu_font(28, mono=True),
                      color=GREEN if value!="—" else GREY,
