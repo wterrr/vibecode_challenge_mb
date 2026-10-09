@@ -42,7 +42,7 @@ def test_source_mutation_must_be_rejected(tmp_path):
         read_source(tmp_path)
 
 def test_arbitrary_integer_linear_slope_proof():
-    for slope,offset in ((-2,2),(-1,0),(1,1),(2,-2)):
+    for slope,offset in ((-2,1),(-1,0),(1,1),(2,-1)):
         graph,spec=make_linear_graph(slope=slope,intercept=offset)
         assert spec.coefficients==(offset,slope,0)
         assert all((b.y-a.y)==slope for a,b in zip(spec.steps,spec.steps[1:]))
@@ -52,6 +52,11 @@ def test_arbitrary_integer_linear_slope_proof():
         assert len({x["source_point_id"] for x in beats})==len(spec.steps)
     with pytest.raises(ValueError,match="V3_27_INVALID_LINEAR_COEFFICIENT"):
         make_linear_graph(slope=0,intercept=0)
+    # V3-08 deliberately refuses curves extending beyond its plotted y-axis.
+    # Do not weaken this source/visual safety guard just to make a test pass.
+    from learnflow_v3.models import SemanticContractError
+    with pytest.raises(SemanticContractError,match="V3_08_GRAPH_CURVE_OUTSIDE_SAFE_AXIS"):
+        make_linear_graph(slope=-2,intercept=2)
 
 def test_unintegrated_nonmath_cannot_silently_fallback(selected):
     assert all(x in REASON for x in ORDER if x!="math")
