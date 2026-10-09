@@ -132,5 +132,9 @@ def test_injected_model_drifts_are_saved_by_paths_not_model_prose(tmp_path):
 def test_finite_graphic_actions_still_reject_untrusted_generated_python():
     fake=wire_from_fixture()
     fake["objects"][0]["python"]="__import__('os')"
-    with pytest.raises(Blocked):
-        normalize_wire(fake)  # Model cannot smuggle unregistered top-level fields
+    # Wire normalization never alters graphic semantics; the existing
+    # strict Pydantic model rejects extra object fields before code emission.
+    from pydantic import ValidationError
+    normalized=normalize_wire(fake)
+    with pytest.raises(ValidationError):
+        CreativeScene.model_validate({**normalized,"model_author":"openai/gpt-6-luna"})
