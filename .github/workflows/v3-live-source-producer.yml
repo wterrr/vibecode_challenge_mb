@@ -3,6 +3,7 @@ name: V3-29 REAL Source Anchor and Free-only Research Script Producer
 on:
   push:
     branches: [chatgpt/v3-29-live-source-script-gates]
+  workflow_dispatch:
   pull_request:
     paths:
       - "learnflow_v3/independent_source_gate.py"
@@ -75,13 +76,12 @@ jobs:
 
   single-use-free-live-research-and-script:
     needs: offline-contract-and-frozen-guard
-    # This TEMPORARY exact PR synchronize condition is for a single bounded
-    # no-paid-model experiment. Must be disabled in the very next change;
-    # subsequent doc/CI pushes must not call provider.
+    # The already-started PR #63 one-shot trial is preserved on its original
+    # commit; all subsequent pushes/PRs are OFF by default. Manual dispatch
+    # is the only future way to spend even free quota, still hard :free.
     if: >-
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.number == 63 &&
-      github.event.action == 'synchronize'
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/chatgpt/v3-29-live-source-script-gates'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
