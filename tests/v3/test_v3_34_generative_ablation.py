@@ -124,3 +124,10 @@ def test_schema_does_not_support_arbitrary_source_execution():
     x=fixture_plan().model_dump()
     x["beats"][1]["actions"][0]["action"]="shell"
     with pytest.raises(ValidationError):CreativeScene.model_validate(x)
+
+def test_graphic_id_cannot_collide_with_host_python_names():
+    for forbidden in ("self","class","Text","Scene","GeneratedLesson"):
+        data=fixture_plan().model_dump()
+        data["objects"][0]["id"]=forbidden
+        with pytest.raises(ValidationError,match="V334_UNSAFE_GRAPHIC_PYTHON_IDENTIFIER"):
+            CreativeScene.model_validate(data)

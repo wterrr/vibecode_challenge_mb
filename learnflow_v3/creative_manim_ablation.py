@@ -8,6 +8,7 @@ from __future__ import annotations
 from fractions import Fraction
 from hashlib import sha256
 import json
+import keyword
 from pathlib import Path
 import re
 from typing import Literal
@@ -44,6 +45,10 @@ class Graphic(BaseModel):
     radius:float=Field(default=.45,ge=.06,le=1.2)
     @model_validator(mode="after")
     def consistent(self):
+        if (keyword.iskeyword(self.id) or self.id in
+            {"self","Text","Scene","GeneratedLesson","WHITE","YELLOW",
+             "BLACK","GREEN","BLUE","ORANGE","TEAL","GREY"}):
+            raise ValueError("V334_UNSAFE_GRAPHIC_PYTHON_IDENTIFIER")
         if self.kind=="text":
             if not 1<=len(self.text.strip())<=40 or any(ord(c)<32 for c in self.text):
                 raise ValueError("V334_TEXT_TOO_LONG_OR_CONTROL")

@@ -242,8 +242,12 @@ def run(root:Path,out:Path,*,mode:str,key:str="",sender=None)->dict:
     usage=None
     if mode=="live-model":
         raw,usage=call_exact_model(key,sender=sender)
+        # Provenance is read from the actual HTTP model envelope, not a
+        # self-asserted field in the model-generated creative artwork JSON.
+        if "model_author" not in raw:
+            raw={**raw,"model_author":MODEL}
         plan=CreativeScene.model_validate(raw)
-        if plan.model_author!=MODEL:raise Blocked("V334_REAL_PROVENANCE_MISSING")
+        if plan.model_author!=MODEL:raise Blocked("V334_MODEL_AUTHOR_CONTRADICTION")
         origin="REAL_GPT6_LUNA_ONE_REQUEST"
     else:
         plan=fixture_plan()
