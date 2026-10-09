@@ -332,6 +332,13 @@ def create_packets(*,media_root:Path,output_dir:Path)->dict:
     return status
 
 
+def attest_source_manifest(*,admin_manifest:dict,media_root:Path)->None:
+    """Fail closed against a self-rehashed ADMIN JSON made for another video."""
+    _validate_manifest(admin_manifest)
+    require(admin_manifest.get("media")==canonical_media(media_root),
+            "ADMIN_MANIFEST_DOES_NOT_MATCH_ACTUAL_SOURCE_MP4")
+
+
 def inspect_submissions(*,admin_manifest:dict,responses:list[dict])->dict:
     """Fail closed; descriptive results cannot grant student readiness or release."""
     _validate_manifest(admin_manifest)

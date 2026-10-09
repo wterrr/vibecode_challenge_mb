@@ -3,11 +3,14 @@ from __future__ import annotations
 import copy
 import json
 import os
+import re
+import shutil
+import subprocess
 from pathlib import Path
 import pytest
 from learnflow_v3.independent_quality_pilot import (
     RATERS,DIMS,PRIMARY,STUDY,VERSION,assignment,make_manifest,
-    _rater_config,_validate_manifest,create_packets,inspect_submissions,
+    _rater_config,_validate_manifest,create_packets,inspect_submissions,attest_source_manifest,
 )
 from learnflow_v3.lesson_quality import QualityEvidenceError
 
@@ -63,6 +66,17 @@ def test_create_real_playable_unscored_packets(source,tmp_path):
         assert "baseline" not in html and "refined" not in html
         assert "crypto proof" not in html
         assert "NOT_YET_AUTHORIZED" in (p/"packet_metadata.json").read_text()
+        # Check the actual reviewer-side JavaScript with the runner's Node
+        # parser; this remains offline and sends no network requests.
+        script=re.search(r"<script>([\s\S]*?)</script>",html)
+        assert script is not None
+        node=shutil.which("node")
+        assert node is not None,"GitHub Actions must supply the Node parser"
+        js=tmp_path/(rid+"_review_player.cjs")
+        js.write_text(script.group(1),encoding="utf-8")
+        parsed=subprocess.run([node,"--check",str(js)],
+                              capture_output=True,text=True,timeout=10)
+        assert parsed.returncode==0,parsed.stderr
     admin=out/"ADMIN_NOT_FOR_RATERS"
     assert json.loads((admin/"assignment_AND_SOURCE_DO_NOT_SHARE.json").read_text())==manifest_source_agnostic(receipt,admin)
     with pytest.raises(QualityEvidenceError,match="DO_NOT_OVERWRITE_REVIEW_PACKET"):
@@ -153,3 +167,11 @@ def test_duplicate_rater_and_forged_manifest_rejected(manifest):
     f["human_recruitment_authorized"]=True
     with pytest.raises(QualityEvidenceError,match="FALSE_HUMAN_OR_BLINDING_CLAIM"):
         inspect_submissions(admin_manifest=f,responses=[])
+
+def test_admin_manifest_cannot_self_rehash_against_actual_mp4(source,manifest):
+    legit=copy.deepcopy(manifest)
+    attest_source_manifest(admin_manifest=legit,media_root=source)
+    forged=copy.deepcopy(manifest)
+    forged["media"]["refined_sha256"]="e"*64
+    with pytest.raises(QualityEvidenceError,match="ADMIN_MANIFEST_DOES_NOT_MATCH_ACTUAL_SOURCE_MP4"):
+        attest_source_manifest(admin_manifest=forged,media_root=source)

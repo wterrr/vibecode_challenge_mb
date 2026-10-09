@@ -11,10 +11,11 @@ from pathlib import Path
 import sys
 ROOT=Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
-from learnflow_v3.independent_quality_pilot import inspect_submissions
+from learnflow_v3.independent_quality_pilot import inspect_submissions,attest_source_manifest
 
-def run(admin_manifest:Path,responses:Path,output:Path)->dict:
+def run(admin_manifest:Path,responses:Path,output:Path,source_dir:Path)->dict:
     m=json.loads(admin_manifest.read_text(encoding="utf-8"))
+    attest_source_manifest(admin_manifest=m,media_root=source_dir)
     if not responses.is_dir() or responses.is_symlink():
         raise ValueError("RESPONSE_DIR_MUST_BE_LOCAL_DIRECTORY")
     paths=sorted(responses.glob("*.json"))
@@ -32,5 +33,6 @@ if __name__=="__main__":
     p.add_argument("--admin-manifest",required=True,type=Path)
     p.add_argument("--responses-dir",required=True,type=Path)
     p.add_argument("--output",required=True,type=Path)
+    p.add_argument("--source-dir",required=True,type=Path)
     v=p.parse_args()
-    run(v.admin_manifest,v.responses_dir,v.output)
+    run(v.admin_manifest,v.responses_dir,v.output,v.source_dir)

@@ -44,6 +44,7 @@ jobs:
           python scripts/aggregate_v3_25_quality_responses.py \
             --admin-manifest "$RUNNER_TEMP/v3_25_packets/ADMIN_NOT_FOR_RATERS/assignment_AND_SOURCE_DO_NOT_SHARE.json" \
             --responses-dir "$RUNNER_TEMP/v3_25_empty_responses" \
+            --source-dir "$RUNNER_TEMP/v3_25_media" \
             --output "$RUNNER_TEMP/v3_25_packets/zero_import_report.json"
       - name: Validate source binding, counterbalancing, real reviewer HTML and fraud mutations
         env:
