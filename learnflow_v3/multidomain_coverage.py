@@ -134,8 +134,12 @@ def _render_frame(spec,graph,beat,phase:float,profile:SequenceRenderProfile)->Im
     # Replace the original V3-08 bottom microcopy to reserve a true caption
     # zone; do not erase the graph plot, axes or stable object centers.
     w,h=profile.width,profile.height
-    draw.rectangle((0,round(h*.865),w,h),fill=BLACK)
-    draw.line((round(w*.045),round(h*.858),round(w*.955),round(h*.858)),
+    # V3-08 draws an engineer-only green 'Point point-N' label around
+    # y≈.83h. A footer beginning at .865h leaves half the old text visible
+    # on the caption divider. Clear the entire legacy annotation band, NOT
+    # the mathematical axes/curve, and reserve a clean bottom transcript zone.
+    draw.rectangle((0,round(h*.812),w,h),fill=BLACK)
+    draw.line((round(w*.045),round(h*.83),round(w*.955),round(h*.83)),
               fill=(58,65,74),width=2)
     f=cmu_font(30)
     text=beat["text"]
@@ -150,7 +154,7 @@ def _render_frame(spec,graph,beat,phase:float,profile:SequenceRenderProfile)->Im
     if current:lines.append(current)
     guard(0<len(lines)<=2,"TOO_LONG_CAPTION")
     for idx,line in enumerate(lines):
-        draw.text((w//2,round(h*.89)+idx*40),line,
+        draw.text((w//2,round(h*.858)+idx*40),line,
                   font=f,fill=WHITE,anchor="mt")
     return frame
 

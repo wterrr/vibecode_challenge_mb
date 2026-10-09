@@ -100,3 +100,21 @@ def test_source_topic_mismatch_rejected_even_with_video_renderer(selected,tmp_pa
     fake=next(x for x in selected if x["domain"]=="physics")
     with pytest.raises(ValueError,match="V3_27_NO_CERTIFIED_TOPIC_TO_MATH_ADAPTER"):
         render_math(topic=fake,output=tmp_path)
+
+
+def test_math_caption_gutter_has_no_leaked_engineering_point_ids():
+    """Verify final source-grounded rendered geometry, not raw asset labels."""
+    from learnflow_v3.multidomain_coverage import _render_frame
+    from learnflow_v3.sequence_renderer import SequenceRenderProfile
+    from PIL import Image
+    graph,spec=make_linear_graph(slope=1,intercept=1)
+    beat=semantic_narration(spec)[4]
+    profile=SequenceRenderProfile(width=1280,height=720,fps=18,seconds_per_step=1.0)
+    img=_render_frame(spec,graph,beat,.5,profile)
+    # y=584..596 is the former V3-08 source label; it must now be
+    # entirely clean black and not touch the math graph higher up.
+    strip=img.crop((0,584,1280,595))
+    assert strip.getbbox() is None
+    # Caption begins below its dedicated separator, not on top of it.
+    assert img.getpixel((100,598))==(58,65,74)
+    assert img.getpixel((100,608))==(0,0,0)
