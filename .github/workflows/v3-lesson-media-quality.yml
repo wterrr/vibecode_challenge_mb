@@ -1,0 +1,66 @@
+name: V3-21 Real Lesson Media and Education Quality Evidence Offline
+
+on:
+  push:
+    branches: [chatgpt/v3-21-lesson-media-quality-gate]
+  pull_request:
+    paths:
+      - "learnflow_v3/**"
+      - "tests/v3/**"
+      - "scripts/verify_v3_lesson_quality.py"
+      - "scripts/verify_v3_event_alignment.py"
+      - ".github/workflows/v3-lesson-media-quality.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  real-lesson-quality-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing offline renderer and locally synthesized voice
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fontconfig fonts-cmu espeak-ng
+          python -m pip install -r requirements.txt pytest-asyncio pyyaml
+      - name: Render actual source-matched V3-19 and V3-20 offline MP4s
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_21_input" "$RUNNER_TEMP/v3_21_evidence"
+          python scripts/verify_v3_event_alignment.py --output-dir "$RUNNER_TEMP/v3_21_input"
+      - name: Audit actual video, decoded PCM, SRT and source timestamps
+        run: |
+          python scripts/verify_v3_lesson_quality.py \
+            --source-dir "$RUNNER_TEMP/v3_21_input" \
+            --output-dir "$RUNNER_TEMP/v3_21_evidence"
+      - name: Real-media mutation tests
+        env:
+          V3_21_MEDIA_DIR: ${{ runner.temp }}/v3_21_input
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_lesson_quality.py
+      - name: Protected V3-20, frozen V2/Hermes and benchmark regressions
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_event_alignment_quality.py
+          python -m pytest -q --confcutdir=tests/v2 tests/v2/test_concept_registry.py tests/v2/test_scenegraph_validation.py tests/v2/test_repair_v2_13_contracts.py
+          python -m pytest -q --confcutdir=tests/hermes tests/hermes/test_visual_director.py tests/hermes/test_final_v2_semantic_consistency.py tests/hermes/test_pedagogy_agent.py tests/hermes/test_script_agent.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Retain actual MP4, SRT, sampled frames and NO-GO issue inventory
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-21-real-mp4-srt-audited-issue-inventory
+          path: |
+            ${{ runner.temp }}/v3_21_input/*.mp4
+            ${{ runner.temp }}/v3_21_input/*.srt
+            ${{ runner.temp }}/v3_21_input/*.json
+            ${{ runner.temp }}/v3_21_evidence/
+          retention-days: 30
+          if-no-files-found: error
