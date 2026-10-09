@@ -273,12 +273,19 @@ def checked_live_plan(raw:dict,usage:dict,out:Path)->CreativeScene:
 def run(root:Path,out:Path,*,mode:str,key:str="",sender=None)->dict:
     if not out.is_dir() or any(out.iterdir()):raise Blocked("V334_OUTPUT_NONEMPTY")
     prereg=checked_manifest(root)
-    if mode not in ("offline-smoke","live-model"):raise Blocked("V334_UNKNOWN_MODE")
+    if mode not in ("offline-smoke","live-model","live-structured"):
+        raise Blocked("V334_UNKNOWN_MODE")
     usage=None
-    if mode=="live-model":
-        raw,usage=call_exact_model(key,sender=sender)
+    if mode in ("live-model","live-structured"):
+        if mode=="live-structured":
+            from learnflow_v3.structured_scene_authoring import preflight,one_shot_structured
+            preflight(root)
+            raw,usage=one_shot_structured(key,out,sender=sender)
+        else:
+            raw,usage=call_exact_model(key,sender=sender)
         plan=checked_live_plan(raw,usage,out)
-        origin="REAL_GPT6_LUNA_ONE_REQUEST"
+        origin=("REAL_GPT6_LUNA_STRICT_JSON_SCHEMA_ONE_REQUEST"
+                if mode=="live-structured" else "REAL_GPT6_LUNA_ONE_REQUEST")
     else:
         plan=fixture_plan()
         origin="SYNTHETIC_HOST_FIXTURE_NOT_REAL_MODEL"
@@ -306,7 +313,9 @@ def run(root:Path,out:Path,*,mode:str,key:str="",sender=None)->dict:
         "rendered":True,"video_sha256":measured["video_sha256"],
         "plan_origin":origin}
     receipt={
-      "checkpoint":"V3-34","status":"TECHNICAL_SMOKE_NOT_EDUCATIONAL_PASS",
+      "checkpoint":"V3-35" if mode=="live-structured" else "V3-34",
+      "status":("TECHNICAL_MODEL_SCENE_PASS_NOT_EDUCATIONAL_PASS"
+                if mode=="live-structured" else "TECHNICAL_SMOKE_NOT_EDUCATIONAL_PASS"),
       "topic_id":prereg["topic_id"],
       "ablation":baselines,"model_plan_origin":origin,
       "manim_source_origin":"HOST_COMPILED_FROM_MODEL_PRIMITIVE_DATA" if mode=="live-model" else "HOST_FIXTURE_FROM_HOST_PRIMITIVE_DATA",
@@ -322,7 +331,9 @@ def run(root:Path,out:Path,*,mode:str,key:str="",sender=None)->dict:
       "VLM_critic":"NOT_RUN",
       "creative_advantage_proven":"NO_UNBALANCED_A_B_ABSTAIN",
       "production":"BLOCKED"}
-    (out/"v3_34_ablation_receipt.json").write_text(json.dumps(receipt,indent=2)+"\n")
+    receipt_filename=("v3_35_ablation_receipt.json" if mode=="live-structured"
+                     else "v3_34_ablation_receipt.json")
+    (out/receipt_filename).write_text(json.dumps(receipt,indent=2)+"\n")
     print("V3_34_MODE="+origin,flush=True)
     print("V3_34_ABLATION=A_ABSTAIN B_ABSTAIN C_REAL_MANIM_MP4",flush=True)
     print("V3_34_PROVIDER_REQUESTS="+str(receipt["provider_requests"]),flush=True)
