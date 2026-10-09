@@ -12,7 +12,7 @@ from learnflow_v3.lesson_quality import QualityEvidenceError
 from learnflow_v3.native_hd_lesson import _source_evidence
 from learnflow_v3.teaching_storyboard import (
     WIDTH,HEIGHT,VIDEO,RECEIPT,teaching_callout,teaching_frame,
-    verify_teaching_video,render_teaching_video,_quality_guard,certified_visible_candidate,
+    verify_teaching_video,render_teaching_video,_quality_guard,certified_visible_candidate,candidate_cell_geometry,
 )
 
 @pytest.fixture(scope="module")
@@ -121,3 +121,58 @@ def test_real_teaching_frame_sample_has_native_bounds_and_text(folder):
     def bright_count(image):
         return sum(v>110 for v in image.crop(badge_box).convert("L").getdata())
     assert bright_count(img)>bright_count(old)+150
+
+
+def test_candidate_green_border_matches_gray_cell_exact_geometry(folder):
+    """Regression for green box longer than gray source array slot."""
+    from learnflow_v3.native_hd_lesson import PROFILE
+    from learnflow_v3.sequence_renderer import _layout
+    _,source_receipt,_,source,_=_source_evidence(folder/"source_v3_20")
+    centers=_layout(PROFILE,len(source.trace.query.values))
+    # V3-06 sequence_renderer's actual slot construction for 720p.
+    sx,sy=PROFILE.width/960,PROFILE.height/540
+    grayhalf=max(10,min(round(34*sx),round((centers[1]-centers[0])*0.42)))
+    gray_y=round(288*sy)
+    gray_rect=lambda index:(centers[index]-grayhalf,gray_y-round(34*sy),
+                            centers[index]+grayhalf,gray_y+round(34*sy))
+    for index in (0,5,6,8):
+        rect,radius,width=candidate_cell_geometry(centers,index,PROFILE)
+        assert rect==gray_rect(index)
+        assert radius==round(10*sy)
+        assert width==max(2,round(2*sy))
+        assert rect[2]-rect[0]==rect[3]-rect[1]==90
+    # In an actual candidate-visible semantic event, independently check the
+    # RGB green border fits strictly inside the *same* gray-cell bounds.
+    event=next(p for p in source_receipt["segments"]
+               if p["event_kind"]=="OBSERVE" and p["step"]==2)
+    assert certified_visible_candidate(source,event)==6
+    image=teaching_frame(source,event,fraction=.5,caption_visible=True)
+    rect,_,_=candidate_cell_geometry(centers,6,PROFILE)
+    mask=[]
+    for y in range(rect[1]-4,rect[3]+5):
+        for x in range(rect[0]-4,rect[2]+5):
+            red,green,blue=image.getpixel((x,y))
+            if green>red+65 and green>blue+40:
+                mask.append((x,y))
+    assert mask,"Green candidate outline absent in actual rendered frame"
+    assert min(x for x,y in mask)>=rect[0]
+    assert max(x for x,y in mask)<=rect[2]
+    assert min(y for x,y in mask)>=rect[1]
+    assert max(y for x,y in mask)<=rect[3]
+    assert min(x for x,y in mask)<=rect[0]+2
+    assert max(x for x,y in mask)>=rect[2]-2
+    assert min(y for x,y in mask)<=rect[1]+2
+    assert max(y for x,y in mask)>=rect[3]-2
+
+
+def test_candidate_border_scaling_handles_dense_arrays_and_singletons():
+    from learnflow_v3.native_hd_lesson import PROFILE
+    from learnflow_v3.sequence_renderer import _layout
+    for count in (1,6,9,16):
+        centers=_layout(PROFILE,count)
+        rect,radius,width=candidate_cell_geometry(centers,count-1,PROFILE)
+        assert (rect[0]+rect[2])//2==centers[-1]
+        assert rect[3]-rect[1]==2*round(34*PROFILE.height/540)
+        assert rect[2]-rect[0]<=2*round(34*PROFILE.width/960)
+        assert radius==round(10*PROFILE.height/540)
+        assert width==max(2,round(2*PROFILE.height/540))
