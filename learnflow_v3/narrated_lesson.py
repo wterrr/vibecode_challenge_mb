@@ -133,9 +133,15 @@ def _narrated_frame(*,source:BinaryLessonSource,spec:dict,
     role=spec["role"]
     # This is the original V3-06 semantic renderer for EVERY frame,
     # not a video hold/loop, nor a fallback concept-card graphic.
+    # Across an APPLY→OBSERVE or APPLY→RESULT cut, the settled oracle
+    # state MUST persist. Replaying V3-06's 0→1 step tween in a new OBSERVE
+    # scene would momentarily rewind LOW/HIGH/MID and violate continuity.
+    # Only APPLY is allowed to animate between adjacent certified states.
+    stable_scene=spec.get("event_kind") in ("OBSERVE","RESULT")
     image=draw_binary_search_frame(
-        trace=source.trace,step_index=spec["step"],
-        progress=progress,subtitle="",profile=profile)
+        trace=source.trace,step_index=spec.get("visual_step",spec["step"]),
+        progress=(1.0 if stable_scene else progress),
+        subtitle="",profile=profile)
     d=ImageDraw.Draw(image)
     # Distinguish pedagogical scene roles without covering the array.
     d.rectangle((0,0,W,25),fill=BLACK)
@@ -167,7 +173,18 @@ def _narrated_frame(*,source:BinaryLessonSource,spec:dict,
     d.rectangle((0,244,W,H),fill=BLACK)
     d.line((24,245,W-24,245),fill=(45,50,58),width=1)
     step=source.trace.steps[spec["step"]]
-    action=(
+    event_kind=spec.get("event_kind")
+    if event_kind=="OBSERVE":
+        action="READ THE MIDPOINT — BOUNDS UNCHANGED"
+    elif event_kind=="APPLY":
+        if step.action=="DISCARD_LEFT":
+            action=f"ADVANCE LOW TO {step.next_low}"
+        elif step.action=="KEEP_LEFT":
+            action=f"REDUCE HIGH TO {step.next_high}"
+        else:
+            action=f"RECORD CANDIDATE {step.mid} — CHECK EARLIER"
+    else:
+        action=(
         ("SORTED INPUT" if role=="INTRODUCTION" else "COMPARE THE MIDPOINT")
         if role in ("INTRODUCTION","EXPLANATION") else
         ("LEFTMOST MATCH: "+str(source.trace.result_index)
@@ -246,6 +263,8 @@ class NarratedLessonReceipt(BaseModel):
     global_signal_consumption:str="PARTIAL_DEFERRED"
     publication:str="PUBLISH_BLOCKED"
     real_lesson_quality:str="UNMEASURED"
+    event_boundary_alignment:str="UNMEASURED_SCENE_ONLY"
+    event_proof_sha256:str|None=None
     report_sha256:str
 
     @model_validator(mode="after")
@@ -273,6 +292,13 @@ class NarratedLessonReceipt(BaseModel):
             cursor=seg["frame_end_exclusive"]
         if len(self.segments)<4 or abs(cursor-self.total_frames)>1:
             raise ValueError("V3_19_MULTISCENE_FRAME_CONTINUITY_FAILED")
+        if self.event_boundary_alignment=="MEASURED_UTTERANCE_BOUNDARIES_NOT_WORD_LEVEL":
+            if (not self.event_proof_sha256 or
+                not any(s.get("event_kind")=="APPLY" for s in self.segments)):
+                raise ValueError("V3_20_MISSING_PHYSICAL_EVENT_PROOF")
+        elif (self.event_boundary_alignment!="UNMEASURED_SCENE_ONLY" or
+              self.event_proof_sha256 is not None):
+            raise ValueError("V3_20_INVALID_EVENT_ALIGNMENT_STATUS")
         if (self.publication!="PUBLISH_BLOCKED" or
             self.segment_alignment!="MEASURED_AUDIO_SAMPLES_SCENE_BOUNDARIES" or
             self.word_alignment!="UNMEASURED_NOT_FORCED_ALIGNMENT" or
@@ -286,7 +312,8 @@ class NarratedLessonReceipt(BaseModel):
 
 
 def build_narrated_lesson(*,source:BinaryLessonSource,out:Path,
-                          fault:str|None=None)->NarratedLessonReceipt:
+                          fault:str|None=None,
+                          event_aware:bool=False)->NarratedLessonReceipt:
     """Safe output commit: private staging, no overwrites, source replay."""
     if not out.is_dir() or out.is_symlink():_block("UNSAFE_OUTPUT_DIR")
     final=out/"narrated_binary_lesson.mp4"
@@ -298,7 +325,8 @@ def build_narrated_lesson(*,source:BinaryLessonSource,out:Path,
     version=_exec([tts,"--version"]).stdout.decode(errors="replace").splitlines()[0][:150]
     original=certify_and_route_binary_search(trace=source.trace,**source.params())
     profile=SequenceRenderProfile(width=W,height=H,fps=FPS,seconds_per_step=.75)
-    cases=_speech_lines(source)
+    from .event_alignment import authored_event_specs,certify_event_boundaries
+    cases=authored_event_specs(source) if event_aware else _speech_lines(source)
     with tempfile.TemporaryDirectory(prefix=".v3_19_narration_",dir=out) as td:
         stage=Path(td)
         baseline_path=stage/"baseline"
@@ -422,7 +450,16 @@ def build_narrated_lesson(*,source:BinaryLessonSource,out:Path,
                 abs(e["seconds_end"]-t.end_seconds)>1e-7 or
                 abs(e["subtitle_end"]-e["subtitle_start"]-e["raw_spoken_duration_seconds"])>1e-5):
                 _block("MEASURED_AUDIO_BEAT_ALIGNMENT_DRIFT")
+        event_proof=(certify_event_boundaries(
+            source=source,segments=tuple(evidence),fps=FPS
+        ) if event_aware else None)
+        if event_proof is not None:
+            (stage/"event-proof.json").write_text(
+                json.dumps(event_proof,indent=2)+"\n",encoding="utf-8")
         data=dict(
+            event_boundary_alignment=("MEASURED_UTTERANCE_BOUNDARIES_NOT_WORD_LEVEL"
+                                      if event_aware else "UNMEASURED_SCENE_ONLY"),
+            event_proof_sha256=(event_proof["proof_sha256"] if event_proof else None),
             version=VERSION,kind="OFFLINE_MULTISCENE_REAL_SPEECH_NOT_PUBLISHED",
             source_trace_sha256=source.trace.trace_sha256,
             baseline_beat_manifest_sha256=earlier.source_beat_manifest_sha256,
@@ -445,6 +482,10 @@ def build_narrated_lesson(*,source:BinaryLessonSource,out:Path,
         try:
             for a,b in ((staged_mp4,final),(stage/"subtitles.srt",subs),(raw_receipt,manifest)):
                 os.link(a,b);linked.append(b)
+            if event_aware:
+                os.link(stage/"event-proof.json",
+                        out/"narrated_binary_lesson.event_proof.json")
+                linked.append(out/"narrated_binary_lesson.event_proof.json")
             if fault=="AFTER_FINAL_LINK":
                 _block("INJECTED_FAIL_AFTER_FINAL_LINK")
         except Exception:
@@ -474,12 +515,32 @@ def verify_narrated_lesson(*,source:BinaryLessonSource,folder:Path,
     if (receipt.source_trace_sha256!=source.trace.trace_sha256 or
         receipt.baseline_route_sha256!=original.route.decision_hash):
         _block("SOURCE_TRACE_OR_ROUTE_CHANGED")
-    expected=_speech_lines(source)
+    from .event_alignment import authored_event_specs,verify_event_proof
+    is_event_aligned=(receipt.event_boundary_alignment==
+                      "MEASURED_UTTERANCE_BOUNDARIES_NOT_WORD_LEVEL")
+    expected=(authored_event_specs(source) if is_event_aligned
+              else _speech_lines(source))
+    if is_event_aligned:
+        proof_path=root/"narrated_binary_lesson.event_proof.json"
+        if not proof_path.is_file() or proof_path.is_symlink():
+            _block("MISSING_PHYSICAL_EVENT_PROOF")
+        proof=json.loads(proof_path.read_text(encoding="utf-8"))
+        if proof.get("proof_sha256")!=receipt.event_proof_sha256:
+            _block("EVENT_PROOF_REHASH_OR_STALE")
+        verify_event_proof(source=source,segments=receipt.segments,
+                           supplied=proof,fps=FPS)
+    elif (root/"narrated_binary_lesson.event_proof.json").exists():
+        _block("UNDECLARED_EVENT_PROOF")
     if len(expected)!=len(receipt.segments):_block("SCENE_COUNT_OR_SOURCE_CHANGED")
     for emitted,orig in zip(receipt.segments,expected,strict=True):
         if any(emitted[k]!=orig[k] for k in (
             "scene_id","role","step","text","beat_id","segment_id"
-        )):
+        ) if (not is_event_aligned or k in orig)) or (
+            is_event_aligned and any(
+                emitted.get(k)!=orig.get(k) for k in (
+                    "event_id","event_kind","visual_step",
+                    "expected_low","expected_high","expected_mid",
+                ))):
             _block("NARRATION_OR_BEAT_SOURCE_CHANGED")
     srt=subtitles.read_text(encoding="utf-8")
     from app.pipeline.assembly import format_srt_timestamp
@@ -511,7 +572,7 @@ def verify_narrated_lesson(*,source:BinaryLessonSource,folder:Path,
     profile=SequenceRenderProfile(width=W,height=H,fps=FPS,seconds_per_step=.75)
     all_frames=memoryview(raw)
     size=W*H*3
-    for emitted,expected_spec in zip(receipt.segments,_speech_lines(source),strict=True):
+    for emitted,expected_spec in zip(receipt.segments,expected,strict=True):
         span=emitted["frame_end_exclusive"]-emitted["frame_start"]
         for idx in (0,span//2,span-1):
             frame_no=emitted["frame_start"]+idx
@@ -525,6 +586,32 @@ def verify_narrated_lesson(*,source:BinaryLessonSource,folder:Path,
             mae=sum(ImageStat.Stat(compare).mean)/3
             if mae>22.0:
                 _block("DECODED_SCENE_ORACLE_SEMANTIC_PIXELS_CHANGED")
+    # Verify actual decoded frames immediately adjacent to every
+    # APPLY→OBSERVE/RESULT cut: the same certified visual step must not
+    # replay its old LOW/HIGH/MID tween. This caught a real 20.000s
+    # visual rewind missed by 3-anchor-per-scene tests.
+    if is_event_aligned:
+        for i,part in enumerate(receipt.segments[:-1]):
+            following=receipt.segments[i+1]
+            if (part.get("event_kind")!="APPLY" or
+                following.get("event_kind") not in ("OBSERVE","RESULT")):
+                continue
+            if part["visual_step"]!=following["visual_step"]:
+                _block("EVENT_SCENE_ORACLE_STEP_DISCONTINUITY")
+            old_frame=part["frame_end_exclusive"]-1
+            new_frame=following["frame_start"]
+            if new_frame!=old_frame+1:
+                _block("EVENT_SCENE_FRAME_GAP")
+            images=[]
+            for frame_num in (old_frame,new_frame):
+                z=bytes(all_frames[frame_num*size:(frame_num+1)*size])
+                images.append(Image.frombytes("RGB",(W,H),z).crop((0,80,W,235)))
+            diff=ImageChops.difference(images[0],images[1])
+            mae=sum(ImageStat.Stat(diff).mean)/3.0
+            # The verified regression produced MAE=4.12 on frame 239→240;
+            # a 5.0 threshold would incorrectly let that actual rewind pass.
+            if mae>2.0:
+                _block("EVENT_SCENE_BOUNDARY_REWINDS_STATE")
     # Visual QA: inspect decoded output (after SRT burn) to guarantee a
     # deliberate BLACK gutter between source action label (Y=252..270) and
     # real spoken subtitles (nominal Y>=300). Catch the V3-19 original

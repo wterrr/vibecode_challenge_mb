@@ -78,3 +78,37 @@ async def offline_narrated_binary_lesson(payload:BinaryPreviewInput,request:Requ
             status_code=500,
             detail="V3 narrated preview was blocked by source/audio/timeline/QA; not published",
         ) from None
+
+
+
+@router.post("/binary-search-event-aligned",status_code=200)
+async def offline_event_aligned_binary_lesson(payload:BinaryPreviewInput,request:Request)->dict:
+    """Explicit local developer V3-20 route with physical utterance boundaries.
+
+    Returns *only* checked receipt, never video bytes/URL or publication.
+    """
+    settings=request.app.state.settings
+    if (not settings.v3_binary_preview_enabled or
+        not settings.v3_narrated_lesson_enabled or
+        not settings.v3_event_alignment_enabled or
+        settings.environment.strip().lower() not in ("test","development")):
+        raise HTTPException(status_code=404,detail="V3-20 local event alignment disabled")
+    client_host=request.client.host if request.client else None
+    if client_host not in ("testclient","127.0.0.1","::1","localhost"):
+        raise HTTPException(status_code=403,detail="Local developer request required")
+    from app.pipeline.v3_preview import V3OfflinePreviewPipeline,V3PreviewRejected
+    pipeline=request.app.state.pipeline
+    if not isinstance(pipeline,V3OfflinePreviewPipeline):
+        raise HTTPException(status_code=503,detail="V3 adapter unavailable")
+    try:
+        return await pipeline.preview_narrated_binary_search(
+            values=payload.values,target=payload.target,
+            family=payload.family,event_aligned=True)
+    except V3PreviewRejected as exc:
+        raise HTTPException(status_code=422,detail=str(exc)) from None
+    except Exception as exc:
+        log.exception("V3-20 internal dev-only event alignment failed closed")
+        raise HTTPException(
+            status_code=500,
+            detail="V3-20 source/speech/event/video QA blocked; nothing published",
+        ) from None
