@@ -649,6 +649,10 @@ Observed FIRST RUN (before subtitle fix): 7 separate scenes, 44.833 s, 538 video
 
 **Decoded audio engineering spot check on pre-continuity-fix clip:** ~45.099s mono-16k decoded AAC, RMS 0.08501, peak 0.71451 full-scale, **0 samples >=95% full-scale**. The onset amplitude in first 20ms windows after APPLY WAV boundaries is non-zero for the tested events; these measurements show no obvious clipping, **not an independent pronunciation/ASR assessment**. Commercial output permissions for eSpeak voices remain unverified. No publication, no 3B1B / human-quality claims.
 
+
+
+**V3-20 verified code-HEAD closure (2026-10-09; supersedes earlier historical “CI pending” only for code HEAD):** At SHA `cd8494d6fbc8720a39f1e2317ca68f723ab6c963`, [V3-20 workflow #37799974547](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37799974547) and 21 other commit-scoped workflows returned **22/22 SUCCESS**. Independent replay of [artifact #11560168593](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37799974547/artifacts/11560168593) confirmed real H264/AAC MP4s (538 vs 541 frames), matching receipt video hashes, ten after-event SRT/proof cues, and decoded ROI MAE **0.056929** at formerly regressed boundary frame 239→240 (historical bad **4.1208**). Final audio decoded without 95%-threshold clipping; only engineering-level utterance-event alignment certified. **V3-20 BOUNDED TECHNICAL PASS; independent word-level ASR, human teaching quality, 720p/1080p legibility, commercial voice rights and V3 release remain UNMEASURED/BLOCKED.** No merge, publish, paid provider call or V2 core change. Full evidence: `reports/v3_20_narration_visual_alignment_audit.md`. This documentation-only follow-up SHA has not inherited CI status automatically.
+
 ## 10. Security, governance and cost
 
 - No provider calls in V3 unit/fixture/offline CI. Isolate paid integration workflow with manual confirm and per-run budget, as a *new authorized protocol only*.
