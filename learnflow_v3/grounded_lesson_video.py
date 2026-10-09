@@ -48,20 +48,39 @@ def _print(draw,xy,value,font,*,fill=WHITE,max_width=None,anchor=None,role="TEXT
     draw.text(xy,str(value),font=font,fill=fill,anchor=anchor)
 
 
+def causal_waypoints(stage:str)->tuple[tuple[int,int],...] | None:
+    """Route through the empty inter-panel gutter; never cross any text glyph."""
+    return {
+        "call":((699,435),(747,435),(747,240),(771,240)),
+        "bind":((771,240),(747,240),(747,294),(771,294)),
+        "evaluate":((771,294),(747,294),(747,348),(771,348)),
+        "return":((771,348),(747,348),(747,465),(719,465),(719,434)),
+    }.get(stage)
+
+
+def path_progress(stage:str,phase:float)->list[tuple[int,int]]:
+    points=causal_waypoints(stage)
+    if points is None:return []
+    lengths=[math.dist(a,b) for a,b in zip(points,points[1:])]
+    progress=max(0,min(1,(phase-.12)/.76))
+    budget=sum(lengths)*progress
+    result=[points[0]]
+    for (start,end),distance in zip(zip(points,points[1:]),lengths):
+        if budget>=distance:
+            result.append(end)
+            budget-=distance
+            continue
+        t=budget/max(.00001,distance)
+        result.append((round(start[0]+(end[0]-start[0])*t),
+                       round(start[1]+(end[1]-start[1])*t)))
+        break
+    return result
+
+
 def causal_path(stage:str,phase:float)->tuple[tuple[int,int],tuple[int,int],tuple[int,int]] | None:
-    """Progressive source→destination tokens, not a highlight-only slideshow."""
-    endpoints={
-        "call":((540,435),(1105,246)),
-        "bind":((1105,246),(1105,304)),
-        "evaluate":((1105,304),(1105,364)),
-        "return":((1105,364),(540,435)),
-    }
-    if stage not in endpoints:return None
-    start,end=endpoints[stage]
-    t=max(0,min(1,(phase-.12)/.76))
-    pos=(round(start[0]+(end[0]-start[0])*t),
-         round(start[1]+(end[1]-start[1])*t))
-    return start,end,pos
+    points=causal_waypoints(stage)
+    if points is None:return None
+    return points[0],points[-1],path_progress(stage,phase)[-1]
 
 
 def draw_frame(c:LessonSemanticContract,index:int,phase:float,profile:SequenceRenderProfile,narration:str)->Image.Image:
@@ -115,13 +134,16 @@ def draw_frame(c:LessonSemanticContract,index:int,phase:float,profile:SequenceRe
         if i<4:d.line((788,y+39,1190,y+39),fill=(37,40,45),width=1)
     # Causal animation crosses the code/state panels to show *what changes*.
     # Dedicated route area is the border between panels and the source/target.
-    trail=causal_path(beat.stage,phase)
-    if trail:
-        start,end,pos=trail
-        d.line((start,end),fill=(55,112,103),width=4)
-        d.line((start,pos),fill=CYAN,width=5)
-        x,y=pos
-        d.ellipse((x-11,y-11,x+11,y+11),fill=YELLOW,outline=WHITE,width=2)
+    route=causal_waypoints(beat.stage)
+    if route:
+        # Highlight-only frames do not count: each causal route advances a
+        # labeled input token through the gutter to its semantic destination.
+        d.line(route,fill=(50,83,79),width=3,joint="curve")
+        travelled=path_progress(beat.stage,phase)
+        if len(travelled)>1:
+            d.line(travelled,fill=CYAN,width=5,joint="curve")
+        x,y=travelled[-1]
+        d.ellipse((x-8,y-8,x+8,y+8),fill=YELLOW,outline=WHITE,width=2)
     d.line((65,552,1214,552),fill=FAINT,width=2)
     locations=(145,381,616,852,1093)
     for k,(x,label) in enumerate(zip(locations,STAGES)):
