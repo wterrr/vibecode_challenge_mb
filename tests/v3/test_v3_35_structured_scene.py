@@ -138,3 +138,21 @@ def test_finite_graphic_actions_still_reject_untrusted_generated_python():
     normalized=normalize_wire(fake)
     with pytest.raises(ValidationError):
         CreativeScene.model_validate({**normalized,"model_author":"openai/gpt-6-luna"})
+
+def test_http_404_structured_unavailable_is_explicit_no_fallback_no_retry(tmp_path):
+    from urllib.error import HTTPError
+    sender_calls=[]
+    def rejects(request,timeout):
+        sender_calls.append(json.loads(request.data))
+        raise HTTPError(request.full_url,404,"endpoint/model unavailable",{},None)
+    with pytest.raises(Blocked,match="V335_HTTP_404"):
+        one_shot_structured("FAKE_KEY_FOR_TEST_ONLY",tmp_path,sender=rejects)
+    assert len(sender_calls)==1
+    assert sender_calls[0]["provider"]["require_parameters"] is True
+    assert sender_calls[0]["provider"]["allow_fallbacks"] is False
+    result=json.loads((tmp_path/"v3_35_structured_failure.json").read_text())
+    assert result["status"]=="BLOCKED_PROVIDER_HTTP"
+    assert result["model_request_attempts"]==1
+    assert result["sanitized_error_code"]=="V335_HTTP_404"
+    assert result["retry_count"]==0
+    assert result["model_response_sha256"] is None

@@ -19,13 +19,16 @@ def main():
     except Exception as exc:
         # No model text or key copied into CI. One live request may already
         # have been billed; do not claim no cost on failed attempts.
-        fail={"checkpoint":"V3-34","status":"BLOCKED",
+        checkpoint="V3-35" if args.mode=="live-structured" else "V3-34"
+        fail={"checkpoint":checkpoint,"status":"BLOCKED",
               "mode":args.mode,"error_type":type(exc).__name__,
               "error_code":str(exc) if str(exc).startswith("V334_") else "V334_VALIDATION_OR_RUNTIME_BLOCKED",
               "model_request_attempt_limit":0 if args.mode=="offline-smoke" else 1,
               "actual_provider_request_count_if_failed":"NOT_VERIFIABLE",
               "production":"BLOCKED"}
-        (args.output_dir/"v3_34_failure.json").write_text(json.dumps(fail,indent=2)+"\n")
-        print("V3_34="+fail["status"]+" code="+fail["error_code"],flush=True)
+        filename=("v3_35_failure.json" if args.mode=="live-structured"
+                  else "v3_34_failure.json")
+        (args.output_dir/filename).write_text(json.dumps(fail,indent=2)+"\n")
+        print(checkpoint.replace("-","_")+"="+fail["status"]+" code="+fail["error_code"],flush=True)
         raise SystemExit(2) from None
 if __name__=="__main__":main()
