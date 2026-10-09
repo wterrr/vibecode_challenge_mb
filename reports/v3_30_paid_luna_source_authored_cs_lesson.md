@@ -36,3 +36,7 @@ Original six development denominator: Math and Physics author-seeded bounded vid
 Commands: python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_30_paid_cs_lesson.py ; python scripts/verify_v3_30_paid_cs.py --mode source-check --output-dir /tmp/v330source
 
 Do not manually run the paid stage except as expressly user authorized in this session; keep results and failures tied to the exact SHA.
+
+## Paid execution authorization marker
+
+The user explicitly authorized paid GPT-6 Luna in this checkpoint. The commit carrying this section intentionally triggers exactly one opt-in source-gated two-request live provider attempt, without retries or paid model fallback. The resulting scientific verdict must be based on the actual run artifacts; do not call this an agent PASS from these text lines alone.
