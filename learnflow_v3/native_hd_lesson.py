@@ -225,7 +225,12 @@ def verify_hd(*, source_folder: Path, output: Path, receipt: dict) -> dict:
         last=part["frame_end_exclusive"]*2-1
         chosen.extend([first,first+min(4,last-first), (first+last)//2,last])
     chosen=sorted(set(chosen))
-    images=_frames(output,WIDTH,HEIGHT,chosen)
+    # Reuse V3-21's <=34-frame sampling guard; run bounded batches,
+    # never weaken it or silently omit any of the 40 event anchor frames.
+    images=[]
+    for offset in range(0,len(chosen),28):
+        images.extend(_frames(output,WIDTH,HEIGHT,chosen[offset:offset+28]))
+    _require(len(images)==len(chosen), "HD_NATIVE_FRAME_SAMPLE_LOSS")
     pixels=dict(zip(chosen,images,strict=True))
     comparisons=[]
     for idx in chosen:
