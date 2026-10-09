@@ -131,6 +131,37 @@ def semantic_narration(spec:FunctionGraph)->list[dict]:
 def _render_frame(spec,graph,beat,phase:float,profile:SequenceRenderProfile)->Image.Image:
     frame=draw_function_frame(spec,graph,beat["visual_step"],profile,progress=phase)
     draw=ImageDraw.Draw(frame)
+    # A generic graph as v(t) without axes/units misleads Physics learners.
+    # This domain presentation is limited to the *source-certified* exact
+    # integer line and gets the same after-codec decoded-frame replay.
+    if beat.get("domain_display") in ("MATH_LINEAR_SLOPE","PHYSICS_VELOCITY_TIME"):
+        w,h=profile.width,profile.height
+        slope=beat["source_slope"]; intercept=beat["source_intercept"]
+        domain=beat["domain_display"]
+        guard(type(slope) is int and type(intercept) is int
+              and tuple(spec.coefficients)==(intercept,slope,0),
+              "DISPLAY_SOURCE_MODEL_DRIFT")
+        draw.rectangle((0,0,w,round(h*.270)),fill=BLACK)
+        is_physics=domain=="PHYSICS_VELOCITY_TIME"
+        heading=("Velocity changes under constant acceleration" if is_physics
+                 else "Slope is the rate of change")
+        formula=(f"v(t) = {slope}t + {intercept}     a = {slope} m/s²"
+                 if is_physics else f"y = {slope}x + {intercept}")
+        large=cmu_font(43);small=cmu_font(29)
+        guard(draw.textbbox((0,0),heading,font=large)[2]<w-150
+              and draw.textbbox((0,0),formula,font=small)[2]<w-150,
+              "DISPLAY_DOMAIN_HEADING_OVERFLOW")
+        draw.text((round(w*.06),round(h*.055)),heading,font=large,fill=WHITE)
+        draw.line((round(w*.06),round(h*.18),round(w*.94),round(h*.18)),
+                  fill=(64,64,64),width=2)
+        draw.text((round(w*.06),round(h*.205)),formula,font=small,fill=CYAN)
+        axisfont=cmu_font(22)
+        draw.text((round(w*.84),round(h*.565)),
+                  "time (s)" if is_physics else "input x",
+                  font=axisfont,fill=WHITE)
+        draw.text((round(w*.525),round(h*.275)),
+                  "velocity (m/s)" if is_physics else "output y",
+                  font=axisfont,fill=WHITE)
     # Replace the original V3-08 bottom microcopy to reserve a true caption
     # zone; do not erase the graph plot, axes or stable object centers.
     w,h=profile.width,profile.height

@@ -120,3 +120,33 @@ def test_seed_output_fail_closed_existing_folder(source_cases,tmp_path):
     with pytest.raises(ValueError,match="V3_27_NONEMPTY_OUTPUT_FOLDER"):
         render_math(topic=topic,output=tmp_path,compiled_spec=(b["graph"],b["spec"]),
                     compiled_events=events,compiler_provenance=proof)
+
+
+def test_rendered_physics_display_is_source_bound_and_unit_labeled(source_cases):
+    """Regression: generic f(x) alone is not a physics lesson representation."""
+    from learnflow_v3.multidomain_coverage import _render_frame
+    from learnflow_v3.sequence_renderer import SequenceRenderProfile
+    from PIL import ImageChops
+    topic,seed=source_cases[1]
+    bundle=author_seeded_contracts(topic=topic,seed=seed)
+    events,proof=compile_linear_source_bound(bundle=bundle)
+    assert all(e["domain_display"]=="PHYSICS_VELOCITY_TIME" for e in events)
+    assert all(e["source_slope"]==seed["slope"] for e in events)
+    assert "acceleration is" in events[-1]["text"]
+    profile=SequenceRenderProfile(width=1280,height=720,fps=18,seconds_per_step=1)
+    domain_frame=_render_frame(bundle["spec"],bundle["graph"],events[-1],.5,profile)
+    old_style_event={k:v for k,v in events[-1].items()
+                     if k not in ("domain_display","source_slope","source_intercept")}
+    generic_frame=_render_frame(bundle["spec"],bundle["graph"],old_style_event,.5,profile)
+    # The real color pixels of the new domain header + physical axis labels
+    # must differ from the original generic f(x) header/axes.
+    assert ImageChops.difference(
+        domain_frame.crop((0,0,1280,195)),generic_frame.crop((0,0,1280,195))
+    ).getbbox() is not None
+    assert ImageChops.difference(
+        domain_frame.crop((990,400,1250,450)),
+        generic_frame.crop((990,400,1250,450))
+    ).getbbox() is not None
+    tampered={**events[0],"source_slope":-2}
+    with pytest.raises(ValueError,match="V3_27_DISPLAY_SOURCE_MODEL_DRIFT"):
+        _render_frame(bundle["spec"],bundle["graph"],tampered,.5,profile)

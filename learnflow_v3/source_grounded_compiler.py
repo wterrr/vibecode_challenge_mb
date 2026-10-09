@@ -43,10 +43,16 @@ def _snum(n:int)->str:
     return "minus "+str(-n) if n<0 else str(n)
 
 def canonical_claim(*,seed:dict,point)->str:
+    final=point.x==seed["x_domain"][-1]
+    slope=seed["slope"]
     if seed["model_kind"]=="LINEAR_SLOPE":
-        return f"For x equals {_snum(point.x)}, the value of y is {_snum(point.y)}."
-    return (f"At {_snum(point.x)} seconds, velocity is "
-            f"{_snum(point.y)} meters per second.")
+        base=f"For x equals {_snum(point.x)}, the value of y is {_snum(point.y)}."
+        return (base+f" The slope is {_snum(slope)} units per step."
+                if final else base)
+    base=(f"At {_snum(point.x)} seconds, velocity is "
+          f"{_snum(point.y)} meters per second.")
+    return (base+f" The acceleration is {_snum(slope)} meter per second squared."
+            if final else base)
 
 def author_seeded_contracts(*,topic:dict,seed:dict)->dict:
     """Offline authored demonstration only, *not* a model Research/Script run.
@@ -208,6 +214,11 @@ def compile_linear_source_bound(*,bundle:dict)->tuple[list[dict],dict]:
               "SCRIPT_SEMANTIC_SOURCE_DRIFT")
         events.append({"kind":"SOURCE_POINT","visual_step":i,
                        "text":segment.spoken_text,
+                       "domain_display":("PHYSICS_VELOCITY_TIME" if seed["model_kind"]==
+                                         "CONSTANT_ACCELERATION_VELOCITY"
+                                         else "MATH_LINEAR_SLOPE"),
+                       "source_slope":seed["slope"],
+                       "source_intercept":seed["intercept"],
                        "source_point_id":p.point_id,"source_value":p.y,
                        "source_claim_ids":list(segment.claim_ids),
                        "beat_id":beat.beat_id,"script_segment_id":segment.segment_id,
