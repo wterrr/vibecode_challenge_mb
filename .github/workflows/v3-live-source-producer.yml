@@ -1,0 +1,109 @@
+name: V3-29 REAL Source Anchor and Free-only Research Script Producer
+
+on:
+  push:
+    branches: [chatgpt/v3-29-live-source-script-gates]
+  pull_request:
+    paths:
+      - "learnflow_v3/independent_source_gate.py"
+      - "learnflow_v3/live_source_producer.py"
+      - "scripts/verify_v3_29_live_source.py"
+      - "tests/v3/test_v3_29_live_source_producer.py"
+      - ".github/workflows/v3-live-source-producer.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  offline-contract-and-frozen-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ONLY existing offline test contracts
+        run: python -m pip install -r requirements.txt pytest-asyncio pyyaml
+      - name: Real source model producer failure-mode mutation tests (MOCKS, not human or live PASS)
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_29_live_source_producer.py
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_source_grounded_compiler.py -k 'not decoded_real_compiled_mp4'
+      - name: Immutable confirmed benchmark and Frozen V2 safeguards
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Hermes ground truth gates
+        run: |
+          python -m pytest -q --confcutdir=tests/hermes \
+            tests/hermes/test_pedagogy_agent.py \
+            tests/hermes/test_script_agent.py \
+            tests/hermes/test_visual_director.py
+
+  independently-fetch-publisher-evidence:
+    needs: offline-contract-and-frozen-guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install validated sources parser dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Fetch exact two publisher pages and preserve SOURCE_NOT_VERIFIED if unavailable
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_29_source"
+          python scripts/verify_v3_29_live_source.py --mode source-check \
+            --output-dir "$RUNNER_TEMP/v3_29_source"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-29-external-publisher-live-anchor-certificates-NOT-semantic-fact-review
+          path: ${{ runner.temp }}/v3_29_source/v3_29_source_evidence.json
+          if-no-files-found: warn
+
+  single-use-free-live-research-and-script:
+    needs: offline-contract-and-frozen-guard
+    # A unique, explicitly tagged commit authorizes a single free-only trial.
+    # Never call a provider on every PR or subsequent documentation pushes.
+    if: >-
+      github.event_name == 'push' &&
+      contains(github.event.head_commit.message, '[v3-29-free-live]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Prepare real local media and exact contracts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng fonts-cmu fontconfig
+          python -m pip install -r requirements.txt pyyaml
+      - name: Exactly two FREE-only provider attempts for one pinned math lesson
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          LEARNFLOW_V329_FREE_MODEL: nvidia/nemotron-3.5-lightning:free
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_29_one_shot"
+          python scripts/verify_v3_29_live_source.py --mode free-live \
+            --output-dir "$RUNNER_TEMP/v3_29_one_shot"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-29-single-free-live-witness-or-honest-BLOCKED
+          path: |
+            ${{ runner.temp }}/v3_29_one_shot/v3_29_live_witness_receipt.json
+            ${{ runner.temp }}/v3_29_one_shot/lfb-020-math/*
+          retention-days: 14
+          if-no-files-found: warn
