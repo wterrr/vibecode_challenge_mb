@@ -273,12 +273,19 @@ def checked_live_plan(raw:dict,usage:dict,out:Path)->CreativeScene:
 def run(root:Path,out:Path,*,mode:str,key:str="",sender=None)->dict:
     if not out.is_dir() or any(out.iterdir()):raise Blocked("V334_OUTPUT_NONEMPTY")
     prereg=checked_manifest(root)
-    if mode not in ("offline-smoke","live-model"):raise Blocked("V334_UNKNOWN_MODE")
+    if mode not in ("offline-smoke","live-model","live-structured"):
+        raise Blocked("V334_UNKNOWN_MODE")
     usage=None
-    if mode=="live-model":
-        raw,usage=call_exact_model(key,sender=sender)
+    if mode in ("live-model","live-structured"):
+        if mode=="live-structured":
+            from learnflow_v3.structured_scene_authoring import preflight,one_shot_structured
+            preflight(root)
+            raw,usage=one_shot_structured(key,out,sender=sender)
+        else:
+            raw,usage=call_exact_model(key,sender=sender)
         plan=checked_live_plan(raw,usage,out)
-        origin="REAL_GPT6_LUNA_ONE_REQUEST"
+        origin=("REAL_GPT6_LUNA_STRICT_JSON_SCHEMA_ONE_REQUEST"
+                if mode=="live-structured" else "REAL_GPT6_LUNA_ONE_REQUEST")
     else:
         plan=fixture_plan()
         origin="SYNTHETIC_HOST_FIXTURE_NOT_REAL_MODEL"
