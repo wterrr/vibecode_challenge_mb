@@ -1,0 +1,69 @@
+{
+  "checkpoint": "V3-30",
+  "exact_model": "openai/gpt-6-luna",
+  "live_paid_provider_requests": 2,
+  "locked_topic": "lfb-002-cs",
+  "topic_hash": "5f4569564d4511fccd194ac81ffb1d8d91ba07165e60535d7e29e6ca508aa756",
+  "rendered_video_sha256": "1f2a4e7d7ce07ce9163f9702e14ba0cafcd44881f2eb893f9ab4faa4e252cedb",
+  "research_response_sha256": "90531f95a0d767164594d4e9ad9e5577ae39f39ce55838ba4b4e512ea5e0908f",
+  "script_response_sha256": "e382761e5420631845fbe46c12a34a524b860e06e59409048a4715f6186c3fc2",
+  "source_certificate": {
+    "status": "OFFICIAL_PYTHON_HTML_QUOTE_ANCHORS_VERIFIED",
+    "source_url": "https://docs.python.org/3/tutorial/controlflow.html",
+    "sha256_html": "d1055a285f5916c6c627c080a34211df7408aa3d7601ab1775191324e12dc6bb",
+    "spans": {
+      "C_DEFINE": "The keyword def introduces a function definition. It must be followed by the function name and the parenthesized list of formal parameters. The statements that form the body of the function start at the next line, and must be indented.",
+      "C_BIND": "The actual parameters (arguments) to a function call are introduced in the local symbol table of the called function when it is called;",
+      "C_RETURN": "The return statement returns with a value from a function."
+    },
+    "expert_semantic_review": "NOT_RUN"
+  },
+  "research_claims": [
+    {
+      "claim_id": "C_DEFINE",
+      "quote": "The keyword def introduces a function definition. It must be followed by the function name and the parenthesized list of formal parameters.",
+      "explanation": "A function is a named set of instructions, and its parameter list names the inputs. Worked example: imagine a doubling function with one parameter, number."
+    },
+    {
+      "claim_id": "C_BIND",
+      "quote": "The actual parameters (arguments) to a function call are introduced in the local symbol table of the called function when it is called;",
+      "explanation": "Calling that function with 4 supplies 4 as its argument; inside the function, the parameter refers to that call's input, so the calculation uses 4."
+    },
+    {
+      "claim_id": "C_RETURN",
+      "quote": "The return statement returns with a value from a function.",
+      "explanation": "It can return 8 after doubling 4. Quick check: if the input were 6, what value should the same function return? (Answer: 12.)"
+    }
+  ],
+  "script_segments": [
+    {
+      "segment_id": "seg-define",
+      "claim_ids": [
+        "C_DEFINE"
+      ],
+      "spoken_text": "Define a function with def; def introduces its definition, followed by its name and parameter list."
+    },
+    {
+      "segment_id": "seg-call",
+      "claim_ids": [
+        "C_BIND"
+      ],
+      "spoken_text": "Call add_two with argument three; the call supplies three as input to the function."
+    },
+    {
+      "segment_id": "seg-bind",
+      "claim_ids": [
+        "C_BIND"
+      ],
+      "spoken_text": "Bind parameter n to three for this call; the parameter refers to the input supplied by the argument."
+    },
+    {
+      "segment_id": "seg-return",
+      "claim_ids": [
+        "C_RETURN"
+      ],
+      "spoken_text": "The return statement sends back five from add_two after it uses the supplied input."
+    }
+  ],
+  "evidence_origin": "V3-30 run 37896644276 artifact 11600692018; real provider receipt excerpts with original hashes; no new provider request."
+}
