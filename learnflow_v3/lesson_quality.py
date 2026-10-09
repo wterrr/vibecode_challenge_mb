@@ -224,6 +224,21 @@ def audit_media(folder: Path, *, contact_sheet: Path | None = None) -> dict:
              and proof["published"] is False
              and proof["word_phoneme_alignment"] == "UNMEASURED",
              "UNTRUSTED_EVENT_PROOF")
+    # Re-derive the entire immutable event proof from the certified source;
+    # self-rehashing the proof AND updating both receipt/QA pointers cannot pass.
+    from .offline_lesson_source import build_binary_lesson_source
+    from .event_alignment import verify_event_proof
+    from .models import SemanticContractError
+    request = comparison["same_source_input"]
+    _require(request.get("family") == "WORKED_EXAMPLE_BOARD",
+             "UNSUPPORTED_SOURCE_FAMILY")
+    try:
+        source = build_binary_lesson_source(
+            values=tuple(request["values"]), target=request["target"])
+        verify_event_proof(
+            source=source, segments=tuple(post_receipt["segments"]), supplied=proof)
+    except (SemanticContractError, ValueError, TypeError, KeyError) as exc:
+        raise QualityEvidenceError("V3_21_REPLAYED_EVENT_PROOF_REJECTED") from exc
     post_events = post_receipt["segments"]
     chosen = sorted(set([0, after["frame_count"]-1] +
         [e["frame_start"] for e in post_events] +

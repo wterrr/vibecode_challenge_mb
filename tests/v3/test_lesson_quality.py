@@ -79,6 +79,26 @@ def test_forged_event_proof_identity_rejected(evidence_dir,tmp_path):
     with pytest.raises(QualityEvidenceError,match="UNTRUSTED_EVENT_PROOF"):
         audit_media(dest)
 
+def test_self_rehashed_proof_and_updated_receipts_still_rejected(evidence_dir,tmp_path):
+    from learnflow_v2.repair import compute_content_hash
+    dest=_copy(evidence_dir,tmp_path)
+    proof_path=dest/"after_v3_20.event_proof.json"
+    receipt_path=dest/"after_v3_20.receipt.json"
+    cmp_path=dest/"v3_20_before_after_qa.json"
+    proof=json.loads(proof_path.read_text())
+    proof["events"][3]["expected_oracle_step"]+=1
+    proof["proof_sha256"]=compute_content_hash({
+        k:v for k,v in proof.items() if k!="proof_sha256"})
+    proof_path.write_text(json.dumps(proof),encoding="utf-8")
+    receipt=json.loads(receipt_path.read_text())
+    receipt["event_proof_sha256"]=proof["proof_sha256"]
+    receipt_path.write_text(json.dumps(receipt),encoding="utf-8")
+    comparison=json.loads(cmp_path.read_text())
+    comparison["comparison_attestation_sha256"]=proof["proof_sha256"]
+    cmp_path.write_text(json.dumps(comparison),encoding="utf-8")
+    with pytest.raises(QualityEvidenceError,match="REPLAYED_EVENT_PROOF_REJECTED"):
+        audit_media(dest)
+
 def test_malformed_srt_timestamp_rejected(evidence_dir,tmp_path):
     dest=_copy(evidence_dir,tmp_path)
     p=dest/"after_v3_20.srt"
