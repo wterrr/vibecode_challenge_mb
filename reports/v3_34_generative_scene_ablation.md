@@ -41,3 +41,9 @@ Reuse old V3-30 physically measured eSpeak WAV audio, concatenated into four mea
 - `creative_manim_with_audio.mp4`, SRT, `creative_manim_decoded_contact.jpg`, measured WAV audio and V3-34 failure receipt if blocked.
 
 **Before exact CI/live execution:** implementation complete, empirical outcome PENDING. Preserve Draft and production BLOCKED; do not misrepresent the fixture as model artistry.
+
+## Green preflight and one explicit model-shot authorization (2026-10-09)
+
+**No-pay prereg/safety regression:** [GitHub Actions #37907532636](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37907532636) at SHA `d6928efabfcb909e1b45bbfdc9ddbc466d1303fd` SUCCESS; all V3-34 test and frozen V3-33/V3-32/Core safety gates plus actual Docker-sandbox Manim + physically narrated 720p H264/AAC fixture rendered. Artifact [#11604834451](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37907532636/artifacts/11604834451), byte-verified fixture MP4 `4c347a69b11611081da05949129b94945873bd069af4d276015a5ad43953ec5f`, 0 provider calls, origin `SYNTHETIC_HOST_FIXTURE_NOT_REAL_MODEL`. Earlier CI #37906596046 correctly failed a final-versus-partial Manim MP4 discovery bug; subsequent CI #37907399239 correctly identified a negative-test regex expectation issue; both corrected without weakening the actual runtime/schema gates.
+
+This documentation-only commit tagged `[v3-34-one-shot]` authorizes **one** real `openai/gpt-6-luna` structured creative scene request after the exact new-commit offline job passes. It does not authorize retries, fallback or arbitrary generated Python. Preserve per-request receipt and genuine media; if blocked report exact sanitized error, model API attempt count, and no fabricated creative PASS. No production/human quality claims.
