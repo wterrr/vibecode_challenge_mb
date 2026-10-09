@@ -29,6 +29,7 @@ DIMS=(
     "audio_intelligibility","visual_hierarchy",
 )
 PRIMARY=("clarity","representation_adequacy")
+ISSUE_CATEGORIES=("aesthetic","readability","pedagogy","technical","audio","no_issue")
 ANCHORS={"1":"unusable/incorrect","2":"confusing",
          "3":"understandable with significant issues",
          "4":"clear, cohesive and accurate","5":"exemplary clarity and accuracy"}
@@ -202,6 +203,12 @@ for(const id of ids){
  critical.append(radio);section.append(critical);
  const timestamp=document.createElement('label');timestamp.textContent='Timestamp of a positive or negative observation (seconds)';
  const when=document.createElement('input');when.type='number';when.id='timestamp-'+id;when.min='0';when.max='45.084';when.step='.001';timestamp.append(when);section.append(timestamp);
+ const issueLabel=document.createElement('label');issueLabel.textContent='Primary type of this observation (for timestamped issue inventory)';
+ const issueType=document.createElement('select');issueType.id='issue-category-'+id;
+ issueType.innerHTML='<option value="">Select issue category</option>'+
+ ['aesthetic','readability','pedagogy','technical','audio','no_issue']
+ .map(v=>'<option value="'+v+'">'+v+'</option>').join('');
+ issueLabel.append(issueType);section.append(issueLabel);
  const reasons=document.createElement('label');reasons.textContent='Why did you rate this video this way? Mention LOW/HIGH/MID or the duplicate example as appropriate.';
  const field=document.createElement('textarea');field.id='notes-'+id;field.maxLength=1500;reasons.append(field);section.append(reasons);
  const question=document.createElement('p');question.textContent='Unseen application check: '+config.transfer_items[id];section.append(question);
@@ -226,11 +233,13 @@ document.getElementById('export').addEventListener('click',()=>{
   const notes=document.getElementById('notes-'+id).value.trim();
   const answer=document.getElementById('answer-'+id).value.trim();
   const critical=document.getElementById('critical-'+id).value;
+  const category=document.getElementById('issue-category-'+id).value;
   const stamp=Number(document.getElementById('timestamp-'+id).value);
   if(notes.length<15 || answer.length<4 || !['yes','no','unsure'].includes(critical) ||
+      !['aesthetic','readability','pedagogy','technical','audio','no_issue'].includes(category) ||
       !document.getElementById('timestamp-'+id).value || stamp<0 || stamp>45.084){
    status.textContent='For '+id+', include critical-error response, a timestamp, observation (≥15 characters) and application answer.';return;}
-  scores[id]={ratings,critical_error:critical,
+  scores[id]={ratings,critical_error:critical,issue_category:category,
              observation_seconds:stamp,observation:notes,
              transfer_answer:answer,player_reached_end:true,
              media_sha256:config.media_sha256[id]};
@@ -375,7 +384,8 @@ def inspect_submissions(*,admin_manifest:dict,responses:list[dict])->dict:
             require(type(note) is str and 15<=len(note.strip())<=1500
                     and type(answer) is str and 4<=len(answer.strip())<=500
                     and type(t) in (float,int) and 0<=t<=45.084
-                    and body.get("critical_error") in ("yes","no","unsure"),
+                    and body.get("critical_error") in ("yes","no","unsure")
+                    and body.get("issue_category","unclassified_legacy") in (*ISSUE_CATEGORIES,"unclassified_legacy"),
                     "MISSING_TIMESTAMP_OR_RATIONALE")
         accepted[rid]=record
     ready=(set(accepted)==set(RATERS))
@@ -398,6 +408,18 @@ def inspect_submissions(*,admin_manifest:dict,responses:list[dict])->dict:
                         outcomes[("R02",variant)][dim])>=2]
         for variant in SOURCE_FILES
     }
+    inventory=[
+        {"reviewer_code":rid,"source_label":label,
+         "variant_admin_only":admin_manifest["rater_assignment"][rid][label],
+         "timestamp_seconds":body["observation_seconds"],
+         "category":body.get("issue_category","unclassified_legacy"),
+         "critical_error_self_report":body["critical_error"],
+         "observation_self_report":body["observation"]}
+        for rid,record in sorted(accepted.items())
+        for label,body in sorted(record["submissions"].items())
+    ]
+    category_counts={k:sum(1 for x in inventory if x["category"]==k)
+                     for k in (*ISSUE_CATEGORIES,"unclassified_legacy")}
     # No 95% CI or student gain from n=2 self-reports. No automatic "human PASS".
     return {"checkpoint":"V3-25",
             "state":"TWO_UNVERIFIED_SELF_REPORTS_NOT_HUMAN_STUDY_PASS",
@@ -406,6 +428,8 @@ def inspect_submissions(*,admin_manifest:dict,responses:list[dict])->dict:
               {k:{"values":v,"mean":mean(v)} for k,v in deltas.items()},
             "third_independent_adjudicator_required":any(disagreements.values()),
             "primary_rater_disagreements":disagreements,
+            "timestamped_issue_inventory_self_reported":inventory,
+            "issue_counts_by_category_self_reported":category_counts,
             "not_confirmatory_v3_16":True,
             "human_independence_verified":False,
             "unseen_learning_gain":"UNMEASURED",

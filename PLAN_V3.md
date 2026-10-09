@@ -686,6 +686,10 @@ New separately authorized next engineering checkpoint after V3-24. Pair identica
 
 **Follow-up visual bugfix (2026-10-09):** User reported green candidate outline longer than gray array cell in the V3-24/V3-25 actual Binary Search video. Identified `x±46, y341..425` overlay (92×84 at HD) vs true source V3-06 gray cell (90×90). The green outline is now drawn using the native gray slot's exact computed rectangle, radius and border thickness, with visual pixel tests and varying array-length geometry checks; preserves original candidate logic and audio. This is a patch to the existing PR stack, not a new release/educational claim. Exact final SHA CI + regenerated H264 before/after artifact required.
 
+### V3-26 — Real Browser E2E and Independent Reviewer Readiness (2026-10-09)
+
+After V3-25, execute real Playwright Chromium on the actual locally distributed file:// reviewer HTML for R01 and R02, validating source-attested 720p H264/AAC media, unmuted playback/currentTime, browser-ended event using explicit short seek (NOT full human watching), rubric form missing-field rejection, timestamps/category, actual download JSON and offline importer. Keep synthetic browser answers EPHEMERAL and NEVER ship as actual human ratings. Add explicit aesthetic/readability/pedagogy/technical/audio issue taxonomy; older submissions remain unclassified_legacy. Prepare a future 2+ competent independent reviewer SOP, consent/identity separation and real third-rater disagreement trigger, but NO recruitment/ratings/publication authorized. Frozen V3-16 12-topic benchmark untouched; Binary Search is known diagnostic and NOT confirmation. All human outcomes NOT_RUN/UNMEASURED, production BLOCKED. See reports/v3_26_real_browser_independent_review.md; technical acceptance awaits exact PR HEAD CI.
+
 ## 10. Security, governance and cost
 
 - No provider calls in V3 unit/fixture/offline CI. Isolate paid integration workflow with manual confirm and per-run budget, as a *new authorized protocol only*.
@@ -772,3 +776,8 @@ This draft is a **prospective proposal**, not retrospective evidence. Update thi
 - https://github.com/wterrr/vibecode_challenge_mb/blob/chatgpt/live-v2d-gpt6-luna-paid-pilot/LEARNFLOW_V3_RESEARCH_NOTES.md
 
 **External:** Code2Video (2025/ICML 2026); ALGOGEN (ACL Findings 2026); OmniManim (2026); LLM2Manim (2026); MINARD (2026); SGA (2026); EduVisAgent (2025); Mayer (2017) and Multimedia Learning meta-analysis (2025). Check precise benchmark and success boundaries before citing claims in papers or marketing.
+
+
+### V3-26 code-HEAD acceptance snapshot (2026-10-09)
+
+At implementation SHA 2f22aa52e48eb00992f119d1c2197d20ab2c2f0e, 26/26 GitHub Actions PASS including REAL Google Chrome Stable Playwright file:// reviewer HTML tests #37877573061. The first Chromium Headless Shell job failed to decode H264/AAC, so the runtime was changed to codec-capable Chrome, never a mock/JS syntax substitute. R01/R02 played both source-matched clips, browser screenshots of decoded MP4s and FFmpeg decode of AAC were retained, UI missing-input regressions PASSED, real browser Download JSON passed through the SHA-attested offline importer. Synthetic answers were deleted. Zero actual human participants/ratings; human comprehension/aesthetic preference, V3-16 human study and rights UNMEASURED; release BLOCKED. Actual GitHub artifacts and the independent review SOP: reports/v3_26_real_browser_independent_review.md. This note is documentation; a subsequent documentation commit needs separate exact HEAD CI.
