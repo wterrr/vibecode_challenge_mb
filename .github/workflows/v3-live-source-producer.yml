@@ -75,11 +75,13 @@ jobs:
 
   single-use-free-live-research-and-script:
     needs: offline-contract-and-frozen-guard
-    # A unique, explicitly tagged commit authorizes a single free-only trial.
-    # Never call a provider on every PR or subsequent documentation pushes.
+    # This TEMPORARY exact PR synchronize condition is for a single bounded
+    # no-paid-model experiment. Must be disabled in the very next change;
+    # subsequent doc/CI pushes must not call provider.
     if: >-
-      github.event_name == 'push' &&
-      contains(github.event.head_commit.message, '[v3-29-free-live]')
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.number == 63 &&
+      github.event.action == 'synchronize'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
