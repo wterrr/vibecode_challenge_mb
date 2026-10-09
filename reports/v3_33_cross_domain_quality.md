@@ -55,3 +55,30 @@ Suggested future study (NOT part of V3-33): independently recruit reviewers for 
 - Artifacts include six-domain coverage matrix, machine-readable ABSTAIN report, control MP4 receipts/contact sheets, quality rubric and exact-head audit report.
 
 **Pre-run verdict:** New-topic source-bound generalization NO-GO 0/6; engineering positive-control status PENDING CI; independent educational-quality status NOT_ASSESSED and production BLOCKED. Never merge main based on old-control technical PASS.
+
+## 6. Executed V3-33 no-cherry-pick coverage and *actual* native control artifacts (2026-10-09)
+
+Implementation SHA `272a99911ae40f03205dc1520ca94f3cba7cf598`, [GitHub Actions #37904218175](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37904218175) **SUCCESS**: 11/11 anti-overclaim/selection/mutation tests PASS before media (one media-only test deselected), then 73/73 combined previous checkpoint/regression tests PASS after rendering. Frozen V3-16 benchmark 12 topics 6 domains 4 easy/medium/hard PASS, LearnFlowBench PASS, V2 Core PASS. Zero provider/API calls. First CI run #37904010569 correctly FAILed when negative tests detected that ABSTAIN schema allowed a non-null renderer; changed schema to `renderer:None` and preserved the adversarial test rather than weakening it.
+
+Actual [artifact #11604165488](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37904218175/artifacts/11604165488) was downloaded and ZIP CRC was independently checked: PASS, 15 files including six-domain machine ledger, coverage matrix, eight-dimensional quality gate, two actual H264/AAC MP4+SRT, source/scene/Script compiler receipts and all decoded contact sheets. Both bytes match compiler SHA256:
+
+| Control (OLD, outside unseen denominator) | Real MP4 SHA256 | Frames | Runtime | Max decoded MAE | AAC RMS by physical beat |
+|---|---|---:|---:|---:|---|
+| V3-28 Math `lfb-020-math` | `523aac6f863c6dbb3a72f314c8ace917bdb5ed2931a65154836dea4c47fed19d` | 377 | 20.94s | 0.114 | [0.0895, 0.0930, 0.0894, 0.0933, 0.0884] |
+| V3-28 Physics `lfb-036-physics` | `abe5aa75fbb81223aa779bc4b172f91f23284e51f984140f473dbefdbb7fcec4` | 404 | 22.44s | 0.147 | [0.0825, 0.0832, 0.0770, 0.0831, 0.0847] |
+
+All checks at real 1280×720 18fps AAC/H264; both original program-generated SRT subtitle timings are derived from physical WAV beat samples, not fabricated word timestamps. They are **previously exposed controls** and cannot be advertised as V3-33 unseen model generalization. The source URLs are existing manually authored OpenStax citations with checked source relation and deterministic arithmetic; source URLs alone do NOT prove external semantic fact review.
+
+### 6.1 Manual (unscored) contact/movie QA issue inventory — timestamp-grounded
+
+The five decoded Math frames show the linear curve `y=1+x`, stable axes and sequential true point highlights. The captions narrate points at 0–4.17, 4.17–8.11, 8.11–11.72, 11.72–15.22, and 15.22–20.94 seconds. **Issue M-1 (0–20.94s):** educational structure is repetitive plotted-point enumeration with the core slope meaning primarily summarized in the last beat. This is a visual-pedagogy concern, not an independently confirmed comprehension failure.
+
+The five Physics frames depict source-bound `v(t)=1+t` plus `a=1 m/s²`, with correct axes labels `time (s)` and `velocity (m/s)`. The five clips run 0–3.83, 3.83–7.56, 7.56–11.39, 11.39–15.22, 15.22–22.44 seconds. **Issue P-1 (0–15.22s):** data-point narration alone may not teach the causal connection between acceleration and the linear velocity graph. **Issue P-2 (15.22–22.44s):** only the final beat verbalizes acceleration, with no direct visualized force/mechanism. This remains the old constant acceleration topic, **not** Newton's three laws.
+
+Comparison using two independently downloaded prior real MP4s: V3-31 (4 beats, 441 frames/24.50s) changes the state table but omits an explicit Evaluate step and audible `3+2=5` explanation; V3-32 (5 beats, 674 frames/37.44s) introduces a distinct, narrated Evaluate stage 22.06–30.39s and Return 30.39–37.44s with an animated value token. **This is observed implementation change, not causal evidence of higher learning outcomes**. The V3-32 audio-relative event fractions are planned from sampled beat duration; they are *not* independently aligned word onset timestamps.
+
+### 6.2 Final scientific decision
+
+**New-topic support** = 0/6 certified source-to-renderer paths; 6/6 principled ABSTAIN; 0 new-topic MP4; no concept-card fallback, no replacements. **Old renderer regression** = 2/2 real source-bound Math/Physics MP4 technical PASS, excluded from the new denominator. **True autonomous LLM authoring and multi-domain transfer** = NOT PROVEN (host compiler does not count). **Human educational quality and professional visual creativity** = NOT ASSESSED; all eight structured rubric scores are null with zero assessors. **Production** = BLOCKED. Additional source families and general semantic planning must be implemented before revisiting this frozen development set; do not tune the chosen topics after observing these outcomes.
+
+Final documentation-commit HEAD will require fresh CI PASS; the confirmed media/artifact above pertains to the referenced exact implementation SHA.
