@@ -1,0 +1,11 @@
+## V3-31 — Source/Script semantic audit and code-state MP4
+
+**Inputs:** Actual V3-30 success run https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37896644276, paid artifact 11600692018. Original video SHA256 1f2a4e7d7ce07ce9163f9702e14ba0cafcd44881f2eb893f9ab4faa4e252cedb, H264/AAC 1280×720 at 18fps, 441 frames and 24.5 seconds. Original Research explanations discuss doubling 4→8 and 6→12; source-matched Script and host examples use add_two(3)→5. All three Research explanatory claim fields conflict with the pinned teaching example.
+
+**Fix and provenance:** Strict audit blocks the incompatible original Research. Never alter original provider Script or claim IDs, source quotes, source SHA and provider response hashes. Host-only three-row corrected explanation ledger is part of the V3-31 receipt with before/after SHA; corrections cannot be misrepresented as GPT-6 Luna-generated. Actual V3-30 witness excerpt stored in reports/v3_31_v330_real_receipt_subset.json. No new LLM calls.
+
+**Rendering and tests:** Fixed-example AST parse accepts only one add_two(n): return n+2 and answer=add_two(3), never executes code. V3-07 CodeWalkthrough numeric arithmetic replay verifies n=3 and result=5, ProcessWalkthrough checks topology; special-purpose panel depicts true lines of Python code with line highlight, argument, parameter, evaluation and return state in black Computer Modern. The V3-30 encoder, physically measured utterances, AAC, subtitles, exact frame replay, decoded ROI transitions and contact sheet are reused. Tests reject malicious AST, swapped arguments, operators, source certificate tampering, forged model Script and semantic state identity mismatch. Technical PASS requires actual decoded MP4 and no silent substitute cards.
+
+**Scientific verdict:** Technical integration can PASS, but autonomous semantic model consistency FAILS on untouched V3-30 Research, and host correction cannot repair evidence of that model mistake. Human comprehension/aesthetics and independent fact checking NOT RUN; word-level audio synchronization NOT CLAIMED; rights NOT CLEARED; frozen V3-16 unchanged; full-six-domain autonomy and production NO-GO.
+
+**Exact-head evidence:** CI and artifact verification pending.
