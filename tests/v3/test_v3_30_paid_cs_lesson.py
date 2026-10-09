@@ -39,8 +39,15 @@ WORDS = [
 
 
 def source():
-    blob = "<html><body><h1>Defining Functions</h1><p>" + "</p><p>".join(SENTENCES.values()) + "</p></body></html>"
-    # Enforce substantial source size without altering published paragraphs.
+    # Mirror Sphinx inline markup: content within <code>/<em> is part of the
+    # SAME official sentence; synthetic spaces must not break exact provenance.
+    marked = [
+        SENTENCES["C_DEFINE"].replace("keyword def", "keyword <code>def</code>"),
+        SENTENCES["C_BIND"].replace("(arguments)", "(<em>arguments</em>)"),
+        SENTENCES["C_RETURN"].replace("return statement", "<code>return</code> statement"),
+    ]
+    blob = "<html><body><h1>Defining Functions</h1><p>" + "</p><p>".join(marked) + "</p></body></html>"
+    # Enforce substantial source size without altering the published passages.
     return source_certificate((blob + "<!-- " + "x" * 3100 + " -->").encode(), SOURCE_URL)
 
 
@@ -68,6 +75,23 @@ def test_real_publisher_origin_and_actual_section_required():
         source_certificate(raw, SOURCE_URL)
     with pytest.raises(Blocked, match="SOURCE_REDIRECT_ORIGIN"):
         source_certificate(raw, "https://evil.example/3/tutorial/controlflow.html")
+
+
+def test_html_inline_code_and_emphasis_are_verbatim_with_no_fabricated_spaces():
+    cert = source()
+    assert "keyword def introduces" in cert["spans"]["C_DEFINE"]
+    assert "parameters (arguments) to a function" in cert["spans"]["C_BIND"]
+    assert "The return statement returns" in cert["spans"]["C_RETURN"]
+    assert "( arguments )" not in cert["spans"]["C_BIND"]
+
+
+def test_safe_error_diagnostics_never_echo_secret_or_untrusted_text():
+    from scripts.verify_v3_30_paid_cs import safe_error_code
+    assert safe_error_code(Blocked("V330_OFFICIAL_SOURCE_ANCHOR_MISSING:C_BIND")) == (
+        "V330_OFFICIAL_SOURCE_ANCHOR_MISSING:C_BIND")
+    assert safe_error_code(Blocked("unauthorized-raw-Authorization: Bearer SECRET-EXAMPLE")) == (
+        "V330_BLOCKED_UNCLASSIFIED")
+    assert safe_error_code(OSError("private networking metadata")) == "V330_SOURCE_OS_ERROR"
 
 
 def test_quote_tamper_and_claim_ids_rejected():

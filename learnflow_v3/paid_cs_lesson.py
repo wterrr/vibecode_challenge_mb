@@ -83,7 +83,10 @@ def source_certificate(raw: bytes, observed_url: str) -> dict:
         raise Blocked("V330_BAD_SOURCE_SIZE")
     parser = VisibleText()
     parser.feed(raw.decode("utf-8", "replace"))
-    plain = " ".join(" ".join(parser.parts).split())
+    # HTML inline tags are zero-width boundaries: joining with literal spaces
+    # turns "(<em>arguments</em>)" into "( arguments )", invalidating
+    # independently published exact quotes. Keep HTML's own text spacing.
+    plain = " ".join("".join(parser.parts).split())
     spans = {}
     for key, pat in SOURCE_PATTERNS.items():
         match = re.search(pat, plain, re.I)
@@ -105,9 +108,15 @@ def fetch_source(opener=None) -> dict:
         "User-Agent": "LearnFlow/3.30 citation provenance test",
         "Accept": "text/html",
     })
-    with (opener or urlopen)(request, timeout=25) as response:
-        raw = response.read(2_500_001)
-        url = response.geturl()
+    try:
+        with (opener or urlopen)(request, timeout=25) as response:
+            raw = response.read(2_500_001)
+            url = response.geturl()
+    except HTTPError as exc:
+        raise Blocked("V330_SOURCE_HTTP_" + str(exc.code)) from None
+    except (URLError, TimeoutError):
+        # Never echo HTTP headers, provider error bodies, full URLs or secrets.
+        raise Blocked("V330_SOURCE_NETWORK_OR_TIMEOUT") from None
     return source_certificate(raw, url)
 
 
