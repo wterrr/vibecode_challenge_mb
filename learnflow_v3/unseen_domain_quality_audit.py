@@ -48,7 +48,7 @@ class CoverageRow(V3Model):
     real_script_and_objective_linked:Literal[False]
     semantic_event_to_renderer_verified:Literal[False]
     reused_family_candidate:str
-    renderer:str|None=None
+    renderer:None=None  # Unsupported rows CANNOT claim any renderer, including cards.
     video_sha256:None=None
     concept_card_fallback:Literal[False]
     reason_code:str
