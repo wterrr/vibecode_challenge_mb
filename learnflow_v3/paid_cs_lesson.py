@@ -272,7 +272,9 @@ def build_contracts(*, topic: dict, certificate: dict, claims: list[dict], segme
                               claim_ids=(CLAIM_FOR_STAGE[i],), objective_ids=("O1",),
                               teaching_function="DEMONSTRATE")
                               for i, s in enumerate(segments)))
-    labels = ("Define add_two(n)", "Call add_two(3)", "Bind n = 3", "Return 5")
+    # Existing V3-07 process nodes have narrow semantic geometry at 720p:
+    # show short *actions* in nodes, retain exact add_two(3) in audited narration.
+    labels = ("Define", "Call", "Bind n = 3", "Return 5")
     graph = SceneGraph.model_validate({
         "scene_id": "cs-function-parameter-process",
         "purpose": "DEMONSTRATE",
