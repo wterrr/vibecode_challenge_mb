@@ -33,6 +33,12 @@ from learnflow_v3.sequence_renderer import SequenceRenderProfile, _ffmpeg_anchor
 
 VERSION = "v3-31-code-state-semantic-provenance-v1"
 EXAMPLE = "def add_two(n):\n    return n + 2\n\nanswer = add_two(3)"
+ORIGINAL_MODEL_SCRIPT = (
+    "Define a function with def; def introduces its definition, followed by its name and parameter list.",
+    "Call add_two with argument three; the call supplies three as input to the function.",
+    "Bind parameter n to three for this call; the parameter refers to the input supplied by the argument.",
+    "The return statement sends back five from add_two after it uses the supplied input.",
+)
 ORIGINAL_MODEL_RESEARCH = (
     "A function is a named set of instructions, and its parameter list names the inputs. Worked example: imagine a doubling function with one parameter, number.",
     "Calling that function with 4 supplies 4 as its argument; inside the function, the parameter refers to that call's input, so the calculation uses 4.",
@@ -63,6 +69,10 @@ def load_pinned_receipt(path: Path) -> dict:
     if [s["segment_id"] for s in record["script_segments"]] != [
             "seg-define", "seg-call", "seg-bind", "seg-return"]:
         raise Blocked("V331_SCRIPT_ID_DRIFT")
+    if [s["spoken_text"] for s in record["script_segments"]] != list(ORIGINAL_MODEL_SCRIPT):
+        raise Blocked("V331_ORIGINAL_SCRIPT_TAMPER")
+    if record["source_certificate"].get("sha256_html") != "d1055a285f5916c6c627c080a34211df7408aa3d7601ab1775191324e12dc6bb":
+        raise Blocked("V331_SOURCE_HASH_DRIFT")
     if record["source_certificate"]["source_url"] != SOURCE_URL:
         raise Blocked("V331_SOURCE_ORIGIN_DRIFT")
     return record
@@ -137,7 +147,7 @@ def certified_integer_replay():
         "scene_id": "cs-numeric-subtrace",
         "purpose": "DEMONSTRATE",
         "layout_intent": {"type": "GRID"},
-        "nodes": [{"id": "code", "kind": "CODE", "content": "\n".join(code)}],
+        "nodes": [{"id": "code", "kind": "CODE", "label": "Arithmetic replay", "content": "\n".join(code)}],
         "relations": [],
     })
     spec = CodeWalkthrough(

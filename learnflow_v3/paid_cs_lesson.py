@@ -432,7 +432,7 @@ def render_lesson(bundle: dict, output: Path, *, frame_drawer=None, video_stem="
             k = beat["frame_start"] + beat["frames"] // 2
             frame = _ffmpeg_anchor(video, at=(k + .4) / FPS, profile=profile)
             contact.paste(frame.resize((640, 360)), ((i % 2)*640, (i//2)*360))
-        contact.save(output / (video_stem + "_contact.jpg"), quality=90)
+        contact.save(output / ("cs_all_four_decoded_beats.jpg" if video_stem == "cs_function_parameters_luna_720p" else video_stem + "_contact.jpg"), quality=90)
         result = {
             "status": "BOUNDED_LIVE_SOURCE_SCRIPT_PROCESS_AV_PASS",
             "topic_id": TOPIC_ID, "model": MODEL,
