@@ -170,9 +170,12 @@ def _docker_manim(out:Path,source:Path)->tuple[Path,dict]:
         # Never show model/provider content from image logs in CI; persist
         # sanitized diagnostic code only; no silent unsafe local rerun.
         raise Blocked("V334_SANDBOX_RENDER_FAIL_RC_"+str(r.returncode))
-    files=sorted(output.rglob("*.mp4"))
+    # Manim emits a final MP4 *and* one MP4 per transition in
+    # partial_movie_files/. Only the full film is an eligible output.
+    files=sorted(p for p in output.rglob("*.mp4")
+                 if "partial_movie_files" not in p.parts)
     if len(files)!=1 or not files[0].is_file():
-        raise Blocked("V334_MANIM_VIDEO_MISSING_OR_AMBIGUOUS")
+        raise Blocked("V334_MANIM_FINAL_VIDEO_MISSING_OR_AMBIGUOUS")
     return files[0],{"image":IMAGE,"image_id":docker.stdout.strip(),
                      "network":"none","read_only_root":True,
                      "all_capabilities_dropped":True,"security":"no-new-privileges",
