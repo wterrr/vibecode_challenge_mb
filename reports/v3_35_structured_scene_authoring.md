@@ -37,3 +37,22 @@ Up-to-date official OpenRouter structured output documentation: https://openrout
 At commit `0d63d68f04faf79e84bd8051f837949585542c21`, [offline exact-head CI #37911213001](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37911213001) SUCCESS: **27/27** new V3-35 + V3-34 tests, **27 regression PASS + 1 skipped**, frozen benchmark/Core, H264/AAC synthetic HOST Manim rendered from no-network Docker. [Artifact #11606722490](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37911213001/artifacts/11606722490) retrieved and independently inspected; fixture byte fingerprint `4c347a69b11611081da05949129b94945873bd069af4d276015a5ad43953ec5f`. ZERO provider calls so far.
 
 The following unique tagged commit `[v3-35-one-shot]` authorizes ONLY one new GPT-6 Luna JSON-schema strict call following successful offline same-commit dependency. No retries or fallback and no further opt-in tagged commits; save actual request receipt and failure on any model/semantic/render blocker. **Full model-authored video remains PENDING before running this one-shot.**
+
+## One-shot execution result — BLOCKED PROVIDER HTTP 404 (2026-10-09)
+
+**Unique opt-in commit:** `e221c69d3c3c708c8eb983c596ae0079a8f5d697`.
+
+**Exact-head one-shot GitHub Actions:** [#37911556743](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37911556743). Offline dependency completed **SUCCESS** (V3-35 schema mutation/legacy regressions, frozen benchmark/Core and actual synthetic Manim 720p H264/AAC sandbox). The dependent `opt-in-one-new-strict-json-gpt6-luna` job **FAILED**.
+
+The actual downloaded [live failure artifact #11607281713](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/37911556743/artifacts/11607281713) contains `v3_35_request_attempt.json` and `v3_35_structured_failure.json`:
+- `status=BLOCKED_PROVIDER_HTTP`, `sanitized_error_code=V335_HTTP_404`;
+- model `openai/gpt-6-luna`, **exactly 1 outbound HTTP request attempted**;
+- `response_format=json_schema_strict`, `provider_require_parameters=true`;
+- no provider fallback, no retry, no response JSON or response SHA, no provider-reported token usage;
+- no real model-authored `scene_plan.json`, compiled Manim scene or MP4, and production BLOCKED.
+
+**Important causality:** HTTP 404 is consistent with an endpoint/model availability or compatibility failure, including lack of a qualifying structured-output endpoint, but **it does not identify which** without reliable provider diagnostics. The HTTP error body was intentionally not logged to avoid leaking untrusted text/secrets. Do not claim the model generated a bad JSON this time; the attempt did not reach the schema validator. V3-34's previous `ValidationError` and V3-35's provider 404 are distinct observed blockers. No retry, no alternative model and no further calls after this failure.
+
+After the one-shot, only **offline development** was applied: the inherited V3-34 CLI now names V3-35 failure files correctly and a synthetic sender mutation test verifies HTTP 404 results in exactly one attempted call, no fallback/retry, nil model response SHA and a sanitized reason. The post-mortem doc change does NOT authorize a fresh tagged one-shot. Full exact-head CI remains required for those final changes.
+
+**Verdict:** structured-output wire-contract and sandbox smoke engineering **PASS**; the proposed real model→creative scene→native MP4 remains **NO-GO/BLOCKED_BY_PROVIDER_404**; human teaching quality **NOT ASSESSED**, comparative visual improvement **NOT PROVEN**, source-generalization and production **BLOCKED**. No claim of a provider compatibility guarantee for the exact Luna endpoint.
