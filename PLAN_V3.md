@@ -670,6 +670,12 @@ New stacked draft PR #55 on PR #54, preserving main and frozen V2. New V3-21 aud
 A newly authorized checkpoint prepares grounded evaluation for the **existing** 360p V3-20 and 720p V3-22 same-source Binary Search MP4s. It does not start the V3-16 12-topic human study or claim meaningful blinding between visibly different resolutions. All viewer scores/consent/recruitment UNMEASURED/NOT RUN. Offline code independently revalidates real H264/AAC/physical utterance event proof, samples actual HD caption-band pixels at pinned times, checks source CMU microtext sizes and audio script/WAV nominal WPM, then produces a timestamped issue inventory and EMPTY reviewer packet. Separate factual-causality/duplicate-leftmost-transfer/audio/legibility rubrics are prepared for possible future authorized ratings. **Technical evidence PASS cannot override student-ready / publish BLOCKED.** See `reports/v3_23_readability_teaching_preflight.md`. CI/artifacts at exact HEAD needed before bounded engineering PASS. No merge, human participants, paid provider or product release.
 
 
+
+### V3-24 — Leftmost Binary Search Visual Storytelling & Clarity (2026-10-09)
+
+User authorized the next bounded offline V3 step after V3-23. The new candidate **fixes** rather than merely inventories readability/pedagogy issues: native 1280×720/24fps Computer Modern true-source renderer, 32px LOW/HIGH/MID labels, 29px array indices, removal of engineer jargon and source-specific leftmost-match/candidate explanation at actual OBSERVE/APPLY utterance transitions. It reuses certified V3-20 source/audio/SRT and V3-22 original AAC stream copy, not word-forced timestamps, re-TTS or video upscaling. Particular safety issue: future-state `candidate_index` from the oracle may be available inside the next visual step; candidate only appears after the *corresponding APPLY*, with OBSERVE reading the last already applied candidate. Actual before/after native H264 frames, AAC hash, oracle-dependent caption logic, transition continuity, no-clobber and mutation CI are required. **Human readability, comprehension, 3B1B parity and production release NOT PROVEN**. No main merge, production, paid API or participant study. See `reports/v3_24_visual_storytelling_refinement.md`.
+
+
 ## 10. Security, governance and cost
 
 - No provider calls in V3 unit/fixture/offline CI. Isolate paid integration workflow with manual confirm and per-run budget, as a *new authorized protocol only*.
