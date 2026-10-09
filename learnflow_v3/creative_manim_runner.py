@@ -235,6 +235,41 @@ def _codec_and_pixel_gates(mp4:Path,info:list[dict])->dict:
       "replayed_decoded_samples":5}
 
 
+def checked_live_plan(raw:dict,usage:dict,out:Path)->CreativeScene:
+    """Preserve only bounded Pydantic error PATH and TYPE, never provider prose.
+
+    The first live V3-34 attempt failed at the schema gate but its old runner
+    dropped this diagnostic. The original provider payload cannot be
+    reconstructed; this method improves *future* evidence only.
+    """
+    from pydantic import ValidationError
+    if "model_author" not in raw:
+        raw={**raw,"model_author":MODEL}
+    try:
+        plan=CreativeScene.model_validate(raw)
+    except ValidationError as exc:
+        diagnostics=[{"path":".".join(str(part) for part in problem["loc"])[:120],
+                      "type":str(problem["type"])[:80]}
+                     for problem in exc.errors(include_url=False)[:40]]
+        evidence={
+            "checkpoint":"V3-34",
+            "state":"BLOCKED_AFTER_ONE_REAL_PROVIDER_RESPONSE",
+            "provider_requests":1,
+            "provider_response_sha256":usage.get("model_response_sha256"),
+            "validation_error_count":len(exc.errors(include_url=False)),
+            "validation_error_shapes":diagnostics,
+            "provider_raw_output_preserved":False,
+            "no_retry":True,
+            "production":"BLOCKED",
+        }
+        (out/"v3_34_model_validation_failure.json").write_text(
+            json.dumps(evidence,indent=2)+"\n")
+        raise Blocked("V334_MODEL_SCENE_SCHEMA_REJECTED") from None
+    if plan.model_author!=MODEL:
+        raise Blocked("V334_MODEL_AUTHOR_CONTRADICTION")
+    return plan
+
+
 def run(root:Path,out:Path,*,mode:str,key:str="",sender=None)->dict:
     if not out.is_dir() or any(out.iterdir()):raise Blocked("V334_OUTPUT_NONEMPTY")
     prereg=checked_manifest(root)
@@ -242,12 +277,7 @@ def run(root:Path,out:Path,*,mode:str,key:str="",sender=None)->dict:
     usage=None
     if mode=="live-model":
         raw,usage=call_exact_model(key,sender=sender)
-        # Provenance is read from the actual HTTP model envelope, not a
-        # self-asserted field in the model-generated creative artwork JSON.
-        if "model_author" not in raw:
-            raw={**raw,"model_author":MODEL}
-        plan=CreativeScene.model_validate(raw)
-        if plan.model_author!=MODEL:raise Blocked("V334_MODEL_AUTHOR_CONTRADICTION")
+        plan=checked_live_plan(raw,usage,out)
         origin="REAL_GPT6_LUNA_ONE_REQUEST"
     else:
         plan=fixture_plan()

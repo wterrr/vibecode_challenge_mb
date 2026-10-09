@@ -133,3 +133,17 @@ def test_graphic_id_cannot_collide_with_host_python_names():
         # collision checking. Both paths must reject unsafe Python identifiers.
         with pytest.raises(ValidationError):
             CreativeScene.model_validate(data)
+
+def test_provider_schema_rejection_preserves_bounded_nonsecret_diagnostics(tmp_path):
+    from learnflow_v3.creative_manim_runner import checked_live_plan
+    obj=fixture_plan().model_dump()
+    obj["objects"][0]["id"]="class"
+    with pytest.raises(Blocked,match="V334_MODEL_SCENE_SCHEMA_REJECTED"):
+        checked_live_plan(obj,{"model_response_sha256":"a"*64},tmp_path)
+    evidence=json.loads((tmp_path/"v3_34_model_validation_failure.json").read_text())
+    assert evidence["provider_requests"]==1
+    assert evidence["provider_response_sha256"]=="a"*64
+    assert evidence["validation_error_count"]>=1
+    assert evidence["validation_error_shapes"][0]["path"].startswith("objects.0")
+    assert evidence["provider_raw_output_preserved"] is False
+    assert "class" not in json.dumps(evidence)
