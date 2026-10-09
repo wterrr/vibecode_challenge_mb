@@ -686,6 +686,10 @@ New separately authorized next engineering checkpoint after V3-24. Pair identica
 
 **Follow-up visual bugfix (2026-10-09):** User reported green candidate outline longer than gray array cell in the V3-24/V3-25 actual Binary Search video. Identified `x±46, y341..425` overlay (92×84 at HD) vs true source V3-06 gray cell (90×90). The green outline is now drawn using the native gray slot's exact computed rectangle, radius and border thickness, with visual pixel tests and varying array-length geometry checks; preserves original candidate logic and audio. This is a patch to the existing PR stack, not a new release/educational claim. Exact final SHA CI + regenerated H264 before/after artifact required.
 
+### V3-26 — Real Browser E2E and Independent Reviewer Readiness (2026-10-09)
+
+After V3-25, execute real Playwright Chromium on the actual locally distributed file:// reviewer HTML for R01 and R02, validating source-attested 720p H264/AAC media, unmuted playback/currentTime, browser-ended event using explicit short seek (NOT full human watching), rubric form missing-field rejection, timestamps/category, actual download JSON and offline importer. Keep synthetic browser answers EPHEMERAL and NEVER ship as actual human ratings. Add explicit aesthetic/readability/pedagogy/technical/audio issue taxonomy; older submissions remain unclassified_legacy. Prepare a future 2+ competent independent reviewer SOP, consent/identity separation and real third-rater disagreement trigger, but NO recruitment/ratings/publication authorized. Frozen V3-16 12-topic benchmark untouched; Binary Search is known diagnostic and NOT confirmation. All human outcomes NOT_RUN/UNMEASURED, production BLOCKED. See reports/v3_26_real_browser_independent_review.md; technical acceptance awaits exact PR HEAD CI.
+
 ## 10. Security, governance and cost
 
 - No provider calls in V3 unit/fixture/offline CI. Isolate paid integration workflow with manual confirm and per-run budget, as a *new authorized protocol only*.
