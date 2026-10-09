@@ -88,11 +88,47 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install real native speech, codecs and Computer Modern
+      - name: Verify or install native AV dependencies (bounded APT)
+        shell: bash
+        timeout-minutes: 8
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg espeak-ng fonts-cmu fontconfig
-          python -m pip install -r requirements.txt
+          set -Eeuo pipefail
+          echo "V330_NATIVE_DEPS=START"
+          # The previous paid job was cancelled while in a silent APT/pip block.
+          # Never let an unbounded apt update consume the 30-minute job budget.
+          if command -v ffmpeg >/dev/null 2>&1 && \
+             command -v espeak-ng >/dev/null 2>&1 && \
+             command -v fc-match >/dev/null 2>&1 && \
+             fc-match -f '%{family}' 'CMU Serif' | grep -qi 'CMU'; then
+            echo "V330_NATIVE_DEPS=ALREADY_INSTALLED"
+          else
+            echo "V330_NATIVE_DEPS=APT_UPDATE timeout=120s"
+            timeout -k 10s 120s sudo apt-get \
+              -o Acquire::Retries=0 \
+              -o Acquire::http::Timeout=20 \
+              -o Acquire::https::Timeout=20 update -qq
+            echo "V330_NATIVE_DEPS=APT_INSTALL timeout=210s"
+            timeout -k 10s 210s sudo env DEBIAN_FRONTEND=noninteractive \
+              apt-get -o DPkg::Lock::Timeout=30 -o Acquire::Retries=0 \
+              -y -qq install ffmpeg espeak-ng fonts-cmu fontconfig
+          fi
+          echo "V330_NATIVE_DEPS=VERIFY"
+          command -v ffmpeg
+          command -v espeak-ng
+          command -v fc-match
+          fc-match -f '%{family}\n' 'CMU Serif'
+          fc-match -f '%{family}' 'CMU Serif' | grep -qi 'CMU'
+          echo "V330_NATIVE_DEPS=PASS"
+      - name: Install Python requirements with deadline
+        shell: bash
+        timeout-minutes: 7
+        run: |
+          set -Eeuo pipefail
+          echo "V330_PYTHON_INSTALL=START timeout=360s"
+          timeout -k 10s 360s python -m pip install \
+            --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt
+          echo "V330_PYTHON_INSTALL=PASS"
       - name: EXACT model openai/gpt-6-luna, two calls, no fallback/retry
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
