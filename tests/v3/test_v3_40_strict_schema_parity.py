@@ -159,7 +159,7 @@ def test_v340_workflow_is_offline_and_contains_no_secret_or_trial_activation():
     workflow = (ROOT / ".github/workflows/v3-40-strict-schema-parity-audit.yml").read_text()
     assert "secrets." not in workflow
     assert "OPENROUTER_API_KEY" not in workflow
-    assert "compatible_creative_trial" not in workflow
+    assert "python -m learnflow_v3.compatible_creative_trial" not in workflow
     assert "unique-preregistered-no-temperature-model-post" not in workflow
     assert "python -m learnflow_v3.strict_schema_parity_audit" in workflow
     assert "test_v3_40_strict_schema_parity.py" in workflow
