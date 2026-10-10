@@ -74,6 +74,14 @@ def inspect_candidate(root: Path, *, probe=None) -> dict:
     invokes real ffprobe against actual MP4 bytes.
     """
     root = root.resolve()
+    # The original offline-smoke runner writes a *V3-34* receipt even when
+    # launched from the V3-35 workflow. Recognize that exact legacy format
+    # rather than mislabeling a synthetic fixture as a missing-model error.
+    legacy = root / "v3_34_ablation_receipt.json"
+    if not (root / "v3_35_ablation_receipt.json").exists() and legacy.is_file():
+        prior = _read_json(legacy)
+        if prior.get("model_plan_origin") == "SYNTHETIC_HOST_FIXTURE_NOT_REAL_MODEL":
+            raise EvidenceRejected("NOT_REAL_MODEL_SCENE")
     receipt = _read_json(root / "v3_35_ablation_receipt.json")
     _require(receipt.get("checkpoint") == "V3-35", "WRONG_OR_MISSING_CHECKPOINT")
     _require(receipt.get("model_plan_origin") == REAL_ORIGIN, "NOT_REAL_MODEL_SCENE")
