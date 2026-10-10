@@ -53,12 +53,13 @@ jobs:
     needs: offline-adversarial-and-public-get
     # Never on PRs/re-runs/normal pushes. Fixed HTTPS GET paths only.
     # Earlier tagged run #38018269731 failed import before auth; key GET SKIPPED.
-    # Separately preregistered unique metadata-only recovery; 0 inference.
+    # Previous two tagged runs #38018269731 and #38018493840 FAILED offline; authenticated GET SKIPPED both times.
+    # New stdlib-isolated preregistration preserves total key GET budget ONE; zero inference.
     if: >-
       github.event_name == 'push' &&
       github.run_attempt == 1 &&
       github.ref == 'refs/heads/chatgpt/v3-38-openrouter-no-inference-diagnostics' &&
-      contains(github.event.head_commit.message, '[v3-38-import-recovery-readonly-key-check]')
+      contains(github.event.head_commit.message, '[v3-38-stdlib-isolated-key-check]')
     runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:
