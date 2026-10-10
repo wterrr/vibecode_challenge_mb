@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """V3-34 conservative offline or ONE model call, then sandboxed Manim media."""
 from __future__ import annotations
-import argparse,json,os,sys
+import argparse,json,os,sys,re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
@@ -22,7 +22,9 @@ def main():
         checkpoint="V3-35" if args.mode=="live-structured" else "V3-34"
         fail={"checkpoint":checkpoint,"status":"BLOCKED",
               "mode":args.mode,"error_type":type(exc).__name__,
-              "error_code":str(exc) if str(exc).startswith("V334_") else "V334_VALIDATION_OR_RUNTIME_BLOCKED",
+              "error_code":(str(exc) if re.fullmatch(r"V3(?:34|35)_[A-Z0-9_:.-]{1,100}",str(exc))
+                            else ("V335_VALIDATION_OR_RUNTIME_BLOCKED"
+                                  if args.mode=="live-structured" else "V334_VALIDATION_OR_RUNTIME_BLOCKED")),
               "model_request_attempt_limit":0 if args.mode=="offline-smoke" else 1,
               "actual_provider_request_count_if_failed":"NOT_VERIFIABLE",
               "production":"BLOCKED"}

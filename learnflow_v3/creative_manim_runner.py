@@ -315,10 +315,12 @@ def run(root:Path,out:Path,*,mode:str,key:str="",sender=None)->dict:
     receipt={
       "checkpoint":"V3-35" if mode=="live-structured" else "V3-34",
       "status":("TECHNICAL_MODEL_SCENE_PASS_NOT_EDUCATIONAL_PASS"
-                if mode=="live-structured" else "TECHNICAL_SMOKE_NOT_EDUCATIONAL_PASS"),
+                if mode in ("live-model","live-structured") else "TECHNICAL_SMOKE_NOT_EDUCATIONAL_PASS"),
       "topic_id":prereg["topic_id"],
       "ablation":baselines,"model_plan_origin":origin,
-      "manim_source_origin":"HOST_COMPILED_FROM_MODEL_PRIMITIVE_DATA" if mode=="live-model" else "HOST_FIXTURE_FROM_HOST_PRIMITIVE_DATA",
+      "manim_source_origin":("HOST_COMPILED_FROM_MODEL_PRIMITIVE_DATA"
+                             if mode in ("live-model","live-structured")
+                             else "HOST_FIXTURE_FROM_HOST_PRIMITIVE_DATA"),
       "provider_requests":1 if usage is not None else 0,
       "provider_receipt":usage,
       "model_generated_unrestricted_python":False,
