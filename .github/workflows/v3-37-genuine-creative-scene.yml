@@ -97,6 +97,7 @@ jobs:
     # PRs, normal pushes, reruns and documentation edits NEVER initiate inference.
     if: >-
       github.event_name == 'push' &&
+      github.run_attempt == 1 &&
       github.ref == 'refs/heads/chatgpt/v3-37-genuine-creative-scene-one-shot' &&
       contains(github.event.head_commit.message, '[v3-37-one-shot]')
     runs-on: ubuntu-latest
