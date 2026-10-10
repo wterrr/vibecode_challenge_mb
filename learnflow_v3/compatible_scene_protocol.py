@@ -100,7 +100,7 @@ def portable_wire_schema() -> dict:
                                                  else Graphic.model_fields[name].default))
     for name in ("x", "y"):
         motion[name]["enum"] = _finite_numbers(
-            bounded_motion[name], "0.1", default=Motion.model_fields[name].default)
+            bounded_motion[name], "0.2", default=Motion.model_fields[name].default)
 
     beat = wire["properties"]["beats"]["items"]
     props = beat["properties"]
