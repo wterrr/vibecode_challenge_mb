@@ -21,6 +21,11 @@ KEY_URL = "https://openrouter.ai/api/v1/key"
 MAX_CATALOG_BYTES = 120_000
 MAX_KEY_BYTES = 20_000
 REQUIRED = frozenset({"response_format", "structured_outputs"})
+# These are *advertised* endpoint parameter names in the exact V3-37 wire.
+# provider.allow_fallbacks and require_parameters are routing directives, not
+# provider-supported generation parameter names.
+V337_EXPLICIT_WIRE_PARAMS = REQUIRED | {"temperature", "max_tokens"}
+V337_ALTERNATE_WIRE_PARAMS = REQUIRED | {"temperature", "max_completion_tokens"}
 
 
 class NeverFollowRedirect(HTTPRedirectHandler):
@@ -71,6 +76,10 @@ def probe_model_endpoints(*, sender=None) -> dict:
         "schema_advertised_count": None,
         "schema_and_max_tokens_count": None,
         "schema_and_max_completion_tokens_count": None,
+        "v337_all_advertised_generation_params_count": None,
+        "alternate_completion_limit_all_advertised_params_count": None,
+        "v337_generation_params": sorted(V337_EXPLICIT_WIRE_PARAMS),
+        "metadata_cannot_certify_json_schema_strict": True,
         "schema_provider_names": [],
         "inference_requests": 0,
         "account_eligibility_certified": False,
@@ -109,6 +118,12 @@ def probe_model_endpoints(*, sender=None) -> dict:
         "schema_advertised_count": len(qualified),
         "schema_and_max_tokens_count": sum("max_tokens" in params for _, params in qualified),
         "schema_and_max_completion_tokens_count": sum("max_completion_tokens" in params for _, params in qualified),
+        "v337_all_advertised_generation_params_count": sum(
+            V337_EXPLICIT_WIRE_PARAMS.issubset(params) for _, params in qualified
+        ),
+        "alternate_completion_limit_all_advertised_params_count": sum(
+            V337_ALTERNATE_WIRE_PARAMS.issubset(params) for _, params in qualified
+        ),
         "schema_provider_names": providers,
     })
     return output
