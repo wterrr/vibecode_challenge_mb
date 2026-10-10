@@ -98,8 +98,9 @@ def probe_model_endpoints(*, sender=None) -> dict:
     # Provider names come from public metadata, not user/account details.
     # Fixed vocab prevents arbitrary source strings from reaching CI artifacts.
     known = {"OpenAI", "Azure", "Amazon Bedrock"}
-    providers = sorted({entry.get("provider_name") for entry, _ in qualified
-                        if entry.get("provider_name") in known})
+    providers = sorted({v for entry, _ in qualified
+                        if isinstance((v := entry.get("provider_name")), str)
+                        and v in known})
     output.update({
         "state": "PUBLIC_SCHEMA_ENDPOINTS_ADVERTISED"
                  if qualified else "NO_PUBLIC_SCHEMA_ENDPOINTS",
