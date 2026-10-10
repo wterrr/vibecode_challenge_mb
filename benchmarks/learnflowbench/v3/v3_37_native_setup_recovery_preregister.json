@@ -1,0 +1,28 @@
+{
+  "scope": "V3-37 native dependency bootstrap recovery ONLY (no change to scientific hypothesis or model request budget)",
+  "prior_tagged_run": 38014435770,
+  "prior_commit": "aa6d041c284e60e18eee7412fbb569fffed3e943",
+  "prior_offline_failure": {
+    "stage": "apt-install",
+    "exit_code": 124,
+    "timeout_seconds": 210,
+    "job": "exact-head-offline-contracts-and-sandbox"
+  },
+  "prior_paid_job": "SKIPPED",
+  "prior_model_http_post_attempts": 0,
+  "evidence": "GitHub Actions #38014435770 recorded bootstrap timeout before any strict-model request, and its paid job was SKIPPED",
+  "policy": "This is not a retry of a model answer. No response exists. Total V3-37 inference POST budget remains exactly one.",
+  "replacement_condition": "Use one separate recovery tag only if untagged amended code-head offline CI PASS and frozen benchmark/sandbox proof PASS; no fallback or retry. Same tagged-HEAD offline must independently PASS before paid job.",
+  "next_unique_tag": "[v3-37-native-recovery-one-shot]",
+  "max_provider_posts_across_both_tagged_workflows": 1,
+  "previous_tag_must_not_run_paid_again": true,
+  "model": "openai/gpt-6-luna",
+  "topic_id": "lfb-018-math",
+  "strict_json_schema": true,
+  "no_fallback": true,
+  "no_retry": true,
+  "external_publisher_semantics": "NOT_VERIFIED",
+  "human_pedagogy": "NOT_ASSESSED",
+  "production": "BLOCKED",
+  "preregistered_before_replacement_tag": true
+}
