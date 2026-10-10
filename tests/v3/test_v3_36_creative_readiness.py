@@ -238,3 +238,15 @@ def test_cli_preserves_sanitized_v335_http_code(monkeypatch, tmp_path):
     state = json.loads((tmp_path / "candidate/v3_35_failure.json").read_text())
     assert state["error_code"] == "V335_HTTP_404"
     assert state["production"] == "BLOCKED"
+
+
+def test_actual_legacy_offline_fixture_receipt_name_rejected(tmp_path):
+    """V3-34 offline-smoke really writes v3_34_ablation_receipt.json."""
+    (tmp_path / "v3_34_ablation_receipt.json").write_text(json.dumps({
+        "checkpoint": "V3-34",
+        "model_plan_origin": "SYNTHETIC_HOST_FIXTURE_NOT_REAL_MODEL",
+        "status": "TECHNICAL_SMOKE_NOT_EDUCATIONAL_PASS",
+        "provider_requests": 0,
+    }))
+    with pytest.raises(EvidenceRejected, match="NOT_REAL_MODEL_SCENE"):
+        inspect_candidate(tmp_path)
