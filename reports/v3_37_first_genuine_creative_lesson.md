@@ -26,3 +26,11 @@
 Technical real-model MP4: **NOT RUN yet** as of implementation; CI and exact HEAD required before single opt-in. Even real technical PASS proves only this finite topic/scene. Human learning, eight-dimension V3-33 rubric scores, 3Blue1Brown parity, professional creative superiority, six-domain generalization, independently sourced fraction quotes, voice/source licensing and production **NOT PROVEN / BLOCKED**. PR remains Draft, no main merge.
 
 **Implementation/gate source:** `learnflow_v3/genuine_creative_trial.py`, `tests/v3/test_v3_37_genuine_creative_trial.py`, `.github/workflows/v3-37-genuine-creative-scene.yml`, new immutable prereg JSON. Exact HEAD CI outcome and paid trial must be appended only after actual verification.
+
+## One uniquely authorized live execution commit — 2026-10-10
+
+**Pre-opt-in evidence:** V3-36 final exact HEAD `6d4625e` both push [#38012870423](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38012870423) and PR [#38012873196](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38012873196) **SUCCESS**; V3-37 no-pay candidate HEAD `da73f989` [push CI #38013948669](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38013948669) **SUCCESS**, including all schema/negative regressions, frozen benchmark, real Docker Manim native H264/AAC HOST fixture and mandatory model-evidence rejection. At this point the V3-37 PR CI is still not claimed PASS.
+
+This commit is the **one unique opt-in** under the user's authorization, not a repeated V3-34/V3-35 attempt. It may execute exactly ONE genuine `openai/gpt-6-luna` inference POST after the same-tagged-HEAD offline gate succeeds; only `github.run_attempt == 1`, no retries, fallback, alternate models or changed frozen topic/schema. The public catalog GET must be consistent or the model stage stops BEFORE the paid POST. The actual paid outcome and MP4 existence are **PENDING**, not predeclared. Any later documentation updates MUST NOT include this opt-in tag in a commit message. Never rerun the one-shot via Actions.
+
+**On final review:** download real artifact and verify `v3_35_request_attempt.json`, provider response and canonical scene SHA, full Manim source/provenance, genuine MP4 SHA, and media/visual evidence. Do not infer new facts, model competence or teaching quality from a failed HTTP call. Production stays BLOCKED.
