@@ -1,0 +1,63 @@
+{
+  "checkpoint": "V3-39",
+  "name": "First compatibility-correct strict GPT-6 Luna creative Manim lesson",
+  "parent_pr": 72,
+  "parent_sha": "e5b0b4fb5cf8bc1e82be428c368ab5e947a54c1e",
+  "preregistered_before_implementation": true,
+  "topic_id": "lfb-018-math",
+  "topic_query_sha256": "376a06049a51990ddb7fe7a340ef42222b8d89ed601fa8a22dfe971524cf113d",
+  "topic_previous_exposure": "V3-34, V3-35, V3-37; ENGINEERING RECOVERY NOT BLIND PERFORMANCE TEST",
+  "exact_model": "openai/gpt-6-luna",
+  "api": "https://openrouter.ai/api/v1/chat/completions",
+  "hypothesis": "V3-37 POST 404 was induced by temperature=0.65 plus provider.require_parameters=true because publicly advertised GPT-6 Luna endpoint supported_parameters excludes temperature across all seven endpoints.",
+  "falsification": "If no-temperature request remains 404 under otherwise same payload, unsupported temperature alone is NOT a sufficient explanation; no retry.",
+  "historical_evidence": {
+    "v3_37_run": 38017323094,
+    "v3_37_error": "V335_HTTP_404",
+    "v3_38_metadata_run": 38019407661,
+    "github_key_http_200": true,
+    "advertised_schema_endpoints": 7,
+    "advertised_temperature_endpoints": 0,
+    "advertised_max_tokens_endpoints": 4
+  },
+  "frozen_intervention": {
+    "remove_only": [
+      "temperature"
+    ],
+    "keep": {
+      "max_tokens": 6500,
+      "provider.require_parameters": true,
+      "provider.allow_fallbacks": false,
+      "response_format.json_schema.strict": true,
+      "model": "openai/gpt-6-luna",
+      "topic_id": "lfb-018-math",
+      "schema_source": "learnflow_v3/structured_scene_authoring.py"
+    }
+  },
+  "requests": {
+    "maximum_new_model_http_posts": 1,
+    "fallback": false,
+    "retry": 0,
+    "same_model": true
+  },
+  "priority_conditions": [
+    "Do not use paid request before exact-head offline tests PASS and real Docker HOST Manim smoke+synthetic-rejection PASS",
+    "Public exact-payload capability GET must show at least one eligible endpoint with temperature omitted, schema and max_tokens advertised",
+    "One opt-in HEAD commit uniquely tagged [v3-39-single-compatible-model-post]",
+    "github.run_attempt==1; never rerun tagged commit",
+    "Key must be configured and deterministic prereg checks pass"
+  ],
+  "result_evidence": [
+    "real provider request-count receipt",
+    "validated model response SHA or sanitized provider rejection",
+    "strict scene SHA and host source replay",
+    "real H264/AAC MP4 SHA if generated",
+    "negative synthetic gate",
+    "visual timestamp observations if MP4 exists"
+  ],
+  "no_raw_provider_error_or_model_text_in_logs": true,
+  "no_model_generated_python": true,
+  "decisive_limits": "No model quality/pedagogy certification, six-domain generalization remains 0/6; absence of 404 only supports routing issue not full end-to-end PASS.",
+  "production": "BLOCKED",
+  "main_merge": false
+}
