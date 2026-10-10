@@ -16,6 +16,7 @@ from learnflow_v3.creative_evidence_gate import (
     EvidenceRejected, inspect_candidate, REAL_ORIGIN, COMPILED_ORIGIN,
 )
 from learnflow_v3 import creative_manim_runner as runner
+from learnflow_v3.creative_manim_ablation import fixture_plan, manim_code
 
 MODEL = "openai/gpt-6-luna"
 
@@ -28,7 +29,7 @@ def _mock_probe(_path):
     return {
         "streams": [
             {"codec_type": "video", "codec_name": "h264",
-             "width": 1280, "height": 720, "nb_frames": "150"},
+             "width": 1280, "height": 720, "nb_frames": "240"},
             {"codec_type": "audio", "codec_name": "aac"}
         ],
         "format": {"duration": "10.0"}
@@ -36,8 +37,10 @@ def _mock_probe(_path):
 
 
 def _fake_candidate(root: Path) -> dict:
-    plan = json.dumps({"model_author": MODEL}).encode()
-    source = b"# fixture host compiled source, NOT a real model output\n"
+    model_plan = fixture_plan().model_copy(update={"model_author": MODEL})
+    plan_dict = model_plan.model_dump(mode="json")
+    plan = json.dumps(plan_dict).encode()
+    source = manim_code(model_plan, [4.0] * 4).encode()
     mp4 = b"FAKE_MP4_BYTES_NOT_AN_ACTUAL_VIDEO"
     (root / "scene_plan.json").write_bytes(plan)
     (root / "generated_host_compiled_manim.py").write_bytes(source)
@@ -55,7 +58,9 @@ def _fake_candidate(root: Path) -> dict:
             "actual_provider_requests": 1, "no_retry": True,
             "no_fallback": True, "provider_require_parameters": True,
             "model_response_sha256": "a" * 64,
-            "strict_json_schema_sha256": "b" * 64
+            "strict_json_schema_sha256": "b" * 64,
+            "validated_plan_canonical_sha256": _sha(json.dumps(
+                plan_dict, sort_keys=True, separators=(",", ":")).encode())
         },
         "model_generated_unrestricted_python": False,
         "human_blinded_educational_quality": "NOT_ASSESSED",
@@ -68,9 +73,9 @@ def _fake_candidate(root: Path) -> dict:
         },
         "plan_sha256": _sha(plan),
         "scene_sha256": _sha(source),
-        "audio_sampled_beats": [{"index": x} for x in range(4)],
+        "audio_sampled_beats": [{"index": x, "frames": 60} for x in range(4)],
         "video": {
-            "video_sha256": _sha(mp4), "frames": 150,
+            "video_sha256": _sha(mp4), "frames": 240,
             "max_decoded_sample_delta": 2.1,
             "replayed_decoded_samples": 5,
             "aac_rms_per_beat": [0.05] * 4
@@ -154,7 +159,7 @@ def test_mutations_rejected_without_inference(tmp_path, mutation, expected):
     elif mutation == "frame_count_wrong":
         def probe(_):
             p = _mock_probe(_)
-            p["streams"][0]["nb_frames"] = "149"
+            p["streams"][0]["nb_frames"] = "239"
             return p
     _write_receipt(tmp_path, data)
     with pytest.raises(EvidenceRejected, match=expected):
