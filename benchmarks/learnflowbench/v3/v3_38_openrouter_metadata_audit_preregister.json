@@ -1,0 +1,101 @@
+{
+  "checkpoint": "V3-38",
+  "title": "OpenRouter no-inference key and provider routing audit",
+  "source_parent_pr": 71,
+  "parent_head_sha": "aeca5ce2d2889a605f452eb1a89ae43a9efc8176",
+  "last_real_provider_post": {
+    "run_id": 38017323094,
+    "commit": "f6a2f3af2bfd5dce6793c5864a30a02d919b78cf",
+    "attempts": 1,
+    "http_status": 404
+  },
+  "preregistered_before_implementation": true,
+  "objective": "Disambiguate safe observable API key validity/limit and public provider schema parameter metadata without completing inference or changing frozen model/schema.",
+  "model": "openai/gpt-6-luna",
+  "model_url": "https://openrouter.ai/api/v1/models/openai/gpt-6-luna/endpoints",
+  "key_metadata_url": "https://openrouter.ai/api/v1/key",
+  "allowed_http_methods": [
+    "GET"
+  ],
+  "allowed_http_hosts": [
+    "openrouter.ai"
+  ],
+  "allowed_paths": [
+    "/api/v1/key",
+    "/api/v1/models/openai/gpt-6-luna/endpoints"
+  ],
+  "authenticated_requests": [
+    "GET /api/v1/key"
+  ],
+  "public_requests": [
+    "GET /api/v1/models/openai/gpt-6-luna/endpoints"
+  ],
+  "disallowed_requests": [
+    "POST /api/v1/chat/completions",
+    "POST /api/v1/responses",
+    "POST /api/v1/messages",
+    "POST /api/v1/keys",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "HEAD inferencing model"
+  ],
+  "disallowed_actions": [
+    "use management API key",
+    "fetch all keys/creator ID",
+    "print full auth response",
+    "persist key labels/account identifiers",
+    "change require_parameters",
+    "auto retry/fallback",
+    "merge main"
+  ],
+  "account_fields_to_report": [
+    "http_status_code",
+    "key_authenticated:boolean",
+    "key_type:management_or_inference_or_unknown",
+    "is_free_tier:boolean_or_unknown",
+    "limit_remaining_positive:boolean_or_unknown",
+    "expiry_state:expired_valid_or_unknown"
+  ],
+  "public_catalog_fields_to_report": [
+    "model_id_match",
+    "endpoint_count",
+    "counts_advertise_schema",
+    "counts_advertise_schema_and_max_tokens",
+    "counts_advertise_schema_and_max_completion_tokens"
+  ],
+  "forbidden_artifact_fields": [
+    "raw_API_key",
+    "Authorization",
+    "creator_user_id",
+    "label",
+    "name",
+    "workspace_id",
+    "full_error_response",
+    "provider_user_details",
+    "raw_credentials"
+  ],
+  "max_requests_per_run": 2,
+  "retries": 0,
+  "follow_redirects": false,
+  "response_body_max_bytes": 120000,
+  "github_secrets_only_on_push": true,
+  "evidence_boundary": "Key GET 200 proves key authentication at time of GET but not model entitlement, route, billing or exact POST schema compatibility. A 404 from earlier POST remains causally UNDETERMINED.",
+  "predeclared_verdicts": [
+    "KEY_AUTHENTICATED_METADATA_ONLY",
+    "KEY_UNAUTHORIZED",
+    "KEY_ENDPOINT_UNAVAILABLE",
+    "KEY_NOT_CONFIGURED",
+    "PUBLIC_MODEL_ENDPOINTS_ADVERTISE_STRUCTURED_OUTPUTS",
+    "CATALOG_UNVERIFIED",
+    "EVIDENCE_INCONCLUSIVE"
+  ],
+  "production": "BLOCKED",
+  "inference_budget_authorized": 0,
+  "criteria": "Code tests use injected fake network and fail-closed no-POST. CI push key GET + public GET safely bounded, sanitized structured artifact, and explicit scientific limits. PR has no key-bearing job.",
+  "docs": [
+    "https://openrouter.ai/docs/api/api-reference/api-keys/get-current-key",
+    "https://openrouter.ai/docs/api/api-reference/endpoints/list-endpoints",
+    "https://openrouter.ai/docs/guides/features/structured-outputs"
+  ]
+}

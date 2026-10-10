@@ -1,0 +1,24 @@
+{
+  "checkpoint": "V3-38",
+  "scope": "Recovery for read-only metadata GET after failed offline test import; never an inference experiment",
+  "original_tagged_run": 38018269731,
+  "original_tag_commit": "56b2b451ef492b8219327cc66841514f53f10760",
+  "original_failure": "offline test import ModuleNotFoundError: No module named 'pydantic'",
+  "original_auth_job": "SKIPPED",
+  "original_get_key_attempts": 0,
+  "original_model_posts": 0,
+  "new_unique_tag": "[v3-38-import-recovery-readonly-key-check]",
+  "eligibility": "A new post-fix exact-HEAD offline test job must PASS before secret-bearing GET step executes. If not PASS, skip authenticated GET.",
+  "total_authorized_current_key_gets": 1,
+  "total_authorized_chat_completion_posts": 0,
+  "retries": 0,
+  "no_redirects": true,
+  "no_full_raw_response_artifact": true,
+  "unchanged_fixed_url_paths": [
+    "/api/v1/models/openai/gpt-6-luna/endpoints",
+    "/api/v1/key"
+  ],
+  "truth_limit": "GET /key 200 does not certify model/route permissions or historical 404",
+  "production": "BLOCKED",
+  "preregistered_before_new_key_probe": true
+}
