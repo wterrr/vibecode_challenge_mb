@@ -276,6 +276,10 @@ def run(root:Path,out:Path,*,mode:str,key:str="",sender=None,compatible_wire=Non
     if mode not in ("offline-smoke","offline-v341-compatible","live-model","live-structured",
                      "live-structured-no-temperature"):
         raise Blocked("V334_UNKNOWN_MODE")
+    # Reject accidental injection of offline replay content into ANY live path
+    # before touching the sender, including V3-39 legacy one-shot mode.
+    if compatible_wire is not None and mode != "offline-v341-compatible":
+        raise Blocked("V341_OFFLINE_WIRE_NOT_ALLOWED_IN_LEGACY_MODE")
     usage=None
     if mode in ("live-model","live-structured","live-structured-no-temperature"):
         if mode in ("live-structured","live-structured-no-temperature"):
