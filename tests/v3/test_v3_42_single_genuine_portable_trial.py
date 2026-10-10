@@ -216,3 +216,65 @@ def test_ci_paid_stage_requires_exact_marker_first_attempt_and_main_never_merge(
     assert "secrets.OPENROUTER_API_KEY" in workflow
     assert "one_shot_portable" not in workflow  # Only CLI via locked registered main()
     assert "pull_request" in workflow
+
+
+
+def test_actual_runner_mode_reuses_original_compiler_with_only_mock_provider(monkeypatch,tmp_path):
+    """Run actual V3-42 dispatch and host receipts, never a real model/Manim."""
+    from learnflow_v3 import creative_manim_runner as runner
+    from learnflow_v3 import genuine_portable_response as transport
+    from learnflow_v3.creative_manim_ablation import fixture_plan
+    calls=[]
+    fake_usage={
+        "stage":"REAL_MODEL_SCHEMA_CONSTRAINED_SCENE",
+        "model":"openai/gpt-6-luna",
+        "protocol":"V3-42_PREREGISTERED_V3-41_PORTABLE",
+        "actual_provider_requests":1,
+        "no_retry":True,"no_fallback":True,
+        "provider_require_parameters":True,
+        "temperature_parameter_sent":False,
+        "model_response_sha256":"a"*64,
+        "strict_json_schema_sha256":"b"*64,
+        "validated_plan_canonical_sha256":"c"*64,
+    }
+    def fake_portable(key,out,*,sender=None):
+        assert key==FAKE_KEY
+        calls.append("MOCK_RESPONSE_NOT_ACTUAL")
+        return fixture_plan().model_dump(mode="json"),fake_usage
+    monkeypatch.setattr(transport,"one_shot_portable",fake_portable)
+    monkeypatch.setattr(runner,"checked_manifest",lambda _:{"topic_id":"lfb-018-math"})
+    monkeypatch.setattr(runner,"ablation_baselines",lambda *_:{
+       "A":{"status":"ABSTAIN"},"B":{"status":"ABSTAIN"}})
+    monkeypatch.setattr(runner,"_audio",lambda out,plan:(
+        [1.0]*4,
+        [{"start_seconds":i,"wav_samples":16000,"wav_rate":16000,
+          "frames":15,"claim_ids":["F1"],"narration":"fake"}
+         for i in range(4)],
+        out/"mock.wav"))
+    monkeypatch.setattr(runner,"manim_code",lambda *_:"# HOST-ONLY MOCK SOURCE")
+    def fake_docker(out,source):
+        p=out/"mock_internal.mp4"
+        p.write_bytes(b"not an actual MP4")
+        return p,{"network":"none"}
+    monkeypatch.setattr(runner,"_docker_manim",fake_docker)
+    def fake_mux(cmd,**kwargs):
+        Path(cmd[-1]).write_bytes(b"not an actual mux")
+        class Return:
+            returncode=0
+        return Return()
+    monkeypatch.setattr(runner.subprocess,"run",fake_mux)
+    monkeypatch.setattr(runner,"_codec_and_pixel_gates",
+       lambda path,beats:{"video_sha256":runner.sha(path),"frames":150,
+                          "aac_rms_per_beat":[.05]*4,
+                          "max_decoded_sample_delta":2,
+                          "replayed_decoded_samples":5})
+    result=runner.run(ROOT,tmp_path,mode="live-v342-portable",key=FAKE_KEY)
+    assert calls==["MOCK_RESPONSE_NOT_ACTUAL"]
+    assert result["provider_requests"]==1
+    assert result["model_plan_origin"]=="REAL_GPT6_LUNA_STRICT_JSON_SCHEMA_ONE_REQUEST"
+    assert result["provider_receipt"]["protocol"]=="V3-42_PREREGISTERED_V3-41_PORTABLE"
+    assert result["manim_source_origin"]=="HOST_COMPILED_FROM_MODEL_PRIMITIVE_DATA"
+    assert result["status"]=="TECHNICAL_MODEL_SCENE_PASS_NOT_EDUCATIONAL_PASS"
+    assert (tmp_path/"v3_35_ablation_receipt.json").is_file()
+    assert result["production"]=="BLOCKED"
+    # Receipt is MOCK-ONLY fixture for dispatcher coverage, never actual proof.
