@@ -281,9 +281,14 @@ def run(root:Path,out:Path,*,mode:str,key:str="",sender=None)->dict:
         if mode in ("live-structured","live-structured-no-temperature"):
             from learnflow_v3.structured_scene_authoring import preflight,one_shot_structured
             preflight(root)
-            raw,usage=one_shot_structured(
-                key,out,sender=sender,
-                omit_temperature=(mode=="live-structured-no-temperature"))
+            if mode == "live-structured-no-temperature":
+                # V3-39 only: keep its separately frozen one-field intervention.
+                raw,usage=one_shot_structured(
+                    key,out,sender=sender,omit_temperature=True)
+            else:
+                # Preserve the exact V3-35/V3-36/V3-37 call signature. The
+                # older mocked transport and callers do not accept new kwargs.
+                raw,usage=one_shot_structured(key,out,sender=sender)
         else:
             raw,usage=call_exact_model(key,sender=sender)
         plan=checked_live_plan(raw,usage,out)
