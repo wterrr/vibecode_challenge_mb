@@ -1,0 +1,136 @@
+name: V3-39 Compatible Strict Luna Creative Manim One-Shot
+
+on:
+  push:
+    branches: [chatgpt/v3-39-compatible-structured-scene-one-shot]
+  pull_request:
+    paths:
+      - "learnflow_v3/compatible_creative_trial.py"
+      - "learnflow_v3/structured_scene_authoring.py"
+      - "learnflow_v3/creative_manim_runner.py"
+      - "tests/v3/test_v3_39_compatible_creative_trial.py"
+      - ".github/workflows/v3-39-compatible-creative-trial.yml"
+      - "benchmarks/learnflowbench/v3/v3_39_compatible_structured_scene_preregister.json"
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-offline-contract-and-real-host-sandbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 32
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install native narration codecs and CMU
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Bounded pinned-style project dependencies
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt pyyaml
+      - name: One wire change, no temperature and no network mutation tests
+        timeout-minutes: 6
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_39_compatible_creative_trial.py \
+            tests/v3/test_v3_38_openrouter_metadata_audit.py \
+            tests/v3/test_v3_37_genuine_creative_trial.py \
+            tests/v3/test_v3_36_creative_readiness.py \
+            tests/v3/test_v3_35_public_provider_catalog.py \
+            tests/v3/test_v3_35_structured_scene.py \
+            tests/v3/test_v3_34_generative_ablation.py
+      - name: Frozen V3 benchmark, V3-33 unseen NO-GO and V2 Core
+        timeout-minutes: 8
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_33_generalization.py \
+            tests/v3/test_v3_32_grounded_lesson.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Pinned Docker Manim image (no model inference)
+        timeout-minutes: 12
+        run: |
+          timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+          docker image inspect manimcommunity/manim:v0.19.0 --format '{{.Id}}'
+      - name: Real native H264/AAC host fixture, NEVER model evidence
+        timeout-minutes: 8
+        run: |
+          python scripts/run_v3_34_ablation.py --mode offline-smoke \
+            --output-dir "$RUNNER_TEMP/v3_39_offline_host_fixture"
+      - name: Mandatory reject synthetic-host fixture as model-authored
+        timeout-minutes: 2
+        run: |
+          python -m learnflow_v3.creative_evidence_gate \
+            --artifact-dir "$RUNNER_TEMP/v3_39_offline_host_fixture" \
+            --output "$RUNNER_TEMP/v3_39_offline_evidence/synthetic_must_reject.json" \
+            --expect-synthetic-rejection
+      - name: Strict public provider endpoint GET, no secret or POST
+        timeout-minutes: 1
+        run: |
+          python learnflow_v3/openrouter_metadata_audit.py \
+            --output "$RUNNER_TEMP/v3_39_offline_evidence/public_parameters.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-39-offline-host-video-NOT-MODEL
+          path: ${{ runner.temp }}/v3_39_offline_host_fixture/
+          retention-days: 14
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-39-offline-parameter-and-negative-evidence
+          path: ${{ runner.temp }}/v3_39_offline_evidence/
+          retention-days: 14
+          if-no-files-found: warn
+
+  unique-preregistered-no-temperature-model-post:
+    needs: exact-head-offline-contract-and-real-host-sandbox
+    # Only ONE opt-in push commit after clean offline CI. No PR/ordinary push.
+    # Action reruns never issue another POST.
+    if: >-
+      github.event_name == 'push' &&
+      github.run_attempt == 1 &&
+      github.ref == 'refs/heads/chatgpt/v3-39-compatible-structured-scene-one-shot' &&
+      contains(github.event.head_commit.message, '[v3-39-single-compatible-model-post]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Required native AV tools, fail closed
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Bounded Python dependencies
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt
+      - name: Pinned no-network Manim Docker image
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Public GET preflight then EXACTLY ONE no-temperature GPT-6 Luna POST
+        timeout-minutes: 12
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python -m learnflow_v3.compatible_creative_trial \
+            --output-dir "$RUNNER_TEMP/v3_39_real_one_shot"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-39-one-authored-lesson-or-failclosed-receipt
+          path: ${{ runner.temp }}/v3_39_real_one_shot/
+          retention-days: 14
+          if-no-files-found: warn
