@@ -1,0 +1,139 @@
+name: V3-37 One Genuine Creative Manim Lesson
+
+on:
+  push:
+    branches: [chatgpt/v3-37-genuine-creative-scene-one-shot]
+  pull_request:
+    paths:
+      - "learnflow_v3/genuine_creative_trial.py"
+      - "learnflow_v3/creative_evidence_gate.py"
+      - "learnflow_v3/structured_scene_authoring.py"
+      - "learnflow_v3/creative_manim_runner.py"
+      - "tests/v3/test_v3_37_genuine_creative_trial.py"
+      - ".github/workflows/v3-37-genuine-creative-scene.yml"
+      - "benchmarks/learnflowbench/v3/v3_37_first_real_creative_scene_preregister.json"
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-offline-contracts-and-sandbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 32
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Native media tools and Computer Modern
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Bounded dependencies
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt pytest-asyncio pyyaml
+      - name: Strict schema plus genuine provenance and single-call mutation suite
+        timeout-minutes: 5
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_37_genuine_creative_trial.py \
+            tests/v3/test_v3_36_creative_readiness.py \
+            tests/v3/test_v3_35_public_provider_catalog.py \
+            tests/v3/test_v3_35_structured_scene.py \
+            tests/v3/test_v3_34_generative_ablation.py
+      - name: Frozen V3-16/V3-33/V3-32/V2 Core
+        timeout-minutes: 8
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_33_generalization.py \
+            tests/v3/test_v3_32_grounded_lesson.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: No-network pinned Manim Docker image
+        timeout-minutes: 12
+        run: |
+          timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+          docker image inspect manimcommunity/manim:v0.19.0 --format '{{.Id}}'
+      - name: Real native H264/AAC HOST fixture (never model evidence)
+        timeout-minutes: 8
+        run: |
+          python scripts/run_v3_34_ablation.py --mode offline-smoke \
+            --output-dir "$RUNNER_TEMP/v3_37_host_fixture"
+      - name: Production evidence gate MUST reject actual HOST fixture
+        timeout-minutes: 2
+        run: |
+          python -m learnflow_v3.creative_evidence_gate \
+            --artifact-dir "$RUNNER_TEMP/v3_37_host_fixture" \
+            --output "$RUNNER_TEMP/v3_37_evidence/host_fixture_rejected.json" \
+            --expect-synthetic-rejection
+      - name: Public catalog GET only, advisory not authenticated endpoint proof
+        continue-on-error: true
+        timeout-minutes: 1
+        run: |
+          python -m learnflow_v3.provider_catalog_preflight \
+            --output "$RUNNER_TEMP/v3_37_evidence/public_catalog.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-37-offline-real-host-fixture-NOT-MODEL
+          path: ${{ runner.temp }}/v3_37_host_fixture/
+          if-no-files-found: warn
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-37-readiness-receipts-NO-INFERENCE
+          path: ${{ runner.temp }}/v3_37_evidence/
+          if-no-files-found: warn
+          retention-days: 14
+
+  uniquely-approved-one-real-gpt6-luna-post:
+    needs: exact-head-offline-contracts-and-sandbox
+    # First tagged run #38014435770 had ZERO provider POST; apt install timed out.
+    # A separately preregistered one-time infra-recovery tag replaces it,
+    # preserving one total model POST budget. Only after green offline CI.
+    # PRs, normal pushes, reruns and documentation edits NEVER initiate inference.
+    if: >-
+      github.event_name == 'push' &&
+      github.run_attempt == 1 &&
+      github.ref == 'refs/heads/chatgpt/v3-37-genuine-creative-scene-one-shot' &&
+      contains(github.event.head_commit.message, '[v3-37-native-recovery-one-shot]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Required native FFmpeg eSpeak and CMU
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Bounded Python requirements (no retry on model API)
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt
+      - name: Pinned Manim sandbox
+        timeout-minutes: 12
+        run: |
+          timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Public catalog must verify then exactly one GPT-6 Luna schema POST
+        timeout-minutes: 10
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python -m learnflow_v3.genuine_creative_trial \
+            --output-dir "$RUNNER_TEMP/v3_37_real_model_one_shot"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-37-ONE-real-creative-scene-or-BLOCKED
+          path: ${{ runner.temp }}/v3_37_real_model_one_shot/
+          if-no-files-found: warn
+          retention-days: 14
