@@ -136,3 +136,64 @@ def test_outdir_never_overwritten(tmp_path):
     (tmp_path/"existing_response.json").write_text("{}")
     with pytest.raises(Blocked,match="V339_OUTPUT_NOT_EMPTY"):
         one_trial(ROOT,tmp_path,key="fake",public_probe=public_ok)
+
+
+def test_real_runner_uses_legacy_signature_only_for_old_mode(monkeypatch, tmp_path):
+    """Actual runner dispatch, both modes; every heavy dependency mocked, 0 HTTP."""
+    from learnflow_v3 import creative_manim_runner as runner
+    from learnflow_v3 import structured_scene_authoring as auth
+    from learnflow_v3.creative_manim_ablation import fixture_plan
+
+    observed = []
+    mock_usage = {
+        "stage": "REAL_MODEL_SCHEMA_CONSTRAINED_SCENE",
+        "model": "openai/gpt-6-luna",
+        "actual_provider_requests": 1,
+        "no_retry": True,
+        "no_fallback": True,
+    }
+    monkeypatch.setattr(auth, "preflight", lambda _root: {})
+    def fake_provider(key, out, *, sender=None, **kw):
+        assert key == "FAKE_KEY_NO_NETWORK"
+        observed.append(kw)
+        return {}, {**mock_usage, "temperature_parameter_sent": not kw.get("omit_temperature", False)}
+    monkeypatch.setattr(auth, "one_shot_structured", fake_provider)
+    monkeypatch.setattr(runner, "checked_manifest",
+                        lambda _root: {"topic_id": "lfb-018-math"})
+    monkeypatch.setattr(runner, "checked_live_plan",
+                        lambda *_args: fixture_plan())
+    monkeypatch.setattr(runner, "ablation_baselines",
+                        lambda *_args: {"A": {"status": "ABSTAIN"},
+                                        "B": {"status": "ABSTAIN"}})
+    monkeypatch.setattr(runner, "_audio", lambda out, plan: (
+        [1.0] * 4,
+        [{"start_seconds": i, "wav_samples": 16000, "wav_rate": 16000,
+          "frames": 15, "claim_ids": ["F1"], "narration": "fake"} for i in range(4)],
+        out / "narration.wav"))
+    monkeypatch.setattr(runner, "manim_code", lambda *_args: "# MOCK NO MODEL CODE")
+    def fake_docker(out, source):
+        p = out / "fake_internal.mp4"
+        p.write_bytes(b"not an actual video")
+        return p, {"network": "none"}
+    monkeypatch.setattr(runner, "_docker_manim", fake_docker)
+    def fake_mux(cmd, **kwargs):
+        Path(cmd[-1]).write_bytes(b"fake output")
+        class Result:
+            returncode = 0
+        return Result()
+    monkeypatch.setattr(runner.subprocess, "run", fake_mux)
+    monkeypatch.setattr(runner, "_codec_and_pixel_gates", lambda p, beats: {
+        "video_sha256": runner.sha(p), "frames": 150,
+        "aac_rms_per_beat": [0.05] * 4, "max_decoded_sample_delta": 2,
+        "replayed_decoded_samples": 5
+    })
+    for mode in ("live-structured", "live-structured-no-temperature"):
+        output = tmp_path / mode
+        output.mkdir()
+        receipt = runner.run(tmp_path, output, mode=mode,
+                             key="FAKE_KEY_NO_NETWORK")
+        assert receipt["model_plan_origin"] == (
+            "REAL_GPT6_LUNA_STRICT_JSON_SCHEMA_ONE_REQUEST")
+        assert receipt["provider_requests"] == 1
+    assert observed == [{}, {"omit_temperature": True}]
+    # Both generated receipts are MOCK ONLY. No model-origin PASS asserted.
