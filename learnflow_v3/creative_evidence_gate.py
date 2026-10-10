@@ -10,6 +10,9 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import subprocess
+from pydantic import ValidationError
+from learnflow_v3.creative_manim_ablation import CreativeScene, Blocked, manim_code
+from learnflow_v3.creative_manim_runner import FPS
 
 MODEL = "openai/gpt-6-luna"
 REAL_ORIGIN = "REAL_GPT6_LUNA_STRICT_JSON_SCHEMA_ONE_REQUEST"
@@ -99,7 +102,8 @@ def inspect_candidate(root: Path, *, probe=None) -> dict:
              and provider.get("provider_require_parameters") is True,
              "PROVIDER_PROVENANCE_NOT_CERTIFIED")
     _require(_hex_digest(provider.get("model_response_sha256"))
-             and _hex_digest(provider.get("strict_json_schema_sha256")),
+             and _hex_digest(provider.get("strict_json_schema_sha256"))
+             and _hex_digest(provider.get("validated_plan_canonical_sha256")),
              "MODEL_OR_SCHEMA_HASH_MISSING")
     _require(receipt.get("provider_requests") == 1
              and receipt.get("production") == "BLOCKED"
@@ -121,6 +125,13 @@ def inspect_candidate(root: Path, *, probe=None) -> dict:
     srt = _file(root, "creative_manim.srt")
     plan_json = _read_json(plan)
     _require(plan_json.get("model_author") == MODEL, "PLAN_AUTHOR_UNVERIFIED")
+    canonical = json.dumps(plan_json, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    _require(sha256(canonical).hexdigest() ==
+             provider["validated_plan_canonical_sha256"], "PROVIDER_PLAN_BRIDGE_MISMATCH")
+    try:
+        validated_plan = CreativeScene.model_validate(plan_json)
+    except (ValidationError, Blocked, ValueError, TypeError):
+        raise EvidenceRejected("SCENE_SEMANTICS_NOT_CERTIFIED") from None
     _require(_sha(plan) == receipt.get("plan_sha256")
              and _sha(code) == receipt.get("scene_sha256"),
              "PLAN_OR_SOURCE_DIGEST_MISMATCH")
@@ -132,9 +143,19 @@ def inspect_candidate(root: Path, *, probe=None) -> dict:
     rms = media.get("aac_rms_per_beat")
     _require(isinstance(beats, list) and len(beats) == 4
              and isinstance(rms, list) and len(rms) == 4
-             and all(isinstance(x, (int, float)) and x >= 0.002 for x in rms),
+             and all(isinstance(x, (int, float)) and x >= 0.002 for x in rms)
+             and all(isinstance(b, dict) and type(b.get("frames")) is int
+                     and b["frames"] > 0 for b in beats),
              "PHYSICAL_AUDIO_BEAT_EVIDENCE_MISSING")
-    _require(media.get("max_decoded_sample_delta", 0) > 0.9
+    durations = [b["frames"] / FPS for b in beats]
+    try:
+        rebuilt = manim_code(validated_plan, durations)
+    except (Blocked, ValueError, TypeError):
+        raise EvidenceRejected("MANIM_SOURCE_REPLAY_FAILED") from None
+    _require(code.read_text(encoding="utf-8") == rebuilt,
+             "MANIM_SOURCE_REPLAY_MISMATCH")
+    _require(isinstance(media.get("max_decoded_sample_delta"), (float, int))
+             and media["max_decoded_sample_delta"] > 0.9
              and media.get("replayed_decoded_samples") == 5,
              "VISUAL_CHANGE_EVIDENCE_MISSING")
     stream_data = (probe or _ffprobe)(mp4)
@@ -146,11 +167,15 @@ def inspect_candidate(root: Path, *, probe=None) -> dict:
              and audio[0].get("codec_name") == "aac"
              and (video[0].get("width"), video[0].get("height")) == (1280, 720),
              "ACTUAL_AV_CODEC_OR_RESOLUTION_MISMATCH")
-    frames = int(video[0].get("nb_frames") or 0)
-    _require(frames >= 120 and frames == media.get("frames"),
+    try:
+        frames = int(video[0].get("nb_frames") or 0)
+        duration = float(stream_data.get("format", {}).get("duration") or 0)
+    except (ValueError, TypeError):
+        raise EvidenceRejected("MALFORMED_MEDIA_METADATA") from None
+    _require(frames >= 120 and frames == media.get("frames")
+             and abs(frames - sum(b["frames"] for b in beats)) <= 20,
              "ACTUAL_FRAME_COUNT_MISMATCH")
-    _require(float(stream_data.get("format", {}).get("duration") or 0) > 0,
-             "MISSING_MEDIA_DURATION")
+    _require(duration > 0, "MISSING_MEDIA_DURATION")
     return {
         "checkpoint": "V3-36",
         "status": "MODEL_ORIGIN_TECHNICAL_EVIDENCE_PASS_NOT_EDUCATIONAL_PASS",
