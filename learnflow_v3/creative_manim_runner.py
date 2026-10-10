@@ -286,7 +286,7 @@ def run(root:Path,out:Path,*,mode:str,key:str="",sender=None,compatible_wire=Non
             # V3-42 only; preserve all earlier one-shot sender calls unchanged.
             from learnflow_v3.genuine_portable_response import one_shot_portable
             raw,usage=one_shot_portable(key,out,sender=sender)
-        elif mode in ("live-structured","live-structured-no-temperature","live-v342-portable"):
+        elif mode in ("live-structured","live-structured-no-temperature"):
             from learnflow_v3.structured_scene_authoring import preflight,one_shot_structured
             preflight(root)
             if mode == "live-structured-no-temperature":
