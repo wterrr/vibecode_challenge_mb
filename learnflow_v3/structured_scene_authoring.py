@@ -172,7 +172,7 @@ def _failure(out:Path,*,status:str,request_attempts:int,response_sha:str|None,
     (out/"v3_35_structured_failure.json").write_text(json.dumps(report,indent=2)+"\n")
 
 
-def one_shot_structured(key:str,out:Path,*,sender=None)->tuple[dict,dict]:
+def one_shot_structured(key:str,out:Path,*,sender=None,omit_temperature:bool=False)->tuple[dict,dict]:
     if not key or len(key)<10:
         _failure(out,status="BLOCKED_PRE_REQUEST",request_attempts=0,response_sha=None,
                  code="V335_API_KEY_NOT_CONFIGURED")
@@ -201,6 +201,12 @@ def one_shot_structured(key:str,out:Path,*,sender=None)->tuple[dict,dict]:
         },ensure_ascii=False)}
       ]
     }
+    # V3-39 separately preregistered the ONLY changed request field.
+    # V3-35/V3-37 retain their original temperature=0.65 by default.
+    if type(omit_temperature) is not bool:
+        raise Blocked("V339_PROTOCOL_VARIANT_NOT_BOOL")
+    if omit_temperature:
+        payload.pop("temperature")
     request=Request(API,data=json.dumps(payload).encode(),method="POST",
       headers={"Authorization":"Bearer "+key,"Content-Type":"application/json",
         "HTTP-Referer":"https://github.com/wterrr/vibecode_challenge_mb",
@@ -208,7 +214,8 @@ def one_shot_structured(key:str,out:Path,*,sender=None)->tuple[dict,dict]:
     (out/"v3_35_request_attempt.json").write_text(json.dumps({
       "checkpoint":"V3-35","model":MODEL,"attempted_http_requests":1,
       "response_format":"json_schema_strict","provider_require_parameters":True,
-      "provider_fallback":False,"retries":0
+      "provider_fallback":False,"retries":0,
+      "temperature_parameter_sent":not omit_temperature
     },indent=2)+"\n")
     try:
         with (sender or urlopen)(request,timeout=125) as conn:
@@ -269,6 +276,7 @@ def one_shot_structured(key:str,out:Path,*,sender=None)->tuple[dict,dict]:
       "provider_response_id_sha256":sha256(str(response.get("id","")).encode()).hexdigest(),
       "actual_provider_requests":1,"no_retry":True,"no_fallback":True,
       "provider_require_parameters":True,
+      "temperature_parameter_sent":not omit_temperature,
       "strict_json_schema_sha256":sha256(json.dumps(schema,sort_keys=True).encode()).hexdigest(),
       "normalization_only_transport_placeholders":True,
       "usage":usage
