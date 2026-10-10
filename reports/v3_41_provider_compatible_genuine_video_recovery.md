@@ -31,3 +31,10 @@ Run offline:
     python scripts/run_v3_41_offline_compatibility.py --output-dir /tmp/v341_compatible_synthetic
 
 Exact-HEAD CI outcome pending. Support of this schema by any particular live OpenRouter GPT-6 Luna endpoint remains NOT VERIFIED. No actual model MP4 has been created; quality and production remain BLOCKED. A new real POST still requires separately preregistered, explicitly approved authorization and cannot replay V3-39.
+
+
+## Offline implementation CI evidence (2026-10-10)
+
+Verified implementation run [#38025328017](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38025328017) **SUCCESS**: 155/155 V3-34..41 parity, boundary/adversarial and legacy tests passed; frozen V3-32/33 **27 passed, 1 skipped**, exact V2 Core/bench protocols PASS; actual no-network Docker Manim H264/AAC synthetic fixture decoded and **mandatory NOT_REAL_MODEL_SCENE** rejection PASS; strictly labeled [host-only artifact #11659293157](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38025328017/artifacts/11659293157). **Zero model POSTs and zero authenticated GETs**. Later mock-envelope tests extend coverage; exact current HEAD CI must be verified separately.
+
+The subsequent synthetic-provider-envelope regression commit only uses a Python callback (not a transport), explicitly records mock origins and tests truncation/multiple choices/invalid JSON/empty claims. New exact-head CI outcome pending. Genuine GPT-6 Luna authored MP4 **not obtained**; production BLOCKED.
