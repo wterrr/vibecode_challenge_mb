@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Native media tools and Computer Modern
-        timeout-minutes: 8
+        timeout-minutes: 11
         run: bash scripts/bootstrap_v3_30_native.sh
       - name: Bounded dependencies
         timeout-minutes: 7
@@ -110,7 +110,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Required native FFmpeg eSpeak and CMU
-        timeout-minutes: 8
+        timeout-minutes: 11
         run: bash scripts/bootstrap_v3_30_native.sh
       - name: Bounded Python requirements (no retry on model API)
         timeout-minutes: 7
