@@ -3,18 +3,30 @@ from __future__ import annotations
 
 from io import BytesIO
 from urllib.error import HTTPError
+import importlib.util
 import json
-import os
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
-from learnflow_v3.openrouter_metadata_audit import (
-    MODEL, CATALOG_URL, KEY_URL, MetadataInvalid,
-    probe_model_endpoints, probe_current_key, run_audit, _get
-)
-
+# Metadata diagnostics are self-contained stdlib source. Import this FILE by
+# path, not `learnflow_v3.openrouter_metadata_audit`: package __init__ eagerly
+# imports the V2 layout/QA stack (and kiwisolver), which is irrelevant here.
 ROOT = Path(__file__).resolve().parents[2]
+AUDIT = ROOT / "learnflow_v3" / "openrouter_metadata_audit.py"
+spec = importlib.util.spec_from_file_location("v3_38_metadata_standalone", AUDIT)
+assert spec is not None and spec.loader is not None
+audit = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(audit)
+MODEL, CATALOG_URL, KEY_URL, MetadataInvalid = (
+    audit.MODEL, audit.CATALOG_URL, audit.KEY_URL, audit.MetadataInvalid
+)
+probe_model_endpoints = audit.probe_model_endpoints
+probe_current_key = audit.probe_current_key
+run_audit = audit.run_audit
+_get = audit._get
 SECRET = "sk-or-v1-FAKE_DO_NOT_STORE_SECRET_123"
 
 
@@ -62,6 +74,29 @@ def _key():
             "expires_at": "2099-12-31T00:00:00Z",
         }
     }
+
+
+def test_module_loads_with_python_no_site_packages_and_no_learnflow_import():
+    # -S disables site packages. This catches accidental dependency creep.
+    command = [
+        sys.executable, "-S", "-c",
+        ("import importlib.util, sys; "
+         "p = sys.argv[1]; "
+         "s = importlib.util.spec_from_file_location('metadata_only', p); "
+         "m = importlib.util.module_from_spec(s); "
+         "s.loader.exec_module(m); "
+         "assert m.MODEL == 'openai/gpt-6-luna'; "
+         "assert 'learnflow_v3' not in sys.modules; "
+         "assert 'learnflow_v2' not in sys.modules; "
+         "assert 'kiwisolver' not in sys.modules; "
+         "assert 'pydantic' not in sys.modules"),
+        str(AUDIT),
+    ]
+    result = subprocess.run(
+        command, cwd=ROOT, capture_output=True, text=True, timeout=10,
+        check=False
+    )
+    assert result.returncode == 0, result.stderr
 
 
 def test_preregistration_before_code_and_no_post():
