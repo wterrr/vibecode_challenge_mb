@@ -240,7 +240,7 @@ def test_actual_runner_mode_reuses_original_compiler_with_only_mock_provider(mon
     def fake_portable(key,out,*,sender=None):
         assert key==FAKE_KEY
         calls.append("MOCK_RESPONSE_NOT_ACTUAL")
-        return fixture_plan().model_dump(mode="json"),fake_usage
+        return {**fixture_plan().model_dump(mode="json"),"model_author":"openai/gpt-6-luna"},fake_usage
     monkeypatch.setattr(transport,"one_shot_portable",fake_portable)
     monkeypatch.setattr(runner,"checked_manifest",lambda _:{"topic_id":"lfb-018-math"})
     monkeypatch.setattr(runner,"ablation_baselines",lambda *_:{
