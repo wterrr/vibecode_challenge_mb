@@ -93,13 +93,15 @@ jobs:
 
   uniquely-approved-one-real-gpt6-luna-post:
     needs: exact-head-offline-contracts-and-sandbox
-    # The unique tagged HEAD must be manually created once, AFTER offline CI.
+    # First tagged run #38014435770 had ZERO provider POST; apt install timed out.
+    # A separately preregistered one-time infra-recovery tag replaces it,
+    # preserving one total model POST budget. Only after green offline CI.
     # PRs, normal pushes, reruns and documentation edits NEVER initiate inference.
     if: >-
       github.event_name == 'push' &&
       github.run_attempt == 1 &&
       github.ref == 'refs/heads/chatgpt/v3-37-genuine-creative-scene-one-shot' &&
-      contains(github.event.head_commit.message, '[v3-37-one-shot]')
+      contains(github.event.head_commit.message, '[v3-37-native-recovery-one-shot]')
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
