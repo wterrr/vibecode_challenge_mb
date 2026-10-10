@@ -104,6 +104,9 @@ def test_mock_attestation_contract_not_a_real_video(tmp_path):
     ("synthetic", "NOT_REAL_MODEL_SCENE"),
     ("wrong_compiler_origin", "WRONG_MANIM_SOURCE_PROVENANCE"),
     ("response_hash_missing", "MODEL_OR_SCHEMA_HASH_MISSING"),
+    ("provider_bridge", "PROVIDER_PLAN_BRIDGE_MISMATCH"),
+    ("semantic_mutation", "SCENE_SEMANTICS_NOT_CERTIFIED"),
+    ("compiler_replay", "MANIM_SOURCE_REPLAY_MISMATCH"),
     ("retries", "PROVIDER_PROVENANCE_NOT_CERTIFIED"),
     ("no_one_shot", "PROVIDER_PROVENANCE_NOT_CERTIFIED"),
     ("sandbox_network", "SANDBOX_ATTESTATION_MISSING"),
@@ -128,6 +131,18 @@ def test_mutations_rejected_without_inference(tmp_path, mutation, expected):
         data["manim_source_origin"] = "HOST_FIXTURE_FROM_HOST_PRIMITIVE_DATA"
     elif mutation == "response_hash_missing":
         data["provider_receipt"]["model_response_sha256"] = None
+    elif mutation == "provider_bridge":
+        data["provider_receipt"]["validated_plan_canonical_sha256"] = "0" * 64
+    elif mutation == "semantic_mutation":
+        p = json.loads((tmp_path / "scene_plan.json").read_text())
+        p["beats"][0]["actions"][0]["target"] = "missing_graphic_id"
+        (tmp_path / "scene_plan.json").write_text(json.dumps(p))
+        data["plan_sha256"] = _sha((tmp_path / "scene_plan.json").read_bytes())
+        data["provider_receipt"]["validated_plan_canonical_sha256"] = _sha(
+            json.dumps(p, sort_keys=True, separators=(",", ":")).encode())
+    elif mutation == "compiler_replay":
+        (tmp_path / "generated_host_compiled_manim.py").write_text("# changed")
+        data["scene_sha256"] = _sha((tmp_path / "generated_host_compiled_manim.py").read_bytes())
     elif mutation == "retries":
         data["provider_receipt"]["no_retry"] = False
     elif mutation == "no_one_shot":
