@@ -24,10 +24,10 @@ else
     -o Acquire::Retries=0 -o Acquire::http::Timeout=20 \
     -o Acquire::https::Timeout=20 update -qq
   stage="apt-install"
-  echo "V330_NATIVE_DEPS=APT_INSTALL timeout=210s"
-  timeout -k 10s 210s sudo env DEBIAN_FRONTEND=noninteractive \
+  echo "V330_NATIVE_DEPS=APT_INSTALL timeout=360s no-recommends"
+  timeout -k 10s 360s sudo env DEBIAN_FRONTEND=noninteractive \
     apt-get -o DPkg::Lock::Timeout=30 -o Acquire::Retries=0 \
-    -y -qq install ffmpeg espeak-ng fonts-cmu fontconfig
+    -y -qq --no-install-recommends install ffmpeg espeak-ng fonts-cmu fontconfig
 fi
 stage="verify"
 echo "V330_NATIVE_DEPS=VERIFY"
