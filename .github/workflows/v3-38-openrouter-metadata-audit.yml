@@ -27,7 +27,7 @@ jobs:
       - name: Minimal dependency only, no model client
         timeout-minutes: 3
         run: |
-          python -m pip install --disable-pip-version-check --retries 1 --timeout 20 pytest
+          python -m pip install --disable-pip-version-check --retries 1 --timeout 20 pytest 'pydantic>=2,<3'
       - name: Zero-POST allowlist and redaction adversarial tests
         timeout-minutes: 2
         run: |
