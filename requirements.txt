@@ -13,3 +13,4 @@ pytest-asyncio
 kiwisolver==1.5.1
 
 psycopg[binary]>=3.2,<4
+jsonschema>=4.21,<5
