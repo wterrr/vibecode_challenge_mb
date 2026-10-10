@@ -254,3 +254,40 @@ def candidate_request_body() -> dict:
             {"role": "user", "content": json.dumps(domain_prompt, ensure_ascii=False)},
         ],
     }
+
+
+def offline_fake_provider_exchange(sender) -> tuple[dict, dict]:
+    """One injected LOCAL callback; no URL, key, HTTP, retries or model proof.
+
+    Rehearses the OpenRouter chat envelope and exact schema/semantic decoder.
+    Never treat the returned hash as a real provider response SHA.
+    """
+    from hashlib import sha256
+    if not callable(sender):
+        raise Blocked("V341_MOCK_SENDER_REQUIRED")
+    response = sender(candidate_request_body())
+    if not (isinstance(response, dict) and
+            isinstance(response.get("choices"), list) and
+            len(response["choices"]) == 1):
+        raise Blocked("V341_MOCK_BAD_ENVELOPE")
+    choice = response["choices"][0]
+    if not isinstance(choice, dict) or choice.get("finish_reason") != "stop":
+        raise Blocked("V341_MOCK_TRUNCATED_OR_FILTERED")
+    message = choice.get("message")
+    raw = message.get("content") if isinstance(message, dict) else None
+    if not isinstance(raw, str) or len(raw) > 45_000:
+        raise Blocked("V341_MOCK_BAD_CONTENT")
+    try:
+        wire = json.loads(raw)
+    except (ValueError, TypeError):
+        raise Blocked("V341_MOCK_BAD_JSON") from None
+    plan = decode_portable_wire(wire)
+    return plan, {
+        "stage": "SYNTHETIC_INJECTED_ENVELOPE_ONLY",
+        "model_request_attempts": 0,
+        "mock_only_content_sha256": sha256(raw.encode("utf-8")).hexdigest(),
+        "real_model_response_sha256": None,
+        "no_retry": True,
+        "provider_fallback": False,
+        "production": "BLOCKED",
+    }
