@@ -261,6 +261,11 @@ def one_shot_structured(key:str,out:Path,*,sender=None)->tuple[dict,dict]:
       "stage":"REAL_MODEL_SCHEMA_CONSTRAINED_SCENE",
       "model":MODEL,
       "model_response_sha256":response_hash,
+      # Bridge observed provider JSON to the strict normalized scene actually
+      # handed to the host compiler (not raw prompt/output preservation).
+      "validated_plan_canonical_sha256":sha256(json.dumps(
+          plan.model_dump(mode="json"),sort_keys=True,separators=(",",":")
+      ).encode("utf-8")).hexdigest(),
       "provider_response_id_sha256":sha256(str(response.get("id","")).encode()).hexdigest(),
       "actual_provider_requests":1,"no_retry":True,"no_fallback":True,
       "provider_require_parameters":True,
