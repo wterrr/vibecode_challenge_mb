@@ -1,0 +1,62 @@
+{
+  "checkpoint": "V3-42",
+  "title": "Single Genuine GPT-6 Luna Portable Scene → Manim Recovery",
+  "preregistered_before_implementation": true,
+  "parent_pr": 75,
+  "frozen_parent_head": "a7610bd5fcfb892bebd1bb6838de8841d5041820",
+  "parent_ci_run": 38025538022,
+  "frozen_topic_id": "lfb-018-math",
+  "exact_model": "openai/gpt-6-luna",
+  "one_shot_budget": {
+    "maximum_new_model_http_posts": 1,
+    "retries": 0,
+    "provider_fallback": false,
+    "temperature_parameter_present": false,
+    "provider_require_parameters": true,
+    "max_tokens": 6500
+  },
+  "wire_protocol": "v3-41-provider-portable-enum-slots-v1",
+  "activation_marker": "[v3-42-single-genuine-portable-post]",
+  "opt_in_only_after": [
+    "V3-41 parent exact-head CI 38025538022 SUCCESS",
+    "V3-42 standalone implementation exact-head offline CI SUCCESS",
+    "V3-42 synthetic provenance rejection SUCCESS",
+    "fixed public endpoint parameter GET preflight PASS",
+    "GitHub run_attempt = 1, push (NOT pull_request), exact branch, explicitly tagged activation commit once"
+  ],
+  "no_inference_until_tagged_activation": true,
+  "future_endpoint_keyword_guarantee": "UNKNOWN, public metadata does not prove native strict enforcement",
+  "frozen_request": [
+    "exact model",
+    "JSON Schema strict",
+    "no temperature",
+    "max_tokens=6500",
+    "no retry",
+    "no fallback",
+    "provider.require_parameters=true",
+    "V3-41 portable schema content generated from host bounds",
+    "same previously exposed frozen math topic"
+  ],
+  "new_hypothesis": "The provider-portable required beat/claim fields and host-derived numeric enums make V3-39 missing claims/oversized heights impossible under schema-conforming output, potentially allowing an authentic creative scene and MP4; actual endpoint behavior is unknown.",
+  "scientific_acceptance": [
+    "One real model HTTP response SHA with 1 attempt receipt",
+    "host Pydantic verified plan SHA",
+    "host-only Manim source, no model Python",
+    "no-network Docker",
+    "H264/AAC with actual decoded-frame/audio checks",
+    "strict evidence_gate provenance verification",
+    "negative model and synthetic cases fail closed",
+    "no claims of unbiased educational gain or six-domain generalization"
+  ],
+  "on_failure": "Consume the one allowed request; NO retry, switch, or synthetic fallback. Record sanitized reason and response hash only.",
+  "prohibited": [
+    "replay V3-39 consumed trial",
+    "unfrozen topic/model changes",
+    "merge main",
+    "store API key or raw model response text in artifact",
+    "call OpenRouter during tests or ordinary pushes",
+    "silent repair/clamp/inject missing claims"
+  ],
+  "production": "BLOCKED",
+  "human_pedagogical_quality": "NOT_ASSESSED"
+}

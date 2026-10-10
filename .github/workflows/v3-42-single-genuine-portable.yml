@@ -1,0 +1,129 @@
+name: V3-42 One Authorized Portable GPT-6 Luna Genuine Lesson
+
+on:
+  push:
+    branches: [chatgpt/v3-42-single-genuine-portable-lesson]
+  pull_request:
+    paths:
+      - "learnflow_v3/genuine_portable_response.py"
+      - "learnflow_v3/single_genuine_portable_trial.py"
+      - "learnflow_v3/creative_manim_runner.py"
+      - "learnflow_v3/compatible_scene_protocol.py"
+      - "tests/v3/test_v3_42_single_genuine_portable_trial.py"
+      - ".github/workflows/v3-42-single-genuine-portable.yml"
+      - "benchmarks/learnflowbench/v3/v3_42_single_genuine_portable_trial_preregister.json"
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-offline-schema-and-host-media:
+    runs-on: ubuntu-latest
+    timeout-minutes: 38
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install native Computer Modern font and AV tools
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Install bounded Python dependencies
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt pyyaml
+      - name: One request transport, hostile mock response, and V3-34..41 regression
+        timeout-minutes: 7
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_42_single_genuine_portable_trial.py \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py \
+            tests/v3/test_v3_39_compatible_creative_trial.py \
+            tests/v3/test_v3_38_openrouter_metadata_audit.py \
+            tests/v3/test_v3_37_genuine_creative_trial.py \
+            tests/v3/test_v3_36_creative_readiness.py \
+            tests/v3/test_v3_35_public_provider_catalog.py \
+            tests/v3/test_v3_35_structured_scene.py \
+            tests/v3/test_v3_34_generative_ablation.py
+      - name: Frozen six-unseen V3 evaluation and V2 Core protocol
+        timeout-minutes: 8
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_33_generalization.py \
+            tests/v3/test_v3_32_grounded_lesson.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Native no-network Manim Docker genuine media path tested on synthetic, never called model
+        timeout-minutes: 16
+        run: |
+          timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+          python scripts/run_v3_41_offline_compatibility.py \
+            --output-dir "$RUNNER_TEMP/v3_42_host_only_synthetic"
+      - name: Read-only public provider endpoints; no credentials and no model POST
+        timeout-minutes: 1
+        run: |
+          python learnflow_v3/openrouter_metadata_audit.py \
+            --output "$RUNNER_TEMP/v3_42_offline_evidence/public_capability.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-42-offline-synthetic-NOT-MODEL
+          path: ${{ runner.temp }}/v3_42_host_only_synthetic/
+          retention-days: 14
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-42-offline-provider-metadata-NO-POST
+          path: ${{ runner.temp }}/v3_42_offline_evidence/
+          retention-days: 14
+          if-no-files-found: warn
+
+  uniquely-authorized-one-genuine-gpt6-luna-post:
+    needs: exact-head-offline-schema-and-host-media
+    # Guard both event and unique preregistered activation commit.
+    # A GitHub rerun cannot issue another POST; once consumed never retag/retry.
+    if: >-
+      github.event_name == 'push' &&
+      github.run_attempt == 1 &&
+      github.ref == 'refs/heads/chatgpt/v3-42-single-genuine-portable-lesson' &&
+      contains(github.event.head_commit.message, '[v3-42-single-genuine-portable-post]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Native Computer Modern and AV tools
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Project dependencies, bounded
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt
+      - name: Pinned no-network Manim image
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Public endpoint preflight then EXACTLY ONE paid GPT-6 Luna portable strict POST
+        timeout-minutes: 12
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python -m learnflow_v3.single_genuine_portable_trial \
+            --output-dir "$RUNNER_TEMP/v3_42_one_real_model_attempt"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-42-genuine-model-video-or-failclosed-receipt
+          path: ${{ runner.temp }}/v3_42_one_real_model_attempt/
+          retention-days: 14
+          if-no-files-found: warn
