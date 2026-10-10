@@ -195,3 +195,44 @@ def test_audit_does_not_claim_model_provenance():
     assert a["model_authored_mp4"] == "NOT_OBTAINED"
     assert a["strict_endpoint_native_enforcement"] == "NOT_VERIFIED"
     assert a["production"] == "BLOCKED"
+
+
+
+def test_exactly_one_offline_injected_provider_envelope_is_not_real_model():
+    from learnflow_v3.compatible_scene_protocol import offline_fake_provider_exchange
+    fake_wire = offline_synthetic_wire_fixture()
+    calls = []
+    def fake_sender(body):
+        calls.append(body)
+        return {"choices": [{"finish_reason": "stop",
+                 "message": {"content": json.dumps(fake_wire)}}]}
+    plan, receipt = offline_fake_provider_exchange(fake_sender)
+    assert len(calls) == 1
+    assert calls[0] == candidate_request_body()
+    assert plan["beats"][0]["claim_ids"] == ["F1"]
+    assert receipt["stage"] == "SYNTHETIC_INJECTED_ENVELOPE_ONLY"
+    assert receipt["model_request_attempts"] == 0
+    assert receipt["real_model_response_sha256"] is None
+    assert receipt["production"] == "BLOCKED"
+
+
+@pytest.mark.parametrize("mode", [
+    "truncated", "multiple_choices", "unparseable", "empty_claim", "broken_schema"])
+def test_offline_fake_provider_fails_closed_and_never_retries(mode):
+    from learnflow_v3.compatible_scene_protocol import offline_fake_provider_exchange
+    fake = offline_synthetic_wire_fixture()
+    if mode == "empty_claim":
+        fake["beats"]["beat_1"]["claim_primary"] = ""
+    if mode == "broken_schema":
+        fake["objects"][0]["height"] = 9.0
+    content = "{bad json" if mode == "unparseable" else json.dumps(fake)
+    choice = {"finish_reason": "length" if mode == "truncated" else "stop",
+              "message": {"content": content}}
+    reply = {"choices": [choice, deepcopy(choice)] if mode == "multiple_choices" else [choice]}
+    attempts = []
+    def fake_sender(body):
+        attempts.append(1)
+        return reply
+    with pytest.raises(Blocked, match="V341_"):
+        offline_fake_provider_exchange(fake_sender)
+    assert len(attempts) == 1
