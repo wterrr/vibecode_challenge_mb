@@ -216,3 +216,41 @@ def audit_protocol() -> dict:
         "pedagogical_quality": "NOT_ASSESSED",
         "production": "BLOCKED",
     }
+
+
+def candidate_request_body() -> dict:
+    """Pure deterministic future request preview; NO transport or credentials."""
+    from learnflow_v3.creative_manim_runner import MODEL, prompt
+    domain_prompt = deepcopy(prompt())
+    # Old V3-34 hint describes legacy claim_ids/wire and model_author field.
+    # It is only a hint, not an instruction in the V3-41 protocol.
+    domain_prompt.pop("schema", None)
+    domain_prompt["output_protocol"] = VERSION
+    domain_prompt["wire_rules"] = [
+        "Return exactly four ordered beat_1..beat_4 objects.",
+        "Each beat MUST select its own claim_primary F1/F2/F3. Optional secondary/tertiary slots are empty strings or model-chosen approved claim IDs.",
+        "Do not emit claim_ids arrays. Never leave claim_primary empty.",
+        "Use ONLY the offered numeric enums for x,y,width,height,radius; do not round or clip after the response.",
+        "Keep graphic IDs unique and show each target before any move/emphasize/remove.",
+        "Every action requires target,x,y; set unused x/y to 0 and wait target to an empty string.",
+        "Do not emit model_author or executable Python.",
+        "Four beats together must cover all approved factual claim IDs.",
+    ]
+    return {
+        "model": MODEL,
+        "max_tokens": 6500,
+        "provider": {"allow_fallbacks": False, "require_parameters": True},
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "learnflow_creative_scene_v341",
+                "strict": True,
+                "schema": portable_wire_schema(),
+            },
+        },
+        "messages": [
+            {"role": "system", "content":
+             "Author an original fact-grounded educational Manim storyboard in JSON data only; no executable code. The schema is mandatory. Do not fabricate factual sources."},
+            {"role": "user", "content": json.dumps(domain_prompt, ensure_ascii=False)},
+        ],
+    }
