@@ -1,0 +1,94 @@
+name: V3-36 Genuine Creative Evidence Readiness - NO INFERENCE
+
+on:
+  push:
+    branches: [chatgpt/v3-36-provider-creative-readiness]
+  pull_request:
+    paths:
+      - "learnflow_v3/creative_evidence_gate.py"
+      - "learnflow_v3/creative_manim_runner.py"
+      - "scripts/run_v3_34_ablation.py"
+      - "tests/v3/test_v3_36_creative_readiness.py"
+      - ".github/workflows/v3-36-creative-readiness.yml"
+      - "benchmarks/learnflowbench/v3/v3_36_creative_readiness_preregister.json"
+
+permissions:
+  contents: read
+
+# Deliberately no OPENROUTER_API_KEY, no paid/model POST job,
+# no token or tag dispatch and no production deploy.
+jobs:
+  offline-real-media-and-negative-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Native codecs/narrator/Computer Modern
+        timeout-minutes: 8
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Bounded Python requirements
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt pytest-asyncio pyyaml
+      - name: V3-36 no-inference provenance + mutation + inherited schema tests
+        timeout-minutes: 5
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_36_creative_readiness.py \
+            tests/v3/test_v3_35_public_provider_catalog.py \
+            tests/v3/test_v3_35_structured_scene.py \
+            tests/v3/test_v3_34_generative_ablation.py
+      - name: Frozen V3-33 / V3-32 / benchmark / V2 Core regressions
+        timeout-minutes: 8
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_33_generalization.py \
+            tests/v3/test_v3_32_grounded_lesson.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Real offline pinned Manim sandbox image
+        timeout-minutes: 12
+        run: |
+          timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+          docker image inspect manimcommunity/manim:v0.19.0 --format '{{.Id}}'
+      - name: Render real synthetic-host H264/AAC MP4 (NEVER model evidence)
+        timeout-minutes: 8
+        run: |
+          python scripts/run_v3_34_ablation.py --mode offline-smoke \
+            --output-dir "$RUNNER_TEMP/v3_36_synthetic_only"
+      - name: Mandatory reject actual synthetic Manim output as AI-created
+        timeout-minutes: 2
+        run: |
+          python -m learnflow_v3.creative_evidence_gate \
+            --artifact-dir "$RUNNER_TEMP/v3_36_synthetic_only" \
+            --output "$RUNNER_TEMP/v3_36_evidence/synthetic_rejected.json" \
+            --expect-synthetic-rejection
+      - name: No-inference public endpoint catalog (advisory only)
+        continue-on-error: true
+        timeout-minutes: 1
+        run: |
+          python -m learnflow_v3.provider_catalog_preflight \
+            --output "$RUNNER_TEMP/v3_36_evidence/public_endpoint_catalog.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-36-evidence-rejections-and-public-catalog-NO-INFERENCE
+          path: ${{ runner.temp }}/v3_36_evidence/
+          retention-days: 14
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-36-synthetic-host-technical-fixture-NOT-MODEL
+          path: ${{ runner.temp }}/v3_36_synthetic_only/
+          retention-days: 14
+          if-no-files-found: warn
