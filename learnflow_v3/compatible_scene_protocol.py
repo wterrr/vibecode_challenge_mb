@@ -96,7 +96,8 @@ def portable_wire_schema() -> dict:
     for name in ("x", "y", "width", "height", "radius"):
         grid = "0.1" if name in ("x", "y") else "0.05"
         graphic[name]["enum"] = _finite_numbers(
-            bounded_graphic[name], grid, default=Graphic.model_fields[name].default)
+            bounded_graphic[name], grid, default=(None if Graphic.model_fields[name].is_required()
+                                                 else Graphic.model_fields[name].default))
     for name in ("x", "y"):
         motion[name]["enum"] = _finite_numbers(
             bounded_motion[name], "0.1", default=Motion.model_fields[name].default)
