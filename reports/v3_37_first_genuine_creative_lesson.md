@@ -44,3 +44,13 @@ This commit is the **one unique opt-in** under the user's authorization, not a r
 - Separate pre-replacement registration `benchmarks/learnflowbench/v3/v3_37_native_setup_recovery_preregister.json` fixes prior run ID, zero POST, next unique tag, and total maximum ONE actual inference POST across initial and recovery workflows.
 - Old `[v3-37-one-shot]` marker is retired and **must not be used again**. The only authorized replacement marker `[v3-37-native-recovery-one-shot]` can be used ONCE after amended no-tag exact-HEAD offline CI PASS. Paid job still requires success of full offline tests/sandbox on the recovery-tagged SHA and `github.run_attempt==1`. No model retries.
 - New code-head offline CI for the bounded native-install patch and recovery scheme is **PENDING**, so no replacement tag is authorized yet. Production BLOCKED.
+
+## Native recovery opt-in — one authorized model attempt (2026-10-10)
+
+- Pre-tag exact code HEAD `a63956af45e75709cdf5f8b9795887a8f0a4c57d` validated with two green offline jobs:
+  [push run #38014859427](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38014859427) **SUCCESS** and
+  [PR run #38014863137](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38014863137) **SUCCESS**.
+  Each executed strict schema/provenance/mutation tests, frozen V3-16/V3-33/V3-32/V2 Core checks, a real Manim Docker synthetic MP4, and mandatory rejection of that synthetic MP4 as model-origin.
+- Original tagged [#38014435770](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38014435770) confirmed paid job **SKIPPED** because apt timed out pre-inference; no model POST was made.
+- The separately preregistered infra-only recovery is now **authorized once** on this new tagged commit. The paid job must remain downstream of successful same-HEAD offline CI; if any prerequisite fails, it is SKIPPED without inference.
+- Exactly one `openai/gpt-6-luna` strict JSON-schema provider POST maximum, no fallback, no retry; no other tagged commits/reruns. Do not infer success or model failure until final downloaded receipt and MP4 evidence are inspected. Production BLOCKED.
