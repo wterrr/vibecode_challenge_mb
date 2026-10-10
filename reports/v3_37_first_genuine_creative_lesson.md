@@ -34,3 +34,13 @@ Technical real-model MP4: **NOT RUN yet** as of implementation; CI and exact HEA
 This commit is the **one unique opt-in** under the user's authorization, not a repeated V3-34/V3-35 attempt. It may execute exactly ONE genuine `openai/gpt-6-luna` inference POST after the same-tagged-HEAD offline gate succeeds; only `github.run_attempt == 1`, no retries, fallback, alternate models or changed frozen topic/schema. The public catalog GET must be consistent or the model stage stops BEFORE the paid POST. The actual paid outcome and MP4 existence are **PENDING**, not predeclared. Any later documentation updates MUST NOT include this opt-in tag in a commit message. Never rerun the one-shot via Actions.
 
 **On final review:** download real artifact and verify `v3_35_request_attempt.json`, provider response and canonical scene SHA, full Manim source/provenance, genuine MP4 SHA, and media/visual evidence. Do not infer new facts, model competence or teaching quality from a failed HTTP call. Production stays BLOCKED.
+
+## First authorized tagged run — Infrastructure failure BEFORE model POST
+
+- Initial opt-in commit `aa6d041c284e60e18eee7412fbb569fffed3e943`.
+- Exact [GitHub Actions #38014435770](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38014435770) **FAIL** in **native apt-install**, `timeout=210s`, exit 124. This was after successful checkout and Python setup and BEFORE dependency installation, any model inference, or Manim fixture.
+- The downstream paid job `uniquely-approved-one-real-gpt6-luna-post` is explicitly **SKIPPED**. Thus **0 provider POST requests**, no model response or MP4, and no consumed model-inference trial. This is NOT model failure, schema failure, provider HTTP 404 or quality evidence.
+- Infra repair: shared preflight script changes apt installation to `--no-install-recommends` with bounded 360s timeout, workflow native step bounded to 11 minutes. Frozen model, topic, schema and safety contract unchanged.
+- Separate pre-replacement registration `benchmarks/learnflowbench/v3/v3_37_native_setup_recovery_preregister.json` fixes prior run ID, zero POST, next unique tag, and total maximum ONE actual inference POST across initial and recovery workflows.
+- Old `[v3-37-one-shot]` marker is retired and **must not be used again**. The only authorized replacement marker `[v3-37-native-recovery-one-shot]` can be used ONCE after amended no-tag exact-HEAD offline CI PASS. Paid job still requires success of full offline tests/sandbox on the recovery-tagged SHA and `github.run_attempt==1`. No model retries.
+- New code-head offline CI for the bounded native-install patch and recovery scheme is **PENDING**, so no replacement tag is authorized yet. Production BLOCKED.
