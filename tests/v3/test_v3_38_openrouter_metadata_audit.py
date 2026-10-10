@@ -47,11 +47,11 @@ def _catalog():
                 {"provider_name": "OpenAI",
                  "tag": "openai",
                  "supported_parameters": [
-                     "response_format", "structured_outputs", "max_tokens"]},
+                     "response_format", "structured_outputs", "temperature", "max_tokens"]},
                 {"provider_name": "Azure",
                  "tag": "azure",
                  "supported_parameters": [
-                     "response_format", "structured_outputs",
+                     "response_format", "structured_outputs", "temperature",
                      "max_completion_tokens"]},
                 {"provider_name": "Other",
                  "supported_parameters": ["tools"]},
@@ -129,6 +129,11 @@ def test_exact_two_gets_no_secret_in_receipt():
     assert r["public_catalog"]["schema_advertised_count"]==2
     assert r["public_catalog"]["schema_and_max_tokens_count"]==1
     assert r["public_catalog"]["schema_and_max_completion_tokens_count"]==1
+    assert r["public_catalog"]["v337_all_advertised_generation_params_count"]==1
+    assert r["public_catalog"]["alternate_completion_limit_all_advertised_params_count"]==1
+    assert r["public_catalog"]["v337_generation_params"]==[
+        "max_tokens", "response_format", "structured_outputs", "temperature"]
+    assert r["public_catalog"]["metadata_cannot_certify_json_schema_strict"] is True
     assert r["key_metadata"]["state"]=="KEY_AUTHENTICATED_METADATA_ONLY"
     assert r["key_metadata"]["key_limit_remaining_state"]=="POSITIVE"
     assert r["key_metadata"]["key_type"]=="INFERENCE"
@@ -180,6 +185,22 @@ def test_http_key_errors_no_body_leak(http_code,expected):
     assert result["state"]==expected
     assert result["key_authenticated"] is False
     assert "SENSITIVE_SERVER_MESSAGE" not in json.dumps(result)
+
+
+def test_exact_wire_coverage_requires_all_advertised_fields():
+    cat = _catalog()
+    # If all endpoints lack temperature (but still list JSON schema),
+    # the EXACT V3-37 payload has no metadata-qualified candidate.
+    for endpoint in cat["data"]["endpoints"]:
+        if isinstance(endpoint.get("supported_parameters"), list):
+            endpoint["supported_parameters"] = [
+                x for x in endpoint["supported_parameters"] if x != "temperature"
+            ]
+    result = probe_model_endpoints(sender=lambda *a, **k: _response(cat))
+    assert result["schema_advertised_count"] == 2
+    assert result["v337_all_advertised_generation_params_count"] == 0
+    assert result["alternate_completion_limit_all_advertised_params_count"] == 0
+    assert result["account_eligibility_certified"] is False
 
 
 def test_malformed_untrusted_provider_name_and_catalog_mismatch():
