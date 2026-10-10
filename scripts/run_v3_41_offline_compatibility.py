@@ -15,7 +15,8 @@ if str(ROOT) not in sys.path:
 
 from learnflow_v3.creative_manim_ablation import Blocked
 from learnflow_v3.compatible_scene_protocol import (
-    audit_protocol, candidate_request_body, offline_synthetic_wire_fixture)
+    audit_protocol, candidate_request_body, offline_synthetic_wire_fixture,
+    portable_wire_schema)
 from learnflow_v3.creative_manim_runner import run
 from learnflow_v3.creative_evidence_gate import EvidenceRejected, inspect_candidate
 
@@ -66,6 +67,8 @@ def main() -> None:
             raise SystemExit("V3_41=BLOCKED_WRONG_EVIDENCE_REJECTION") from None
     else:
         raise SystemExit("V3_41=BLOCKED_SYNTHETIC_ACCEPTED_AS_MODEL")
+    (args.output_dir / "v3_41_candidate_strict_wire_schema.json").write_text(
+        json.dumps(portable_wire_schema(), indent=2) + "\n")
     report = {
         **audit_protocol(),
         "native_h264_aac_synthetic_host_fixture": "PASS_NOT_MODEL",
