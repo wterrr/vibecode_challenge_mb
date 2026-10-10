@@ -270,10 +270,10 @@ def checked_live_plan(raw:dict,usage:dict,out:Path)->CreativeScene:
     return plan
 
 
-def run(root:Path,out:Path,*,mode:str,key:str="",sender=None)->dict:
+def run(root:Path,out:Path,*,mode:str,key:str="",sender=None,compatible_wire=None)->dict:
     if not out.is_dir() or any(out.iterdir()):raise Blocked("V334_OUTPUT_NONEMPTY")
     prereg=checked_manifest(root)
-    if mode not in ("offline-smoke","live-model","live-structured",
+    if mode not in ("offline-smoke","offline-v341-compatible","live-model","live-structured",
                      "live-structured-no-temperature"):
         raise Blocked("V334_UNKNOWN_MODE")
     usage=None
@@ -295,7 +295,18 @@ def run(root:Path,out:Path,*,mode:str,key:str="",sender=None)->dict:
         origin=("REAL_GPT6_LUNA_STRICT_JSON_SCHEMA_ONE_REQUEST"
                 if mode in ("live-structured","live-structured-no-temperature")
                 else "REAL_GPT6_LUNA_ONE_REQUEST")
+    elif mode == "offline-v341-compatible":
+        # V3-41: intentionally SYNTHETIC wire-to-host native Manim rehearsal.
+        # There is no provider URL, key or model-authored provenance on this path.
+        if compatible_wire is None or key or sender is not None:
+            raise Blocked("V341_OFFLINE_WIRE_OR_NO_NETWORK_CONTRACT")
+        from learnflow_v3.compatible_scene_protocol import decode_portable_wire
+        normalized = decode_portable_wire(compatible_wire)
+        plan = CreativeScene.model_validate({**normalized, "model_author": None})
+        origin = "SYNTHETIC_V341_COMPAT_WIRE_FIXTURE_NOT_REAL_MODEL"
     else:
+        if compatible_wire is not None:
+            raise Blocked("V341_OFFLINE_WIRE_NOT_ALLOWED_IN_LEGACY_MODE")
         plan=fixture_plan()
         origin="SYNTHETIC_HOST_FIXTURE_NOT_REAL_MODEL"
     baselines=ablation_baselines(root,plan)
