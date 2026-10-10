@@ -30,3 +30,7 @@
 - Production: **BLOCKED**.
 
 **Future model request must be separately authorized and preregistered.** Do not use a successful key metadata GET as justification to auto-retry.
+
+## One read-only opt-in authorized, gated on same-HEAD offline CI
+
+Pre-tag code HEAD `6770e68f59221a93644a28118f9bccb43c001fc1`. This entry authorizes exactly one tagged CI job to read OpenRouter public metadata and the current GitHub Secret key's **metadata**, no inference. The actual authenticated GET does **not** run until the tagged-commit offline adversarial tests have passed; otherwise the dependent secret job is SKIPPED. The key remains masked, and only fixed sanitized enums and public endpoint counts may be uploaded. This is a GET-only metadata observation, not authorization for any future model or account-management action. New results must be recorded after verifying same-HEAD job and sanitized artifact. Do not reuse/reissue this tagged commit.
