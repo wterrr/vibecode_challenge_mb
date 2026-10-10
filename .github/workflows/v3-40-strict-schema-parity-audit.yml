@@ -31,6 +31,9 @@ jobs:
         run: |
           timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
             -r requirements.txt "jsonschema>=4.21,<5"
+      - name: Bootstrap actual Computer Modern fonts and AV tools before frozen render tests
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
       - name: Full offline candidate-schema parity and no-repair regressions
         timeout-minutes: 7
         run: |
@@ -59,7 +62,6 @@ jobs:
       - name: Verify model provenance remains host-only in synthetic media
         timeout-minutes: 16
         run: |
-          bash scripts/bootstrap_v3_30_native.sh
           timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
           python scripts/run_v3_34_ablation.py --mode offline-smoke \
             --output-dir "$RUNNER_TEMP/v3_40_host_only_fixture"
