@@ -27,7 +27,11 @@ jobs:
       - name: Minimal dependency only, no model client
         timeout-minutes: 3
         run: |
-          python -m pip install --disable-pip-version-check --retries 1 --timeout 20 pytest 'pydantic>=2,<3'
+          python -m pip install --disable-pip-version-check --retries 1 --timeout 20 pytest
+      - name: Standalone metadata import with no site packages
+        timeout-minutes: 1
+        run: |
+          python -S -c "import importlib.util, sys; p='learnflow_v3/openrouter_metadata_audit.py'; s=importlib.util.spec_from_file_location('metadata_only',p); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); assert m.MODEL == 'openai/gpt-6-luna'; assert 'learnflow_v2' not in sys.modules and 'learnflow_v3' not in sys.modules"
       - name: Zero-POST allowlist and redaction adversarial tests
         timeout-minutes: 2
         run: |
@@ -35,7 +39,7 @@ jobs:
       - name: Public endpoints metadata GET only, no secret
         timeout-minutes: 1
         run: |
-          python -m learnflow_v3.openrouter_metadata_audit \
+          python learnflow_v3/openrouter_metadata_audit.py \
             --output "$RUNNER_TEMP/v3_38_public/metadata.json"
       - uses: actions/upload-artifact@v4
         if: always()
@@ -69,7 +73,7 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
-          python -m learnflow_v3.openrouter_metadata_audit \
+          python learnflow_v3/openrouter_metadata_audit.py \
             --output "$RUNNER_TEMP/v3_38_key_metadata/sanitized_findings.json"
       - uses: actions/upload-artifact@v4
         if: always()
