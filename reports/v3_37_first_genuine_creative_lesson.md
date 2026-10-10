@@ -54,3 +54,23 @@ This commit is the **one unique opt-in** under the user's authorization, not a r
 - Original tagged [#38014435770](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38014435770) confirmed paid job **SKIPPED** because apt timed out pre-inference; no model POST was made.
 - The separately preregistered infra-only recovery is now **authorized once** on this new tagged commit. The paid job must remain downstream of successful same-HEAD offline CI; if any prerequisite fails, it is SKIPPED without inference.
 - Exactly one `openai/gpt-6-luna` strict JSON-schema provider POST maximum, no fallback, no retry; no other tagged commits/reruns. Do not infer success or model failure until final downloaded receipt and MP4 evidence are inspected. Production BLOCKED.
+
+## FINAL — One real provider POST attempted; HTTP 404; NO-GO (2026-10-10)
+
+**Unique recovery opt-in HEAD:** `f6a2f3af2bfd5dce6793c5864a30a02d919b78cf`.
+**Exact GitHub Actions:** [#38017323094](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38017323094).
+**Live failure artifact:** [#11656444444](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38017323094/artifacts/11656444444).
+
+Observed jobs at exact HEAD:
+- `exact-head-offline-contracts-and-sandbox` **SUCCESS**, including strict schema and mutation/regression tests, frozen benchmark/Core, actual Docker Manim synthetic H264/AAC render and `NOT_REAL_MODEL_SCENE` fixture rejection.
+- `uniquely-approved-one-real-gpt6-luna-post` **FAIL**. Native dependencies, Python and pinned Docker image succeeded. At live call, log gives `V3_37=BLOCKED V335_HTTP_404` and job exits 2.
+
+The actual downloaded failure artifact (three JSON receipts) records:
+- `v3_35_request_attempt.json`: **one outbound model HTTP POST attempted** with exact model `openai/gpt-6-luna`, strict JSON-schema, `provider.require_parameters=true`, no fallback or retry.
+- `v3_35_structured_failure.json`: `status=BLOCKED_PROVIDER_HTTP`, `model_request_attempts=1`, `sanitized_error_code=V335_HTTP_404`, `model_response_sha256=null`, `provider_reported_usage=null`, no schema-validation errors, `production=BLOCKED`. The inherited V3-35 filename refers to shared structured transport, **not** a new V3-35 experiment.
+- `v3_37_failure.json`: `checkpoint=V3-37`, `state=BLOCKED`, `sanitized_error_code=V335_HTTP_404`, no retry or fallback, production BLOCKED.
+- **No model-authored scene_plan.json, no provider-generated Manim scene, no genuine model-created MP4.** The offline synthetic HOST video exists solely as a mock/technical artifact and is not genuine model evidence.
+
+**Scientific interpretation:** This is an HTTP 404 returned for this routed/required-parameters request; it does not establish the precise cause. Public model catalog support does not prove authenticated provider/key/account/region routing on this POST. The data do NOT demonstrate a model creativity/teaching failure, nor do they support a model-authored-video PASS. Unlike the first tagged run that failed in native apt before inference, **the sole separately registered replacement paid-attempt budget is now CONSUMED**. Do not issue any retry, change `require_parameters`, silently change provider/model or insert another opt-in tag without an explicit new preregistered authorization.
+
+**Verdict:** V3-37 offline engineering PASS, live provider compatibility **NO-GO / BLOCKED_BY_HTTP_404**, model-authored MP4 **0**, education/visual superiority NOT ASSESSED, production BLOCKED, Draft PR unchanged.
