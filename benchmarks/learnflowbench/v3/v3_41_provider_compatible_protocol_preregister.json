@@ -1,0 +1,51 @@
+{
+  "checkpoint": "V3-41",
+  "title": "Provider-Compatible Structured Outputs & Genuine Video Recovery",
+  "preregistered_before_implementation": true,
+  "parent_pr": 74,
+  "frozen_parent_sha": "491e6378d6323ae3a030d308406e9b846a06e80c",
+  "frozen_topic_id": "lfb-018-math",
+  "model": "openai/gpt-6-luna",
+  "observed_v339_response_sha256": "ca4b439ee25a6db305ceccf52532544678b015aff2668a3bbb2f155b6e3f9d0e",
+  "prior_real_trials_consumed": [
+    "V3-37",
+    "V3-39"
+  ],
+  "first_phase": "OFFLINE ONLY",
+  "current_authorization": {
+    "model_inference_http_posts": 0,
+    "authenticated_provider_gets": 0,
+    "no_network_provider": true
+  },
+  "future_live_trial": {
+    "requires_separate_explicit_authorization": true,
+    "requires_offline_exact_head_ci_success": true,
+    "maximum_posts_if_authorized_later": 1,
+    "no_fallback": true,
+    "retry": 0,
+    "implemented_in_this_phase": false
+  },
+  "hypotheses": [
+    "Required scalar claim slots enforce one-or-more explicit model-authored verified claims without relying on minItems; empty optional slots are transport placeholders, never synthesized semantic claims.",
+    "Finite numeric enums generated from Pydantic bounds reject out-of-range geometry at schema level without relying on maximum/minimum; preserve meaningful composition granularity.",
+    "Fixed four named beat fields prevent absent/short beat arrays without relying on minItems/maxItems.",
+    "Host-only cross-field, temporal, mathematical and provenance invariants remain fail-closed."
+  ],
+  "acceptance": [
+    "No changes to V3-39 strict_wire_schema or one_shot_structured or consumed workflow.",
+    "Candidate schema uses only type, properties, required, additionalProperties=false, enum, items, description; no min/max keywords, pattern or conditional schema.",
+    "Numeric finite enums are computed from Pydantic field bounds with deterministic decimals; no manually copied 2.4 or 1 values; total enum budget <=1000.",
+    "A model cannot encode empty primary factual claim or height exceeding Pydantic max in schema-valid candidate.",
+    "Decoder is transport-only and strict; no generated claims, clamping or semantic rewrite; host Pydantic unchanged.",
+    "Offline mock sender and actual synthetic host Manim render with true H264/AAC decoded frame validation and forced NOT_REAL_MODEL gate.",
+    "Legacy V3-34..40 tests, frozen V3-33 unseen and V2 Core keep passing.",
+    "Document real endpoint provider keyword support as unknown; no model-origin MP4 or pedagogical/production claim."
+  ],
+  "stop_rules": [
+    "No authenticated HTTP or inference requests in CI.",
+    "No automatic model live-mode enablement on branch.",
+    "Never count synthetic video as model output.",
+    "Do not merge main."
+  ],
+  "production": "BLOCKED"
+}
