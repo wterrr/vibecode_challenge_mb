@@ -1,0 +1,79 @@
+name: V3-38 OpenRouter Metadata Only - NO INFERENCE
+
+on:
+  push:
+    branches: [chatgpt/v3-38-openrouter-no-inference-diagnostics]
+  pull_request:
+    paths:
+      - "learnflow_v3/openrouter_metadata_audit.py"
+      - "tests/v3/test_v3_38_openrouter_metadata_audit.py"
+      - ".github/workflows/v3-38-openrouter-metadata-audit.yml"
+      - "benchmarks/learnflowbench/v3/v3_38_openrouter_metadata_audit_preregister.json"
+
+permissions:
+  contents: read
+
+jobs:
+  offline-adversarial-and-public-get:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Minimal dependency only, no model client
+        timeout-minutes: 3
+        run: |
+          python -m pip install --disable-pip-version-check --retries 1 --timeout 20 pytest
+      - name: Zero-POST allowlist and redaction adversarial tests
+        timeout-minutes: 2
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_38_openrouter_metadata_audit.py
+      - name: Public endpoints metadata GET only, no secret
+        timeout-minutes: 1
+        run: |
+          python -m learnflow_v3.openrouter_metadata_audit \
+            --output "$RUNNER_TEMP/v3_38_public/metadata.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-38-public-and-local-NO-KEY-NO-INFERENCE
+          path: ${{ runner.temp }}/v3_38_public/
+          retention-days: 14
+          if-no-files-found: warn
+
+  one-time-key-authenticated-metadata-get:
+    needs: offline-adversarial-and-public-get
+    # Never on PRs/re-runs/normal pushes. Fixed HTTPS GET paths only.
+    # Exactly one separately tagged, pre-registered read-only metadata check.
+    if: >-
+      github.event_name == 'push' &&
+      github.run_attempt == 1 &&
+      github.ref == 'refs/heads/chatgpt/v3-38-openrouter-no-inference-diagnostics' &&
+      contains(github.event.head_commit.message, '[v3-38-readonly-key-check]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Exactly two fixed metadata GETs, 0 model POST
+        timeout-minutes: 1
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python -m learnflow_v3.openrouter_metadata_audit \
+            --output "$RUNNER_TEMP/v3_38_key_metadata/sanitized_findings.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-38-key-and-model-metadata-NO-INFERENCE-REDACTED
+          path: ${{ runner.temp }}/v3_38_key_metadata/
+          retention-days: 14
+          if-no-files-found: warn
