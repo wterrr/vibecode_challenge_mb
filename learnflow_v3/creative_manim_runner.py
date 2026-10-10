@@ -273,19 +273,23 @@ def checked_live_plan(raw:dict,usage:dict,out:Path)->CreativeScene:
 def run(root:Path,out:Path,*,mode:str,key:str="",sender=None)->dict:
     if not out.is_dir() or any(out.iterdir()):raise Blocked("V334_OUTPUT_NONEMPTY")
     prereg=checked_manifest(root)
-    if mode not in ("offline-smoke","live-model","live-structured"):
+    if mode not in ("offline-smoke","live-model","live-structured",
+                     "live-structured-no-temperature"):
         raise Blocked("V334_UNKNOWN_MODE")
     usage=None
-    if mode in ("live-model","live-structured"):
-        if mode=="live-structured":
+    if mode in ("live-model","live-structured","live-structured-no-temperature"):
+        if mode in ("live-structured","live-structured-no-temperature"):
             from learnflow_v3.structured_scene_authoring import preflight,one_shot_structured
             preflight(root)
-            raw,usage=one_shot_structured(key,out,sender=sender)
+            raw,usage=one_shot_structured(
+                key,out,sender=sender,
+                omit_temperature=(mode=="live-structured-no-temperature"))
         else:
             raw,usage=call_exact_model(key,sender=sender)
         plan=checked_live_plan(raw,usage,out)
         origin=("REAL_GPT6_LUNA_STRICT_JSON_SCHEMA_ONE_REQUEST"
-                if mode=="live-structured" else "REAL_GPT6_LUNA_ONE_REQUEST")
+                if mode in ("live-structured","live-structured-no-temperature")
+                else "REAL_GPT6_LUNA_ONE_REQUEST")
     else:
         plan=fixture_plan()
         origin="SYNTHETIC_HOST_FIXTURE_NOT_REAL_MODEL"
@@ -313,13 +317,14 @@ def run(root:Path,out:Path,*,mode:str,key:str="",sender=None)->dict:
         "rendered":True,"video_sha256":measured["video_sha256"],
         "plan_origin":origin}
     receipt={
-      "checkpoint":"V3-35" if mode=="live-structured" else "V3-34",
+      "checkpoint":"V3-35" if mode in ("live-structured","live-structured-no-temperature") else "V3-34",
       "status":("TECHNICAL_MODEL_SCENE_PASS_NOT_EDUCATIONAL_PASS"
-                if mode in ("live-model","live-structured") else "TECHNICAL_SMOKE_NOT_EDUCATIONAL_PASS"),
+                if mode in ("live-model","live-structured","live-structured-no-temperature")
+                else "TECHNICAL_SMOKE_NOT_EDUCATIONAL_PASS"),
       "topic_id":prereg["topic_id"],
       "ablation":baselines,"model_plan_origin":origin,
       "manim_source_origin":("HOST_COMPILED_FROM_MODEL_PRIMITIVE_DATA"
-                             if mode in ("live-model","live-structured")
+                             if mode in ("live-model","live-structured","live-structured-no-temperature")
                              else "HOST_FIXTURE_FROM_HOST_PRIMITIVE_DATA"),
       "provider_requests":1 if usage is not None else 0,
       "provider_receipt":usage,
@@ -333,7 +338,8 @@ def run(root:Path,out:Path,*,mode:str,key:str="",sender=None)->dict:
       "VLM_critic":"NOT_RUN",
       "creative_advantage_proven":"NO_UNBALANCED_A_B_ABSTAIN",
       "production":"BLOCKED"}
-    receipt_filename=("v3_35_ablation_receipt.json" if mode=="live-structured"
+    receipt_filename=("v3_35_ablation_receipt.json"
+                     if mode in ("live-structured","live-structured-no-temperature")
                      else "v3_34_ablation_receipt.json")
     (out/receipt_filename).write_text(json.dumps(receipt,indent=2)+"\n")
     print("V3_34_MODE="+origin,flush=True)
