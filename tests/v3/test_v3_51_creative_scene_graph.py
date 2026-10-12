@@ -8,7 +8,7 @@ import pytest
 
 from learnflow_v3.creative_manim_ablation import Blocked
 from learnflow_v3.creative_scene_graph import (
-    VERSION,ORIGIN,ledger,digest,validate,manim,positions,Storyboard)
+    VERSION,ORIGIN,ledger,digest,validate,manim,positions,Storyboard,_edge_route)
 from learnflow_v3.creative_scene_fixtures import fixtures
 from learnflow_v3.creative_validation_diagnostics import classify_v350,classify_v351
 from learnflow_v3.model_authored_attention import synthetic_fixture as frozen_v350
@@ -69,6 +69,21 @@ def test_graph_compositions_and_compiled_code_are_meaningfully_distinct():
     assert len(set(programs))==3
     assert len(set(graphs))==3
     assert len({p for g in graphs for p in g[2]})>=4
+
+
+def test_obstacle_aware_graph_edges_and_typographic_source_not_case_specific():
+    st,truth,graphs,layout=validate(example())
+    graph=st.scenes[0]
+    edge=next(r for r in graph.relations if r.id=="rightmatch")
+    route=_edge_route(graph,edge,layout[graph.id])
+    assert len(route)==4, "long relation must bypass the middle key"
+    assert abs(route[1][1])>=1.20
+    assert route[1][1]==route[2][1]
+    code=manim(st,truth,graphs,layout,[10]*len(st.beats))
+    assert "v351_e0_1_segment_0" in code
+    assert "v351_section_0" in code and "Transform(top,v351_section_0)" in code
+    assert "if v351_n0_0_label.width>2.75" in code
+    assert ".get_center(),v351_n" not in code
 
 
 def test_no_keyword_policing_of_correct_paraphrase_in_flexible_graph():
