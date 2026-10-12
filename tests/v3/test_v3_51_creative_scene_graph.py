@@ -179,7 +179,7 @@ def test_no_paid_workflow_no_retry_and_old_tests_preserved():
     for marker in ("_docker_manim","deterministic_mux","_codec_and_pixel_gates",
                    "max_decoded_sample_delta","V351_VISUAL_STORYBOARDS_NOT_DISTINCT"):
         assert marker in script
-    assert "V3-50" in script
+    assert "old_v3_50_real_failure" in script
     assert "secrets.OPENROUTER_API_KEY" not in flow
     assert "MODEL" not in flow.split("jobs:",1)[1].split("run:",1)[0]
     assert "test_v3_50_one_query_attention.py" in flow
