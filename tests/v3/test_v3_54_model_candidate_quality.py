@@ -71,7 +71,7 @@ def test_frozen_host_mock_wires_are_semantically_accepted(source_id):
     ("extra_root","json_schema"),("spoof_model","json_schema"),
     ("change_protocol","json_schema"),("unapproved_topic","json_schema"),
     ("wrong_wire_type","json_schema"),("bad_digest_syntax","json_schema"),
-    ("tamper_fact_sha","evidence"),("unsupported_number","json_schema"),
+    ("tamper_fact_sha","evidence"),("unsupported_number","typed_schema"),
     ("python_code_field","json_schema"),("unknown_node_fact","semantic_graph"),
     ("invalid_relation_endpoint","semantic_graph"),
     ("wrong_claim","semantic_graph"),("unknown_action_target","semantic_graph"),
