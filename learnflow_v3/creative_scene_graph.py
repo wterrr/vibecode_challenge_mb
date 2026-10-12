@@ -242,6 +242,7 @@ def validate(raw:dict)->tuple[Storyboard,dict,list[SceneGraph],dict]:
     order=[s.id for s in story.scenes]
     visited=[];shown={s.id:set() for s in story.scenes};edges={s.id:set() for s in story.scenes}
     seen_claims=set();action_counts=Counter()
+    moving_positions={name:dict(positions_) for name,positions_ in plan.items()}
     allowed_numbers={"0","1","2","0.707","0.670","0.330","0.67","0.33"}
     for b in story.beats:
         if b.scene_id not in graph_by_id:
@@ -284,10 +285,10 @@ def validate(raw:dict)->tuple[Storyboard,dict,list[SceneGraph],dict]:
                         raise Blocked("V351_MOVE_MISSING_DESTINATION")
                     dest=REGION[a.destination]
                     for other in shown[s.id]-{a.target}:
-                        pt=plan[s.id][other]
+                        pt=moving_positions[s.id][other]
                         if abs(pt[0]-dest[0])<2.9 and abs(pt[1]-dest[1])<1.50:
                             raise Blocked("V351_MOVE_COLLIDES")
-                    plan[s.id][a.target]=dest
+                    moving_positions[s.id][a.target]=dest
             if a.kind!="move" and a.destination is not None:
                 raise Blocked("V351_UNEXPECTED_DESTINATION")
             if a.kind!="replace" and a.source is not None:
@@ -383,7 +384,7 @@ def manim(story:Storyboard,evidence:dict,graphs:list[SceneGraph],layout:dict,
                 lines.append(f"        self.play(FadeOut({name}),run_time={each:.3f})")
                 visible.remove(name)
             elif a.kind=="move":
-                x,y=layout[b.scene_id][a.target]
+                x,y=REGION[a.destination]
                 lines.append(f"        self.play({name}.animate.move_to([{x:.3f},{y:.3f},0]),run_time={each:.3f})")
             elif a.kind=="replace":
                 src=objnames[(b.scene_id,a.source)]
