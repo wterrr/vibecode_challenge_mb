@@ -1,0 +1,98 @@
+name: V3-44 Semantic Visual Narration Counterfactual OFFLINE
+
+on:
+  push:
+    branches: [chatgpt/v3-44-semantic-visual-narration-redesign]
+  pull_request:
+    paths:
+      - "learnflow_v3/semantic_visual_events.py"
+      - "scripts/run_v3_44_semantic_counterfactual.py"
+      - "tests/v3/test_v3_44_semantic_visual_events.py"
+      - ".github/workflows/v3-44-semantic-visual-narration.yml"
+      - "benchmarks/learnflowbench/v3/v3_44_semantic_visual_redesign_preregister.json"
+      - "reports/v3_44_semantic_visual_narration_redesign.md"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  genuine-input-host-counterfactual-native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 36
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install native offline ffmpeg espeak Computer Modern
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Bounded dependencies
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml
+      - name: Download original genuine V3-42 model response artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: v3-42-genuine-model-video-or-failclosed-receipt
+          run-id: 38189257163
+          repository: wterrr/vibecode_challenge_mb
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/v3_44_original_genuine
+      - name: Independently revalidate original genuine model provenance
+        timeout-minutes: 3
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_44_original_evidence"
+          python -m learnflow_v3.creative_evidence_gate \
+            --artifact-dir "$RUNNER_TEMP/v3_44_original_genuine" \
+            --output "$RUNNER_TEMP/v3_44_original_evidence/verified_genuine_original.json"
+      - name: Test semantic compiler, per-beat timing, malicious mutations and frozen baseline
+        timeout-minutes: 8
+        env:
+          V344_SOURCE_DIR: ${{ runner.temp }}/v3_44_original_genuine
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_44_semantic_visual_events.py \
+            tests/v3/test_v3_42_single_genuine_portable_trial.py \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py
+      - name: Pinned Manim image for real offline counterfactual video
+        timeout-minutes: 12
+        run: |
+          timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Native H264 AAC render new HOST-owned events, unchanged genuine narration
+        timeout-minutes: 9
+        run: |
+          python scripts/run_v3_44_semantic_counterfactual.py \
+            --source-dir "$RUNNER_TEMP/v3_44_original_genuine" \
+            --output-dir "$RUNNER_TEMP/v3_44_host_counterfactual"
+          test -s "$RUNNER_TEMP/v3_44_host_counterfactual/v3_44_host_counterfactual_with_audio.mp4"
+          test -s "$RUNNER_TEMP/v3_44_host_counterfactual/v3_44_semantic_redesign_receipt.json"
+      - name: Frozen V3 and V2 protocol gates
+        timeout-minutes: 6
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-44-offline-HOST-COUNTERFACTUAL-NOT-NEW-MODEL
+          path: ${{ runner.temp }}/v3_44_host_counterfactual/
+          retention-days: 14
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-44-original-model-source-provenance
+          path: ${{ runner.temp }}/v3_44_original_evidence/
+          retention-days: 14
+          if-no-files-found: warn
+
+  # No provider key, no paid inference, no reactivation of V3-42.
