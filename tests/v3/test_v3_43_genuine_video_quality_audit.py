@@ -162,7 +162,7 @@ def test_bad_manim_action_schedule_does_not_get_silent_alignment_repair():
              "        self.play(FadeIn(a,scale=.9),run_time=3.0)\n"
     beats = [{"actions":[{"action":"show"}],"start_seconds":0., "end_seconds":2.}]
     with pytest.raises(AuditRejected,match="V343_MANIM_BEAT_COUNT_DRIFT"):
-        _source_timeline(source, beats)
+        _source_timeline(source, beats, beats)
 
 
 def test_ci_downloads_real_artifact_not_synthetic_and_no_model_key():
