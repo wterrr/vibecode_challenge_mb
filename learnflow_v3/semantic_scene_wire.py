@@ -195,6 +195,9 @@ class SceneWire(BaseModel):
                 if (abs(x.x-y.x)<(x.width+y.width)/2+.15 and
                     abs(x.y-y.y)<(x.height+y.height)/2+.15):
                     raise ValueError("V345_PROCESS_NODE_OVERLAP")
+        # Geometry is host-owned and must be valid BEFORE any Manim code.
+        # Layout checks cover all directed edges, including unrevealed ones.
+        process_edge_layout(self)
         visible=set()
         seen_traversal=[]
         visit_nodes=[]
@@ -235,6 +238,83 @@ class SceneWire(BaseModel):
                  if e.src==a and e.dst==b]
         if seen_traversal!=correct:
             raise ValueError("V345_PROCESS_TRAVERSAL_NOT_TOPOLOGY")
+
+PROCESS_EDGE_CLEARANCE = 0.16
+PROCESS_THIRD_NODE_CLEARANCE = 0.10
+
+
+def _segment_intersects_box(start, end, node:Visual, clearance:float)->bool:
+    """Exact slab intersection of a segment against an expanded node AABB."""
+    lowx=node.x-node.width/2-clearance
+    highx=node.x+node.width/2+clearance
+    lowy=node.y-node.height/2-clearance
+    highy=node.y+node.height/2+clearance
+    entry, exit = 0.0, 1.0
+    for origin,delta,low,high in (
+        (start[0],end[0]-start[0],lowx,highx),
+        (start[1],end[1]-start[1],lowy,highy)
+    ):
+        if abs(delta)<1e-10:
+            if origin>=low and origin<=high:
+                continue
+            return False
+        t0=(low-origin)/delta
+        t1=(high-origin)/delta
+        entry=max(entry,min(t0,t1))
+        exit=min(exit,max(t0,t1))
+        if entry>exit:
+            return False
+    return True
+
+
+def process_edge_layout(scene:SceneWire)->dict[str,dict]:
+    """Compute actual boundary-to-boundary paths from author-provided node AABBs.
+
+    No magic Arrow(center,center,buff=n), and no hardcoded Start/Verify
+    fixtures. The arrow *and* traversal cursor share these same host-grounded
+    endpoints. Reject intersecting third nodes, offscreen nodes, or short gaps.
+    """
+    if scene.family != "ordered_process":
+        raise ValueError("V345_PROCESS_GEOMETRY_WRONG_FAMILY")
+    nodes={v.id:v for v in scene.graphics if v.kind=="node"}
+    edges=[v for v in scene.graphics if v.kind=="edge"]
+    for n in nodes.values():
+        if (abs(n.x)+n.width/2>7.111-.25 or
+            abs(n.y)+n.height/2>4.0-.25):
+            raise ValueError("V345_NODE_OUTSIDE_SAFE_CANVAS")
+    geometry={}
+    for e in edges:
+        if e.src not in nodes or e.dst not in nodes:
+            raise ValueError("V345_GEOMETRY_DANGLING_NODE")
+        a,b=nodes[e.src],nodes[e.dst]
+        dx,dy=b.x-a.x,b.y-a.y
+        distance=math.hypot(dx,dy)
+        if distance<1e-6:
+            raise ValueError("V345_EDGE_COINCIDENT_NODE_CENTRES")
+        ux,uy=dx/distance,dy/distance
+        def ray_distance(n):
+            xdist=math.inf if abs(ux)<1e-12 else (n.width/2)/abs(ux)
+            ydist=math.inf if abs(uy)<1e-12 else (n.height/2)/abs(uy)
+            return min(xdist,ydist)
+        da=ray_distance(a)
+        db=ray_distance(b)
+        # Maintain a finite *visual* segment even for oblique/unequal boxes.
+        if distance-da-db<2*PROCESS_EDGE_CLEARANCE+0.30:
+            raise ValueError("V345_EDGE_NO_SPACE_OUTSIDE_NODES")
+        src=(a.x+ux*(da+PROCESS_EDGE_CLEARANCE),
+             a.y+uy*(da+PROCESS_EDGE_CLEARANCE))
+        dst=(b.x-ux*(db+PROCESS_EDGE_CLEARANCE),
+             b.y-uy*(db+PROCESS_EDGE_CLEARANCE))
+        # Clear all third-party nodes; the edge must not pass through a
+        # block even when the endpoints themselves are correctly trimmed.
+        if any(_segment_intersects_box(src,dst,n,PROCESS_THIRD_NODE_CLEARANCE)
+               for n in nodes.values() if n.id not in (e.src,e.dst)):
+            raise ValueError("V345_EDGE_CROSSES_OTHER_NODE")
+        geometry[e.id]={"src":(round(src[0],6),round(src[1],6)),
+                        "dst":(round(dst[0],6),round(dst[1],6)),
+                        "clearance":PROCESS_EDGE_CLEARANCE}
+    return geometry
+
 
 def fraction_lesson(w:SceneWire)->SemanticLesson:
     """Lossless host wrapper around existing V3-44 certified semantic graph."""
@@ -333,24 +413,33 @@ def _compile_process(scene:SceneWire,durations:list[float])->str:
     nodes={o.id:o for o in scene.graphics if o.kind=="node"}
     edges={o.id:o for o in scene.graphics if o.kind=="edge"}
     labels={o.id:o for o in scene.graphics if o.kind=="label"}
+    edge_geometry=process_edge_layout(scene)
     lines=["# V3-45 SYNTHETIC_OFFLINE_JSON_MODEL_FACING_NOT_LIVE_MODEL",
            "from manim import *","class GeneratedLesson(Scene):",
            "    def construct(self):","        self.camera.background_color = '#000000'"]
     for n in nodes.values():
         lines.append(f"        {n.id} = RoundedRectangle(width={n.width:.2f},height={n.height:.2f},"
                      f"corner_radius=.14,color={PALETTE[n.color]!r},fill_opacity=.22)"
-                     f".move_to([{n.x:.2f},{n.y:.2f},0])")
+                     f".move_to([{n.x:.2f},{n.y:.2f},0]).set_z_index(1)")
         lines.append(f"        {n.id}_caption = Text({n.text!r},font='CMU Serif',font_size=30,"
                      f"color={PALETTE['WHITE']!r}).scale_to_fit_width({min(n.width*.85,2.0):.2f})"
-                     f".move_to({n.id}.get_center())")
+                     f".move_to({n.id}.get_center()).set_z_index(2)")
     for e in edges.values():
-        lines.append(f"        {e.id} = Arrow({e.src}.get_center(),{e.dst}.get_center(),"
-                     f"buff=.75,stroke_width=4,color={PALETTE[e.color]!r})")
+        path=edge_geometry[e.id]
+        src=path["src"]
+        dst=path["dst"]
+        # Explicit node-border attachment; Manim is forbidden to recompute
+        # the clearance from centre-to-centre or shift edge endpoints.
+        lines.append(
+            f"        {e.id} = Arrow([{src[0]:.6f},{src[1]:.6f},0],"
+            f"[{dst[0]:.6f},{dst[1]:.6f},0],buff=0,"
+            f"stroke_width=4,color={PALETTE[e.color]!r}).set_z_index(0)"
+        )
     for l in labels.values():
         lines.append(f"        {l.id} = Text({l.text!r},font='CMU Serif',font_size=31,"
                      f"color={PALETTE[l.color]!r}).scale_to_fit_width({min(7.,max(.7,len(l.text)*.22)):.2f})"
                      f".move_to([{l.x:.2f},{l.y:.2f},0])")
-    lines.append("        cursor = Dot(color=YELLOW,radius=.09)")
+    lines.append("        cursor = Dot(color=YELLOW,radius=.09).set_z_index(3)")
     for i,(beat,full) in enumerate(zip(scene.beats,durations)):
         lines.append(f"        # V345 AUDIO BEAT {i+1}, actual seconds {full:.5f}")
         elapsed=0.
@@ -363,11 +452,13 @@ def _compile_process(scene:SceneWire,durations:list[float])->str:
             elif e.kind=="reveal_edge":
                 lines.append(f"        self.play(Create({e.target}),run_time={dur:.5f})")
             elif e.kind=="traverse_edge":
-                edge=edges[e.target]
-                lines.append(f"        cursor.move_to({edge.src}.get_center())")
+                # Cursor follows the identical trimmed arrow line, never
+                # the node centres/captions.
+                lines.append(f"        cursor.move_to({e.target}.get_start())")
                 lines.append(f"        self.add(cursor)")
-                lines.append(f"        self.play(MoveAlongPath(cursor,Line({edge.src}.get_center(),"
-                             f"{edge.dst}.get_center())),run_time={dur:.5f})")
+                lines.append(f"        self.play(MoveAlongPath(cursor,Line("
+                             f"{e.target}.get_start(),{e.target}.get_end())),"
+                             f"run_time={dur:.5f})")
             elif e.kind=="show_label":
                 lines.append(f"        self.play(FadeIn({e.target}),run_time={dur:.5f})")
             elif e.kind=="emphasize":
