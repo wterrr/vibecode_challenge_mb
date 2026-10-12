@@ -285,27 +285,46 @@ def compiled_event_windows(lesson:SemanticLesson, durations:list[float])->list[d
     return boundaries
 
 
-def compile_manim(lesson:SemanticLesson, durations:list[float])->str:
+def compile_manim(lesson:SemanticLesson, durations:list[float],*,visual_quality:bool=False)->str:
     # Pure host-compiled finite code; source never comes from model-provided Python.
     schedule = compiled_event_windows(lesson,durations)
     lines=["# V3-44 HOST-CURATED SEMANTIC EVENT COUNTERFACTUAL; NOT MODEL-AUTHORED",
            "from manim import *","class GeneratedLesson(Scene):",
            "    def construct(self):",
            "        self.camera.background_color = '#000000'"]
+    if visual_quality:
+        from learnflow_v3.visual_quality_system import frame_lines,panel_lines
+        centres=[]
+        tile_ids={x.id:x for x in lesson.tiles}
+        for partition in lesson.partitions[:2]:
+            group=[tile_ids[i] for i in partition.part_ids]
+            centres.append((min(t.x-t.width/2 for t in group)+max(t.x+t.width/2 for t in group))/2)
+        lines.extend(frame_lines("fraction_equivalence"))
+        lines.extend(panel_lines(centres))
     for t in lesson.tiles:
         lines.append(f"        {t.id} = Rectangle(width={t.width:.3f},height={t.height:.3f},"
                      f"color={PALETTE[t.color]!r},fill_opacity=0.62).move_to([{t.x:.3f},{t.y:.3f},0])")
     for l in lesson.labels:
-        lines.append(f"        {l.id} = Text({l.text!r},font='CMU Serif',font_size=32,"
-                     f"color={PALETTE[l.color]!r}).scale_to_fit_width({min(8.,max(.5,len(l.text)*.23)):.2f})"
-                     f".move_to([{l.x:.3f},{l.y:.3f},0])")
+        if visual_quality:
+            from learnflow_v3.visual_quality_system import text_style_lines,BODY,ACCENT
+            lines.append(text_style_lines(l.id,
+                "title" if l.y>1.8 else "label",l.text,
+                l.x,l.y,ACCENT if l.color=="YELLOW" else BODY,
+                5.7 if l.y>1.8 else 5.0))
+        else:
+            lines.append(f"        {l.id} = Text({l.text!r},font='CMU Serif',font_size=32,"
+                         f"color={PALETTE[l.color]!r}).scale_to_fit_width({min(8.,max(.5,len(l.text)*.23)):.2f})"
+                         f".move_to([{l.x:.3f},{l.y:.3f},0])")
     parts={p.id:p for p in lesson.partitions}
     for p in lesson.partitions:
         refs=", ".join(p.part_ids)
         lines.append(f"        {p.id} = VGroup({refs})")
     t=0.
-    for beat,duration in zip(lesson.beats,durations):
+    for beat_index,(beat,duration) in enumerate(zip(lesson.beats,durations)):
         lines.append(f"        # V344 BEAT_AUDIO_START {t:.5f} DURATION {duration:.5f}")
+        if visual_quality:
+            from learnflow_v3.visual_quality_system import beat_focus_lines
+            lines.extend(beat_focus_lines(beat_index))
         local=0.
         for event in beat.events:
             before=event.at*duration-local
