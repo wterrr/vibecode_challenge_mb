@@ -1,0 +1,125 @@
+{
+  "checkpoint": "V3-52",
+  "title": "Attention Semantic Motion and Visual Storytelling Quality",
+  "preregistered_before_implementation": true,
+  "parent_pr": 85,
+  "parent_sha": "7da60601998529208cbc19f8189c373f0244cec2",
+  "research_question": "Do host-grounded softmax weights drive actual animated geometry and value transport into a context, with native decoded-frame evidence beyond three visually different static SceneGraphs?",
+  "scope": "OFFLINE_HOST_ONLY, zero inference, no new GPT model authoring; one attention teaching family",
+  "selection_rule": "freeze two 2-token single-head attention examples from the same QKV basis, first Q=[1,0], heldout Q=[0,1], value vectors V_A=[1,0], V_B=[0,1]",
+  "cases": [
+    {
+      "id": "query_matches_token_a",
+      "role": "development",
+      "query": [
+        1,
+        0
+      ],
+      "keys": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "values": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "dim": 2
+    },
+    {
+      "id": "heldout_query_matches_token_b",
+      "role": "heldout_counterfactual",
+      "query": [
+        0,
+        1
+      ],
+      "keys": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "values": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "dim": 2
+    }
+  ],
+  "mandatory_truth": [
+    "scaled scores exactly (Q dot Ki)/sqrt(dk)",
+    "weights exactly softmax(scores), nonnegative and sum to 1",
+    "context exactly sum wi Vi",
+    "visual bar widths and transported area derived from same weights",
+    "displayed numbers derived from host facts and bound SHA",
+    "counterfactual reversing query changes larger bar and resulting context in corresponding direction"
+  ],
+  "per_scene_motion_ops": [
+    "dot_score_compare",
+    "softmax_weight_morph",
+    "value_weight_transport",
+    "context_compose"
+  ],
+  "negative_controls": [
+    "mismatched evidence hash",
+    "reused claim unrelated to transform",
+    "swapped weights",
+    "wrong target context",
+    "tampered operation ordering",
+    "disappearing value/object identity",
+    "static-only actions",
+    "unsupported code injection",
+    "unsupported Q/K/V bounds",
+    "cross-query inherited evidence"
+  ],
+  "video_requirements": {
+    "native_count": 2,
+    "H264_AAC": "1280x720,15fps,exact audio frame budget",
+    "real_decoded_phase_evidence": true,
+    "minimum_counterfactual_weight_difference": 0.3,
+    "unique_video_sha": true,
+    "negative_pixel_region_control": true,
+    "sha256_provenance": true
+  },
+  "quality_goals": [
+    "clear readable labels",
+    "meaningful physical vector-to-context transport",
+    "narration beat alignment at segment level",
+    "reuse existing V2 SceneGraph + V3-51 factual ledger concepts and original sandbox",
+    "no constant template-fallback that pretends to be model scene"
+  ],
+  "nonclaims": [
+    "HOST_SYNTHETIC_NOT_LLM",
+    "NOT_CROSS_DOMAIN",
+    "HUMAN_PEDAGOGY_UNRATED",
+    "NO_WORD_LEVEL_ALIGNMENT",
+    "NOT_PRODUCTION"
+  ],
+  "safety": {
+    "provider_requests": 0,
+    "merge_main": false,
+    "production": "BLOCKED",
+    "never_retry_v350": true
+  }
+}
