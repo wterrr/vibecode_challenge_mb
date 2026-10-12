@@ -42,7 +42,7 @@ def _read_prereg(root:Path)->dict:
     return p
 
 
-def run(root:Path,out:Path)->dict:
+def run(root:Path,out:Path,*,visual_quality:bool=False)->dict:
     p=_read_prereg(root)
     if not out.is_dir() or any(out.iterdir()):
         raise Blocked("V345_NONEMPTY_OUTPUT_DIRECTORY")
@@ -66,7 +66,7 @@ def run(root:Path,out:Path)->dict:
             raise Blocked("V345_FAMILY_SELECTION_DRIFT")
         durations,beats,wav=_audio(dest,typed)
         source=dest/"generated_host_manim.py"
-        source.write_text(compile_scene(typed,durations),encoding="utf-8")
+        source.write_text(compile_scene(typed,durations,visual_quality=visual_quality),encoding="utf-8")
         raw_manim,sandbox=_docker_manim(dest,source)
         mp4=dest/"offline_host_semantic_with_audio.mp4"
         mux=deterministic_mux(raw_manim,wav,mp4,beats)
@@ -102,6 +102,7 @@ def run(root:Path,out:Path)->dict:
             "origin":SYNTHETIC_ORIGIN,
             "model_requests":0,
             "schema_and_host_validation":"PASS",
+            "shared_visual_quality_style":visual_quality,
             "host_compiled_source_sha256":sha(source),
             "input_wire_sha256":sha(dest/"synthetic_model_facing_wire.json"),
             "output_video_sha256":sha(mp4),

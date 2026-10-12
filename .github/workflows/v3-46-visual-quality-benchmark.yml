@@ -1,0 +1,108 @@
+name: V3-46 Shared Visual Quality & Baseline Video Benchmark OFFLINE
+
+on:
+  push:
+    branches: [chatgpt/v3-46-visual-quality-system-benchmark]
+  pull_request:
+    paths:
+      - "learnflow_v3/visual_quality_system.py"
+      - "learnflow_v3/semantic_visual_events.py"
+      - "learnflow_v3/semantic_scene_wire.py"
+      - "scripts/run_v3_45_semantic_offline.py"
+      - "scripts/run_v3_46_visual_quality.py"
+      - "tests/v3/test_v3_46_visual_quality_system.py"
+      - ".github/workflows/v3-46-visual-quality-benchmark.yml"
+      - "benchmarks/learnflowbench/v3/v3_46_visual_quality_preregister.json"
+      - "reports/v3_46_visual_quality_benchmark.md"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  shared-hierarchy-native-h264-aac-two-family:
+    runs-on: ubuntu-latest
+    timeout-minutes: 43
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install V3 native ffmpeg, espeak and Computer Modern
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Install bounded offline image dependencies
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Download frozen V3-45-FIX native two-family baseline artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: v3-45-two-FAMILY-OFFLINE-MP4-NOT-MODEL
+          run-id: 38198567269
+          repository: wterrr/vibecode_challenge_mb
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/v3_46_v345_baseline
+      - name: Shared visual contract and adversarial regressions with frozen V3-41
+        timeout-minutes: 7
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_46_visual_quality_system.py \
+            tests/v3/test_v3_45_semantic_scene_wire.py \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py
+      - name: Pull pinned no-network Docker Manim image
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Render native H264 AAC, frozen baseline comparisons and 24-frame contact sheets
+        timeout-minutes: 16
+        run: |
+          python scripts/run_v3_46_visual_quality.py \
+            --baseline-dir "$RUNNER_TEMP/v3_46_v345_baseline" \
+            --output-dir "$RUNNER_TEMP/v3_46_native_benchmark"
+          test -s "$RUNNER_TEMP/v3_46_native_benchmark/v3_46_visual_quality_receipt.json"
+          for family in v345-synthetic-fractions v345-synthetic-process; do
+            test -s "$RUNNER_TEMP/v3_46_native_benchmark/$family/offline_host_semantic_with_audio.mp4"
+            test -s "$RUNNER_TEMP/v3_46_native_benchmark/$family"_before_after_12_timelines.jpg
+          done
+          test -s "$RUNNER_TEMP/v3_46_native_benchmark/v3_46_BLIND_HUMAN_REVIEW_UNRATED.csv"
+      - name: Enforce quantitative non-clipping but never invent human evaluation
+        timeout-minutes: 3
+        run: |
+          python - <<'PY'
+          import json,os,pathlib
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v3_46_native_benchmark"
+          r=json.loads((root/"v3_46_visual_quality_receipt.json").read_text())
+          assert r["model_requests"]==0
+          assert r["educational_quality"]=="NOT_CERTIFIED"
+          assert r["status"]=="NATIVE_VISUAL_LAYOUT_GATES_PASS_HUMAN_VISUAL_QUALITY_UNRATED"
+          assert len(r["comparisons"])==2
+          for c in r["comparisons"]:
+              assert c["updated_measured"]["bright_boundary_pixel_max"]<=10
+              assert c["host_scene_graph_safe_area"]["safe_area_pass"] is True
+              assert c["human_visual_quality_status"]=="AWAITING_INDEPENDENT_HUMAN_REVIEW"
+              assert c["input_wire_sha256"]
+              assert c["native_media_technical_status"]=="PASS"
+          print("V3_46=PASS_NATIVE_LAYOUT_ONLY_HUMAN_QUALITY_UNRATED")
+          PY
+      - name: Frozen V3/V2 benchmark protocol gates
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Publish real host videos, side-by-side samples and unrated human rubric
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-46-VISUAL-SYSTEM-MP4-and-UNRATED-QUALITY-BENCHMARK
+          path: ${{ runner.temp }}/v3_46_native_benchmark/
+          retention-days: 14
+          if-no-files-found: warn
+
+  # No model API keys, live model requests, main merge or educational PASS.
