@@ -30,7 +30,7 @@ TARGETS={
 "A1":["query","keys","tokens"],
 "A2":["query","keys","scores"],
 "A3":["weights","softmax"],
-"A4":["weights","values","context"]}
+"A4":["values","context"]}
 
 
 def canonical(obj):
@@ -229,8 +229,8 @@ def compile_manim(raw,beat_durations):
       "        boxq=SurroundingRectangle(q_lab,color=YELLOW,buff=.25)",
       "        boxk1=SurroundingRectangle(k1_lab,color=TEAL,buff=.18)",
       "        boxk2=SurroundingRectangle(k2_lab,color=BLUE,buff=.18)",
-      "        arrow1=Arrow([-3.15,1.25,0],[-1.0,1.47,0],buff=0,color=TEAL,stroke_width=4)",
-      "        arrow2=Arrow([-3.10,1.12,0],[2.0,1.43,0],buff=0,color=BLUE,stroke_width=4)",
+      "        arrow1=Arrow([-3.12,1.24,0],[-1.05,1.24,0],buff=0,color=TEAL,stroke_width=4).set_z_index(0)",
+      "        arrow2=Arrow([-3.12,.78,0],[2.17,.78,0],buff=0,color=BLUE,stroke_width=4).set_z_index(0)",
       "        dot1=Dot(radius=.11,color=TEAL)",
       "        dot2=Dot(radius=.11,color=BLUE)",
       f"        bar1=Rectangle(width=.70,height={w0*2.2:.4f},color=TEAL,fill_opacity=.75).move_to([-1.5,-1.56,0])",
@@ -272,7 +272,7 @@ def compile_manim(raw,beat_durations):
             lines += [
               "        self.play(FadeOut(score1),FadeOut(score2),FadeOut(arrow1),FadeOut(arrow2),"
               "FadeOut(boxq),FadeOut(boxk1),FadeOut(boxk2),"
-              "FadeOut(q_lab),FadeOut(k1_lab),FadeOut(k2_lab),run_time=.6)",
+              "FadeOut(q_lab),FadeOut(k1_lab),FadeOut(k2_lab),FadeOut(dot1),FadeOut(dot2),run_time=.6)",
               f"        self.play(FadeIn(softmax_lbl),run_time={draw:.3f})",
               "        self.play(FadeIn(weight1),FadeIn(weight2),"
               "GrowFromEdge(bar1,DOWN),GrowFromEdge(bar2,DOWN),run_time=1.1)"
@@ -283,7 +283,7 @@ def compile_manim(raw,beat_durations):
               "        self.play(FadeOut(softmax_lbl),FadeOut(token_a),FadeOut(token_b),"
               "FadeOut(bar1),FadeOut(bar2),run_time=.7)",
               f"        self.play(FadeIn(v1_lab),FadeIn(v2_lab),run_time={draw:.3f})",
-              "        self.play(TransformFromCopy(weight1,output),"
+              "        self.play(ReplacementTransform(VGroup(weight1,weight2),output),"
               "Indicate(v1_lab,color=TEAL),Indicate(v2_lab,color=BLUE),run_time=1.1)",
               "        self.play(FadeIn(formula),run_time=.65)"
             ]
