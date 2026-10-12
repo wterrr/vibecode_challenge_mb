@@ -8,7 +8,7 @@ import pytest
 from pydantic import ValidationError
 
 from learnflow_v3.creative_manim_ablation import Blocked
-from learnflow_v3.semantic_scene_wire import decode_model_facing_scene
+from learnflow_v3.semantic_scene_wire import SceneWire, decode_model_facing_scene
 from learnflow_v3.semantic_scene_offline_fixtures import fixture_cases
 from scripts.run_v3_48_pedagogical_quality import blind_order, require, RUBRIC, REG
 
@@ -67,6 +67,8 @@ def alternative_valid_math_unbound_claims():
 def test_new_mathematically_valid_fraction_topic_cannot_launder_old_claim_ids():
     with pytest.raises((ValueError, ValidationError),
                        match="V348_UNSUPPORTED_FRACTION_CLAIM_SCOPE"):
+        SceneWire.model_validate(alternative_valid_math_unbound_claims())
+    with pytest.raises((ValueError, ValidationError), match="V345_HOST_SEMANTIC_SCENE_REJECTED"):
         decode_model_facing_scene(alternative_valid_math_unbound_claims())
 
 
@@ -76,6 +78,8 @@ def test_new_process_semantics_cannot_launder_old_p2_condition(text):
     next(g for g in raw["graphics"] if g["id"]=="verify")["text"] = text
     with pytest.raises((ValueError, ValidationError),
                        match="V348_UNSUPPORTED_PROCESS_CLAIM_SCOPE"):
+        SceneWire.model_validate(raw)
+    with pytest.raises((ValueError, ValidationError), match="V345_HOST_SEMANTIC_SCENE_REJECTED"):
         decode_model_facing_scene(raw)
 
 
