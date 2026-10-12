@@ -1,0 +1,97 @@
+name: V3-52 Attention Semantic Motion OFFLINE Causal Native QA
+
+on:
+  push:
+    branches: [chatgpt/v3-52-semantic-motion-attention]
+  pull_request:
+    paths:
+      - "learnflow_v3/semantic_attention_motion.py"
+      - "scripts/run_v3_52_semantic_motion.py"
+      - "tests/v3/test_v3_52_semantic_motion.py"
+      - "benchmarks/learnflowbench/v3/v3_52_semantic_motion_preregister.json"
+      - ".github/workflows/v3-52-semantic-motion.yml"
+      - "reports/v3_52_semantic_motion.md"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+
+jobs:
+  attention-causal-weight-transport:
+    runs-on: ubuntu-latest
+    timeout-minutes: 48
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Reuse native Manim, speech and FFmpeg environment
+        timeout-minutes: 11
+        run: |
+          bash scripts/bootstrap_v3_30_native.sh
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Tests on causality, fixed evidence and historical semantics
+        timeout-minutes: 7
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_52_semantic_motion.py \
+            tests/v3/test_v3_51_creative_scene_graph.py \
+            tests/v3/test_v3_50_one_query_attention.py \
+            tests/v3/test_v3_49_grounded_claims.py \
+            tests/v3/test_v3_48_pedagogical_quality.py \
+            tests/v3/test_v3_47_pedagogical_grammar.py \
+            tests/v3/test_v3_45_semantic_scene_wire.py \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py
+      - name: Historical V2 Core, V3 benchmark and LearnFlowBench gates
+        timeout-minutes: 7
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Pull pinned sandbox Manim
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Two host-grounded attention counterfactuals with native decoded evidence
+        timeout-minutes: 22
+        run: |
+          python scripts/run_v3_52_semantic_motion.py --output-dir "$RUNNER_TEMP/v352_semantic_motion"
+      - name: Check real source-backed payload and mathematical pixel causality
+        timeout-minutes: 3
+        run: |
+          python - <<'PY'
+          import json,os,pathlib
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v352_semantic_motion"
+          result=json.loads((root/"v352_final_semantic_motion_receipt.json").read_text())
+          assert result["checkpoint"]=="V3-52"
+          assert result["status"]=="TWO_CAUSALLY_DISTINCT_NATIVE_HOST_MOTION_VIDEOS_TECHNICAL_PASS_ONLY"
+          assert result["actual_model_calls"]==0 and result["production"]=="BLOCKED"
+          assert len(result["cases"])==2 and result["counterfactual_difference"]>.30
+          for c in result["cases"]:
+              assert c["origin"]=="HOST_SYNTHETIC_ATTENTION_MOTION_NOT_MODEL"
+              assert c["model_post_count"]==0
+              assert c["native_media"]["codec"]=="h264+aac"
+              assert c["native_media"]["frames"]==c["exact_audio_mux"]["output_h264_frames"]
+              assert c["physical_motion"]["negative"]["total_causal_pixels"]<=65
+              assert c["physical_motion"]["after"]["teal_pixels"]>=200
+              assert c["physical_motion"]["after"]["amber_pixels"]>=200
+              assert abs(c["physical_motion"]["actual_teal_area_fraction"]-
+                         c["softmax_weights"][0])<.13
+              assert abs(sum(c["context"])-1)<1e-12
+              assert (root/c["case"]/"attention_semantic_motion.mp4").stat().st_size>40000
+          print("V3_52=VERIFIED_WEIGHT_TO_CONTEXT_NATIVE_PIXEL_COUNTERFACTUAL_PASS")
+          PY
+      - name: Archive exact two native videos and claims, no synthetic laundering
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-52-HOST-TWO-CAUSAL-ATTENTION-MOTION-MP4-NO-AI
+          path: ${{ runner.temp }}/v352_semantic_motion/
+          retention-days: 14
+          if-no-files-found: error
+
+  # No provider model credentials, no inference, no V3-50 budget reuse.
