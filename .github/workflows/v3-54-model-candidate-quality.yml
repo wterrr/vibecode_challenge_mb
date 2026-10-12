@@ -20,6 +20,9 @@ permissions:
 
 jobs:
   frozen-offline-model-shaped-acceptance:
+    # Full physical native render and artifact only on Push. PR runs the same
+    # source/claim/adversarial contracts without flaky system apt installation.
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 50
     steps:
@@ -96,4 +99,45 @@ jobs:
           path: ${{ runner.temp }}/v354_quality/
           retention-days: 14
           if-no-files-found: error
+
+  pull-request-contract-without-native-apt:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python-only dependency install; no apt, no Docker, no model API
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Exact PR source contract, adverse inputs, prior frozen regressions
+        timeout-minutes: 7
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_54_model_candidate_quality.py \
+            tests/v3/test_v3_53_creative_director.py \
+            tests/v3/test_v3_52_semantic_motion.py \
+            tests/v3/test_v3_51_creative_scene_graph.py \
+            tests/v3/test_v3_50_one_query_attention.py \
+            tests/v3/test_v3_49_grounded_claims.py \
+            tests/v3/test_v3_48_pedagogical_quality.py \
+            tests/v3/test_v3_47_pedagogical_grammar.py \
+            tests/v3/test_v3_45_semantic_scene_wire.py \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py
+      - name: Exact-head safety and research benchmark contracts
+        timeout-minutes: 3
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+  # All 3 native outputs are still mandatory and always fail-closed on Push.
+  # PR independently tests the same candidate contracts without apt flakiness.
+
   # No model API token, no genuine model attribution, no main merge.
