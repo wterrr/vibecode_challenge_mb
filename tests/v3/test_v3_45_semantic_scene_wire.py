@@ -72,14 +72,16 @@ def test_offline_wire_decodes_then_host_compiles_safe_not_model_python(fixture_i
  "flow_contains_partition","fraction_contains_flow_node","wrong_fraction_proof",
  "invalid_math_rewrite","fraction_unequal_whole","missing_proof_event",
  "overlapping_events","out_of_beat_events","forged_claim","missing_claim_coverage",
- "duplicate_ids","narration_numeric_drift","unknown_event","unsafe_object_id"
+ "duplicate_ids","narration_numeric_drift","unknown_event","unsafe_object_id",
+ "untrusted_process_label_number","generated_caption_id_collision"
 ])
 def test_fail_closed_mutated_mock_provider_json(mutation):
     cases=fixture_cases()
     raw=deepcopy(cases["v345-synthetic-process" if mutation in (
         "dangling_process_edge","process_cycle","reversed_traversal",
         "missing_process_step","reveal_order_swap","edge_before_nodes",
-        "flow_contains_partition") else "v345-synthetic-fractions"])
+        "flow_contains_partition","untrusted_process_label_number",
+        "generated_caption_id_collision") else "v345-synthetic-fractions"])
     if mutation=="extra_root_field":raw["surprise"]="model code"
     elif mutation=="provider_exec_field":raw["python"]="print('hello')"
     elif mutation=="bad_family":raw["family"]="visual_anything"
@@ -114,6 +116,13 @@ def test_fail_closed_mutated_mock_provider_json(mutation):
     elif mutation=="narration_numeric_drift":raw["beats"][0]["narration"]+=" 999."
     elif mutation=="unknown_event":raw["beats"][0]["events"][0]["kind"]="execute_code"
     elif mutation=="unsafe_object_id":raw["graphics"][0]["id"]="__import__"
+    elif mutation=="untrusted_process_label_number":
+        next(x for x in raw["graphics"] if x["id"]=="done")["text"]="999 imaginary steps"
+    elif mutation=="generated_caption_id_collision":
+        next(x for x in raw["graphics"] if x["id"]=="done")["id"]="start_caption"
+        for beat in raw["beats"]:
+            for event in beat["events"]:
+                if event["target"]=="done":event["target"]="start_caption"
     with pytest.raises((Blocked,ValueError,ValidationError)):
         decode_model_facing_scene(raw)
 
