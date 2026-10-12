@@ -60,7 +60,18 @@ def validate_transformations(scene, plan:TransformationPlan)->list[dict]:
         beat=scene.beats[a.beat_index]
         if a.claim_id not in beat.claim_ids:
             raise Blocked("V347_GRAMMAR_CLAIM_UNBOUND")
-        events=[e for e in beat.events if e.target==a.event_target]
+        expected_kind={
+            "subdivide":"morph_partition",
+            "equivalence_link":"show_label",
+            "condition_probe":"traverse_edge",
+            "state_transition":"traverse_edge",
+            "causal_emphasis":"traverse_edge",
+        }[a.kind]
+        # One object may legitimately have distinct events in the same
+        # narrated beat (e.g. reveal_edge then traverse_edge). Identity is
+        # (beat, event KIND, object) not just (beat, object).
+        events=[e for e in beat.events if e.target==a.event_target
+                and e.kind==expected_kind]
         if len(events)!=1:
             raise Blocked("V347_GRAMMAR_EVENT_UNBOUND")
         event=events[0]
