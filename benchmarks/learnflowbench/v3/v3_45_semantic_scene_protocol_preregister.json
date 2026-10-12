@@ -1,0 +1,91 @@
+{
+  "checkpoint": "V3-45",
+  "name": "AI-Authored Semantic Scene Protocol & Offline Integration",
+  "preregistered_before_implementation": true,
+  "parent_pr": 78,
+  "parent_sha": "734f212af4326e589674b1df9d1af152587ba9bd",
+  "status": "OFFLINE_SCHEMA_AND_HOST_RENDER_ONLY",
+  "research_question": "Can strict model-facing JSON DATA, not host-written Python or hidden branching, express two structurally different lessons and deterministically generate native voice-over videos through host validators and Manim?",
+  "source_protocols": [
+    "V3-41 portable strict schema allowlist, required field sets, schema budget and no auto repairs",
+    "V3-44 typed partition/ratio proof event graph and Manim compiler, plus exact-frame mux",
+    "V3-36 source-model rejection for offline host fixtures",
+    "existing static Visual Director research reviewed, no new orchestration service"
+  ],
+  "frozen_topics": [
+    {
+      "fixture_id": "v345-synthetic-fractions",
+      "kind": "fraction_equivalence",
+      "domain": "mathematics",
+      "concept": "1/2 equivalent 2/4",
+      "shape": "two partitions, factor relation, graphic morph, equation",
+      "synthetic": true
+    },
+    {
+      "fixture_id": "v345-synthetic-process",
+      "kind": "ordered_process",
+      "domain": "computer_science",
+      "concept": "a deterministic three-step process Start → Verify → Finish",
+      "shape": "process nodes, directed edges, sequential traversal events",
+      "synthetic": true
+    }
+  ],
+  "design_requirements": [
+    "one single versioned model-facing JSON Schema strict provider portable subset",
+    "actual Pydantic semantic validation after JSON schema, never trust schema alone",
+    "host-only compiler switches solely on declared validated family, no topic string substring heuristics or special hardcoding for topic ids",
+    "no generated executable Python permitted; host alone compiles bounded Manim commands",
+    "facts vetted via per-fixture trusted claim registry; narration cannot establish scientific correctness by itself",
+    "model-authored provenance only when independently attested real provider receipt; fixture always synthetic",
+    "reject invalid graph identities, event order, unsupported transition family, times, layout, visual proof, aspect, claims, illicit numbers, unknown fields and protocol fallback",
+    "preregister before code, zero new model HTTP POST or authenticated GET"
+  ],
+  "acceptance": {
+    "families": [
+      "fraction_equivalence",
+      "ordered_process"
+    ],
+    "families_rendered_native_mp4": 2,
+    "scene_generation": "synthetic mock provider JSON only, never counted as genuine AI output",
+    "video": "each 1280x720 H264/AAC 15fps, exact audio-derived frame count, >=4 speaking beats, decoded nonblank and dynamic frames, measured nonzero AAC",
+    "semantic": [
+      "fractions exact rational identity, source target visible & equal whole, label visibly shows numerator and denominator factor",
+      "process edges declared directed, no cycles, node state and event traversal ordered along edges",
+      "all events within authored beat and claim grounded"
+    ],
+    "provider_schema": "V3-41 allowlist, <1000 enum values; no refs/anyOf/minItems/unsupported keywords; full required fields and extraProperties=false",
+    "negative": [
+      "synthetic provenance accepted as model",
+      "wrong fraction proof",
+      "shaded geometry mismatch",
+      "process unreachable target",
+      "edge order forged",
+      "claim outside trusted topic claims",
+      "event outside beat",
+      "unused family fields populated",
+      "bad id or unbounded coords",
+      "provider fabricated code",
+      "audio shortage",
+      "source render frame shortage",
+      "silent AAC",
+      "static/blank movie",
+      "unknown schema properties"
+    ],
+    "frozen_prior_runs": [
+      38189257163,
+      38194586838,
+      38194589299
+    ],
+    "model_http_requests": 0,
+    "provider_authenticated_gets": 0,
+    "main_merge": false,
+    "production": "BLOCKED",
+    "nonclaims": [
+      "no actual model has yet generated a V3-45 JSON scene",
+      "not generalization to all 6 curriculum domains",
+      "not pedagogical quality or human-blind preference",
+      "not word-level narration alignment",
+      "provider native schema support unverified without paid request"
+    ]
+  }
+}
