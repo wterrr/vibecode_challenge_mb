@@ -49,7 +49,8 @@ def subdivision_axis(scene,source_id:str,target_id:str,factor:int)->str:
     Reject perspective/diagonal, shuffled colors or unrelated geometry.
     """
     parts={p.id:p for p in scene.partitions}
-    tiles={g.id:g for g in scene.graphics if g.kind=="tile"}
+    tile_values=(scene.graphics if hasattr(scene,"graphics") else scene.tiles)
+    tiles={g.id:g for g in tile_values if not hasattr(g,"kind") or g.kind=="tile"}
     if source_id not in parts or target_id not in parts or factor<2:
         raise Blocked("V347_SUBDIVISION_REFERENCES_INVALID")
     left=[tiles[x] for x in parts[source_id].part_ids]
