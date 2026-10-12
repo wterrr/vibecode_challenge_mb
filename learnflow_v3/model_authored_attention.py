@@ -160,7 +160,7 @@ def verify_storyboard(raw):
         if role=="A4" and not ("value" in l and ("weight" in l or "mix" in l)):
             raise Blocked("V350_A4_NOT_GROUNDED")
         # Detect known unsupported quantities but do not claim full semantic NLP proof.
-        numbers=re.findall(r"(?<![a-z])\\d+(?:\\.\\d+)?",l)
+        numbers=re.findall(r"(?<![a-z])\d+(?:\\.\d+)?",l)
         allowed={"0","1","2","0.707","0.67","0.670","0.33","0.330","0.7","0.3"}
         if any(n not in allowed for n in numbers):
             raise Blocked("V350_UNAPPROVED_MODEL_NUMBER")
@@ -294,7 +294,7 @@ def compile_manim(raw,beat_durations):
             raise Blocked("V350_SPEECH_BEAT_TOO_SHORT_FOR_HOST_EVENTS")
         lines.append(f"        self.wait({duration-used:.5f})")
     lines.append("        self.wait(.8)  # video-only extra frames trimmed by exact WAV mux")
-    code="\\n".join(lines)+"\\n"
+    code="\n".join(lines)+"\n"
     if any(x in code for x in ("__import__","eval(","exec(","subprocess","import os")):
         raise Blocked("V350_HOST_CODE_SAFETY")
     compile(code,"<host verified attention Manim>","exec")
