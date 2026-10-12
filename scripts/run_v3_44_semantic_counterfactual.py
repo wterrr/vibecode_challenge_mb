@@ -61,6 +61,9 @@ def run(root:Path,source:Path,out:Path)->dict:
     if rv.returncode!=0 or not video.is_file():
         raise Blocked("V344_FFMPEG_NATIVE_MUX_FAILURE")
     qa=_codec_and_pixel_gates(video,beats)
+    expected_frames=sum(b["frames"] for b in beats)
+    if abs(qa["frames"]-expected_frames)>1:
+        raise Blocked("V344_AUDIO_CLIPPED_OR_FRAME_COUNT_DRIFT")
     srt=out/"v3_44_original_narration_per_beat.srt"
     srt.write_text("\n".join(
         f"{i+1}\n{_clock(b['start_seconds'])} --> "
