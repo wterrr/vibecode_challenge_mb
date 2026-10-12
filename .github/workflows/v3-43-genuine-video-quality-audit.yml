@@ -1,0 +1,85 @@
+name: V3-43 One Genuine Video Visual Pedagogy Audit OFFLINE
+
+on:
+  push:
+    branches: [chatgpt/v3-43-genuine-video-quality-audit]
+  pull_request:
+    paths:
+      - "learnflow_v3/genuine_video_quality_audit.py"
+      - "tests/v3/test_v3_43_genuine_video_quality_audit.py"
+      - "benchmarks/learnflowbench/v3/v3_43_genuine_video_quality_preregister.json"
+      - ".github/workflows/v3-43-genuine-video-quality-audit.yml"
+      - "reports/v3_43_genuine_video_quality_audit.md"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  audit-immutable-real-v342-mp4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install native ffmpeg and Computer Modern fonts before prior evidence gate
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Local analysis Python dependencies only, no model network
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml
+      - name: Download immutable V3-42 GENUINE provider artifact from successful push run
+        uses: actions/download-artifact@v4
+        with:
+          name: v3-42-genuine-model-video-or-failclosed-receipt
+          run-id: 38189257163
+          repository: wterrr/vibecode_challenge_mb
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/v3_42_real_source
+      - name: Validate authentic model provenance again, NOT synthetic
+        timeout-minutes: 3
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_43_quality_output"
+          python -m learnflow_v3.creative_evidence_gate \
+            --artifact-dir "$RUNNER_TEMP/v3_42_real_source" \
+            --output "$RUNNER_TEMP/v3_43_quality_output/v3_36_revalidated_provenance.json"
+      - name: Real decoded-video timeline, audio and adversarial integrity regressions
+        timeout-minutes: 8
+        env:
+          V343_SOURCE_DIR: ${{ runner.temp }}/v3_42_real_source
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_43_genuine_video_quality_audit.py \
+            tests/v3/test_v3_42_single_genuine_portable_trial.py \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py
+      - name: Write deterministic time-coded evidence and actual decoded frame filmstrip
+        timeout-minutes: 4
+        run: |
+          python -m learnflow_v3.genuine_video_quality_audit \
+            --artifact-dir "$RUNNER_TEMP/v3_42_real_source" \
+            --output-dir "$RUNNER_TEMP/v3_43_quality_output"
+      - name: Freeze core protocols and old model one-shot budget
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Archive objective audit outputs; NOT model or human-rated quality
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-43-genuine-video-TIMECODED-OFFLINE-AUDIT
+          path: ${{ runner.temp }}/v3_43_quality_output/
+          retention-days: 14
+          if-no-files-found: warn
+
+  # No provider requests, no paid model job, no synthetic replacement or main merge.
