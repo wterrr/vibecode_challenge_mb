@@ -141,6 +141,16 @@ class SceneWire(BaseModel):
                 x.kind=="tile" for x in self.graphics
             ):
                 raise ValueError("V345_FLOW_FAMILY_FIELD_MISMATCH")
+            # Numbers in process screen labels must not escape the trusted
+            # process claim bank through the separate graphics channel.
+            if any(re.search(r"\\d",x.text) for x in self.graphics
+                   if x.kind in ("node","label")):
+                raise ValueError("V345_PROCESS_UNSUPPORTED_VISIBLE_NUMBER")
+            # Compiler manufactures one caption variable per process node.
+            # Forbid a user-declared identifier colliding with generated names.
+            derived={x.id+"_caption" for x in self.graphics if x.kind=="node"}
+            if derived & set(ids):
+                raise ValueError("V345_GENERATED_CAPTION_ID_COLLISION")
             self._validate_process(objs)
         # Unknown number tokens fail before speech is synthesized. This is a
         # syntactic screen; semantic prose truth still needs fact-checking.
