@@ -1,0 +1,88 @@
+{
+  "checkpoint": "V3-46",
+  "title": "Visual Quality System & Benchmark",
+  "registered_before_implementation": true,
+  "parent_pr": 79,
+  "parent_sha": "646a82c021b17400aafa1dfd30a0a157c930ec10",
+  "source": "both actual V3-45 native synthetic MP4; process after V3-45-FIX",
+  "baseline_runs": {
+    "fraction": "38196528217",
+    "process_fixed": "38198567269"
+  },
+  "source_sha256": {
+    "fraction": "cb6943132289e1d9ede3556c4288bcb4e58278860deab9fe441286732e61b8b7",
+    "process_fixed": "TO_BE_VERIFIED_FROM_IMMUTABLE_ARTIFACT_RECEIPT"
+  },
+  "truth_labels": "SYNTHETIC_OFFLINE_JSON_MODEL_FACING_NOT_LIVE_MODEL",
+  "reuse": [
+    "V3-45 existing validated wire, semantic state machine & Manim process/fraction compiler",
+    "V3-45-FIX pre-validated clipped AABB process edge geometry plus physical pixel QA",
+    "V3-44-FIX 15 fps H264/AAC exact frame mux",
+    "V3-43 real-decoded-frame diagnostic principle, not its narrow model-origin evidence",
+    "V3-45 offline fixture/audio & Docker sandbox"
+  ],
+  "frozen_families": [
+    "fraction_equivalence",
+    "ordered_process"
+  ],
+  "objective": "Share consistent host-owned visual design tokens, hierarchy, caption constraints and semantic focus across both compilers; benchmark real pixels and narration event timing rather than aesthetic success asserted by CI",
+  "design_changes": [
+    "consistent Computer Modern serif font; microheader, content framing and restrained accent lines",
+    "safe area title/rail/footer and grouped semantic content layout without rewriting real claims",
+    "node captions strictly inside node with inset >=0.22 world units; edges remain AABB-clipped with V3-45-FIX clearance",
+    "visual indication must preserve math ratio, process topology, original narration and beat timing anchors",
+    "shared reusable style helper rather than two topic IDs or hard-coded video frames"
+  ],
+  "automatic_gates": [
+    "original fraction & process semantic JSON and narration exact unchanged",
+    "both native 1280x720 H264/AAC 15fps, exact WAV-derived frame count & four non-silent audio beats",
+    "old-to-new comparisons at same normalized beat-relative timestamps, actual decoded frame and documented SHA provenance",
+    "title/caption boxes within safe area; no text outside frame, within-node caption inset; no edge/node/cursor overlapping pixels",
+    "no flash/sustained blank frames and no unexpected visual semantic disappearance",
+    "negative controls for oversized captions, invalid safe area, design bypass and muted/synthetic video provenance"
+  ],
+  "visual_quality_rubric": {
+    "dimensions": [
+      {
+        "id": "composition",
+        "description": "Meaningful screen-space hierarchy and white-space balance"
+      },
+      {
+        "id": "typography",
+        "description": "Computer Modern typography legible and not clipped or crowded"
+      },
+      {
+        "id": "semantic_clarity",
+        "description": "Visible graphic/animation reinforces narrated claim"
+      },
+      {
+        "id": "motion_pacing",
+        "description": "Reveals and highlights support comprehension without chaos or empty holds"
+      },
+      {
+        "id": "perceptual_polish",
+        "description": "Consistency of lines, corners, emphasis and transitions"
+      },
+      {
+        "id": "narration_coherence",
+        "description": "Beat-relative event timing, with no fabricated word alignment"
+      }
+    ],
+    "scale": "1=poor, 2=weak, 3=adequate, 4=strong, 5=excellent",
+    "human_acceptance": "Requires independent human reviewer; not auto-passed by author or pixel measurements"
+  },
+  "comparison": {
+    "sample_policy": "same frame times relative to frozen beat WAV boundaries; >=12 sampled frames per family; export matched contact sheets",
+    "metrics": "occupancy/frame change/nonblank/safe areas, describe not substitute for human rating",
+    "source_count": "n=2 deterministic fixtures and 1 baseline each, no statistical significance claims"
+  },
+  "limits": [
+    "NO GPT-6 API request or claim genuine model authored visuals",
+    "DO NOT claim 3Blue1Brown-level quality, human-rated superiority, six-domain generality or measured learning gains",
+    "NO code execution from LLM JSON, no silent static card fallback",
+    "word-level audio alignment unavailable",
+    "no main merge; PR remains Draft"
+  ],
+  "model_http_calls": 0,
+  "production": "BLOCKED"
+}
