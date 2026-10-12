@@ -133,6 +133,19 @@ class SceneWire(BaseModel):
             if (not self.partitions or not self.relations or
                 any(x.kind in ("node","edge") for x in self.graphics)):
                 raise ValueError("V345_FRACTION_FAMILY_FIELD_MISMATCH")
+            # V3-48: claim IDs F1/F2/F3 refer to the FROZEN 1/2 = 2/4
+            # lesson. A mathematically valid new ratio cannot reuse these
+            # immutable claims; new topics require their own verified claim bank.
+            if (len(self.partitions)!=2 or len(self.relations)!=1):
+                raise ValueError("V348_UNSUPPORTED_FRACTION_CLAIM_SCOPE")
+            fraction_by_id={p.id:p for p in self.partitions}
+            r=self.relations[0]
+            a,b=fraction_by_id.get(r.source),fraction_by_id.get(r.target)
+            if (a is None or b is None or
+                (a.numerator,a.denominator)!=(1,2) or
+                (b.numerator,b.denominator)!=(2,4) or
+                r.multiply_by!=2):
+                raise ValueError("V348_UNSUPPORTED_FRACTION_CLAIM_SCOPE")
             # The V3-44 validator is the authoritative existing engine: it
             # handles partition overlaps, proof, exact ratio and event state.
             fraction_lesson(self)
@@ -151,6 +164,17 @@ class SceneWire(BaseModel):
             derived={x.id+"_caption" for x in self.graphics if x.kind=="node"}
             if derived & set(ids):
                 raise ValueError("V345_GENERATED_CAPTION_ID_COLLISION")
+            # V3-48: P1/P2/P3 are the exact Start -> Verify -> Finish
+            # claims. Arbitrary graph labels under these IDs would launder
+            # unsupported semantic meaning through otherwise valid topology.
+            nodes={g.id:g for g in self.graphics if g.kind=="node"}
+            if len(nodes)!=3 or {g.text for g in nodes.values()}!={"Start","Verify","Finish"}:
+                raise ValueError("V348_UNSUPPORTED_PROCESS_CLAIM_SCOPE")
+            by_name={g.text:g.id for g in nodes.values()}
+            edges={(g.src,g.dst) for g in self.graphics if g.kind=="edge"}
+            if edges!={(by_name["Start"],by_name["Verify"]),
+                       (by_name["Verify"],by_name["Finish"])}:
+                raise ValueError("V348_PROCESS_CLAIM_SEQUENCE_WRONG")
             self._validate_process(objs)
         # Unknown number tokens fail before speech is synthesized. This is a
         # syntactic screen; semantic prose truth still needs fact-checking.
