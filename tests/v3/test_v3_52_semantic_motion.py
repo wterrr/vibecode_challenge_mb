@@ -30,6 +30,8 @@ def test_facts_generic_compiler_real_v2_contract(row):
     compile(code,"<host_only>","exec")
     assert "TransformFromCopy(bar_a,seg_a)" in code
     assert "TransformFromCopy(bar_b,seg_b)" in code
+    assert "TransformFromCopy(value_a,contribution_a)" in code
+    assert "TransformFromCopy(value_b,contribution_b)" in code
     assert f"width={5*ev['weights'][0]:.6f}" in code
     assert f"width={5*ev['weights'][1]:.6f}" in code
     assert "V352_SEMANTIC_BEAT_3" in code
