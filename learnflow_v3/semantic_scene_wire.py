@@ -143,7 +143,7 @@ class SceneWire(BaseModel):
                 raise ValueError("V345_FLOW_FAMILY_FIELD_MISMATCH")
             # Numbers in process screen labels must not escape the trusted
             # process claim bank through the separate graphics channel.
-            if any(re.search(r"\\d",x.text) for x in self.graphics
+            if any(re.search(r"\d",x.text) for x in self.graphics
                    if x.kind in ("node","label")):
                 raise ValueError("V345_PROCESS_UNSUPPORTED_VISIBLE_NUMBER")
             # Compiler manufactures one caption variable per process node.
