@@ -45,6 +45,14 @@ jobs:
           repository: wterrr/vibecode_challenge_mb
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/v3_44_original_genuine
+      - name: Download immutable V3-44 failed 595-to-588 mux evidence for regression
+        uses: actions/download-artifact@v4
+        with:
+          name: v3-44-offline-HOST-COUNTERFACTUAL-NOT-NEW-MODEL
+          run-id: 38192773382
+          repository: wterrr/vibecode_challenge_mb
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/v3_44_frozen_mux_failure
       - name: Independently revalidate original genuine model provenance
         timeout-minutes: 3
         run: |
@@ -56,6 +64,7 @@ jobs:
         timeout-minutes: 8
         env:
           V344_SOURCE_DIR: ${{ runner.temp }}/v3_44_original_genuine
+          V344_FAILING_MUX_DIR: ${{ runner.temp }}/v3_44_frozen_mux_failure
         run: |
           python -m pytest -q --confcutdir=tests/v3 \
             tests/v3/test_v3_44_semantic_visual_events.py \
