@@ -186,3 +186,6 @@ def test_no_paid_workflow_no_retry_and_old_tests_preserved():
     assert "verify_v2_core_freeze.py" in flow
     assert "verify_learnflow_bench.py" in flow
     assert "v3-51-HOST-THREE-CREATIVE-NATIVE-MP4-NO-AI" in flow
+    assert "if-no-files-found: error" in flow
+    assert r"path: \${{ runner.temp }}" not in flow
+    assert "path: ${{ runner.temp }}/v351_three/" in flow
