@@ -42,6 +42,38 @@ class TransformationPlan(BaseModel):
         return self
 
 
+def subdivision_axis(scene,source_id:str,target_id:str,factor:int)->str:
+    """Require the existing morph's target cells REALLY partition each source.
+
+    The current finite grammar only supports axis-aligned equal cell division.
+    Reject perspective/diagonal, shuffled colors or unrelated geometry.
+    """
+    parts={p.id:p for p in scene.partitions}
+    tiles={g.id:g for g in scene.graphics if g.kind=="tile"}
+    if source_id not in parts or target_id not in parts or factor<2:
+        raise Blocked("V347_SUBDIVISION_REFERENCES_INVALID")
+    left=[tiles[x] for x in parts[source_id].part_ids]
+    right=[tiles[x] for x in parts[target_id].part_ids]
+    if len(right)!=factor*len(left):
+        raise Blocked("V347_SUBDIVISION_CELL_COUNT_BAD")
+    axes=set()
+    for i,src in enumerate(left):
+        group=right[i*factor:(i+1)*factor]
+        if any(x.color!=src.color for x in group):
+            raise Blocked("V347_SUBDIVISION_COLOR_CONTINUITY_BROKEN")
+        if all(abs(x.width*factor-src.width)<.002 and
+               abs(x.height-src.height)<.002 for x in group):
+            axes.add("vertical")
+        elif all(abs(x.height*factor-src.height)<.002 and
+                 abs(x.width-src.width)<.002 for x in group):
+            axes.add("horizontal")
+        else:
+            raise Blocked("V347_SUBDIVISION_NOT_EQUAL_AXIS_ALIGNED_CELLS")
+    if len(axes)!=1:
+        raise Blocked("V347_SUBDIVISION_AXES_INCONSISTENT")
+    return next(iter(axes))
+
+
 def validate_transformations(scene, plan:TransformationPlan)->list[dict]:
     """Bind graph actions against every fact, beat and existing event ID.
 
@@ -86,6 +118,7 @@ def validate_transformations(scene, plan:TransformationPlan)->list[dict]:
                 left,right=partitions[a.source_id],partitions[a.subject_id]
                 if len(right.part_ids)!=a.factor*len(left.part_ids):
                     raise Blocked("V347_SUBDIVISION_CELL_INVARIANT")
+                subdivision_axis(scene,a.source_id,a.subject_id,a.factor)
                 if a.outcome!="not_applicable":
                     raise Blocked("V347_FRACTION_OUTCOME_INVALID")
             elif a.kind=="equivalence_link":
