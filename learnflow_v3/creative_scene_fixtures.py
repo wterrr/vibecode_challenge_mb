@@ -52,7 +52,6 @@ def fixtures()->dict[str,dict]:
         n("weightleft","CHART","weight_a",tone="primary"),
         n("weightright","CHART","weight_b",tone="secondary"),
         n("scoreleft","MATH","score_a"),
-        n("scoreright","MATH","score_b"),
         n("context","SHAPE","context",tone="accent"),
         n("valueleft","MATH","value_a"),
         n("valueright","MATH","value_b")],
@@ -68,8 +67,8 @@ def fixtures()->dict[str,dict]:
           a("reveal","scoreleft"),a("reveal","scoreright"),
           a("connect","scorepath"),a("connect","otherscore"),a("emphasize","scoreleft")]),
       beat("mixture",["A2","A3"],WORDS["softmax"],[
-          a("reveal","scoreleft"),a("reveal","scoreright"),
-          a("reveal","weightleft"),a("reveal","weightright")]),
+          a("reveal","scoreleft"),a("reveal","weightleft"),
+          a("reveal","weightright")]),
       beat("mixture",["A4"],WORDS["mix"],[
           a("reveal","context"),a("reveal","valueleft"),a("reveal","valueright"),
           a("connect","to_context_left"),a("connect","to_context_right")])
