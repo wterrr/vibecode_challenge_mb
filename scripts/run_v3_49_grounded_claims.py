@@ -21,11 +21,50 @@ from learnflow_v3.semantic_visual_events import compile_manim
 from learnflow_v3.creative_manim_runner import _audio,_docker_manim,_codec_and_pixel_gates,sha
 from learnflow_v3.creative_evidence_gate import EvidenceRejected,inspect_candidate
 from scripts.run_v3_44_semantic_counterfactual import deterministic_mux
-from scripts.run_v3_47_pedagogical_storytelling import _semantic_frame_proofs,_yellow_count
+from scripts.run_v3_47_pedagogical_storytelling import _yellow_count
 from learnflow_v3.process_edge_visual_qa import _frame
 
 PRE="benchmarks/learnflowbench/v3/v3_49_grounded_claims_preregister.json"
 SOURCE_ORIGIN="V349_HOST_SYNTHETIC_NEW_RATIO_NOT_MODEL_AUTHORED"
+
+
+def _native_cut_evidence(movie:Path,adapter,beats,topic:FractionTopic):
+    """Every preregistered cut, unlike V3-47's center-only factor-2 sample.
+
+    Inspect each guide at its exact topic-derived (x,y) in decoded H264,
+    and the identical position BEFORE the morph as a negative control.
+    """
+    morph=next(e for e in adapter.beats[1].events if e.kind=="morph_partition")
+    beginning=int(beats[0]["frames"])
+    shown=min(sum(b["frames"] for b in beats)-1,
+              beginning+round(beats[1]["frames"]*(morph.at+.77*morph.span)))
+    before=max(0,beginning-3)
+    oldframe,newframe=_frame(movie,before),_frame(movie,shown)
+    parts={x.id:x for x in adapter.partitions}
+    tiles={g.id:g for g in adapter.graphics if g.kind=="tile"}
+    source=parts[morph.source]
+    records=[];totals=[]
+    for tile_id in source.part_ids:
+        tile=tiles[tile_id]
+        total=0
+        for k in range(1,topic.factor):
+            xx=tile.x-tile.width/2+tile.width*k/topic.factor
+            prior=_yellow_count(oldframe,xx,tile.y,4,55)
+            after=_yellow_count(newframe,xx,tile.y,4,55)
+            if prior>6 or after<8 or after-prior<8:
+                raise Blocked("V349_ACTUAL_H264_CUT_NOT_PRESENT_OR_PREEXISTING")
+            total+=after
+            records.append({"source_tile":tile_id,"guide_index":k,
+                "cut_world_x":round(xx,6),"before_yellow_pixels":prior,
+                "after_yellow_pixels":after})
+        totals.append(total)
+    if len(records)!=topic.denominator*(topic.factor-1):
+        raise Blocked("V349_CUT_COUNT_NOT_CORRECT")
+    return {"semantic":"every_real_source_tile_cut_before_after",
+            "native_sample_frame":shown,"negative_sample_frame":before,
+            "source_guides":records,
+            "per_source_cell_yellow_guide_pixels":totals,
+            "status":"RENDERED_PIXEL_EVIDENCE_NOT_EDUCATIONAL_LEARNING"}
 
 
 def _run_case(root:Path,out:Path,row:dict):
@@ -62,7 +101,7 @@ def _run_case(root:Path,out:Path,row:dict):
         raise Blocked("V349_FRAME_AUDIO_NOT_EXACT")
     if media["max_decoded_sample_delta"]<=.9:
         raise Blocked("V349_STATIC_OUTPUT")
-    fraction_cues=_semantic_frame_proofs(movie,adapter,beats)
+    fraction_cues=_native_cut_evidence(movie,adapter,beats,topic)
     # Explicit decoded evidence that the numerical proof itself is ON SCREEN
     # in the third narrated beat; not merely present in the Manim source.
     proof_beat=beats[2]
