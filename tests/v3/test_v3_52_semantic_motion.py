@@ -33,6 +33,9 @@ def test_facts_generic_compiler_real_v2_contract(row):
     assert f"width={5*ev['weights'][0]:.6f}" in code
     assert f"width={5*ev['weights'][1]:.6f}" in code
     assert "V352_SEMANTIC_BEAT_3" in code
+    assert "FadeOut(score_a),FadeOut(score_b)" in code
+    assert "FadeOut(softmax_title),FadeOut(unit_label),FadeOut(weight_a),FadeOut(weight_b)" in code
+    assert "contribution_a" in code and "contribution_b" in code
     assert "__import__" not in code and "subprocess" not in code
 
 def test_counterfactual_changes_context_and_rendered_area():
@@ -66,6 +69,7 @@ def test_invalid_motion_fails_closed(mutation):
     if mutation=="wrong_beat":d["steps"][0]["beat"]=3
     if mutation=="wrong_fact_sha":d["steps"][0]["fact_sha256"]="f"*64
     if mutation=="wrong_context":d["case"]["query"]=(1,1)
+    d["steps"]=tuple(d["steps"])
     with pytest.raises((ValidationError,ValueError,Blocked)):
         check(MotionPlan.model_validate(d))
 
