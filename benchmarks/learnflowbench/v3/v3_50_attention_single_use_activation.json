@@ -1,0 +1,26 @@
+{
+  "checkpoint": "V3-50-ONE-QUERY-ATTENTION",
+  "action": "ONE_TIME_MODEL_ACTIVATION",
+  "direct_user_intent": "test thử 1 query hỏi về model transformer hay attention trên model thử",
+  "frozen_preregistration": "benchmarks/learnflowbench/v3/v3_50_attention_one_query_preregister.json",
+  "parent_draft_pr": 83,
+  "trial_draft_pr": 84,
+  "exact_implementation_head": "bd909e4dd7c8d67fbc00e5c4b84c2bfe5ffc9c33",
+  "verified_offline_push_run": 38212373792,
+  "verified_offline_pr_run": 38212377085,
+  "verified_offline_gate": "both success; locally decoded synthetic H264/AAC, 691 frames, no overlap at final context scene",
+  "authorized_one_shot": {
+    "model": "openai/gpt-6-luna",
+    "max_model_http_posts": 1,
+    "max_tokens": 2800,
+    "no_temperature": true,
+    "no_retry": true,
+    "no_fallback": true
+  },
+  "marker": "[v3-50-single-attention-model-post]",
+  "live_job_starts_only_after_same_tagged_commit_offline_pass": true,
+  "consumed_on_any_http_attempt": true,
+  "on_failure": "NO_GO_DO_NOT_RETRY",
+  "main_merge": false,
+  "production": "BLOCKED"
+}
