@@ -1,0 +1,99 @@
+name: V3-54 Offline Model-Candidate SceneGraph Acceptance and Native Visual QA
+
+on:
+  push:
+    branches: [chatgpt/v3-54-offline-model-candidate-acceptance]
+  pull_request:
+    paths:
+      - "learnflow_v3/creative_candidate_acceptance.py"
+      - "learnflow_v3/creative_visual_quality_gate.py"
+      - "scripts/run_v3_54_model_candidate_quality.py"
+      - "tests/v3/test_v3_54_model_candidate_quality.py"
+      - "benchmarks/learnflowbench/v3/v3_54_model_candidate_quality_preregister.json"
+      - ".github/workflows/v3-54-model-candidate-quality.yml"
+      - "reports/v3_54_model_candidate_quality.md"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+
+jobs:
+  frozen-offline-model-shaped-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Reuse CMU fonts, FFmpeg and no-network Manim prerequisites
+        timeout-minutes: 11
+        run: |
+          bash scripts/bootstrap_v3_30_native.sh
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Strict candidate wire, adversarial model mock and frozen V2/V3 tests
+        timeout-minutes: 8
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_54_model_candidate_quality.py \
+            tests/v3/test_v3_53_creative_director.py \
+            tests/v3/test_v3_52_semantic_motion.py \
+            tests/v3/test_v3_51_creative_scene_graph.py \
+            tests/v3/test_v3_50_one_query_attention.py \
+            tests/v3/test_v3_49_grounded_claims.py \
+            tests/v3/test_v3_48_pedagogical_quality.py \
+            tests/v3/test_v3_47_pedagogical_grammar.py \
+            tests/v3/test_v3_45_semantic_scene_wire.py \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py
+      - name: Frozen V2 core, V3 prereg and LearnFlowBench
+        timeout-minutes: 6
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Pull pinned network-isolated Manim Docker image
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Render three non-model mock candidate native MP4
+        timeout-minutes: 24
+        run: |
+          python scripts/run_v3_54_model_candidate_quality.py --output-dir "$RUNNER_TEMP/v354_quality"
+      - name: Fail-closed proof of actual 3 decoded videos, diversity and provenance
+        timeout-minutes: 3
+        run: |
+          python - <<'PY'
+          import json,os,pathlib
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v354_quality"
+          result=json.loads((root/"v354_offline_acceptance_final_receipt.json").read_text())
+          assert result["checkpoint"]=="V3-54"
+          assert result["result"]=="THREE_MOCK_MODEL_SHAPED_SCENEGRAPHS_NATIVE_OFFLINE_TECHNICAL_PASS_ONLY"
+          assert result["actual_model_api_posts"]==0
+          assert result["genuine_model_authoring"]=="NOT_TESTED"
+          assert result["production"]=="BLOCKED"
+          assert len(result["cases"])==3 and len(result["pairwise_decoded_quality"])==3
+          assert len({c["native_mp4_sha256"] for c in result["cases"]})==3
+          for c in result["cases"]:
+              assert c["origin"]=="HOST_MOCK_CANDIDATE_NOT_MODEL"
+              assert c["av"]["codec"]=="h264+aac"
+              assert c["av"]["frames"]==c["mux"]["output_h264_frames"]
+              assert len(c["visual_quality_proxy"]["sample_frame_sha256"])==5
+              assert c["visual_quality_proxy"]["max_temporal_difference"]>=1.5
+              assert (root/c["case"]/"mock_candidate_native.mp4").stat().st_size>40000
+          for pair in result["pairwise_decoded_quality"]:
+              assert pair["peak_visible_difference"]>=2.5
+          print("V3_54=THREE_TRUE_NATIVE_MOCK_SCENEGRAPHS_AND_VISUAL_PROXIES_PASS_NO_PROVIDER")
+          PY
+      - name: Publish actual H264, host-trusted scenes, sanitized receipts and metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-54-THREE-MOCK-MODEL-SHAPED-NATIVE-QUALITY-VIDEOS-NO-AI
+          path: ${{ runner.temp }}/v354_quality/
+          retention-days: 14
+          if-no-files-found: error
+  # No model API token, no genuine model attribution, no main merge.
