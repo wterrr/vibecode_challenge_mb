@@ -313,6 +313,46 @@ def audio_proxy(story:Storyboard):
         claim_ids=b.claims) for b in story.beats])
 
 
+def _edge_route(scene:Scene,rel:Relation,coords:dict)->list[tuple[float,float]]:
+    """Host-owned orthogonal bypass of third-party node bounding boxes.
+
+    The direct segment must never cross unrelated visual identities. Edges
+    attach OUTSIDE estimated drawn boxes rather than through label centers.
+    """
+    a,b=coords[rel.source],coords[rel.target]
+    dx=b[0]-a[0];dy=b[1]-a[1]
+    if abs(dx)>=abs(dy):
+        sign=1 if dx>0 else -1
+        p=(a[0]+sign*1.57,a[1]);q=(b[0]-sign*1.57,b[1])
+    else:
+        sign=1 if dy>0 else -1
+        p=(a[0],a[1]+sign*.66);q=(b[0],b[1]-sign*.66)
+    if math.dist(p,q)<.19:
+        raise Blocked("V351_RELATION_NO_VISIBLE_ARROW_GAP")
+    obstacles=[xy for node_id,xy in coords.items()
+               if node_id not in (rel.source,rel.target)]
+    def hit(a,b):
+        # Tested against host-known bounded layout envelopes.
+        for x,y in obstacles:
+            for k in range(1,22):
+                t=k/22
+                xx=a[0]+t*(b[0]-a[0])
+                yy=a[1]+t*(b[1]-a[1])
+                if abs(xx-x)<1.42 and abs(yy-y)<.59:
+                    return True
+        return False
+    if not hit(p,q):
+        return [p,q]
+    if abs(dx)<abs(dy):
+        raise Blocked("V351_VERTICAL_RELATION_OBSTRUCTED")
+    # Minimal two-corner dogleg around the actual obstruction.
+    for y in (1.30,-1.30,2.22,-2.22):
+        bends=[p,(p[0],y),(q[0],y),q]
+        if not any(hit(bends[k],bends[k+1]) for k in range(3)):
+            return bends
+    raise Blocked("V351_NO_NONOCCLUDING_RELATION_ROUTE")
+
+
 def manim(story:Storyboard,evidence:dict,graphs:list[SceneGraph],layout:dict,
           seconds:list[float])->str:
     if len(seconds)!=len(story.beats) or any(not 3<=d<=24 for d in seconds):
@@ -323,16 +363,28 @@ def manim(story:Storyboard,evidence:dict,graphs:list[SceneGraph],layout:dict,
       "    def construct(self):",
       f"        self.camera.background_color={BG!r}",
       f"        brand=Text('LEARNFLOW  /  VISUAL THINKING',font='CMU Serif',font_size=15,color={MUTED!r}).to_edge(UP,buff=.17)",
-      f"        top=Text({story.title!r},font='CMU Serif',font_size=30,color={BODY!r}).move_to([0,2.76,0]).scale_to_fit_width(10.7)",
+      f"        top=Text({story.title!r},font='CMU Serif',font_size=30,color={BODY!r}).move_to([0,2.76,0])",
+      "        if top.width>10.7:top.scale_to_fit_width(10.7)",
       "        self.add(brand,top)",
     ]
     objnames={};relname={};node_by_scene={}
     for index,s in enumerate(story.scenes):
         nodes={n.id:n for n in s.nodes};node_by_scene[s.id]=nodes
+        lines.append(
+            f"        v351_section_{index}=Text({s.title!r},font='CMU Serif',"
+            f"font_size=28,color={BODY!r}).move_to([0,2.76,0])")
+        lines.append(f"        if v351_section_{index}.width>10.7:v351_section_{index}.scale_to_fit_width(10.7)")
         for i,n in enumerate(s.nodes):
             name=f"v351_n{index}_{i}";objnames[(s.id,n.id)]=name
             x,y=layout[s.id][n.id]
             text=_label(n,evidence);color=TONE[n.tone]
+            # Line breaks preserve the exact verified host facts but avoid
+            # squeezing mathematical results into illegible single lines.
+            display=text
+            if n.kind=="SHAPE" and len(text)>17 and " = " in text:
+                display=text.replace(" = "," =\n",1)
+            elif n.kind=="EQUATION" and len(text)>27 and " / " in text:
+                display=text.replace(" / "," /\n",1)
             if n.kind=="CHART":
                 val=evidence["facts"][n.fact_ref]["bar_value"]
                 lines.append(
@@ -341,13 +393,15 @@ def manim(story:Storyboard,evidence:dict,graphs:list[SceneGraph],layout:dict,
                    f"fill_opacity=.65).move_to([{x:.3f},{y+.15:.3f},0])")
                 lines.append(
                    f"        {name}_caption=Text({text!r},font='CMU Serif',font_size=22,"
-                   f"color={BODY!r}).move_to([{x:.3f},{y-.82:.3f},0]).scale_to_fit_width(2.7)")
+                   f"color={BODY!r}).move_to([{x:.3f},{y-.82:.3f},0])")
+                lines.append(f"        if {name}_caption.width>2.7:{name}_caption.scale_to_fit_width(2.7)")
                 lines.append(f"        {name}=VGroup({name}_shape,{name}_caption)")
             else:
                 lines.append(
-                   f"        {name}_label=Text({text!r},font='CMU Serif',"
+                   f"        {name}_label=Text({display!r},font='CMU Serif',"
                    f"font_size={24 if n.kind in ('MATH','EQUATION') else 26},"
-                   f"color={color!r}).scale_to_fit_width(2.75).move_to([{x:.3f},{y:.3f},0])")
+                   f"color={color!r}).move_to([{x:.3f},{y:.3f},0])")
+                lines.append(f"        if {name}_label.width>2.75:{name}_label.scale_to_fit_width(2.75)")
                 if n.kind=="SHAPE":
                     lines.append(
                       f"        {name}_shape=RoundedRectangle(width=3.0,height=1.12,"
@@ -357,19 +411,37 @@ def manim(story:Storyboard,evidence:dict,graphs:list[SceneGraph],layout:dict,
                 else:lines.append(f"        {name}=VGroup({name}_label)")
         for i,r in enumerate(s.relations):
             name=f"v351_e{index}_{i}";relname[(s.id,r.id)]=name
-            left,right=objnames[(s.id,r.source)],objnames[(s.id,r.target)]
-            lines.append(
-              f"        {name}=Arrow({left}.get_center(),{right}.get_center(),"
-              f"buff=.70,stroke_width=3,tip_length=.12,color={ACCENT!r}).set_z_index(-2)")
+            route=_edge_route(s,r,layout[s.id])
+            if len(route)==2:
+                lines.append(
+                  f"        {name}=Arrow({[round(route[0][0],3),round(route[0][1],3),0]!r},"
+                  f"{[round(route[1][0],3),round(route[1][1],3),0]!r},"
+                  f"buff=.10,stroke_width=2.6,tip_length=.13,color={ACCENT!r}).set_z_index(-2)")
+            else:
+                parts=[]
+                for seg in range(len(route)-1):
+                    aa=[round(route[seg][0],3),round(route[seg][1],3),0]
+                    bb=[round(route[seg+1][0],3),round(route[seg+1][1],3),0]
+                    shape="Arrow" if seg==len(route)-2 else "Line"
+                    pname=f"{name}_segment_{seg}"
+                    lines.append(
+                      f"        {pname}={shape}({aa!r},{bb!r},"
+                      f"stroke_width=2.6,color={ACCENT!r}"
+                      +(",buff=.08,tip_length=.12)" if shape=="Arrow" else ")"))
+                    parts.append(pname)
+                lines.append(f"        {name}=VGroup("+",".join(parts)+").set_z_index(-2)")
     current=None;visible=[];start=0
     for i,b in enumerate(story.beats):
-        if b.scene_id!=current:
+        is_new_scene=b.scene_id!=current
+        if is_new_scene:
             if visible:
                 lines.append("        self.play(FadeOut("+",".join(visible)+"),run_time=.35)")
             visible=[];current=b.scene_id
+            index=next(k for k,s in enumerate(story.scenes) if s.id==b.scene_id)
+            lines.append(f"        self.play(Transform(top,v351_section_{index}),run_time=.25)")
         actions=b.actions;period=seconds[i]
         each=min(.80,max(.23,(period-1.0)/len(actions)))
-        spent=.35 if i and story.beats[i-1].scene_id!=b.scene_id else 0
+        spent=(.35 if i and is_new_scene else 0)+(.25 if is_new_scene else 0)
         for a in actions:
             name=(relname if a.kind=="connect" else objnames)[(b.scene_id,a.target)]
             if a.kind=="reveal":
