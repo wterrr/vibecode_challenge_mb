@@ -93,6 +93,10 @@ def _descriptors(frames):
             "foreground_occupancy_mean":round(float(np.mean(occupancy)),5),
             "foreground_occupancy_min":round(float(np.min(occupancy)),5),
             "frame_sample_mean_absolute_delta":round(float(np.mean(activity)),4),
+            # Sparse storyboard samples intentionally contain authored holds.
+            # Native H264 motion QA is independently retained; require
+            # multiple informative changes rather than a large average.
+            "meaningful_sample_transitions":int(np.count_nonzero(activity>.3)),
             "low_change_sample_fraction":round(float(np.mean(activity<1.5)),4),
             "bright_boundary_pixel_max":int(np.max(bright_borders)),
             "sample_index_note":"three beat-relative frames per narrated beat; sparse sample cannot establish continuous motion quality"}
@@ -184,7 +188,8 @@ def main():
                 raise Blocked("V346_VISIBLE_CONTENT_CLIPPED_AT_FRAME_EDGE")
             if newdesc["foreground_occupancy_min"]<.001:
                 raise Blocked("V346_UNEXPECTED_NEAR_BLANK_FRAME")
-            if newdesc["frame_sample_mean_absolute_delta"]<1:
+            if (newdesc["meaningful_sample_transitions"]<4 or
+                newreceipt["native_video"]["max_decoded_sample_delta"]<=.9):
                 raise Blocked("V346_STATIC_MOVIE_OR_EMPTY_EVENT_COVERAGE")
             pairfile=args.output_dir/(fixture+"_before_after_12_timelines.jpg")
             contactsha=_sheet(oldframes,newframes,indices,pairfile,family)
