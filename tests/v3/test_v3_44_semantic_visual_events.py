@@ -99,6 +99,7 @@ def test_host_only_compiler_has_no_eval_and_no_serial_four_piece_reveal(counterf
     "unequal_whole","wrong_multiplier","falsified_proof_label","overlapping_tiles",
     "removed_target","repeated_id","early_emphasis","missing_morph",
     "fraction_count_drift","event_overlap","ref_out_of_bounds",
+    "unsupported_numeric_visible_text",
 ])
 def test_host_contract_rejects_mutated_storyboard(counterfactual,kind):
     d=counterfactual.model_dump(mode="json")
@@ -127,6 +128,8 @@ def test_host_contract_rejects_mutated_storyboard(counterfactual,kind):
         d["beats"][0]["events"][1]["at"]=.1
     elif kind=="ref_out_of_bounds":
         d["tiles"][0]["x"]=100.
+    elif kind=="unsupported_numeric_visible_text":
+        d["labels"][1]["text"]="1/3"
     with pytest.raises(ValidationError):
         SemanticLesson.model_validate(d)
 
@@ -154,3 +157,15 @@ def test_workflow_has_source_locked_and_zero_paid_key():
     assert "V344_SOURCE_DIR" in code
     assert "OPENROUTER_API_KEY" not in code and "secrets.OPENROUTER" not in code
     assert "v3_44_host_counterfactual_with_audio.mp4" in code
+
+
+def test_host_final_label_is_in_open_whole_gap(counterfactual):
+    t={x.id:x for x in counterfactual.tiles}
+    label=next(x for x in counterfactual.labels if x.id=="equivalent")
+    left_right=max(t[n].x+t[n].width/2 for n in ("hshade","hplain"))
+    right_left=min(t[n].x-t[n].width/2 for n in
+                   ("qshade1","qshade2","qplain1","qplain2"))
+    estimated_label_half_width=min(8.,max(.5,len(label.text)*.23))/2
+    assert label.x-estimated_label_half_width > left_right
+    assert label.x+estimated_label_half_width < right_left
+    assert label.text=="Same whole"
