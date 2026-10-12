@@ -208,8 +208,8 @@ def compile_manim(plan:MotionPlan,seconds:list[float])->str:
         f"stroke_color={ACCENT!r},fill_color={ACCENT!r},fill_opacity=.94)"
         f".move_to([{(2.5-2.5*b):.6f},-2.16,0])",
       "        combined=VGroup(seg_a,seg_b)",
-      text_line("contribution_a",f"{a:.3f} × [1, 0]",-3.0,-.35,25,PROCESS_COLOR),
-      text_line("contribution_b",f"{b:.3f} × [0, 1]",3.0,-.35,25,ACCENT),
+      text_line("contribution_a",f"{a:.3f} × [1, 0]",-3.0,-1.12,25,PROCESS_COLOR),
+      text_line("contribution_b",f"{b:.3f} × [0, 1]",3.0,-1.12,25,ACCENT),
       text_line("context",f"context = [{x:.3f}, {y:.3f}]",0,-2.99,33,BODY),
       text_line("conclusion","Normalized weights shape the information we keep",0,-1.18,23,MUTED),
       # Optional effect controls never change numeric truth.
@@ -236,10 +236,11 @@ def compile_manim(plan:MotionPlan,seconds:list[float])->str:
       ("FadeOut(q_group),FadeOut(k_a_group),FadeOut(k_b_group),FadeOut(arrow_a),FadeOut(arrow_b),FadeOut(score_rule)",.85),
       ("Transform(beat_label,Text('NORMALIZE',font='CMU Serif',font_size=16,color="+repr(ACCENT)+").move_to([5.35,3.55,0]))",.40),
       ("TransformFromCopy(score_a,bar_a),TransformFromCopy(score_b,bar_b),FadeIn(softmax_title)",1.8),
+      ("FadeOut(score_a),FadeOut(score_b)",.45),
       ("FadeIn(weight_a),FadeIn(weight_b),FadeIn(unit_label)",.8)
     ])
     phase(2,None,[
-      ("FadeOut(score_a),FadeOut(score_b),FadeOut(softmax_title),FadeOut(unit_label)",.7),
+      ("FadeOut(softmax_title),FadeOut(unit_label),FadeOut(weight_a),FadeOut(weight_b)",.7),
       ("Transform(beat_label,Text('TRANSPORT',font='CMU Serif',font_size=16,color="+repr(ACCENT)+").move_to([5.35,3.55,0]))",.4),
       ("FadeIn(mix_title),FadeIn(value_a),FadeIn(value_b),FadeIn(contribution_a),FadeIn(contribution_b),FadeIn(rail)",1.05),
       ("TransformFromCopy(bar_a,seg_a),TransformFromCopy(bar_b,seg_b)",1.9),
@@ -247,7 +248,7 @@ def compile_manim(plan:MotionPlan,seconds:list[float])->str:
     ])
     phase(3,None,[
       ("Transform(beat_label,Text('COMPOSE',font='CMU Serif',font_size=16,color="+repr(ACCENT)+").move_to([5.35,3.55,0]))",.4),
-      ("FadeOut(value_a),FadeOut(value_b),FadeOut(bar_a),FadeOut(bar_b),FadeOut(weight_a),FadeOut(weight_b),FadeOut(mix_title),FadeOut(contribution_a),FadeOut(contribution_b)",.75),
+      ("FadeOut(value_a),FadeOut(value_b),FadeOut(bar_a),FadeOut(bar_b),FadeOut(mix_title),FadeOut(contribution_a),FadeOut(contribution_b)",.75),
       ("Indicate(seg_a,color=TEAL),Indicate(seg_b,color=YELLOW)",1.0),
       ("FadeIn(context),FadeIn(conclusion)",.85)
     ])
