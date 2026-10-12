@@ -27,7 +27,7 @@ def test_early_preregister_scope_and_no_paid_requests():
     p=json.loads((ROOT/PREREG).read_text())
     assert p["checkpoint"]=="V3-45" and p["preregistered_before_implementation"] is True
     assert p["parent_sha"]=="734f212af4326e589674b1df9d1af152587ba9bd"
-    assert p["model_http_requests"]==0 and p["provider_authenticated_gets"]==0
+    assert p["acceptance"]["model_http_requests"]==0 and p["acceptance"]["provider_authenticated_gets"]==0
     assert len(p["frozen_topics"])==2
     assert {c["kind"] for c in p["frozen_topics"]}=={"ordered_process","fraction_equivalence"}
 
