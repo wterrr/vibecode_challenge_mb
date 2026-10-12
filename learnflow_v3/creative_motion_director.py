@@ -111,8 +111,10 @@ def plan_for(case:Case,style:str,stages:list[str]):
       "transport":("value_a","trace"),
       "compose":("context","spotlight")}
     beats=tuple(DirectedBeat(op=op,claim_id=CLAIMS[op],
-              evidence_sha256=h,focus_ref=preferred[op][0],
-              visual_mode=preferred[op][1]) for op in stages)
+              evidence_sha256=h,
+              focus_ref=("context" if op=="inspect" and "compose" in stages[:i]
+                         else preferred[op][0]),
+              visual_mode=preferred[op][1]) for i,op in enumerate(stages))
     result=DirectorPlan(version=VERSION,origin=ORIGIN,case=case,
                         story_style=style,evidence_sha256=h,beats=beats)
     validated(result)
