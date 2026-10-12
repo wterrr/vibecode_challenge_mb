@@ -396,19 +396,22 @@ def decode_model_facing_scene(raw)->SceneWire:
     except ValidationError:
         raise Blocked("V345_HOST_SEMANTIC_SCENE_REJECTED") from None
 
-def compile_scene(scene:SceneWire,durations:list[float],*,visual_quality:bool=False)->str:
+def compile_scene(scene:SceneWire,durations:list[float],*,visual_quality:bool=False,pedagogical_plan=None)->str:
     if len(durations)!=4 or any(not 2<=d<=20 for d in durations):
         raise Blocked("V345_MEASURED_BEAT_DURATION_INVALID")
+    if pedagogical_plan is not None:
+        from learnflow_v3.pedagogical_visual_grammar import validate_transformations
+        validate_transformations(scene,pedagogical_plan)
     if scene.family=="fraction_equivalence":
-        code=fraction_manim(fraction_lesson(scene),durations,visual_quality=visual_quality)
+        code=fraction_manim(fraction_lesson(scene),durations,visual_quality=visual_quality,pedagogical_plan=pedagogical_plan)
     else:
-        code=_compile_process(scene,durations,visual_quality=visual_quality)
+        code=_compile_process(scene,durations,visual_quality=visual_quality,pedagogical_plan=pedagogical_plan)
     if any(x in code for x in ("__import__","eval(","exec(","subprocess","import os","os.system")):
         raise Blocked("V345_HOST_CODE_SAFETY_FAILURE")
     compile(code,"<v345 trusted host manim>","exec")
     return code
 
-def _compile_process(scene:SceneWire,durations:list[float],*,visual_quality:bool=False)->str:
+def _compile_process(scene:SceneWire,durations:list[float],*,visual_quality:bool=False,pedagogical_plan=None)->str:
     # This is the SECOND semantic family, independent of any fraction fixture.
     nodes={o.id:o for o in scene.graphics if o.kind=="node"}
     edges={o.id:o for o in scene.graphics if o.kind=="edge"}
@@ -476,11 +479,34 @@ def _compile_process(scene:SceneWire,durations:list[float],*,visual_quality:bool
                 # the node centres/captions.
                 lines.append(f"        cursor.move_to({e.target}.get_start())")
                 lines.append(f"        self.add(cursor)")
-                if visual_quality:
+                from learnflow_v3.pedagogical_visual_grammar import actions_for
+                grammar_actions=actions_for(pedagogical_plan,i,e.target) if pedagogical_plan else []
+                if grammar_actions:
+                    if not visual_quality:
+                        raise Blocked("V347_STORYTELLING_REQUIRES_VISUAL_QUALITY_SAFE_AREA")
                     from learnflow_v3.visual_quality_system import ACCENT
-                    # A destination highlight shares the CURRENT semantic
-                    # edge-traversal window: no invented extra narration time.
-                    # Source and target node geometry are unchanged.
+                    node_id=edges[e.target].dst
+                    extra=[]
+                    kinds={a.kind for a in grammar_actions}
+                    if "condition_probe" in kinds:
+                        # The sourced process explicitly does NOT provide a
+                        # predicate/outcome. Draw CHECK ? temporarily, NEVER PASS.
+                        mark="v347_probe_"+str(i)
+                        lines.append(f"        {mark} = Text('CHECK ?',font='CMU Serif',"
+                                     f"font_size=24,color={ACCENT!r})"
+                                     f".next_to({node_id},DOWN,buff=.22).set_z_index(4)")
+                        extra.append(f"Succession(FadeIn({mark}),FadeOut({mark}))")
+                    if "causal_emphasis" in kinds:
+                        extra.append(f"Indicate({e.target},color={ACCENT!r},scale_factor=1.03)")
+                    if "state_transition" in kinds:
+                        extra.append(f"Indicate({node_id},color={ACCENT!r},scale_factor=1.03)")
+                    clips=", ".join(extra)
+                    lines.append(f"        self.play(AnimationGroup("
+                        f"MoveAlongPath(cursor,Line({e.target}.get_start(),"
+                        f"{e.target}.get_end())),{clips},"
+                        f"lag_ratio=0),run_time={dur:.5f})")
+                elif visual_quality:
+                    from learnflow_v3.visual_quality_system import ACCENT
                     node_id=edges[e.target].dst
                     lines.append(f"        self.play(AnimationGroup("
                         f"MoveAlongPath(cursor,Line({e.target}.get_start(),"
