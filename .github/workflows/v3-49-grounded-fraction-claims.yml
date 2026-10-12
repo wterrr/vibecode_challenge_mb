@@ -1,0 +1,100 @@
+name: V3-49 Host Grounded New Ratio Topics THREE Native AVs OFFLINE
+
+on:
+  push:
+    branches: [chatgpt/v3-49-versioned-grounded-fraction-claims]
+  pull_request:
+    paths:
+      - "learnflow_v3/grounded_fraction_claims.py"
+      - "scripts/run_v3_49_grounded_claims.py"
+      - "tests/v3/test_v3_49_grounded_claims.py"
+      - "benchmarks/learnflowbench/v3/v3_49_grounded_claims_preregister.json"
+      - ".github/workflows/v3-49-grounded-fraction-claims.yml"
+      - "reports/v3_49_grounded_claims.md"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  three-new-ratio-claim-grounded-native-lessons:
+    runs-on: ubuntu-latest
+    timeout-minutes: 47
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install native FFmpeg, CMU Serif, espeak and bounded python deps
+        timeout-minutes: 12
+        run: |
+          bash scripts/bootstrap_v3_30_native.sh
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Test SHA-bound claim truth and historical fixed-bank regressions
+        timeout-minutes: 7
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_49_grounded_claims.py \
+            tests/v3/test_v3_48_pedagogical_quality.py \
+            tests/v3/test_v3_47_pedagogical_grammar.py \
+            tests/v3/test_v3_46_visual_quality_system.py \
+            tests/v3/test_v3_45_semantic_scene_wire.py \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py
+      - name: Pull existing pinned network-isolated Manim Docker
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Render three independently grounded 720p H264 AAC lessons
+        timeout-minutes: 23
+        run: |
+          python scripts/run_v3_49_grounded_claims.py --output-dir "$RUNNER_TEMP/v349_native"
+          for case in dev_two_thirds heldout_one_third heldout_three_quarters; do
+            test -s "$RUNNER_TEMP/v349_native/$case/host_grounded_lesson.mp4"
+            test -s "$RUNNER_TEMP/v349_native/$case/verified_topic_claims.json"
+            test -s "$RUNNER_TEMP/v349_native/$case/grounded_case_receipt.json"
+          done
+      - name: Verify exact frames, all shaded cells, source SHA, local claims and no synthetic laundering
+        timeout-minutes: 3
+        run: |
+          python - <<'PY'
+          import json,os,pathlib
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v349_native"
+          d=json.loads((root/"v3_49_native_grounded_receipt.json").read_text())
+          assert d["checkpoint"]=="V3-49"
+          assert d["status"]=="THREE_NATIVE_NEW_RATIO_TOPICS_HOST_GROUNDED_HUMAN_UNRATED"
+          assert len(d["cases"])==3 and len(d["new_topic_holdouts"])==2
+          assert d["model_http_posts"]==d["model_authenticated_gets"]==0
+          assert d["human_pedagogy"]=="UNRATED" and d["production"]=="BLOCKED"
+          assert d["legacy_fixed_claim_bank"]=="PRESERVED_NOT_MODIFIED"
+          for c in d["cases"]:
+              assert c["evidence_verified"]
+              assert c["video"]["frames"]==c["mux"]["output_h264_frames"]
+              assert c["native_mp4_sha256"]
+              assert c["claimed_local_roles"]==["F1","F2","F3"]
+              assert c["verified_numeric_proof_h264"]["pixel_count"]>=24
+              assert len(c["semantic_cues"]["per_source_cell_yellow_guide_pixels"])==c["fraction"][1]
+              assert all(x>=8 for x in c["semantic_cues"]["per_source_cell_yellow_guide_pixels"])
+              assert c["origin"]=="V349_HOST_SYNTHETIC_NEW_RATIO_NOT_MODEL_AUTHORED"
+          print("V3_49=THREE_NATIVE_HELDOUT_RATIO_EVIDENCE_TECHNICAL_PASS_HUMAN_UNRATED")
+          PY
+      - name: Frozen benchmark contracts and Core safety
+        timeout-minutes: 6
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Upload actual H264, evidence hashes and native decoded event receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-49-THREE-NEW-FRACTION-TOPICS-HOST-NATIVE-NOT-MODEL
+          path: ${{ runner.temp }}/v349_native/
+          retention-days: 14
+          if-no-files-found: warn
+
+  # Zero provider calls, zero secrets, no main merge and no quality scoring.
