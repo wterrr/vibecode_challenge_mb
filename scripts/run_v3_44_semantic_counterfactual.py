@@ -12,6 +12,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import wave
 
 ROOT=Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -27,6 +28,100 @@ from learnflow_v3.semantic_visual_events import (
 )
 
 REGISTRATION="benchmarks/learnflowbench/v3/v3_44_semantic_visual_redesign_preregister.json"
+
+
+def _track_probe(path:Path)->dict:
+    """Probe actual source/finished bytes, never assume FFmpeg returned the needed frames."""
+    try:
+        result=subprocess.run([
+            "ffprobe","-v","error","-show_entries",
+            "stream=codec_type,codec_name,nb_frames,r_frame_rate,duration,width,height",
+            "-show_entries","format=duration","-of","json",str(path),
+        ],capture_output=True,text=True,timeout=30)
+        if result.returncode!=0:
+            raise Blocked("V344_MEDIA_FFPROBE_FAILED")
+        return json.loads(result.stdout)
+    except (OSError,subprocess.TimeoutExpired,ValueError,KeyError,TypeError):
+        raise Blocked("V344_MEDIA_FFPROBE_FAILED") from None
+
+
+def deterministic_mux(source_video:Path,narration_wav:Path,output:Path,
+                      beats:list[dict])->dict:
+    """Stream-copy EXACTLY audio-derived frames; NEVER use FFmpeg -shortest.
+
+    Native Manim render can be longer than the voice by design. FFmpeg
+    -shortest may stop video early on AAC packet time-bases/encoder buffering.
+    Both source sufficiency and actual output tracks are independently probed.
+    """
+    expected=sum(int(b["frames"]) for b in beats)
+    fps=15
+    if expected<120 or any(int(b["frames"])<=0 for b in beats):
+        raise Blocked("V344_INVALID_AUDIO_FRAME_BUDGET")
+    try:
+        with wave.open(str(narration_wav),"rb") as audio:
+            samples=audio.getnframes()
+            rate=audio.getframerate()
+            if audio.getnchannels()!=1 or audio.getsampwidth()!=2 or rate<16000:
+                raise Blocked("V344_INVALID_NARRATION_WAV")
+            wav_seconds=samples/rate
+    except (OSError,EOFError,wave.Error,ZeroDivisionError):
+        raise Blocked("V344_INVALID_NARRATION_WAV") from None
+    intended_seconds=expected/fps
+    if abs(wav_seconds-intended_seconds)>1/fps:
+        raise Blocked("V344_AUDIO_BUDGET_MISMATCH")
+
+    source_probe=_track_probe(source_video)
+    sv=[s for s in source_probe.get("streams",[]) if s.get("codec_type")=="video"]
+    if len(sv)!=1 or sv[0].get("codec_name")!="h264" or sv[0].get("r_frame_rate")!="15/1":
+        raise Blocked("V344_MANIM_INPUT_VIDEO_INVALID")
+    if (int(sv[0].get("width",0)),int(sv[0].get("height",0)))!=(1280,720):
+        raise Blocked("V344_MANIM_INPUT_RESOLUTION_INVALID")
+    raw_frames=int(sv[0].get("nb_frames") or 0)
+    if raw_frames<expected:
+        raise Blocked("V344_MANIM_VIDEO_TOO_SHORT_FOR_NARRATION")
+
+    cmd=["ffmpeg","-nostdin","-hide_banner","-v","error","-y",
+         "-i",str(source_video),"-i",str(narration_wav),
+         "-map","0:v:0","-map","1:a:0",
+         "-frames:v",str(expected),
+         "-c:v","copy","-c:a","aac","-b:a","128k",
+         "-movflags","+faststart",str(output)]
+    # The endpoint is deliberately specified by the complete audio frame
+    # budget; '-shortest' is prohibited because it produced 588 vs 590 frames.
+    if "-shortest" in cmd:
+        raise Blocked("V344_UNSAFE_SHORTEST_MUX")
+    try:
+        rv=subprocess.run(cmd,capture_output=True,timeout=100)
+    except (OSError,subprocess.TimeoutExpired):
+        raise Blocked("V344_FFMPEG_NATIVE_MUX_FAILURE") from None
+    if rv.returncode!=0 or not output.is_file() or output.stat().st_size==0:
+        raise Blocked("V344_FFMPEG_NATIVE_MUX_FAILURE")
+
+    actual=_track_probe(output)
+    v=[s for s in actual.get("streams",[]) if s.get("codec_type")=="video"]
+    a=[s for s in actual.get("streams",[]) if s.get("codec_type")=="audio"]
+    if len(v)!=1 or len(a)!=1 or v[0].get("codec_name")!="h264" or a[0].get("codec_name")!="aac":
+        raise Blocked("V344_NATIVE_VIDEO_AUDIO_MISSING")
+    output_frames=int(v[0].get("nb_frames") or 0)
+    if output_frames!=expected or v[0].get("r_frame_rate")!="15/1":
+        raise Blocked("V344_AUDIO_CLIPPED_OR_FRAME_COUNT_DRIFT")
+    aac_seconds=float(a[0].get("duration") or 0)
+    video_seconds=float(v[0].get("duration") or 0)
+    if (abs(aac_seconds-wav_seconds)>1/fps or
+        abs(video_seconds-intended_seconds)>1/fps or
+        aac_seconds< wav_seconds-1/fps):
+        raise Blocked("V344_AUDIO_TRUNCATED_OR_DURATION_DRIFT")
+    return {
+        "raw_manim_frames":raw_frames,
+        "required_audio_derived_video_frames":expected,
+        "output_h264_frames":output_frames,
+        "fps":fps,
+        "input_wav_seconds":round(wav_seconds,6),
+        "output_aac_seconds":round(aac_seconds,6),
+        "output_h264_seconds":round(video_seconds,6),
+        "mux_strategy":"EXACT_AUDIO_FRAME_BUDGET_WITHOUT_SHORTEST",
+        "video_sha256":sha(output),
+    }
 
 
 def run(root:Path,source:Path,out:Path)->dict:
@@ -52,17 +147,9 @@ def run(root:Path,source:Path,out:Path)->dict:
     manim_source.write_text(source_text,encoding="utf-8")
     manim_mp4,sandbox=_docker_manim(out,manim_source)
     video=out/"v3_44_host_counterfactual_with_audio.mp4"
-    cmd=["ffmpeg","-nostdin","-hide_banner","-v","error","-y",
-         "-i",str(manim_mp4),"-i",str(wav),
-         "-map","0:v:0","-map","1:a:0",
-         "-c:v","copy","-c:a","aac","-b:a","128k",
-         "-shortest","-movflags","+faststart",str(video)]
-    rv=subprocess.run(cmd,capture_output=True,timeout=100)
-    if rv.returncode!=0 or not video.is_file():
-        raise Blocked("V344_FFMPEG_NATIVE_MUX_FAILURE")
+    mux=deterministic_mux(manim_mp4,wav,video,beats)
     qa=_codec_and_pixel_gates(video,beats)
-    expected_frames=sum(b["frames"] for b in beats)
-    if abs(qa["frames"]-expected_frames)>1:
+    if qa["frames"]!=mux["required_audio_derived_video_frames"]:
         raise Blocked("V344_AUDIO_CLIPPED_OR_FRAME_COUNT_DRIFT")
     srt=out/"v3_44_original_narration_per_beat.srt"
     srt.write_text("\n".join(
@@ -115,6 +202,7 @@ def run(root:Path,source:Path,out:Path)->dict:
         "event_count":len(events),
         "event_timeline":events,
         "video":qa,
+        "deterministic_mux":mux,
         "sandbox":sandbox,
         "pedagogical_learning_gain":"NOT_MEASURED",
         "blinded_human_preference":"NOT_MEASURED",
