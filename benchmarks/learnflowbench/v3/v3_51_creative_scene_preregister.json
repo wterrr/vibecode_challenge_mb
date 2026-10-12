@@ -1,0 +1,119 @@
+{
+  "checkpoint": "V3-51",
+  "title": "Creative Authoring Freedom & Evidence-Grounded Scene Compilation",
+  "preregistered_before_implementation": true,
+  "parent_pr": 84,
+  "parent_sha": "1ef31e132659b2a7d07e351f0810824c91bc28ee",
+  "commit_order": "registration FIRST, THEN implementation",
+  "hypotheses": [
+    "A versioned generic V2-SceneGraph-backed input can compile at least three materially distinct attention storyboards, without hardcoded scene topology in renderer.",
+    "Knowledge-backed graph labels are derived from a host-verified ledger; model-authored layout, graphics, relationships and motions are not reduced to static cards or fixed A1..A4 choreography.",
+    "Fail-closed semantics target genuine false statements and broken references, not exact narration vocabulary or fixed 4-beat pacing.",
+    "All three decoded native H264/AAC artifacts have nonstatic transitions, perceptible image distinction and beat-aligned audio, but not necessarily demonstrated learner outcomes."
+  ],
+  "scope": "OFFLINE_ONLY. No new provider POST or GET. No new model-authoring claim. V3-50 live one-shot consumed and must not be replayed.",
+  "source": {
+    "name": "Attention Is All You Need",
+    "uri": "https://arxiv.org/abs/1706.03762",
+    "claim_evidence": "host arithmetic for illustrative 2-token attention Q,K,V, not empirical model weights"
+  },
+  "bounded_truth": {
+    "query": [
+      1,
+      0
+    ],
+    "keys": [
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "values": [
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "d_k": 2,
+    "required_claims": [
+      "A1",
+      "A2",
+      "A3",
+      "A4"
+    ]
+  },
+  "frozen_offline_variants": [
+    {
+      "id": "tokens_as_network",
+      "purpose": "token similarity flow",
+      "scene_family": "FLOW",
+      "expected_visual": "two key tokens, arrows, normalized weights"
+    },
+    {
+      "id": "scores_as_comparison",
+      "purpose": "data comparison",
+      "scene_family": "COMPARISON",
+      "expected_visual": "bar chart + weighted output"
+    },
+    {
+      "id": "heldout_symbolic_rewrite",
+      "purpose": "mathematical derivation",
+      "scene_family": "FREEFORM",
+      "expected_visual": "equation and geometric value combination"
+    }
+  ],
+  "quality_gates": {
+    "versioned_strict_schema": true,
+    "v2_scenegraph_reuse": true,
+    "host_derived_fact_labels": true,
+    "variable_scene_counts": "2..5",
+    "variable_beat_counts": "3..7",
+    "variable_graph_nodes": "2..8 per scene",
+    "variable_actions": "1..5 per beat",
+    "admissible_actions": [
+      "reveal",
+      "emphasize",
+      "connect",
+      "move",
+      "hide",
+      "replace"
+    ],
+    "styles": "bounded design tokens, not prescriptive composition",
+    "key_negative_controls": [
+      "unbound fact claim",
+      "altered fact hash",
+      "new unsupported math in free label",
+      "wrong graph endpoint",
+      "wrong action referent",
+      "cross-scene action",
+      "zero actions/mostly static",
+      "object-id collisions",
+      "unsupported compiler opcode",
+      "invalid monotone beat timeline",
+      "wrong numeric output",
+      "unknown-source origin spoof"
+    ],
+    "physical_media": "3 real native 1280x720 H264/AAC from HOST SYNTHETIC distinct SceneGraphs, source SHA and decoded frames; host-derived computed math",
+    "strict_sandbox": "Docker --network none, readonly source and no model code",
+    "frozen_legacy_regression": true,
+    "required_native_count": 3,
+    "declared_nonclaims": [
+      "NO_REAL_MODEL_INFERENCE",
+      "HUMAN_PEDAGOGICAL_QUALITY_UNRATED",
+      "GENERAL_SUBJECT_COVERAGE_UNTESTED",
+      "MODEL_SCHEMA_COMPATIBILITY_UNTESTED"
+    ],
+    "main_merge": false,
+    "production": "BLOCKED"
+  },
+  "independent_comparison": "compute SHA frame differences across frozen distinct variants at normalized times; absence of identical frames does not establish teaching advantage.",
+  "activation_policy": "never include V3-50 activation marker in new commit messages; no inference credentials in workflow."
+}

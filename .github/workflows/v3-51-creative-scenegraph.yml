@@ -1,0 +1,99 @@
+name: V3-51 Creative SceneGraph OFFLINE Three Distinct Native Lessons
+
+on:
+  push:
+    branches: [chatgpt/v3-51-creative-scene-graph-grounding]
+  pull_request:
+    paths:
+      - "learnflow_v3/creative_scene_graph.py"
+      - "learnflow_v3/creative_scene_fixtures.py"
+      - "learnflow_v3/creative_validation_diagnostics.py"
+      - "scripts/run_v3_51_creative_scene_graphs.py"
+      - "tests/v3/test_v3_51_creative_scene_graph.py"
+      - "benchmarks/learnflowbench/v3/v3_51_creative_scene_preregister.json"
+      - "reports/v3_51_creative_authoring_freedom.md"
+      - ".github/workflows/v3-51-creative-scenegraph.yml"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+
+jobs:
+  evidence-bound-creative-scenegraphs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 48
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing native FFmpeg, text and audio infrastructure
+        timeout-minutes: 12
+        run: |
+          bash scripts/bootstrap_v3_30_native.sh
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Test free expression, V2 SceneGraph composition and adversarial facts
+        timeout-minutes: 7
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_51_creative_scene_graph.py \
+            tests/v3/test_v3_50_one_query_attention.py \
+            tests/v3/test_v3_49_grounded_claims.py \
+            tests/v3/test_v3_48_pedagogical_quality.py \
+            tests/v3/test_v3_47_pedagogical_grammar.py \
+            tests/v3/test_v3_45_semantic_scene_wire.py \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py
+      - name: Existing V2/V3 frozen safety and research benchmark gates
+        timeout-minutes: 7
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Pull pinned network-isolated Manim Docker
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Render three different actual native source-provenance MP4
+        timeout-minutes: 24
+        run: |
+          python scripts/run_v3_51_creative_scene_graphs.py --output-dir "$RUNNER_TEMP/v351_three"
+      - name: Verify artifact physical receipt never claims model/human result
+        timeout-minutes: 3
+        run: |
+          python - <<'PY'
+          import json,os,pathlib
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v351_three"
+          x=json.loads((root/"v351_offline_three_scenegraphs_receipt.json").read_text())
+          assert x["checkpoint"]=="V3-51"
+          assert x["status"]=="THREE_VISUALLY_DISTINCT_NATIVE_HOST_SCENEGRAPHS_TECHNICAL_PASS_ONLY"
+          assert x["model_api_posts"]==0 and x["frozen_case_count"]==3
+          assert x["production"]=="BLOCKED" and x["human_pedagogy"]=="UNRATED"
+          assert len(x["cases"])==len(x["pairs"])==3
+          assert len({v["native_h264_aac_sha256"] for v in x["cases"]})==3
+          for case in x["cases"]:
+              assert case["real_model_storyboard"] is False
+              assert case["origin"]=="OFFLINE_HOST_STORYBOARD_NOT_MODEL"
+              assert case["native_codec"]["frames"]==case["exact_mux"]["output_h264_frames"]
+              assert case["native_codec"]["codec"]=="h264+aac"
+              assert case["fact_evidence_nodes"]>=3
+              assert case["decoded_frame_differences"] and max(case["decoded_frame_differences"])>=2
+              p=root/case["case"]/"creative_graph_native.mp4"
+              assert p.stat().st_size>40000
+          for pair in x["pairs"]:
+              assert max(pair["per_normalized_frame_mae"])>=2.5
+          print("V3_51=THREE_REAL_NATIVE_HOST_CREATIVE_COMPOSITIONS_PASS_NO_HUMAN_NO_PROVIDER")
+          PY
+      - name: Upload native H264/AAC, source provenance and decoded contact sheets
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-51-HOST-THREE-CREATIVE-NATIVE-MP4-NO-AI
+          path: ${{ runner.temp }}/v351_three/
+          retention-days: 14
+          if-no-files-found: error
+  # This workflow never authenticates to a model provider, has no model POST,
+  # and does not re-trigger the consumed V3-50 activation budget.
