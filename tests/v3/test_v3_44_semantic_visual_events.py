@@ -99,7 +99,7 @@ def test_host_only_compiler_has_no_eval_and_no_serial_four_piece_reveal(counterf
     "unequal_whole","wrong_multiplier","falsified_proof_label","overlapping_tiles",
     "removed_target","repeated_id","early_emphasis","missing_morph",
     "fraction_count_drift","event_overlap","ref_out_of_bounds",
-    "unsupported_numeric_visible_text",
+    "unsupported_numeric_visible_text","proof_wrong_claim_beat",
 ])
 def test_host_contract_rejects_mutated_storyboard(counterfactual,kind):
     d=counterfactual.model_dump(mode="json")
@@ -130,6 +130,8 @@ def test_host_contract_rejects_mutated_storyboard(counterfactual,kind):
         d["tiles"][0]["x"]=100.
     elif kind=="unsupported_numeric_visible_text":
         d["labels"][1]["text"]="1/3"
+    elif kind=="proof_wrong_claim_beat":
+        d["beats"][2]["claim_ids"]=["F1"]
     with pytest.raises(ValidationError):
         SemanticLesson.model_validate(d)
 
