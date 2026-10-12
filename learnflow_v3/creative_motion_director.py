@@ -235,7 +235,7 @@ def compile_manim(plan:DirectorPlan,seconds:list[float]):
           "context":"context"}[beat.focus_ref]
         # Stage focus is only allowed when the referenced host object is visible.
         if (op=="inspect" and target=="context" and
-           [x.op for x in p.beats].index("compose")<index):
+           [x.op for x in p.beats].index("compose")>index):
             raise Blocked("V353_INSPECT_VISIBILITY_BROKEN")
         if beat.visual_mode=="trace":
             # path trace is grounded in the same object; no model-provided SVG.
