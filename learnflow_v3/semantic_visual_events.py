@@ -170,6 +170,18 @@ class SemanticLesson(BaseModel):
             if labels[r.proof_label_id].text != expected:
                 raise ValueError("V344_MISSING_EXPLICIT_ALGEBRA_PROOF")
             relation_map[(r.source,r.target)] = r
+        # Numeric screen text must come from a validated fraction or a
+        # relational proof. Arbitrary numeric labels would bypass the source
+        # factual contract even if geometric fractions are mathematically valid.
+        valid_fraction_labels = {
+            f"{p.numerator}/{p.denominator}" for p in self.partitions
+        }
+        allowed_arithmetic = valid_fraction_labels | {
+            labels[r.proof_label_id].text for r in self.relations
+        }
+        for label in self.labels:
+            if re.search(r"\d", label.text) and label.text not in allowed_arithmetic:
+                raise ValueError("V344_UNGROUNDED_VISIBLE_NUMERIC_LABEL")
         visible_groups, visible_labels = set(), set()
         used_proof, used_morph = set(), set()
         for beat in self.beats:
@@ -230,7 +242,7 @@ def create_counterfactual_from_real_scene(real: CreativeScene) -> SemanticLesson
         {"id":"left_label","text":"1/2","x":-3.6,"y":-1.1,"color":"WHITE"},
         {"id":"right_label","text":"2/4","x":2.1,"y":-1.1,"color":"WHITE"},
         {"id":"proof","text":"(1×2)/(2×2) = 2/4","x":0,"y":-2.2,"color":"YELLOW"},
-        {"id":"equivalent","text":"Same fraction value","x":0,"y":1.65,"color":"WHITE"}],
+        {"id":"equivalent","text":"Same whole","x":-.65,"y":.55,"color":"WHITE"}],
       "partitions":[
         {"id":"halves","part_ids":["hshade","hplain"],"shaded_ids":["hshade"],"numerator":1,"denominator":2},
         {"id":"quarters","part_ids":["qshade1","qshade2","qplain1","qplain2"],
