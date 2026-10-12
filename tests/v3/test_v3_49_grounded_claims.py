@@ -133,4 +133,5 @@ def test_native_workflow_reuses_sandbox_frozen_regressions_no_model_key():
     assert "gemini_api_key" not in workflow.lower()
     assert "deterministic_mux" in runner
     assert "inspect_candidate" in runner
-    assert "_semantic_frame_proofs" in runner
+    assert "_native_cut_evidence" in runner
+    assert "before_yellow_pixels" in runner
