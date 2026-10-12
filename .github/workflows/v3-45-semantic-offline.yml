@@ -1,0 +1,98 @@
+name: V3-45 AI-Authorable Semantic Scene OFFLINE Native Evidence
+
+on:
+  push:
+    branches: [chatgpt/v3-45-ai-authored-semantic-offline-protocol]
+  pull_request:
+    paths:
+      - "learnflow_v3/semantic_scene_wire.py"
+      - "learnflow_v3/semantic_scene_offline_fixtures.py"
+      - "scripts/run_v3_45_semantic_offline.py"
+      - "tests/v3/test_v3_45_semantic_scene_wire.py"
+      - "benchmarks/learnflowbench/v3/v3_45_semantic_scene_protocol_preregister.json"
+      - ".github/workflows/v3-45-semantic-offline.yml"
+      - "reports/v3_45_semantic_scene_protocol.md"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  provider-portable-json-to-two-sandboxed-mp4s:
+    runs-on: ubuntu-latest
+    timeout-minutes: 38
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Native ffmpeg, espeak and CMU fonts
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Strict schema, codec and Pydantic dependencies
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml
+      - name: Offline schema and adversarial two-family checks + frozen V3-41 baselines
+        timeout-minutes: 5
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_45_semantic_scene_wire.py \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py
+      - name: Pull pinned Manim sandbox (no model call)
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Render TWO distinct native offline semantic MP4 files
+        timeout-minutes: 14
+        run: |
+          python scripts/run_v3_45_semantic_offline.py --output-dir "$RUNNER_TEMP/v3_45_native_result"
+          test -s "$RUNNER_TEMP/v3_45_native_result/v345-synthetic-fractions/offline_host_semantic_with_audio.mp4"
+          test -s "$RUNNER_TEMP/v3_45_native_result/v345-synthetic-process/offline_host_semantic_with_audio.mp4"
+          test -s "$RUNNER_TEMP/v3_45_native_result/v3_45_protocol_receipt.json"
+      - name: Real decoded streams/frames, AUDIO and synthetic-only provenance gates
+        timeout-minutes: 3
+        run: |
+          python - <<'PY'
+          import json,os,pathlib,subprocess
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v3_45_native_result"
+          report=json.loads((root/"v3_45_protocol_receipt.json").read_text())
+          assert report["num_native_videos"]==2
+          assert report["model_http_posts"]==0
+          assert report["origin"]=="SYNTHETIC_OFFLINE_JSON_MODEL_FACING_NOT_LIVE_MODEL"
+          assert {x["family"] for x in report["cases"]}=={"fraction_equivalence","ordered_process"}
+          for item in report["cases"]:
+              p=root/item["fixture_id"]/"offline_host_semantic_with_audio.mp4"
+              data=json.loads(subprocess.check_output(
+                  ["ffprobe","-v","error","-show_streams","-of","json",str(p)],text=True))
+              v=next(s for s in data["streams"] if s["codec_type"]=="video")
+              a=next(s for s in data["streams"] if s["codec_type"]=="audio")
+              assert v["codec_name"]=="h264" and a["codec_name"]=="aac"
+              assert v["r_frame_rate"]=="15/1" and (v["width"],v["height"])==(1280,720)
+              assert int(v["nb_frames"])==item["mux"]["output_h264_frames"]
+              assert int(v["nb_frames"])==item["mux"]["required_audio_derived_video_frames"]
+              assert abs(float(a["duration"])-item["mux"]["input_wav_seconds"])<1/15
+              assert item["native_video"]["max_decoded_sample_delta"]>.9
+          print("V3_45=PASS_TWO_NATIVE_SEMANTIC_FAMILIES_NOT_LIVE_MODEL")
+          PY
+      - name: Frozen V3 and V2 protocol regression checks
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Publish synthetic host-generated videos and receipts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-45-two-FAMILY-OFFLINE-MP4-NOT-MODEL
+          path: ${{ runner.temp }}/v3_45_native_result/
+          retention-days: 14
+          if-no-files-found: warn
+
+  # No API key, no model HTTP POST/GET, retry, fallback, or main merge.
