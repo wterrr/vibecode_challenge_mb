@@ -242,9 +242,10 @@ def compile_manim(plan:MotionPlan,seconds:list[float])->str:
     phase(2,None,[
       ("FadeOut(softmax_title),FadeOut(unit_label),FadeOut(weight_a),FadeOut(weight_b)",.7),
       ("Transform(beat_label,Text('TRANSPORT',font='CMU Serif',font_size=16,color="+repr(ACCENT)+").move_to([5.35,3.55,0]))",.4),
-      ("FadeIn(mix_title),FadeIn(value_a),FadeIn(value_b),FadeIn(contribution_a),FadeIn(contribution_b),FadeIn(rail)",1.05),
-      ("TransformFromCopy(bar_a,seg_a),TransformFromCopy(bar_b,seg_b)",1.9),
-      ("Indicate(value_a,color=TEAL),Indicate(value_b,color=YELLOW)",.65)
+      ("FadeIn(mix_title),FadeIn(value_a),FadeIn(value_b),FadeIn(rail)",.85),
+      ("TransformFromCopy(value_a,contribution_a),TransformFromCopy(value_b,contribution_b)",1.15),
+      ("TransformFromCopy(bar_a,seg_a),TransformFromCopy(bar_b,seg_b)",1.65),
+      ("Indicate(contribution_a,color=TEAL),Indicate(contribution_b,color=YELLOW)",.65)
     ])
     phase(3,None,[
       ("Transform(beat_label,Text('COMPOSE',font='CMU Serif',font_size=16,color="+repr(ACCENT)+").move_to([5.35,3.55,0]))",.4),
