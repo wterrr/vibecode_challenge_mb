@@ -80,18 +80,18 @@ def _srt_segments(text: str) -> list[dict]:
     return parts
 
 
-def _source_timeline(source: str, beats: list[dict]) -> tuple[list[dict], list[dict]]:
+def _source_timeline(source: str, beats: list[dict], authored_beats: list[dict]) -> tuple[list[dict], list[dict]]:
     # Timings are inferred from *host* Manim self.play actions, not ASR words.
     sections = re.split(r"(?=        # BEAT \d+ - exact audio-budget duration )", source)
     sections = [s for s in sections if s.startswith("        # BEAT ")]
-    _require(len(sections) == len(beats) == 4, "V343_MANIM_BEAT_COUNT_DRIFT")
+    _require(len(sections) == len(beats) == len(authored_beats) == 4, "V343_MANIM_BEAT_COUNT_DRIFT")
     schedule, endings = [], []
-    for index, (part, beat) in enumerate(zip(sections, beats)):
+    for index, (part, beat, authored) in enumerate(zip(sections, beats, authored_beats)):
         match = re.search(r"# BEAT (\d+) - exact audio-budget duration ([\d.]+)s", part)
         _require(match is not None and int(match.group(1)) == index + 1,
                  "V343_MANIM_BEAT_HEADING_DRIFT")
         plays = re.findall(r"^\s*self\.play\((.+),run_time=([\d.]+)\)\s*$", part, re.MULTILINE)
-        _require(len(plays) == len(beat["actions"]), "V343_ACTION_COUNT_DRIFT")
+        _require(len(plays) == len(authored["actions"]), "V343_ACTION_COUNT_DRIFT")
         t = float(beat["start_seconds"])
         for item, seconds in plays:
             dur = float(seconds)
@@ -245,7 +245,7 @@ def audit_video(root: Path, registration: Path, output_dir: Path) -> dict:
 
     beats = receipt.get("audio_sampled_beats")
     _require(isinstance(beats, list) and len(beats) == 4, "V343_NARRATION_RECEIPT_INVALID")
-    schedule, render_ends = _source_timeline((root / SOURCE_FILE).read_text(), beats)
+    schedule, render_ends = _source_timeline((root / SOURCE_FILE).read_text(), beats, scene["beats"])
     segments = _srt_segments((root / CAPTION_FILE).read_text())
     beats_summary = []
     for index, (beat, srt, authored) in enumerate(zip(beats, segments, scene["beats"])):
