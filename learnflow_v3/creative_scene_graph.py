@@ -164,8 +164,9 @@ def positions(s:Scene)->dict[str,tuple[float,float]]:
     if s.layout=="COMPARISON":
         n=len(s.nodes)
         rows=math.ceil(n/2)
+        spacing=2.60 if rows==2 else 1.60
         coords=[(-3.05 if i%2==0 else 3.05,
-                 (rows-1)*.80-1.60*(i//2)) for i in range(n)]
+                 (rows-1)*spacing/2-spacing*(i//2)) for i in range(n)]
         return {node.id:coords[i] for i,node in enumerate(s.nodes)}
     if s.layout=="GRID":
         cols=3 if len(s.nodes)>4 else 2
