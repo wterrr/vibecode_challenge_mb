@@ -66,7 +66,9 @@ def test_fixture_compiles_only_finite_host_owned_code():
     compile(code,"<V350_HOST_ONLY>","exec")
     assert code.count("V350_BEAT_")==4
     assert "Q K^T / sqrt(d_k)" in code
-    assert "GrowFromEdge" in code and "TransformFromCopy" in code
+    assert "GrowFromEdge" in code and "ReplacementTransform(VGroup(weight1,weight2),output)" in code
+    assert "FadeOut(dot1),FadeOut(dot2)" in code
+    assert "Arrow([-3.12,.78,0],[2.17,.78,0]" in code
     assert "self.play" in code
     assert "__import__" not in code and "subprocess" not in code
     assert "from manim import *" in code
