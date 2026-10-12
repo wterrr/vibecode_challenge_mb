@@ -38,11 +38,22 @@ jobs:
         run: |
           timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
             -r requirements.txt 'numpy>=1.24,<3' pyyaml
-      - name: Offline schema and adversarial two-family checks + frozen V3-41 baselines
-        timeout-minutes: 5
+      - name: Download immutable V3-45 process overlap failure MP4 (independent negative control)
+        uses: actions/download-artifact@v4
+        with:
+          name: v3-45-two-FAMILY-OFFLINE-MP4-NOT-MODEL
+          run-id: 38196528217
+          repository: wterrr/vibecode_challenge_mb
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/v3_45_original_overlap
+      - name: Offline schema, frozen decoded pixel failure and adversarial edge geometry
+        timeout-minutes: 6
+        env:
+          V345_FIX_BASELINE_DIR: ${{ runner.temp }}/v3_45_original_overlap
         run: |
           python -m pytest -q --confcutdir=tests/v3 \
             tests/v3/test_v3_45_semantic_scene_wire.py \
+            tests/v3/test_v3_45_fix_process_edge_geometry.py \
             tests/v3/test_v3_41_compatible_scene_protocol.py \
             tests/v3/test_v3_40_strict_schema_parity.py
       - name: Pull pinned Manim sandbox (no model call)
@@ -78,6 +89,12 @@ jobs:
               assert int(v["nb_frames"])==item["mux"]["required_audio_derived_video_frames"]
               assert abs(float(a["duration"])-item["mux"]["input_wav_seconds"])<1/15
               assert item["native_video"]["max_decoded_sample_delta"]>.9
+              if item["family"]=="ordered_process":
+                  px=item["decoded_process_edge_overlap_gate"]
+                  assert px["new_edge_pixels_inside_source_node"]<=8,px
+                  assert px["new_edge_pixels_inside_target_node"]<=8,px
+                  assert px["cursor_pixels_changed_on_source_caption"]<=8,px
+                  assert px["new_edge_pixels_in_open_gap"]>=100,px
           print("V3_45=PASS_TWO_NATIVE_SEMANTIC_FAMILIES_NOT_LIVE_MODEL")
           PY
       - name: Frozen V3 and V2 protocol regression checks
