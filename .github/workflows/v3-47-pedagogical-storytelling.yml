@@ -1,0 +1,121 @@
+name: V3-47 Grounded Pedagogical Grammar and THREE Native Videos OFFLINE
+
+on:
+  push:
+    branches: [chatgpt/v3-47-pedagogical-visual-grammar]
+  pull_request:
+    paths:
+      - "learnflow_v3/pedagogical_visual_grammar.py"
+      - "learnflow_v3/semantic_scene_wire.py"
+      - "learnflow_v3/semantic_visual_events.py"
+      - "scripts/run_v3_47_pedagogical_storytelling.py"
+      - "tests/v3/test_v3_47_pedagogical_grammar.py"
+      - "benchmarks/learnflowbench/v3/v3_47_pedagogical_grammar_preregister.json"
+      - ".github/workflows/v3-47-pedagogical-storytelling.yml"
+      - "reports/v3_47_pedagogical_storytelling.md"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  grounded-host-grammar-three-native-lessons:
+    runs-on: ubuntu-latest
+    timeout-minutes: 48
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned native tooling, Computer Modern and espeak
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Install offline Pydantic and decoded image checks
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Download IMMUTABLE real decoded V3-46 baseline MP4 and WAV
+        uses: actions/download-artifact@v4
+        with:
+          name: v3-46-VISUAL-SYSTEM-MP4-and-UNRATED-QUALITY-BENCHMARK
+          run-id: 38200776147
+          repository: wterrr/vibecode_challenge_mb
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/v3_47_frozen_v346
+      - name: Test grammar, mutations, heldout rekey, V3-45 and V3-46 original contracts
+        timeout-minutes: 8
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_47_pedagogical_grammar.py \
+            tests/v3/test_v3_46_visual_quality_system.py \
+            tests/v3/test_v3_45_semantic_scene_wire.py \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py
+      - name: Pull existing pinned network-isolated Manim image
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Native fraction, process and heldout-process with actual H264 semantic frame proof
+        timeout-minutes: 21
+        run: |
+          python scripts/run_v3_47_pedagogical_storytelling.py \
+            --baseline-dir "$RUNNER_TEMP/v3_47_frozen_v346" \
+            --output-dir "$RUNNER_TEMP/v3_47_native"
+          test -s "$RUNNER_TEMP/v3_47_native/v3_47_semantic_storytelling_receipt.json"
+          for case in fraction process heldout_process; do
+            test -s "$RUNNER_TEMP/v3_47_native/$case/storytelling_host_with_audio.mp4"
+            test -s "$RUNNER_TEMP/v3_47_native/$case/host_synthetic_grammar.json"
+          done
+          test -s "$RUNNER_TEMP/v3_47_native/fraction_storyboard_before_after.jpg"
+          test -s "$RUNNER_TEMP/v3_47_native/process_storyboard_before_after.jpg"
+          test -s "$RUNNER_TEMP/v3_47_native/heldout_process_storyboard_new_only.jpg"
+      - name: Verify full receipts, noninvented condition outcomes and no human scores
+        timeout-minutes: 3
+        run: |
+          python - <<'PY'
+          import json,os,pathlib,csv
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v3_47_native"
+          d=json.loads((root/"v3_47_semantic_storytelling_receipt.json").read_text())
+          assert d["status"]=="TECHNICAL_3_NATIVE_SEMANTIC_GRAMMAR_VIDEOS_HUMAN_UNRATED"
+          assert len(d["cases"])==3 and len(d["comparisons"])==2
+          assert d["model_api_posts"]==d["model_authenticated_gets"]==0
+          assert d["verified_condition_truth"]=="UNAVAILABLE_IN_V3_45_SOURCE"
+          assert d["human_scores"] is None and d["production"]=="BLOCKED"
+          assert {c["id"] for c in d["cases"]}=={"fraction","process","heldout_process"}
+          for c in d["cases"]:
+              assert c["grammar_actions"]>=2
+              assert c["actual_video"]["frames"]==sum(c["beat_frames"])
+              assert c["mux"]["output_h264_frames"]==sum(c["beat_frames"])
+              assert c["frame_proof"]["status"].startswith("RENDERED_PIXEL_EVIDENCE")
+              assert c["synthetic_source"]=="SYNTHETIC_OFFLINE_JSON_MODEL_FACING_NOT_LIVE_MODEL"
+              if c["family"]=="ordered_process":
+                  assert c["frame_proof"]["outcome"]=="UNKNOWN_NOT_VERIFIED"
+                  p=c["process_node_overlap"]
+                  assert p["new_edge_pixels_inside_source_node"]<=8
+                  assert p["new_edge_pixels_inside_target_node"]<=8
+                  assert p["cursor_pixels_changed_on_source_caption"]<=8
+          rows=list(csv.DictReader((root/d["human_review_csv"]).open()))
+          assert len(rows)==18
+          assert all(x["before_1to5"]==x["after_1to5"]=="" for x in rows)
+          print("V3_47=3_REAL_NATIVE_HOST_VIDEOS_PASS_HUMAN_PEDAGOGY_UNRATED")
+          PY
+      - name: Frozen V3/V2 benchmark safety and research protocol
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Publish exact native MP4, timeline event receipts and ungraded contact sheets
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-47-THREE-HOST-SEMANTIC-NATIVE-MP4-NO-AI
+          path: ${{ runner.temp }}/v3_47_native/
+          retention-days: 14
+          if-no-files-found: warn
+
+  # 0 model API requests, no secrets, no implicit retries, no main merge.

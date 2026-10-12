@@ -285,7 +285,7 @@ def compiled_event_windows(lesson:SemanticLesson, durations:list[float])->list[d
     return boundaries
 
 
-def compile_manim(lesson:SemanticLesson, durations:list[float],*,visual_quality:bool=False)->str:
+def compile_manim(lesson:SemanticLesson, durations:list[float],*,visual_quality:bool=False,pedagogical_plan=None)->str:
     # Pure host-compiled finite code; source never comes from model-provided Python.
     schedule = compiled_event_windows(lesson,durations)
     lines=["# V3-44 HOST-CURATED SEMANTIC EVENT COUNTERFACTUAL; NOT MODEL-AUTHORED",
@@ -342,9 +342,59 @@ def compile_manim(lesson:SemanticLesson, durations:list[float],*,visual_quality:
                 factor=len(dst.part_ids)//len(src.part_ids)
                 anims=", ".join(f"TransformFromCopy({src.part_ids[i//factor]},{pid})"
                         for i,pid in enumerate(dst.part_ids))
-                lines.append(f"        self.play(AnimationGroup({anims},lag_ratio=0.03),run_time={seconds:.5f})")
+                from learnflow_v3.pedagogical_visual_grammar import actions_for
+                actions=actions_for(pedagogical_plan,beat_index,event.target) if pedagogical_plan else []
+                if actions:
+                    if not visual_quality or {a.kind for a in actions}!={"subdivide"}:
+                        raise Blocked("V347_UNSUPPORTED_FRACTION_MORPH_GRAMMAR")
+                    # Guided subdivision is visualized IN the native morph
+                    # event, not via fabricated syllable alignment or a new
+                    # animation time window. Geometry comes from arbitrary
+                    # validated source tile dimensions, never fixture IDs.
+                    tilemap={v.id:v for v in lesson.tiles}
+                    from learnflow_v3.pedagogical_visual_grammar import subdivision_axis
+                    axis=subdivision_axis(lesson,src.id,dst.id,actions[0].factor)
+                    guides=[]
+                    for idx,tile_id in enumerate(src.part_ids):
+                        tile=tilemap[tile_id]
+                        for k in range(1,actions[0].factor):
+                            name=f"v347_cut_{beat_index}_{idx}_{k}"
+                            if axis=="vertical":
+                                xx=tile.x-tile.width/2+tile.width*k/actions[0].factor
+                                endpoints=(xx,tile.y-tile.height/2,xx,tile.y+tile.height/2)
+                            else:
+                                yy=tile.y-tile.height/2+tile.height*k/actions[0].factor
+                                endpoints=(tile.x-tile.width/2,yy,tile.x+tile.width/2,yy)
+                            x1,y1,x2,y2=endpoints
+                            lines.append(
+                                f"        {name} = DashedLine([{x1:.4f},{y1:.4f},0],"
+                                f"[{x2:.4f},{y2:.4f},0],"
+                                f"dash_length=.12,color=YELLOW).set_z_index(4)")
+                            guides.append(name)
+                    if not guides:
+                        raise Blocked("V347_MISSING_SUBDIVISION_GUIDE")
+                    lines.append(f"        self.play(AnimationGroup("
+                                 f"AnimationGroup({', '.join('Create('+x+')' for x in guides)},"
+                                 f"lag_ratio=0),AnimationGroup({anims},lag_ratio=.03),"
+                                 f"lag_ratio=.22),run_time={seconds:.5f})")
+                else:
+                    lines.append(f"        self.play(AnimationGroup({anims},lag_ratio=0.03),run_time={seconds:.5f})")
             elif event.kind == "show_label":
-                lines.append(f"        self.play(FadeIn({target}),run_time={seconds:.5f})")
+                from learnflow_v3.pedagogical_visual_grammar import actions_for
+                actions=actions_for(pedagogical_plan,beat_index,event.target) if pedagogical_plan else []
+                if actions:
+                    if {a.kind for a in actions}!={"equivalence_link"}:
+                        raise Blocked("V347_UNSUPPORTED_PROOF_GRAMMAR")
+                    # Exact rational proof validated by existing SemanticLesson.
+                    # The '=' glyph is a light cue, not a new mathematical fact.
+                    mark=f"v347_equal_{beat_index}"
+                    lines.append(f"        {mark} = Text('=',font='CMU Serif',"
+                                 f"font_size=40,color=YELLOW).move_to([0,1.22,0])"
+                                 f".set_z_index(3)")
+                    lines.append(f"        self.play(AnimationGroup(FadeIn({target}),"
+                                 f"FadeIn({mark}),lag_ratio=0),run_time={seconds:.5f})")
+                else:
+                    lines.append(f"        self.play(FadeIn({target}),run_time={seconds:.5f})")
             elif event.kind == "emphasize":
                 lines.append(f"        self.play(Indicate({target},color=YELLOW,scale_factor=1.08),run_time={seconds:.5f})")
             else:
