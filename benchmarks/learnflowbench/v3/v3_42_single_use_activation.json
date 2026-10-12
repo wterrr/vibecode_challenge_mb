@@ -1,0 +1,36 @@
+{
+  "checkpoint": "V3-42",
+  "action": "ONE_TIME_ACTIVATION",
+  "preregistration": "benchmarks/learnflowbench/v3/v3_42_single_genuine_portable_trial_preregister.json",
+  "validated_parent_pr": 75,
+  "parent_exact_sha": "a7610bd5fcfb892bebd1bb6838de8841d5041820",
+  "parent_verified_offline_ci": {
+    "run_id": 38025538022,
+    "conclusion": "success"
+  },
+  "live_branch_head_before_activation": "8056bad7817f20facd9e54cdc1ef27f26a29381a",
+  "v342_verified_offline_ci": {
+    "run_id": 38026168973,
+    "conclusion": "success",
+    "paid_job": "skipped",
+    "tests_passed": 179,
+    "frozen_tests_passed": 27,
+    "frozen_tests_skipped": 1
+  },
+  "activation_marker": "[v3-42-single-genuine-portable-post]",
+  "authorize": {
+    "model": "openai/gpt-6-luna",
+    "one_model_http_post_at_most": true,
+    "no_retry": true,
+    "no_fallback": true,
+    "only_after_same_commit_offline_gate_pass": true
+  },
+  "not_authorized": [
+    "second activation",
+    "retry failed inference",
+    "change model/provider/topic",
+    "merge main"
+  ],
+  "run_origin_proof": "Only real provider SHA and V3-36 integrity gate can establish real model video",
+  "production": "BLOCKED"
+}
