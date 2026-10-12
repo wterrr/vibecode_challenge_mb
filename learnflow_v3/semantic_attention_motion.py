@@ -78,6 +78,10 @@ def facts(case:Case)->dict:
 
 def ground(case:Case)->MotionPlan:
     if not isinstance(case,Case):raise Blocked("V352_CASE_TYPE_REQUIRED")
+    try:
+        case=Case.model_validate(case.model_dump())
+    except Exception:
+        raise Blocked("V352_QKV_CHANGED") from None
     ev=facts(case);h=digest(ev)
     roles=("query","scores","values","context")
     steps=tuple(Step(kind=k,claim_id=CLAIM_SEQUENCE[i],
@@ -146,8 +150,7 @@ def narration(plan:MotionPlan):
             abs(sum((a,b))-1)<1e-12 and sum(out)>0.999):
         raise Blocked("V352_NARRATION_FACT_OR_LENGTH_INVALID")
     return SimpleNamespace(beats=[SimpleNamespace(narration=t,
-             claim_ids=[("A1","A2")[i==0] if False else CLAIM_SEQUENCE[i]])
-             for i,t in enumerate(lines)])
+             claim_ids=[CLAIM_SEQUENCE[i]]) for i,t in enumerate(lines)])
 
 
 def compile_manim(plan:MotionPlan,seconds:list[float])->str:
