@@ -92,8 +92,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: v3-51-HOST-THREE-CREATIVE-NATIVE-MP4-NO-AI
-          path: \${{ runner.temp }}/v351_three/
+          path: ${{ runner.temp }}/v351_three/
           retention-days: 14
-          if-no-files-found: warn
+          if-no-files-found: error
   # This workflow never authenticates to a model provider, has no model POST,
   # and does not re-trigger the consumed V3-50 activation budget.
