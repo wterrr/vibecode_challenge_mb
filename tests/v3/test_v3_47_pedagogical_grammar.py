@@ -127,3 +127,40 @@ def test_pipeline_is_offline_and_keeps_claim_grounding_and_native_media_evidence
     assert "OPENROUTER_API_KEY" not in workflow
     assert "model_authenticated_gets" in runner
     assert "INDEPENDENT_PEDAGOGICAL_REVIEW_UNRATED.csv" in runner
+
+
+
+def test_subdivision_axis_follows_geometry_and_rejects_invalid_colors():
+    from learnflow_v3.pedagogical_visual_grammar import subdivision_axis
+    base=fixture_cases()["v345-synthetic-fractions"]
+    scene=decode_model_facing_scene(base)
+    assert subdivision_axis(scene,"halves","quarters",2)=="vertical"
+    bad=deepcopy(base)
+    next(x for x in bad["graphics"] if x["id"]=="qshade1")["color"]="GREY"
+    with pytest.raises((Blocked,ValidationError,ValueError)):
+        scene_bad=decode_model_facing_scene(bad)
+        validate_transformations(scene_bad,offline_host_plan(scene_bad))
+
+
+def test_horizontal_subdivision_is_supported_without_fraction_fixture_ids():
+    from learnflow_v3.pedagogical_visual_grammar import subdivision_axis
+    base=deepcopy(fixture_cases()["v345-synthetic-fractions"])
+    # Rotate the two whole diagrams independently by 90 degrees:
+    # horizontal split lines must be derived from TARGET tile geometry.
+    left=["hshade","hplain"]
+    right=["qshade1","qshade2","qplain1","qplain2"]
+    by_id={g["id"]:g for g in base["graphics"]}
+    for ids,cx in ((left,-3.6),(right,2.1)):
+        for ident in ids:
+            t=by_id[ident]
+            dx=t["x"]-cx
+            t["x"]=cx
+            t["y"]=round(.5+dx,3)
+            t["width"],t["height"]=t["height"],t["width"]
+    s=decode_model_facing_scene(base)
+    assert subdivision_axis(s,"halves","quarters",2)=="horizontal"
+    plan=offline_host_plan(s)
+    code=compile_scene(s,[8.6,8.8,8.9,9.2],
+                       visual_quality=True,pedagogical_plan=plan)
+    assert "DashedLine" in code
+    compile(code,"<safe horizontal source>","exec")
