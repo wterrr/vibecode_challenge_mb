@@ -274,15 +274,19 @@ def run(root:Path,out:Path,*,mode:str,key:str="",sender=None,compatible_wire=Non
     if not out.is_dir() or any(out.iterdir()):raise Blocked("V334_OUTPUT_NONEMPTY")
     prereg=checked_manifest(root)
     if mode not in ("offline-smoke","offline-v341-compatible","live-model","live-structured",
-                     "live-structured-no-temperature"):
+                     "live-structured-no-temperature","live-v342-portable"):
         raise Blocked("V334_UNKNOWN_MODE")
     # Reject accidental injection of offline replay content into ANY live path
     # before touching the sender, including V3-39 legacy one-shot mode.
     if compatible_wire is not None and mode != "offline-v341-compatible":
         raise Blocked("V341_OFFLINE_WIRE_NOT_ALLOWED_IN_LEGACY_MODE")
     usage=None
-    if mode in ("live-model","live-structured","live-structured-no-temperature"):
-        if mode in ("live-structured","live-structured-no-temperature"):
+    if mode in ("live-model","live-structured","live-structured-no-temperature","live-v342-portable"):
+        if mode == "live-v342-portable":
+            # V3-42 only; preserve all earlier one-shot sender calls unchanged.
+            from learnflow_v3.genuine_portable_response import one_shot_portable
+            raw,usage=one_shot_portable(key,out,sender=sender)
+        elif mode in ("live-structured","live-structured-no-temperature"):
             from learnflow_v3.structured_scene_authoring import preflight,one_shot_structured
             preflight(root)
             if mode == "live-structured-no-temperature":
@@ -297,7 +301,7 @@ def run(root:Path,out:Path,*,mode:str,key:str="",sender=None,compatible_wire=Non
             raw,usage=call_exact_model(key,sender=sender)
         plan=checked_live_plan(raw,usage,out)
         origin=("REAL_GPT6_LUNA_STRICT_JSON_SCHEMA_ONE_REQUEST"
-                if mode in ("live-structured","live-structured-no-temperature")
+                if mode in ("live-structured","live-structured-no-temperature","live-v342-portable")
                 else "REAL_GPT6_LUNA_ONE_REQUEST")
     elif mode == "offline-v341-compatible":
         # V3-41: intentionally SYNTHETIC wire-to-host native Manim rehearsal.
@@ -337,14 +341,14 @@ def run(root:Path,out:Path,*,mode:str,key:str="",sender=None,compatible_wire=Non
         "rendered":True,"video_sha256":measured["video_sha256"],
         "plan_origin":origin}
     receipt={
-      "checkpoint":"V3-35" if mode in ("live-structured","live-structured-no-temperature") else "V3-34",
+      "checkpoint":"V3-35" if mode in ("live-structured","live-structured-no-temperature","live-v342-portable") else "V3-34",
       "status":("TECHNICAL_MODEL_SCENE_PASS_NOT_EDUCATIONAL_PASS"
-                if mode in ("live-model","live-structured","live-structured-no-temperature")
+                if mode in ("live-model","live-structured","live-structured-no-temperature","live-v342-portable")
                 else "TECHNICAL_SMOKE_NOT_EDUCATIONAL_PASS"),
       "topic_id":prereg["topic_id"],
       "ablation":baselines,"model_plan_origin":origin,
       "manim_source_origin":("HOST_COMPILED_FROM_MODEL_PRIMITIVE_DATA"
-                             if mode in ("live-model","live-structured","live-structured-no-temperature")
+                             if mode in ("live-model","live-structured","live-structured-no-temperature","live-v342-portable")
                              else "HOST_FIXTURE_FROM_HOST_PRIMITIVE_DATA"),
       "provider_requests":1 if usage is not None else 0,
       "provider_receipt":usage,
@@ -359,7 +363,7 @@ def run(root:Path,out:Path,*,mode:str,key:str="",sender=None,compatible_wire=Non
       "creative_advantage_proven":"NO_UNBALANCED_A_B_ABSTAIN",
       "production":"BLOCKED"}
     receipt_filename=("v3_35_ablation_receipt.json"
-                     if mode in ("live-structured","live-structured-no-temperature")
+                     if mode in ("live-structured","live-structured-no-temperature","live-v342-portable")
                      else "v3_34_ablation_receipt.json")
     (out/receipt_filename).write_text(json.dumps(receipt,indent=2)+"\n")
     print("V3_34_MODE="+origin,flush=True)
