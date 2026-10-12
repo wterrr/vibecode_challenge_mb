@@ -36,7 +36,7 @@ def _read_prereg(root:Path)->dict:
             and p.get("preregistered_before_implementation") is True
             and p.get("parent_sha")=="734f212af4326e589674b1df9d1af152587ba9bd"
             and p.get("acceptance",{}).get("families_rendered_native_mp4")==2
-            and p.get("model_http_requests")==0):
+            and p.get("acceptance",{}).get("model_http_requests")==0):
         raise Blocked("V345_PREREGISTRATION_DRIFT")
     return p
 
