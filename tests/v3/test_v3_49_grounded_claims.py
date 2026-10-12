@@ -84,6 +84,7 @@ def test_bad_topic_or_extra_untrusted_code_rejected(mutation):
 def test_grounded_topic_binding_prevents_claim_recycling(mutation):
     e=ground(topic(cases()[0]))
     d=e.model_dump()
+    d["claims"]=list(d["claims"])
     if mutation=="fake_origin":d["origin"]="OPENROUTER_REAL"
     if mutation=="altered_proof":d["proof"]="1/2 = 3/5"
     if mutation=="altered_source_sha":d["source_sha256"]="0"*64
