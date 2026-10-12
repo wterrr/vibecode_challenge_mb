@@ -396,34 +396,45 @@ def decode_model_facing_scene(raw)->SceneWire:
     except ValidationError:
         raise Blocked("V345_HOST_SEMANTIC_SCENE_REJECTED") from None
 
-def compile_scene(scene:SceneWire,durations:list[float])->str:
+def compile_scene(scene:SceneWire,durations:list[float],*,visual_quality:bool=False)->str:
     if len(durations)!=4 or any(not 2<=d<=20 for d in durations):
         raise Blocked("V345_MEASURED_BEAT_DURATION_INVALID")
     if scene.family=="fraction_equivalence":
-        code=fraction_manim(fraction_lesson(scene),durations)
+        code=fraction_manim(fraction_lesson(scene),durations,visual_quality=visual_quality)
     else:
-        code=_compile_process(scene,durations)
+        code=_compile_process(scene,durations,visual_quality=visual_quality)
     if any(x in code for x in ("__import__","eval(","exec(","subprocess","import os","os.system")):
         raise Blocked("V345_HOST_CODE_SAFETY_FAILURE")
     compile(code,"<v345 trusted host manim>","exec")
     return code
 
-def _compile_process(scene:SceneWire,durations:list[float])->str:
+def _compile_process(scene:SceneWire,durations:list[float],*,visual_quality:bool=False)->str:
     # This is the SECOND semantic family, independent of any fraction fixture.
     nodes={o.id:o for o in scene.graphics if o.kind=="node"}
     edges={o.id:o for o in scene.graphics if o.kind=="edge"}
     labels={o.id:o for o in scene.graphics if o.kind=="label"}
     edge_geometry=process_edge_layout(scene)
+    if visual_quality:
+        from learnflow_v3.visual_quality_system import safe_rectangles
+        safe_rectangles(scene.family,scene.graphics)
     lines=["# V3-45 SYNTHETIC_OFFLINE_JSON_MODEL_FACING_NOT_LIVE_MODEL",
            "from manim import *","class GeneratedLesson(Scene):",
            "    def construct(self):","        self.camera.background_color = '#000000'"]
+    if visual_quality:
+        from learnflow_v3.visual_quality_system import frame_lines
+        lines.extend(frame_lines(scene.family))
     for n in nodes.values():
         lines.append(f"        {n.id} = RoundedRectangle(width={n.width:.2f},height={n.height:.2f},"
                      f"corner_radius=.14,color={PALETTE[n.color]!r},fill_opacity=.22)"
                      f".move_to([{n.x:.2f},{n.y:.2f},0]).set_z_index(1)")
-        lines.append(f"        {n.id}_caption = Text({n.text!r},font='CMU Serif',font_size=30,"
-                     f"color={PALETTE['WHITE']!r}).scale_to_fit_width({min(n.width*.85,2.0):.2f})"
-                     f".move_to({n.id}.get_center()).set_z_index(2)")
+        if visual_quality:
+            from learnflow_v3.visual_quality_system import text_style_lines,caption_max_width,BODY
+            lines.append(text_style_lines(f"{n.id}_caption","node_caption",n.text,
+                        n.x,n.y,BODY,caption_max_width(n.width)))
+        else:
+            lines.append(f"        {n.id}_caption = Text({n.text!r},font='CMU Serif',font_size=30,"
+                         f"color={PALETTE['WHITE']!r}).scale_to_fit_width({min(n.width*.85,2.0):.2f})"
+                         f".move_to({n.id}.get_center()).set_z_index(2)")
     for e in edges.values():
         path=edge_geometry[e.id]
         src=path["src"]
@@ -436,12 +447,21 @@ def _compile_process(scene:SceneWire,durations:list[float])->str:
             f"stroke_width=4,color={PALETTE[e.color]!r}).set_z_index(0)"
         )
     for l in labels.values():
-        lines.append(f"        {l.id} = Text({l.text!r},font='CMU Serif',font_size=31,"
-                     f"color={PALETTE[l.color]!r}).scale_to_fit_width({min(7.,max(.7,len(l.text)*.22)):.2f})"
-                     f".move_to([{l.x:.2f},{l.y:.2f},0])")
+        if visual_quality:
+            from learnflow_v3.visual_quality_system import text_style_lines,BODY,ACCENT
+            lines.append(text_style_lines(l.id,"title" if l.y>1.8 else "label",
+                l.text,l.x,l.y,ACCENT if l.color=="YELLOW" else BODY,
+                5.6 if l.y>1.8 else 5.1))
+        else:
+            lines.append(f"        {l.id} = Text({l.text!r},font='CMU Serif',font_size=31,"
+                         f"color={PALETTE[l.color]!r}).scale_to_fit_width({min(7.,max(.7,len(l.text)*.22)):.2f})"
+                         f".move_to([{l.x:.2f},{l.y:.2f},0])")
     lines.append("        cursor = Dot(color=YELLOW,radius=.09).set_z_index(3)")
     for i,(beat,full) in enumerate(zip(scene.beats,durations)):
         lines.append(f"        # V345 AUDIO BEAT {i+1}, actual seconds {full:.5f}")
+        if visual_quality:
+            from learnflow_v3.visual_quality_system import beat_focus_lines
+            lines.extend(beat_focus_lines(i))
         elapsed=0.
         for e in beat.events:
             ahead=full*e.at-elapsed
