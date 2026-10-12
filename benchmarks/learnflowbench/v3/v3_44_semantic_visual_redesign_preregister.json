@@ -1,0 +1,51 @@
+{
+  "checkpoint": "V3-44",
+  "title": "Semantic Visual Transformation & Narration Alignment Redesign",
+  "preregistered_before_implementation": true,
+  "parent_pr": 77,
+  "parent_sha": "cf6a813842e1d5928a7cefb6efe34ce190155252",
+  "source": {
+    "v342_run": 38189257163,
+    "v342_artifact_id": 11721146374,
+    "v342_model_response_sha256": "724206bd43281221d7667f0943db8940059aa1584d4b375b7fdd77eaf74af320",
+    "v342_mp4_sha256": "f92c47bbacf25a6c9dead39fcca05cc761276927537ed41d9e513f9f868e047a",
+    "v343_run": 38190765704,
+    "v343_report_issue_count": 4
+  },
+  "approach": "New generic declarative host-owned semantic event compiler separate from frozen V3-42 LLM schema; offline source-grounded counterfactual demonstration. Keep model plan/MP4 unchanged and never claim model authored new events.",
+  "objectives": [
+    "typed reusable semantic events with explicit source/target graphic IDs and timing fractions anchored to narration beat start",
+    "reference integrity, finite bounded shape geometry, same-sized whole/partitions and fraction-preserving map verified before compile",
+    "reveal complete partition early with concurrent animation, not serial per tile",
+    "explicit numerator×factor and denominator×factor arithmetic visually expressed",
+    "safe host-only Manim with locked Docker, local narrated WAV, decoded 720p H264/AAC",
+    "negative tests for hidden facts, unsupported arithmetic, unequal whole, illegal refs, timing, unsafe identifiers and synthetic model-origin spoof",
+    "describe one host-curated sample as counterfactual, no causal quality claims"
+  ],
+  "measured_gates": {
+    "complete_partition_reveal_delay_seconds_max": 3,
+    "partition_whole_relative_area_diff_max": 0.05,
+    "explicit_arithmetic_step_required": true,
+    "model_http_posts": 0,
+    "authenticated_provider_gets": 0,
+    "native_mp4_required": true,
+    "full_word_alignment": "NOT_SUPPORTED; only explicit event anchors per spoken beat",
+    "model_schema_and_live_path": "FROZEN_UNCHANGED"
+  },
+  "acceptance": [
+    "same-sized whole geometry and exact rational shaded area equivalence",
+    "two and four-piece partitions complete <=3 seconds after matching beat begins",
+    "a visible numerator/denominator × same factor step",
+    "actual Docker H264/AAC non-silent audio and decoded frames",
+    "old V3-42 actual artifact unchanged; synthetic provenance explicitly rejected",
+    "0 GPT-6 Luna requests",
+    "negative mutations fail closed",
+    "PR stacked on #77, no main merge"
+  ],
+  "limitations": [
+    "host-authored improvement is NOT evidence of GPT-6 Luna capability",
+    "one exposed fractions topic; no broad-domain, blinded-human or learning-gain conclusion",
+    "word-level voice alignment not established"
+  ],
+  "production": "BLOCKED"
+}
