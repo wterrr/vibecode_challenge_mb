@@ -30,3 +30,19 @@ Source MP4 frame inspection at 24s:
 One deterministic synthetic fraction and one synthetic linear-process case, no inference, no students and no independent human participants: no statistical generalization or causal estimate. The new shared style may improve visual hierarchy but MUST be judged by actual video frames, not a green GitHub check. No unsupported general curriculum/domain claims. Word-level narration alignment, audiovisual pedagogy and blind aesthetics remain untested. If this checkpoint achieves native technical gates alone, classify **TECHNICAL LAYOUT PASS / HUMAN VISUAL QUALITY PENDING**, not a product-quality pass. Production BLOCKED; do not merge main.
 
 **Evidence/results:** Exact-head CI, final artifact hashes and frame review pending.
+
+
+## Empirical offline results — first real native comparison (12 October 2026)
+
+[Native CI #38200413211](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38200413211) passed on the final renderer code, producing [two-family artifact #11725840042](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38200413211/artifacts/11725840042). Both MP4s were downloaded and inspected at the 24-second frame, alongside twelve matched beat-relative decoded samples per family.
+
+| Synthetic family | Frames / duration | New MP4 SHA256 | Foreground occupancy before → after | Meaningful sampled transitions | Bright outer-margin pixels |
+|---|---|---|---|---|---|
+| Fraction equivalence | 497 / 33.133 seconds | `d14e7bb6e2cff98ee7296a21eb9183a59e20fcbc20c25a87eef923cd90a777e1` | 7.417% → 7.667% | 7 → 7 | 0 → 0 |
+| Ordered process | 513 / 34.2 seconds | `348bfdcaa9043a25a0dc7b491500164d0980d6c1d9c3b89d1d16373962e50b91` | 2.021% → 2.306% | 5 → 5 | 0 → 0 |
+
+On-disk SHA256 matched each receipt; the underlying model-facing synthetic JSON and physical narration frame budgets remained unchanged. Per-frame motion averages fraction 1.7684→1.7161, process 0.6632→0.6433, so there is **no evidence of increased animation density**. The initial mean-motion >1 threshold falsely rejected legitimate narrated holds. Objective gating now requires four meaningful sampled transitions plus the original native decoded-motion gate and preserved V3-45-FIX node/edge/cursor pixel-overlap checks; real videos showed 7 and 5 transitions.
+
+Visual inspection: fraction group panels improve separation and emphasis on equal-sized wholes; process captions gain inset, destination focus and consistent hierarchy. The videos remain spatially sparse and still not polished, with word-level narration synchrony, voice naturalness and educational outcomes unassessed. The human quality rubric is **unrated**; side-by-side images are labeled BEFORE/AFTER and therefore **are not blinded preference trials**. No human visual superiority or 3Blue1Brown-quality PASS is claimed.
+
+**Technical renderer evidence PASS at source commit `44cbace`; exact final PR HEAD CI pending.** Production BLOCKED, synthetic host-owned output only, 0 model requests.
