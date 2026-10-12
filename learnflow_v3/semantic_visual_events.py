@@ -204,6 +204,8 @@ class SemanticLesson(BaseModel):
                         raise ValueError("V344_LABEL_NOT_DECLARED_OR_ALREADY_SHOWN")
                     visible_labels.add(e.target)
                     if e.target in {r.proof_label_id for r in self.relations}:
+                        if "F2" not in beat.claim_ids:
+                            raise ValueError("V344_PROOF_NOT_BOUND_TO_ARITHMETIC_CLAIM")
                         used_proof.add(e.target)
                 elif e.kind == "emphasize":
                     if e.target not in visible_groups | visible_labels:
