@@ -8,6 +8,7 @@ No OCR, synthetic images, model calls, or on-video text recognition.
 from __future__ import annotations
 from hashlib import sha256
 from pathlib import Path
+import math
 import subprocess
 import wave
 
@@ -177,7 +178,7 @@ def read_beat_frames(folder:Path)->list[int]:
             raise Blocked("V345_FIX_MISSING_PHYSICAL_AUDIO_BEAT")
         try:
             with wave.open(str(file),"rb") as audio:
-                result.append(round(FPS*audio.getnframes()/audio.getframerate()))
+                result.append(math.ceil(FPS*audio.getnframes()/audio.getframerate())+3)
         except (OSError,wave.Error):
             raise Blocked("V345_FIX_INVALID_PHYSICAL_AUDIO_BEAT") from None
     return result
