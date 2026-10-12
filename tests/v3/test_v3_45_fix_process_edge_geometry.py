@@ -56,7 +56,7 @@ def test_centres_to_node_boundary_clearance_is_geometric_not_buff_magic():
 
 @pytest.mark.parametrize("centres,sizes",[
   ([(-3,-1.3),(0,0),(3,1.3)],[(1.4,.7),(2.1,1.4),(1.4,.9)]),
-  ([(0,-2),(0,0),(0,2)],[(1.2,.75),(1.3,.75),(1.2,.75)]),
+  ([(0,-2),(0,0),(0,2)],[(1.2,.8),(1.3,.8),(1.2,.8)]),
   ([(-3,0),(0,0),(3,0)],[(1.8,1.2),(1.8,1.2),(1.8,1.2)]),
 ])
 def test_off_axis_rectangle_ray_intersections_keep_margins(centres,sizes):
