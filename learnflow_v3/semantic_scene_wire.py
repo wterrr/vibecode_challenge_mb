@@ -476,9 +476,21 @@ def _compile_process(scene:SceneWire,durations:list[float],*,visual_quality:bool
                 # the node centres/captions.
                 lines.append(f"        cursor.move_to({e.target}.get_start())")
                 lines.append(f"        self.add(cursor)")
-                lines.append(f"        self.play(MoveAlongPath(cursor,Line("
-                             f"{e.target}.get_start(),{e.target}.get_end())),"
-                             f"run_time={dur:.5f})")
+                if visual_quality:
+                    from learnflow_v3.visual_quality_system import ACCENT
+                    # A destination highlight shares the CURRENT semantic
+                    # edge-traversal window: no invented extra narration time.
+                    # Source and target node geometry are unchanged.
+                    node_id=edges[e.target].dst
+                    lines.append(f"        self.play(AnimationGroup("
+                        f"MoveAlongPath(cursor,Line({e.target}.get_start(),"
+                        f"{e.target}.get_end())),"
+                        f"Indicate({node_id},color={ACCENT!r},scale_factor=1.03),"
+                        f"lag_ratio=0),run_time={dur:.5f})")
+                else:
+                    lines.append(f"        self.play(MoveAlongPath(cursor,Line("
+                                 f"{e.target}.get_start(),{e.target}.get_end())),"
+                                 f"run_time={dur:.5f})")
             elif e.kind=="show_label":
                 lines.append(f"        self.play(FadeIn({e.target}),run_time={dur:.5f})")
             elif e.kind=="emphasize":
