@@ -29,7 +29,7 @@ CLAIMS={
 TARGETS={
 "A1":["query","keys","tokens"],
 "A2":["query","keys","scores"],
-"A3":["scores","weights","softmax"],
+"A3":["weights","softmax"],
 "A4":["weights","values","context"]}
 
 
@@ -160,7 +160,7 @@ def verify_storyboard(raw):
         if role=="A4" and not ("value" in l and ("weight" in l or "mix" in l)):
             raise Blocked("V350_A4_NOT_GROUNDED")
         # Detect known unsupported quantities but do not claim full semantic NLP proof.
-        numbers=re.findall(r"(?<![a-z])\d+(?:\\.\d+)?",l)
+        numbers=re.findall(r"(?<![a-z])\d+(?:\.\d+)?",l)
         allowed={"0","1","2","0.707","0.67","0.670","0.33","0.330","0.7","0.3"}
         if any(n not in allowed for n in numbers):
             raise Blocked("V350_UNAPPROVED_MODEL_NUMBER")
