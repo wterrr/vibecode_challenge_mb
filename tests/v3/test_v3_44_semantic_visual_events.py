@@ -7,6 +7,8 @@ from __future__ import annotations
 from copy import deepcopy
 import json
 import os
+import wave
+from hashlib import sha256
 from pathlib import Path
 import shutil
 
@@ -18,7 +20,7 @@ from learnflow_v3.semantic_visual_events import (
     HOST_ORIGIN, SemanticLesson, compile_manim,
     create_counterfactual_from_real_scene, compiled_event_windows,
     verify_source_artifact)
-from scripts.run_v3_44_semantic_counterfactual import REGISTRATION
+from scripts.run_v3_44_semantic_counterfactual import REGISTRATION, deterministic_mux, _track_probe
 
 ROOT=Path(__file__).resolve().parents[2]
 
@@ -173,3 +175,82 @@ def test_host_final_label_is_in_open_whole_gap(counterfactual):
     assert label.x-estimated_label_half_width > left_right
     assert label.x+estimated_label_half_width < right_left
     assert label.text=="Same whole"
+
+
+
+@pytest.fixture(scope="module")
+def failing_mux_artifact():
+    """Frozen V3-44 failed *host* render; never counted as a real model response."""
+    root=Path(os.environ["V344_FAILING_MUX_DIR"]).resolve()
+    raw=root/"manim_output/videos/v3_44_host_compiled_manim/720p15/GeneratedLesson.mp4"
+    wav=root/"narration.wav"
+    broken=root/"v3_44_host_counterfactual_with_audio.mp4"
+    expected={
+        raw:"3ca3559f4204015828302783d54a0f5e34c0632d628358328cc55467ac591fe9",
+        wav:"da180c5874c30fb98f8b0ca66c2987ad81decb28ad37f5d2d47d84f6b416bd7f",
+        broken:"2017c385c666c07fb13dfca463d60ca812e7c28f558d304d7a3c619f2bccc9e4",
+    }
+    assert all(path.is_file() and sha256(path.read_bytes()).hexdigest()==digest
+               for path,digest in expected.items()), "V344_FROZEN_FAILING_ARTIFACT_DRIFT"
+    return raw,wav,broken
+
+
+def test_historical_shortest_failure_is_reproduced_from_actual_failed_mp4(failing_mux_artifact):
+    raw,wav,broken=failing_mux_artifact
+    raw_probe=_track_probe(raw)
+    bad_probe=_track_probe(broken)
+    v=lambda info:next(s for s in info["streams"] if s["codec_type"]=="video")
+    assert int(v(raw_probe)["nb_frames"])==595
+    assert int(v(bad_probe)["nb_frames"])==588
+    with wave.open(str(wav),"rb") as a:
+        assert abs(a.getnframes()/a.getframerate()-590/15)<1e-6
+
+
+def test_fixed_mux_preserves_exact_video_frames_and_full_aac(failing_mux_artifact,tmp_path):
+    raw,wav,broken=failing_mux_artifact
+    output=tmp_path/"repaired_native.mp4"
+    receipt=deterministic_mux(raw,wav,output,[{"frames":590}])
+    assert receipt["raw_manim_frames"]==595
+    assert receipt["required_audio_derived_video_frames"]==590
+    assert receipt["output_h264_frames"]==590
+    assert receipt["mux_strategy"]=="EXACT_AUDIO_FRAME_BUDGET_WITHOUT_SHORTEST"
+    assert receipt["video_sha256"]==sha256(output.read_bytes()).hexdigest()
+    assert abs(receipt["output_aac_seconds"]-receipt["input_wav_seconds"])<1/15
+    assert abs(receipt["output_h264_seconds"]-590/15)<1e-5
+    probed=_track_probe(output)
+    assert {s["codec_name"] for s in probed["streams"]}=={"h264","aac"}
+    # A source at 595 frames MUST never permit muxing to stop at 588 like -shortest.
+    assert receipt["output_h264_frames"]>588
+
+
+def test_mismatched_source_frame_budget_fails_closed(failing_mux_artifact,tmp_path):
+    _,wav,broken=failing_mux_artifact
+    # 588-frame H.264 stream, but original narration needs 590 frames.
+    with pytest.raises(Blocked,match="V344_MANIM_VIDEO_TOO_SHORT_FOR_NARRATION"):
+        deterministic_mux(broken,wav,tmp_path/"not_created.mp4",[{"frames":590}])
+    assert not (tmp_path/"not_created.mp4").exists()
+
+
+def test_shortened_input_wav_fails_closed_before_ffmpeg(failing_mux_artifact,tmp_path):
+    raw,wav,_=failing_mux_artifact
+    short=tmp_path/"shortened.wav"
+    with wave.open(str(wav),"rb") as source:
+        params=source.getparams()
+        pcm=source.readframes(source.getnframes())
+    with wave.open(str(short),"wb") as dest:
+        dest.setparams(params)
+        dest.writeframes(pcm[:int(params.framerate*37.0)*params.sampwidth])
+    with pytest.raises(Blocked,match="V344_AUDIO_BUDGET_MISMATCH"):
+        deterministic_mux(raw,short,tmp_path/"not_created.mp4",[{"frames":590}])
+    assert not (tmp_path/"not_created.mp4").exists()
+
+
+def test_frozen_mux_source_and_ci_do_not_use_shortest_or_model_secrets():
+    source=(ROOT/"scripts/run_v3_44_semantic_counterfactual.py").read_text()
+    workflow=(ROOT/".github/workflows/v3-44-semantic-visual-narration.yml").read_text()
+    assert '"-frames:v",str(expected)' in source
+    assert '"-shortest" in cmd' in source  # explicit fail-closed guard only
+    assert '         "-shortest",' not in source
+    assert "38192773382" in workflow
+    assert "V344_FAILING_MUX_DIR" in workflow
+    assert "OPENROUTER_API_KEY" not in workflow
