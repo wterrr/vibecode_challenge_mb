@@ -4,6 +4,11 @@ LIVE only from unique commit marker in a dedicated GitHub job. No secrets
 or network inside Docker; no retries, model fallback or unbounded model code.
 """
 from __future__ import annotations
+import sys
+from pathlib import Path
+ROOTPATH=Path(__file__).resolve().parents[1]
+if str(ROOTPATH) not in sys.path:
+    sys.path.insert(0,str(ROOTPATH))
 import argparse
 from hashlib import sha256
 import json
@@ -22,7 +27,7 @@ from scripts.run_v3_44_semantic_counterfactual import deterministic_mux
 
 
 def _json(path,data):
-    path.write_text(json.dumps(data,indent=2,ensure_ascii=False)+"\\n")
+    path.write_text(json.dumps(data,indent=2,ensure_ascii=False)+"\n")
 
 
 def _failure(out,code,requests,model_sha=None):
