@@ -335,6 +335,13 @@ def compile_manim(lesson:SemanticLesson, durations:list[float])->str:
         if remainder>0.00001:
             lines.append(f"        self.wait({remainder:.5f})")
         t+=duration
+    # Manim frame discretization may finish a few frames before the
+    # frame-aligned spoken WAV despite equal nominal source durations.
+    # Make video safely LONGER than the full audio and let -shortest mux
+    # trim the final no-content-changing hold at real WAV duration.
+    # This host-only slack is outside ALL semantic event anchors.
+    lines.append("        # V344 VIDEO-ONLY SAFETY TAIL: TRIM AT ORIGINAL AUDIO END")
+    lines.append("        self.wait(0.80000)")
     code="\n".join(lines)+"\n"
     if any(x in code for x in ("__import__","eval(","exec(","os.system","subprocess","import os","import sys")):
         raise Blocked("V344_COMPILER_SAFETY_VIOLATION")
