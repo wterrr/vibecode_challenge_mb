@@ -1,0 +1,76 @@
+{
+  "checkpoint": "V3-48",
+  "title": "Pedagogical Animation Quality and Semantic Generalization Evaluation",
+  "registration_kind": "PREREGISTRATION_BEFORE_IMPLEMENTATION",
+  "parent_pr": 81,
+  "parent_sha": "f6b3919e304482f8b2691dcf877c15b8990f31ca",
+  "sources": {
+    "baseline_v346": {
+      "run_id": 38200776147,
+      "artifact_id": 11725751836,
+      "case_sha256": {
+        "fraction": "d14e7bb6e2cff98ee7296a21eb9183a59e20fcbc20c25a87eef923cd90a777e1",
+        "process": "348bfdcaa9043a25a0dc7b491500164d0980d6c1d9c3b89d1d16373962e50b91"
+      }
+    },
+    "current_v347": {
+      "run_id": 38203160425,
+      "artifact_id": 11726228138,
+      "commit": "f6b3919e304482f8b2691dcf877c15b8990f31ca",
+      "case_sha256": {
+        "fraction": "62e69b287c724ae2bf5d92d5fb21959d938f441279f6a2bc863722235122ba73",
+        "process": "861ba245a10aa6b6d56ab3c08afc1acb62b0cc50e16ec25d4cf2523b14b9c367",
+        "heldout_process": "2802f2ebf913bffaca380bd531bfa5fea6c47fe9e0a6913b6b5c47deea63ae54"
+      }
+    }
+  },
+  "frozen_research_questions": [
+    "Does the V3-47 visual grammar add physically visible semantic evidence at frozen beat times without changing narration?",
+    "Does the model-facing contract incorrectly accept changed mathematical or process topics under fixed claim IDs?",
+    "Can independent blinded evaluators prefer the rendered explanation and answer a source-grounded comprehension question, without source/variant identity being leaked?"
+  ],
+  "cohort_protocol": {
+    "quality_axes": [
+      "object_continuity",
+      "mathematical_or_graph_truth",
+      "causal_or_condition_precision",
+      "temporal_explanation",
+      "visual_readability",
+      "learner_comprehension"
+    ],
+    "randomized_pairwise_blinding": "Deterministic A/B per scene, same physical narration, randomized by preregistered SHA-based seed; provenance manifest must be kept away from reviewers.",
+    "analysis": "Paired per-criterion scores and free-text timestamp evidence; do not infer learning gains or preference without actual participants and independent ratings.",
+    "min_independent_reviewers": 3,
+    "learner_study_minimum": 12,
+    "learner_study_method": "Counterbalanced assignment + unseen post-video transfer question; no statistical superiority assertion if not executed.",
+    "external_review_status": "UNRATED_NO_PARTICIPANTS"
+  },
+  "objective_acceptance": {
+    "exact_source_sha_and_receipt_verification": true,
+    "compare_two_frozen_families_same_source_and_audio": true,
+    "verify_full_H264_AAC_and_event_window_frame_picks": true,
+    "three_native_v347_video_proofs": true,
+    "blinded_media_pair_filenames_with_separate_key": true,
+    "explicitly_unrated_human_forms": true,
+    "reject_unsupported_semantic_topics": true,
+    "mutation_tests": [
+      "source_sha_corruption",
+      "unverified_condition_outcome",
+      "mathematically_valid_but_unbound_2/3_to_4/6",
+      "process_claim_misassociation",
+      "missing_human_review_as_success"
+    ],
+    "preserve_frozen_V2_and_V3_safety_gates": true,
+    "human_effectiveness": "NOT_CERTIFIED",
+    "production": "BLOCKED",
+    "model_api_posts": 0,
+    "model_authenticated_gets": 0,
+    "merge_main": false
+  },
+  "research_nonclaims": [
+    "Two synthetic family pairs are not broad topic generalization or a human A/B study.",
+    "Geometry-only heldout is not unseen curriculum.",
+    "Descriptive event/pixel counts do not measure causal learning gain.",
+    "Legacy fixed claim bank permits no new fraction or condition truth; a valid 2/3-to-4/6 mathematical transformation may still be out of semantic scope."
+  ]
+}
