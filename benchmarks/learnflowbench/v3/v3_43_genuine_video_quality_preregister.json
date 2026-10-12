@@ -1,0 +1,69 @@
+{
+  "checkpoint": "V3-43",
+  "name": "Genuine Video Visual & Pedagogical Quality Audit",
+  "preregistered_before_implementation": true,
+  "parent_pr": 76,
+  "parent_sha": "72cb5942ec1f889ddcf79ff57247a3e4d366a24f",
+  "source": {
+    "workflow_run_id": 38189257163,
+    "artifact_id": 11721146374,
+    "artifact_name": "v3-42-genuine-model-video-or-failclosed-receipt",
+    "video_sha256": "f92c47bbacf25a6c9dead39fcca05cc761276927537ed41d9e513f9f868e047a",
+    "scene_sha256": "031af8c8aae1681b1919eb5e95dbfef50657fef2b17a573a4e7c2a8ca6da5b97",
+    "source_sha256": "116179fb12337816a05820ea5dc98ce3da20f01b68f1afb158c9700f2d1baa22",
+    "provider_receipt_sha256": "b329aa0af6afd8a0037f418718596187b7ffbc8a79a92b4111754c474bdca5fc",
+    "srt_sha256": "ce7d2222886a501e09a990b30d83e6f61a2c237163f1b5de7388c2f30a20b793",
+    "model_response_sha256": "724206bd43281221d7667f0943db8940059aa1584d4b375b7fdd77eaf74af320",
+    "expected_frames": 590,
+    "fps": 15,
+    "resolution": [
+      1280,
+      720
+    ],
+    "topic": "lfb-018-math",
+    "title": "Same Share, New Partition"
+  },
+  "registered_methods": [
+    "Verify exact frozen artifact hashes and genuine model provenance; fail closed on synthetic, missing or tampered data.",
+    "Inspect all four narration beats by their real timestamps and deterministic host Manim action schedule; distinguish beat-level temporal matching from ASR/word-level alignment.",
+    "Decode actual H264 frames at fixed fps=2 downscaled 320x180; report foreground occupancy threshold luminance>30 and adjacent-frame mean absolute difference; descriptive metrics not population norms.",
+    "Report audio codec and nonzero physical signal, distinct from expert-rated TTS intelligibility, prosody, word alignment.",
+    "Compute arithmetic visual whole equality from actual four-part vs two-part Rectangle widths/heights, with 5% relative area mismatch as predeclared conceptual illustration warning.",
+    "Score educational depiction by three explicit teachable events: one-half partition, two-quarter partition, visible numerator+denominator times-two transformation; distinguish narration-only arithmetic.",
+    "Emit exact timestamped issue inventory, source anchors, evidence tables, filmstrip; do not claim independent human-blind review or superiority."
+  ],
+  "frozen_quality_flags": {
+    "whole_area_mismatch_warn_ratio": 0.05,
+    "narration_to_complete_partition_lag_warn_seconds": 3,
+    "required_explicit_arithmetic_transformation": true,
+    "frame_sample_fps": 2,
+    "frame_scale": [
+      320,
+      180
+    ],
+    "foreground_luma_threshold": 30,
+    "low_activity_pairwise_luma_mean_delta_threshold": 0.001,
+    "measurements_are_descriptive_not_external_2026_standards": true
+  },
+  "acceptance": [
+    "identical grounded video/scene/compiled-Manim/provenance SHA and actual frame/codec proof",
+    "at least 12 actual sampled image frames linked to beat times and reproducible real video quality metrics",
+    "time-stamped positive evidence and failure inventory with code/scene or decoded pixels as anchors",
+    "explicit mathematical depiction check and signal coverage gap",
+    "audio/SRT per-beat timings, signal metrics and no fabricated word timestamps",
+    "quality verdict technical-origin PASS but pedagogical/visual quality NOT CERTIFIED, with clear remediation priorities",
+    "new CI downloads immutable source artifact from prior GitHub run, uses no OpenRouter API key/POST and applies adversarial mutation tests",
+    "V3-42 frozen result and one-shot budget untouched; no main merge"
+  ],
+  "forbidden": [
+    "any new model POST or paid trial",
+    "modified V3-42 activated content or reruns",
+    "misrepresent simulated media as real provider output",
+    "re-render synthetic as V3-42 original",
+    "fabricate audio transcription or claimed blind review",
+    "edit frozen source artifact",
+    "merge main"
+  ],
+  "production": "BLOCKED",
+  "quality_verdict_default": "UNKNOWN_UNTIL_AUDITED"
+}
