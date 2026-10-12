@@ -25,6 +25,7 @@ from learnflow_v3.semantic_scene_wire import (
 )
 from learnflow_v3.semantic_scene_offline_fixtures import fixture_cases
 from scripts.run_v3_44_semantic_counterfactual import deterministic_mux
+from learnflow_v3.process_edge_visual_qa import inspect_first_edge
 from learnflow_v3.creative_evidence_gate import EvidenceRejected,inspect_candidate
 
 PREREG="benchmarks/learnflowbench/v3/v3_45_semantic_scene_protocol_preregister.json"
@@ -74,6 +75,14 @@ def run(root:Path,out:Path)->dict:
             raise Blocked("V345_EXACT_VOICE_FRAMES_REQUIRED")
         if video["max_decoded_sample_delta"]<=.9:
             raise Blocked("V345_STATIC_VIDEO_REJECTED")
+        # V3-45-FIX: measure actual H264 pixels, not only declared geometry.
+        # Arrow/cursor entering node/caption is a BLOCKER, not a warning.
+        visual_overlap = (
+            inspect_first_edge(mp4,typed,[b["frames"] for b in beats],
+                               require_fixed=True)
+            if typed.family=="ordered_process" else
+            {"status":"NOT_APPLICABLE_TO_FRACTION_FAMILY"}
+        )
         (dest/"v3_35_ablation_receipt.json").write_text(json.dumps({
           "checkpoint":"V3-35",
           "model_plan_origin":SYNTHETIC_ORIGIN,
@@ -97,6 +106,7 @@ def run(root:Path,out:Path)->dict:
             "input_wire_sha256":sha(dest/"synthetic_model_facing_wire.json"),
             "output_video_sha256":sha(mp4),
             "mux":mux,"native_video":video,
+            "decoded_process_edge_overlap_gate":visual_overlap,
             "sandbox":sandbox,"production":"BLOCKED",
             "word_alignment":"NOT_MEASURED",
             "pedagogical_learning_gain":"NOT_MEASURED",
