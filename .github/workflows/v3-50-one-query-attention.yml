@@ -1,0 +1,129 @@
+name: V3-50 ONE Attention Query Model Storyboard and Native Video
+
+on:
+  push:
+    branches: [chatgpt/v3-50-one-shot-attention-model-trial]
+  pull_request:
+    paths:
+      - "learnflow_v3/model_authored_attention.py"
+      - "scripts/run_v3_50_attention_one_query.py"
+      - "tests/v3/test_v3_50_one_query_attention.py"
+      - "benchmarks/learnflowbench/v3/v3_50_attention_one_query_preregister.json"
+      - ".github/workflows/v3-50-one-query-attention.yml"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+      - "reports/v3_50_one_query_attention.md"
+
+permissions:
+  contents: read
+
+jobs:
+  offline-schema-native-attention:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned native AV tools, CMU and espeak
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Offline dependencies only
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Freeze exact model prompt, hostile mocked response and old semantic contracts
+        timeout-minutes: 7
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_50_one_query_attention.py \
+            tests/v3/test_v3_49_grounded_claims.py \
+            tests/v3/test_v3_48_pedagogical_quality.py \
+            tests/v3/test_v3_47_pedagogical_grammar.py \
+            tests/v3/test_v3_45_semantic_scene_wire.py \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py
+      - name: Frozen six-domain V3 evaluation and V2 Core benchmarks
+        timeout-minutes: 6
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Pull trusted network isolated Manim image
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Actual native H264/AAC video on clearly synthetic attention storyboard
+        timeout-minutes: 14
+        run: |
+          python scripts/run_v3_50_attention_one_query.py --mode offline \
+            --output-dir "$RUNNER_TEMP/v350_synthetic_attention"
+          test -s "$RUNNER_TEMP/v350_synthetic_attention/attention_one_query_with_audio.mp4"
+          test -s "$RUNNER_TEMP/v350_synthetic_attention/v350_attention_video_receipt.json"
+          python - <<'PY'
+          import json,os,pathlib
+          x=pathlib.Path(os.environ["RUNNER_TEMP"])/"v350_synthetic_attention"
+          r=json.loads((x/"v350_attention_video_receipt.json").read_text())
+          assert r["origin"]=="HOST_SYNTHETIC_OFFLINE"
+          assert not r["model_authored_storyboard"] and r["model_http_posts"]==0
+          assert r["native_video"]["frames"]==sum(b["frames"] for b in r["beats"])
+          assert r["native_video"]["max_decoded_sample_delta"]>.9
+          assert r["production"]=="BLOCKED"
+          print("V350_OFFLINE=HOST_SYNTHETIC_NATIVE_VIDEO_PASS_NOT_GENUINE")
+          PY
+      - name: Publish synthetic native video plainly marked non-model
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v350-attention-synthetic-NOT-MODEL-native-H264
+          path: ${{ runner.temp }}/v350_synthetic_attention/
+          retention-days: 14
+          if-no-files-found: warn
+
+  ONE-authorized-GPT6-Luna-attention-POST:
+    needs: offline-schema-native-attention
+    if: >-
+      github.event_name == 'push' &&
+      github.run_attempt == 1 &&
+      github.ref == 'refs/heads/chatgpt/v3-50-one-shot-attention-model-trial' &&
+      contains(github.event.head_commit.message, '[v3-50-single-attention-model-post]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Native AV and fonts
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Bounded dependencies
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Pull native network-isolated Manim image
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: ONE real model authored attention query with no retry
+        timeout-minutes: 14
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python scripts/run_v3_50_attention_one_query.py --mode live \
+            --output-dir "$RUNNER_TEMP/v350_real_attention"
+      - name: Preserve genuine storyboard and video or exact failure receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v350-ONE-real-attention-storyboard-native-video-or-failclosed
+          path: ${{ runner.temp }}/v350_real_attention/
+          retention-days: 14
+          if-no-files-found: warn
+
+  # NO model POST on ordinary push or PR; no automatic retry/fallback; no merge main.
