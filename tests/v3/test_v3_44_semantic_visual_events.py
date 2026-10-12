@@ -87,6 +87,8 @@ def test_host_only_compiler_has_no_eval_and_no_serial_four_piece_reveal(counterf
     assert "AnimationGroup(" in code
     assert "(1×2)/(2×2) = 2/4" in code
     assert "HOST-CURATED" in code
+    assert "VIDEO-ONLY SAFETY TAIL" in code
+    assert "self.wait(0.80000)" in code
     assert "from manim import *" in code
     assert "from openai" not in code
     assert "__import__" not in code
