@@ -28,3 +28,10 @@
 5. No GPT-6 Luna or other paid endpoint POST/GET, no automatic fallback to static cards, no production green or main merge.
 
 **Final native CI, SHA256 and MP4 side-by-side results:** PENDING; do not mark checkpoint PASS before inspecting actual artifacts.
+
+
+## Empirical early native evidence — 2026-10-12
+
+Early corrected grammar push [run #38202597081](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38202597081) **SUCCESS, 125 tests PASS**. Original host-only native [artifact #11725634920](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38202597081/artifacts/11725634920) was downloaded, byte-checked and decoded. FRACTION **497 frames/33.133333s**, AAC 33.133016s, SHA256 62e69b287c724ae2bf5d92d5fb21959d938f441279f6a2bc863722235122ba73. PROCESS **513 frames/34.2s**, SHA256 861ba245a10aa6b6d56ab3c08afc1acb62b0cc50e16ec25d4cf2523b14b9c367. HELDOUT PROCESS with changed object IDs and node geometry **513 frames/34.2s**, SHA256 2802f2ebf913bffaca380bd531bfa5fea6c47fe9e0a6913b6b5c47deea63ae54. Actual H264 semantic event samples: two original fraction cell guide segments have **205/216** saturated yellow pixels; process CHECK ? cue **289** yellow pixels, heldout **275**. Process node/arrow/caption pixel collisions **0/0/0** in both, real gap connector changes **383/479** pixels. Frozen V3-46 MP4 hashes and four physical WAV beats each verified unchanged; matched before/after 12 per-beat real frames each exported. Direct viewing at ~11s shows visual fractional split and UNKNOWN verification cue. Source is 100% HOST SYNTHETIC, not real model-authored; no verified predicate truth, no human scores, no six-domain generality, no educational learning evidence.
+
+Later tightened per-source tile subdivision factor, color continuity and horizontal vs vertical cut, with adversarial rotated tests. These were committed after the first passing artifact; **do not mark exact-head PASS until latest CI and MP4 pass**. Production blocked.
