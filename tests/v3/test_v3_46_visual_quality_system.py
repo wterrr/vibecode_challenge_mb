@@ -59,6 +59,10 @@ def test_two_families_have_same_compiler_semantics_and_opt_in_presentation(fixtu
         assert "process" in fixture
         assert "Line(edge_start_verify.get_start(),edge_start_verify.get_end())" in after
         assert "buff=0" in after
+        assert "AnimationGroup(MoveAlongPath(cursor" in after
+        assert "Indicate(verify," in after
+        assert "Indicate(finish," in after
+        assert "AnimationGroup(MoveAlongPath(cursor" not in before
         assert "caption = Text(" in after
         assert "TransformFromCopy" not in after
     else:
@@ -138,6 +142,7 @@ def test_sample_metrics_are_descriptive_not_human_quality_pass():
     assert outcome["sample_count"]==12
     assert outcome["bright_boundary_pixel_max"]==0
     assert outcome["foreground_occupancy_mean"]>0
+    assert "meaningful_sample_transitions" in outcome
     assert "cannot establish continuous motion" in outcome["sample_index_note"]
 
 
@@ -154,3 +159,20 @@ def test_ci_artifacts_and_two_source_frozen_baselines_no_keys():
     assert "V3_46=NATIVE_LAYOUT_QA_PASS_HUMAN_VISUAL_QUALITY_PENDING" in runner
     assert "human_visual_quality_status" in runner
     assert "same_audio_beats_and_model_facing_wire" in runner
+
+
+def test_sparse_storyboard_motion_count_does_not_automatically_pass_still_video():
+    import numpy as np
+    static=np.zeros((12,180,320,3),dtype=np.uint8)
+    static[:,35:125,65:255]=190
+    result=_descriptors(static)
+    assert result["meaningful_sample_transitions"]==0
+    # Nonzero occupancy alone cannot certify meaningful event transitions.
+    assert result["foreground_occupancy_mean"]>.1
+
+
+def test_six_dimensions_are_not_computed_from_frame_metrics(tmp_path):
+    rubric=_rubric(tmp_path)
+    fields=list(csv.DictReader(rubric.open()))
+    assert set(x["dimension"] for x in fields)==set(RATINGS)
+    assert not any(x["v346_score_1to5"] for x in fields)
