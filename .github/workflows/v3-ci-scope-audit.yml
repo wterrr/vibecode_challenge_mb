@@ -1,0 +1,38 @@
+name: V3 CI Trigger Scope Regression (NO MODEL API)
+
+on:
+  push:
+    branches: [ops/v3-ci-fanout-gate-20261013]
+    paths:
+      - "scripts/verify_v3_ci_scope.py"
+      - ".github/workflows/v3-ci-scope-audit.yml"
+  pull_request:
+    paths:
+      - "scripts/verify_v3_ci_scope.py"
+      - ".github/workflows/v3-ci-scope-audit.yml"
+      - ".github/workflows/v3-*.yml"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  strict-pr-event-trigger-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install YAML-only audit dependency (no model services)
+        run: python -m pip install --disable-pip-version-check pyyaml
+      - name: Fail closed on unrelated V3 CI fan-out
+        run: python scripts/verify_v3_ci_scope.py
