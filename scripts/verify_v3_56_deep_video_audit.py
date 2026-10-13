@@ -74,7 +74,7 @@ def check():
     inspection=native["visual_inspection"]
     require(inspection["frame_images_verified_directly"] is True and
             inspection["number_global_frame_times_every_15s"]>=100 and
-            len(inspection["timestamped_visual_beats"])>=15,
+            len(native["timestamped_visual_beats"])>=15,
             "INSUFFICIENT_NATIVE_FILM_COVERAGE")
     require(inspection["words_in_audio_manually_transcribed"] is False and
             inspection["word_alignment_measured"] is False,
@@ -84,7 +84,7 @@ def check():
     require(native["gate"]["native_encoded_file_acquired"]==1 and
             native["gate"]["full_video_audio_word_aligned"]==0,
             "NATIVE_EVIDENCE_WRONG_SCOPE")
-    for beat in inspection["timestamped_visual_beats"]:
+    for beat in native["timestamped_visual_beats"]:
         require(0<=beat["sampled_frame_s"]<media["duration_s"] and
                 beat["approx_interval_start_s"]<=beat["sampled_frame_s"]<=beat["approx_interval_end_s"] and
                 beat["timecode_precision"]=="APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS",
