@@ -9,6 +9,7 @@ if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
 from PIL import Image,ImageChops,ImageStat
 from learnflow_v3.pedagogical_storytelling_slice import (
     STEPS,FPS,WIDTH,HEIGHT,facts,plan,validate,render_native)
+from learnflow_v3.pedagogical_explanation_adapter import build_pec,validate_pec,digest
 
 REG=ROOT/"benchmarks/learnflowbench/v3/v3_57_pedagogical_slice_preregister.json"
 PARENT="38a8ba0c69a58ac18ad3296f6e847cbdeb6dbe91"
@@ -92,7 +93,13 @@ def run(output):
  output.mkdir(parents=True)
  rows=[]
  for case in ORDER:
-  receipt=render_native(plan(case),output/case)
+  host_plan=plan(case)
+  pec=build_pec(host_plan,ROOT)
+  validate_pec(pec,host_plan,ROOT)
+  receipt=render_native(host_plan,output/case)
+  (output/case/"research_pec.json").write_text(json.dumps(pec,indent=2)+"\n")
+  receipt["v356_pec_sha256"]=digest(pec)
+  receipt["v356_pec_schema"]="research-v3-56-proposal-v1"
   path=output/case/"pedagogical_slice.mp4"
   require(path.is_file() and path.stat().st_size>10000,"MEDIA_MISSING")
   digest=hashlib.sha256(path.read_bytes()).hexdigest()
