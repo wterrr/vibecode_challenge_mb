@@ -1,0 +1,556 @@
+{
+  "checkpoint": "V3-56",
+  "protocol": "EXTERNAL_CAPTION_CUE_NATIVE_VISUAL_ALIGNMENT_V1",
+  "preregister_first_commit": "377d1d03d47135a1b6c113e4e529d9a5ac6bc42c",
+  "original_file_sha256": "439e154fffbb8696a37753d765c4f64bc06d25fbb17cb3d98bcc842045d85cb9",
+  "source": {
+    "caption_url": "https://2outube.com/watch?v=eMlx5fFNoYc",
+    "caption_origin": "third-party mirror reporting original YouTube captions, not native file ASR",
+    "first_party_read": "https://www.3blue1brown.com/lessons/attention/",
+    "creator_chapters_url": "https://www.youtube.com/watch?v=eMlx5fFNoYc",
+    "creator_chapters": "00:00 Recap, 01:39 Examples, 04:29 Pattern, 11:08 Masking, 13:10 Values, 15:44 Params, 18:21 Cross, 19:19 Heads, 22:16 Output, 23:19 Deeper, 24:54 Ending"
+  },
+  "native_media": {
+    "actual_input_file_measured": true,
+    "pcm_decode_sample_rate": 8000,
+    "mono_audio_decoded_seconds": 1569.158125,
+    "video_sample_scaling": "320x180 luma after OpenCV native seek; first_frame_sha256",
+    "actual_visual_sample_count": 60,
+    "number_of_anchor_groups": 12,
+    "original_video_sha256": "439e154fffbb8696a37753d765c4f64bc06d25fbb17cb3d98bcc842045d85cb9",
+    "video_duration_s": 1569.191429
+  },
+  "evidence_levels": {
+    "caption": "EXTERNAL_CAPTION_PROXY_NOT_NATIVE_AUDIO_WORD_SYNC",
+    "visual": "DIRECT_DECODED_MP4_FRAME_SHA",
+    "audio": "DECODED_PCM_1S_RMS_ONLY_CANNOT_RELIABLY_IDENTIFY_WORDS_VS_MUSIC",
+    "interpretation": "RESEARCHER_CAUSAL_STORY_HYPOTHESIS"
+  },
+  "alignment_rows": [
+    {
+      "anchor_id": "mole",
+      "transcript_proxy_start_s": 109,
+      "transcript_claim_paraphrase": "Speaker introduces three contextual readings of the token mole and notes initial lookup embedding cannot disambiguate.",
+      "caption_source": "2outube original-caption mirror",
+      "native_frame_seconds": [
+        109,
+        115,
+        121,
+        127,
+        146
+      ],
+      "native_frame_first_sha256": "c4a6eabbe8ff50d919af6c294acf6e889a587b5cd3c25dfb5226bd423c03884d",
+      "native_frame_description": "At 01:49 video still shows a previous abstract embedding matrix; around 02:01 screen introduces 'American shrew mole', after verbal motivation.",
+      "cross_modal_relation": "VOICE_TOPIC_BEFORE_EXAMPLE_APPEARS",
+      "native_gray_mean_abs_differences_320x180": [
+        10.698,
+        37.393,
+        1.847,
+        11.598
+      ],
+      "audio_rms_sample_points": [
+        0.11302,
+        0.15967,
+        0.16765,
+        0.19586,
+        0.04053
+      ],
+      "first_party_read_section": "first-party Read 'Motivating Examples'",
+      "verified_scope": [
+        "timestamped external caption topic (not native speech verified)",
+        "native actual MP4 frames at specified seconds",
+        "AAC decoded RMS in corresponding seconds"
+      ],
+      "unverified_scope": [
+        "spoken words independently verified in uploaded track",
+        "phoneme/word forced alignment",
+        "speaker pause inferred from low RMS",
+        "educational efficacy or single-scene superiority"
+      ]
+    },
+    {
+      "anchor_id": "running_sentence",
+      "transcript_proxy_start_s": 269,
+      "transcript_claim_paraphrase": "Speaker introduces one simplified phrase for a single attention head, adjectives refining noun embeddings.",
+      "caption_source": "2outube original-caption mirror",
+      "native_frame_seconds": [
+        269,
+        275,
+        281,
+        289,
+        301
+      ],
+      "native_frame_first_sha256": "de8dda8bbc6a060c66f9b1c49f2165205cff0595c5b0324c1dc909b4e2dcf89e",
+      "native_frame_description": "04:29 has the preceding mystery-novel network; at 04:35 the sentence 'a fluffy blue creature roamed the verdant forest' and illustrative creature appear, then words are highlighted and indexed.",
+      "cross_modal_relation": "EXTERNAL_CAPTION_CUE_PRECEDES_VISIBLE_EXAMPLE",
+      "native_gray_mean_abs_differences_320x180": [
+        15.465,
+        13.949,
+        22.014,
+        28.88
+      ],
+      "audio_rms_sample_points": [
+        0.12557,
+        0.13344,
+        0.15171,
+        0.13957,
+        0.14914
+      ],
+      "first_party_read_section": "first-party Read 'The Attention Pattern'",
+      "verified_scope": [
+        "timestamped external caption topic (not native speech verified)",
+        "native actual MP4 frames at specified seconds",
+        "AAC decoded RMS in corresponding seconds"
+      ],
+      "unverified_scope": [
+        "spoken words independently verified in uploaded track",
+        "phoneme/word forced alignment",
+        "speaker pause inferred from low RMS",
+        "educational efficacy or single-scene superiority"
+      ]
+    },
+    {
+      "anchor_id": "query_motivating",
+      "transcript_proxy_start_s": 357,
+      "transcript_claim_paraphrase": "Speaker explicitly calls the adjective-noun example a conceptual simplification before asking what preceding adjective information the noun needs.",
+      "caption_source": "2outube original-caption mirror",
+      "native_frame_seconds": [
+        357,
+        363,
+        369,
+        382,
+        394
+      ],
+      "native_frame_first_sha256": "76a14f01a2506851def9782da74945fe86f094f4defda19d65a0fe9f39eb5811",
+      "native_frame_description": "05:57 on-screen cartoon labels the example made-up; 06:03 shows learned weights, 06:09 returns the token sentence; 06:22 question bubble above creature; 06:34 query vector begins.",
+      "cross_modal_relation": "CAUTION_OR_LIMITATION_BRIDGES_TO_VISIBLE_QUESTION",
+      "native_gray_mean_abs_differences_320x180": [
+        19.441,
+        23.501,
+        14.774,
+        9.628
+      ],
+      "audio_rms_sample_points": [
+        0.16033,
+        0.1729,
+        0.14264,
+        0.14015,
+        0.15874
+      ],
+      "first_party_read_section": "first-party Read 'Queries'",
+      "verified_scope": [
+        "timestamped external caption topic (not native speech verified)",
+        "native actual MP4 frames at specified seconds",
+        "AAC decoded RMS in corresponding seconds"
+      ],
+      "unverified_scope": [
+        "spoken words independently verified in uploaded track",
+        "phoneme/word forced alignment",
+        "speaker pause inferred from low RMS",
+        "educational efficacy or single-scene superiority"
+      ]
+    },
+    {
+      "anchor_id": "query_to_key",
+      "transcript_proxy_start_s": 458,
+      "transcript_claim_paraphrase": "Speaker introduces key matrix as potential responses to the query and then dot-product matching.",
+      "caption_source": "2outube original-caption mirror",
+      "native_frame_seconds": [
+        458,
+        464,
+        478,
+        488,
+        501
+      ],
+      "native_frame_first_sha256": "6d2062622bd6edcfa52654d18fdc46f1ac126e0b9d2044f0ed054bcca56ad236",
+      "native_frame_description": "At 07:38 full sentence is represented by Q/K projection arrows; later sampled frames at 07:58 and 08:08 isolate key/query vectors and geometric matching.",
+      "cross_modal_relation": "EXPLANATION_DURING_REPRESENTATION_EXPANSION",
+      "native_gray_mean_abs_differences_320x180": [
+        37.105,
+        36.294,
+        8.398,
+        8.353
+      ],
+      "audio_rms_sample_points": [
+        0.06274,
+        0.1515,
+        0.07436,
+        0.15779,
+        0.16421
+      ],
+      "first_party_read_section": "first-party Read 'Keys'",
+      "verified_scope": [
+        "timestamped external caption topic (not native speech verified)",
+        "native actual MP4 frames at specified seconds",
+        "AAC decoded RMS in corresponding seconds"
+      ],
+      "unverified_scope": [
+        "spoken words independently verified in uploaded track",
+        "phoneme/word forced alignment",
+        "speaker pause inferred from low RMS",
+        "educational efficacy or single-scene superiority"
+      ]
+    },
+    {
+      "anchor_id": "score_matrix",
+      "transcript_proxy_start_s": 514,
+      "transcript_claim_paraphrase": "Speaker visualizes pairwise dot products as a grid whose dot size represents relevance.",
+      "caption_source": "2outube original-caption mirror",
+      "native_frame_seconds": [
+        514,
+        520,
+        526,
+        534,
+        545
+      ],
+      "native_frame_first_sha256": "f6566467daf23d3dca1235c7fa2c2bf7f3ab3abbc548865b1033449c3c1a5d42",
+      "native_frame_description": "At 08:34 grid and tokens are visible with tiny entries; at 08:40 dots become prominent; by 08:46 some entries are selectively emphasized.",
+      "cross_modal_relation": "SINGLE_PAIR_TO_FULL_GRID",
+      "native_gray_mean_abs_differences_320x180": [
+        5.879,
+        4.751,
+        16.141,
+        1.845
+      ],
+      "audio_rms_sample_points": [
+        0.05346,
+        0.12729,
+        0.17954,
+        0.16693,
+        0.09155
+      ],
+      "first_party_read_section": "first-party Read 'Dot Products' / pattern",
+      "verified_scope": [
+        "timestamped external caption topic (not native speech verified)",
+        "native actual MP4 frames at specified seconds",
+        "AAC decoded RMS in corresponding seconds"
+      ],
+      "unverified_scope": [
+        "spoken words independently verified in uploaded track",
+        "phoneme/word forced alignment",
+        "speaker pause inferred from low RMS",
+        "educational efficacy or single-scene superiority"
+      ]
+    },
+    {
+      "anchor_id": "softmax",
+      "transcript_proxy_start_s": 589,
+      "transcript_claim_paraphrase": "Speaker says each score column should be nonnegative and sum to one; applies softmax per column.",
+      "caption_source": "2outube original-caption mirror",
+      "native_frame_seconds": [
+        589,
+        595,
+        601,
+        610,
+        621
+      ],
+      "native_frame_first_sha256": "fb8dacc3ebcf25b690b0c49e80b9dfee527394c0ac60237684365f28ae3d5514",
+      "native_frame_description": "At 09:49 a selected column and histogram illustrate unequal relevance; 09:55–10:01 columns are shown in matrix perspective, not just standalone text.",
+      "cross_modal_relation": "NORMALIZATION_CAUSAL_MECHANISM",
+      "native_gray_mean_abs_differences_320x180": [
+        13.138,
+        2.161,
+        15.018,
+        174.558
+      ],
+      "audio_rms_sample_points": [
+        0.14876,
+        0.1293,
+        0.15824,
+        0.18051,
+        0.16528
+      ],
+      "first_party_read_section": "first-party Read 'The Attention Pattern'",
+      "verified_scope": [
+        "timestamped external caption topic (not native speech verified)",
+        "native actual MP4 frames at specified seconds",
+        "AAC decoded RMS in corresponding seconds"
+      ],
+      "unverified_scope": [
+        "spoken words independently verified in uploaded track",
+        "phoneme/word forced alignment",
+        "speaker pause inferred from low RMS",
+        "educational efficacy or single-scene superiority"
+      ]
+    },
+    {
+      "anchor_id": "mask",
+      "transcript_proxy_start_s": 691,
+      "transcript_claim_paraphrase": "Speaker explains next-token training on prefixes and why future words must not inform earlier positions; introduces causal masking.",
+      "caption_source": "2outube original-caption mirror",
+      "native_frame_seconds": [
+        693,
+        705,
+        711,
+        717,
+        730
+      ],
+      "native_frame_first_sha256": "7acfc00847be80cbd4beb0124679ecc7aef09da4e609ab81ea53674be600335a",
+      "native_frame_description": "11:33–11:45 successive text prefixes and target boxes are visible; ~11:57 attention grid returns. Audio caption about negative-infinity-before-softmax begins at 12:05.",
+      "cross_modal_relation": "LEARNER_NEEDS_PREFIX_CAUSALITY_BEFORE_MASK_MATRIX",
+      "native_gray_mean_abs_differences_320x180": [
+        1.035,
+        19.614,
+        15.775,
+        35.04
+      ],
+      "audio_rms_sample_points": [
+        0.17319,
+        0.12598,
+        0.1901,
+        0.15494,
+        0.15882
+      ],
+      "first_party_read_section": "first-party Read 'Masking'",
+      "verified_scope": [
+        "timestamped external caption topic (not native speech verified)",
+        "native actual MP4 frames at specified seconds",
+        "AAC decoded RMS in corresponding seconds"
+      ],
+      "unverified_scope": [
+        "spoken words independently verified in uploaded track",
+        "phoneme/word forced alignment",
+        "speaker pause inferred from low RMS",
+        "educational efficacy or single-scene superiority"
+      ]
+    },
+    {
+      "anchor_id": "values",
+      "transcript_proxy_start_s": 815,
+      "transcript_claim_paraphrase": "Speaker shifts from finding relevant words to updating the target embedding using the value matrix.",
+      "caption_source": "2outube original-caption mirror",
+      "native_frame_seconds": [
+        811,
+        815,
+        821,
+        827,
+        833
+      ],
+      "native_frame_first_sha256": "9ff4c95baff7ca27341de729adc7af24f3aa81bf838536f93d1f0d0920adb1f4",
+      "native_frame_description": "13:31–13:35 fluffy/creature vectors and animal features; 13:41 explanatory cartoon; 13:47 red W_V projection and value-vector display.",
+      "cross_modal_relation": "RELEVANCE_TO_CONTENT_TRANSPORT_TRANSITION",
+      "native_gray_mean_abs_differences_320x180": [
+        1.755,
+        34.538,
+        34.91,
+        1.193
+      ],
+      "audio_rms_sample_points": [
+        0.11375,
+        0.157,
+        0.16024,
+        0.16676,
+        0.13115
+      ],
+      "first_party_read_section": "first-party Read 'Values'",
+      "verified_scope": [
+        "timestamped external caption topic (not native speech verified)",
+        "native actual MP4 frames at specified seconds",
+        "AAC decoded RMS in corresponding seconds"
+      ],
+      "unverified_scope": [
+        "spoken words independently verified in uploaded track",
+        "phoneme/word forced alignment",
+        "speaker pause inferred from low RMS",
+        "educational efficacy or single-scene superiority"
+      ]
+    },
+    {
+      "anchor_id": "weighting",
+      "transcript_proxy_start_s": 862,
+      "transcript_claim_paraphrase": "Speaker distinguishes creating value vectors, scaling them by attention weights, adding them, and adding the change to the target embedding.",
+      "caption_source": "2outube original-caption mirror",
+      "native_frame_seconds": [
+        870,
+        876,
+        882,
+        888,
+        894
+      ],
+      "native_frame_first_sha256": "5d2c8843cc6d9253bccc316f693851d1b323a5ba7136e9719291ffefe3133dec",
+      "native_frame_description": "14:30–14:42 same score/value matrix is visually held; 14:48 one column dims non-target information; 14:54 weighted value contribution table occupies screen.",
+      "cross_modal_relation": "STATIC_INSPECTION_BEFORE_CAUSAL_WEIGHTED_SUM",
+      "native_gray_mean_abs_differences_320x180": [
+        1.72,
+        0.712,
+        3.962,
+        9.465
+      ],
+      "audio_rms_sample_points": [
+        0.15731,
+        0.0038,
+        0.1035,
+        0.16025,
+        0.15943
+      ],
+      "first_party_read_section": "first-party Read 'Values' / 'Updating Embeddings'",
+      "verified_scope": [
+        "timestamped external caption topic (not native speech verified)",
+        "native actual MP4 frames at specified seconds",
+        "AAC decoded RMS in corresponding seconds"
+      ],
+      "unverified_scope": [
+        "spoken words independently verified in uploaded track",
+        "phoneme/word forced alignment",
+        "speaker pause inferred from low RMS",
+        "educational efficacy or single-scene superiority"
+      ]
+    },
+    {
+      "anchor_id": "multihead",
+      "transcript_proxy_start_s": 1231,
+      "transcript_claim_paraphrase": "Speaker generalizes from one head to many heads in parallel after context-specific examples.",
+      "caption_source": "2outube original-caption mirror",
+      "native_frame_seconds": [
+        1219,
+        1225,
+        1231,
+        1237,
+        1243
+      ],
+      "native_frame_first_sha256": "89ab1005cecc2370d24eb15886548b3926831b6ed5b6951dc3e0c19daf108fbc",
+      "native_frame_description": "20:19–20:31 running sentence involving a car and multiple conceptual attention arrows; at 20:37–20:43 diagrams grow into many separate stacked attention matrices.",
+      "cross_modal_relation": "ONE_HEAD_TO_PARALLEL_FAMILY",
+      "native_gray_mean_abs_differences_320x180": [
+        2.008,
+        2.3,
+        17.165,
+        32.586
+      ],
+      "audio_rms_sample_points": [
+        0.05424,
+        0.15306,
+        0.1261,
+        0.15209,
+        0.1554
+      ],
+      "first_party_read_section": "first-party Read 'Multi-Headed Attention'",
+      "verified_scope": [
+        "timestamped external caption topic (not native speech verified)",
+        "native actual MP4 frames at specified seconds",
+        "AAC decoded RMS in corresponding seconds"
+      ],
+      "unverified_scope": [
+        "spoken words independently verified in uploaded track",
+        "phoneme/word forced alignment",
+        "speaker pause inferred from low RMS",
+        "educational efficacy or single-scene superiority"
+      ]
+    },
+    {
+      "anchor_id": "output",
+      "transcript_proxy_start_s": 1349,
+      "transcript_claim_paraphrase": "Speaker explains value-up matrix reorganization as a shared output matrix for all attention heads.",
+      "caption_source": "2outube original-caption mirror",
+      "native_frame_seconds": [
+        1338,
+        1344,
+        1350,
+        1356,
+        1362
+      ],
+      "native_frame_first_sha256": "cf9da53e2bc139ef7d0a96b5b42c0c12331734e851f347f802d60bdaeb68583d",
+      "native_frame_description": "22:18 a question bubble refers to output matrix; 22:24 red Value mapping; 22:30 two-stage factorization; 22:36 multiple heads' output maps are shown.",
+      "cross_modal_relation": "EXPLANATION_OF_FUSION_AND_PARAMETERIZATION",
+      "native_gray_mean_abs_differences_320x180": [
+        37.601,
+        6.94,
+        8.203,
+        0.409
+      ],
+      "audio_rms_sample_points": [
+        0.18116,
+        0.15589,
+        0.16617,
+        0.14721,
+        0.16546
+      ],
+      "first_party_read_section": "first-party Read 'Multi-Headed Attention' / output projection",
+      "verified_scope": [
+        "timestamped external caption topic (not native speech verified)",
+        "native actual MP4 frames at specified seconds",
+        "AAC decoded RMS in corresponding seconds"
+      ],
+      "unverified_scope": [
+        "spoken words independently verified in uploaded track",
+        "phoneme/word forced alignment",
+        "speaker pause inferred from low RMS",
+        "educational efficacy or single-scene superiority"
+      ]
+    },
+    {
+      "anchor_id": "return_context",
+      "transcript_proxy_start_s": 1413,
+      "transcript_claim_paraphrase": "Speaker zooms out from a single attention block to repeated attention/MLP blocks and evolving contextual meaning.",
+      "caption_source": "2outube original-caption mirror",
+      "native_frame_seconds": [
+        1418,
+        1424,
+        1430,
+        1436,
+        1442
+      ],
+      "native_frame_first_sha256": "7f9d05fd9765d717814a5caaee810f1b58b620cc3d716cfe08c5af9272808cb4",
+      "native_frame_description": "23:38–23:50 repeated Transformer layers appear in 3D; 23:56–24:02 contextual use of 'one' reappears with embedding-vector illustration.",
+      "cross_modal_relation": "LOCAL_TO_WHOLE_ARCHITECTURE_RECONNECTION",
+      "native_gray_mean_abs_differences_320x180": [
+        9.232,
+        17.856,
+        28.889,
+        6.823
+      ],
+      "audio_rms_sample_points": [
+        0.1792,
+        0.17833,
+        0.07002,
+        0.13193,
+        0.16029
+      ],
+      "first_party_read_section": "first-party Read 'Recap' / 'Multi-Headed Attention'",
+      "verified_scope": [
+        "timestamped external caption topic (not native speech verified)",
+        "native actual MP4 frames at specified seconds",
+        "AAC decoded RMS in corresponding seconds"
+      ],
+      "unverified_scope": [
+        "spoken words independently verified in uploaded track",
+        "phoneme/word forced alignment",
+        "speaker pause inferred from low RMS",
+        "educational efficacy or single-scene superiority"
+      ]
+    }
+  ],
+  "negative_case_notes": [
+    {
+      "anchor_id": "mole",
+      "issue": "Caption at 01:49 mentions examples while visually the video is still transitioning to the mole example; never assume captions are exactly frame synchronized."
+    },
+    {
+      "anchor_id": "query_motivating",
+      "issue": "Conceptual story explicitly marked as made-up; do not report adjective-noun head as empirically observed model explanation."
+    },
+    {
+      "anchor_id": "softmax",
+      "issue": "score-grid transform is verified visually, but screenshots alone cannot prove normalized column sums; separate mathematical host verification needed."
+    },
+    {
+      "anchor_id": "weighting",
+      "issue": "14:30–14:42 near-static matrix while audio decodes; do not claim a human teacher paused speaking, or score this as bad/no animation."
+    },
+    {
+      "anchor_id": "output",
+      "issue": "Data structure explanation is complex; frame difference alone is not causal comprehension."
+    }
+  ],
+  "outcome": {
+    "native_visual_alignment": "PASS_BOUND_TO_12_ANCHORS",
+    "audio_stream_decode": "PASS_PCM_1569S",
+    "native_word_level_alignment": "NOT_MEASURED",
+    "third_party_caption_proxy": "AVAILABLE_NOT_NATIVE_VERIFIED",
+    "full_15_films": "NO_GO",
+    "human_outcome": "NOT_TESTED",
+    "production": "BLOCKED",
+    "paid_model_api_calls": 0
+  },
+  "copyright": "Research observations/sha only. No original MP4, transcript fulltext, or screenshot committed."
+}

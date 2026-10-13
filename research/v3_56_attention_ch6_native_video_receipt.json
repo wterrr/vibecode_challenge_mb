@@ -1,0 +1,357 @@
+{
+  "checkpoint": "V3-56",
+  "artifact_id": "ATTENTION_3B1B_CH6_USER_UPLOADED",
+  "native_media_acquired": true,
+  "origin": "USER_SUPPLIED_UPLOADED_FULL_MP4",
+  "shared_media_redistributed_to_repo": false,
+  "provided_original_filename": "Attention in transformers, step-by-step _ Deep Learning Chapter 6.mp4",
+  "content_sha256": "439e154fffbb8696a37753d765c4f64bc06d25fbb17cb3d98bcc842045d85cb9",
+  "media": {
+    "duration_s": 1569.191429,
+    "video_duration_s": 1569.1,
+    "width": 1280,
+    "height": 720,
+    "video_codec": "h264",
+    "fps_num": 30,
+    "fps_den": 1,
+    "total_decodable_frame_index_count": 47076,
+    "audio_codec": "aac",
+    "audio_sample_rate_hz": 44100,
+    "subtitle_stream_count": 0
+  },
+  "read_reference": "https://www.3blue1brown.com/lessons/attention/",
+  "matched_source": {
+    "repo": "3b1b/videos",
+    "path": "_2024/transformers/attention.py",
+    "git_blob_sha": "806af030062a7e00703ed2708c0a503f01bad22f",
+    "evidence_strength": "same mechanism + corresponding named scene classes; not individual shot class/source execution certificate",
+    "classes": [
+      {
+        "name": "QueryMap",
+        "line": 1715
+      },
+      {
+        "name": "KeyMap",
+        "line": 1839
+      },
+      {
+        "name": "DescribeAttentionEquation",
+        "line": 1850
+      },
+      {
+        "name": "ShowMasking",
+        "line": 2169
+      },
+      {
+        "name": "IntroduceValueMatrix",
+        "line": 2313
+      },
+      {
+        "name": "CountMatrixParameters",
+        "line": 2561
+      },
+      {
+        "name": "ThinkAboutOverallMap",
+        "line": 3104
+      },
+      {
+        "name": "MultiHeadedAttention",
+        "line": 3503
+      }
+    ]
+  },
+  "visual_inspection": {
+    "mode": "DIRECT_DECODED_NATIVE_FRAME_SAMPLING_THROUGHOUT_FULL_26_MIN_TIMELINE_WITH_DENSER_SUBSEQUENCES",
+    "number_global_frame_times_every_15s": 105,
+    "number_denser_frame_samples": 70,
+    "full_realtime_continuous_playback": false,
+    "frame_images_verified_directly": true,
+    "video_complete_file": true,
+    "frame_times_pts": {
+      "method": "OpenCV seek to requested PTS and decode",
+      "precision": "approx one sample/15sec globally, plus dense 10–24sec intervals; windows approximate not final exact cut times"
+    },
+    "original_clip_audio_stream_present": true,
+    "words_in_audio_manually_transcribed": false,
+    "word_alignment_measured": false,
+    "audio_listener_evaluation": false,
+    "visual_issue_note": "visual explanations documented from decoded frames; audio only stream/decode RMS confirmation, not semantic narrational timestamp evidence"
+  },
+  "timestamped_visual_beats": [
+    {
+      "beat_id": "att_ch6_video_01",
+      "approx_interval_start_s": 0,
+      "approx_interval_end_s": 45,
+      "sampled_frame_s": 15,
+      "title": "Architectural recap; attention paper and initial framing",
+      "cognitive_purpose_hypothesis": "visual route from earlier Transformer overview and paper to attention component",
+      "native_visual_observation": "large stack of layers to title/paper; not a computation yet",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    },
+    {
+      "beat_id": "att_ch6_video_02",
+      "approx_interval_start_s": 45,
+      "approx_interval_end_s": 105,
+      "sampled_frame_s": 60,
+      "title": "Convenient lie vs contextual embeddings",
+      "cognitive_purpose_hypothesis": "tokens cannot be modeled as always context-independent word meanings; word→vector scaffold",
+      "native_visual_observation": "tokenized words and conceptual vector space; narrative caveat",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    },
+    {
+      "beat_id": "att_ch6_video_03",
+      "approx_interval_start_s": 105,
+      "approx_interval_end_s": 215,
+      "sampled_frame_s": 120,
+      "title": "Polysemous mole and tower examples",
+      "cognitive_purpose_hypothesis": "word sense changes with surrounding words, not dictionary entry alone",
+      "native_visual_observation": "same highlighted word \"mole\" and \"tower\" alongside different disambiguating images/vector arrows",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    },
+    {
+      "beat_id": "att_ch6_video_04",
+      "approx_interval_start_s": 215,
+      "approx_interval_end_s": 285,
+      "sampled_frame_s": 230,
+      "title": "Attention's contextual role and a held-out story",
+      "cognitive_purpose_hypothesis": "long-distance token influence motivates information routing",
+      "native_visual_observation": "model stack zoom→long paragraph with annotated curved connection",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    },
+    {
+      "beat_id": "att_ch6_video_05",
+      "approx_interval_start_s": 285,
+      "approx_interval_end_s": 380,
+      "sampled_frame_s": 300,
+      "title": "Stable running sentence and embeddings",
+      "cognitive_purpose_hypothesis": "persistent sentence tokens indexed and projected to vectors",
+      "native_visual_observation": "a fluffy blue creature roamed the verdant forest; repeated E_i tokens + 12288-dim label",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    },
+    {
+      "beat_id": "att_ch6_video_06",
+      "approx_interval_start_s": 380,
+      "approx_interval_end_s": 455,
+      "sampled_frame_s": 395,
+      "title": "Query construction",
+      "cognitive_purpose_hypothesis": "question-like semantic search represented by W_Q projection",
+      "native_visual_observation": "creature query asks about preceding adjectives; E_i→Q_i, yellow query emphasis",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    },
+    {
+      "beat_id": "att_ch6_video_07",
+      "approx_interval_start_s": 455,
+      "approx_interval_end_s": 525,
+      "sampled_frame_s": 470,
+      "title": "Key projections and similarity",
+      "cognitive_purpose_hypothesis": "tokens carry keys to match context-relevant queries",
+      "native_visual_observation": "fluffy/blue/creature key mapping; 128-dimensional Q/K diagrams",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    },
+    {
+      "beat_id": "att_ch6_video_08",
+      "approx_interval_start_s": 525,
+      "approx_interval_end_s": 630,
+      "sampled_frame_s": 540,
+      "title": "Attention dot products and weights",
+      "cognitive_purpose_hypothesis": "relative query-key scores become attention strengths",
+      "native_visual_observation": "same rows/columns highlighted in matrix; circles/scores, then softmax callout",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    },
+    {
+      "beat_id": "att_ch6_video_09",
+      "approx_interval_start_s": 630,
+      "approx_interval_end_s": 760,
+      "sampled_frame_s": 645,
+      "title": "Formal equation, causal mask, normalization",
+      "cognitive_purpose_hypothesis": "masked future positions disallowed, scores normalize to usable weights",
+      "native_visual_observation": "Attention(Q,K,V) formula; triangular matrix; unnormalized→normalized visual",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    },
+    {
+      "beat_id": "att_ch6_video_10",
+      "approx_interval_start_s": 760,
+      "approx_interval_end_s": 815,
+      "sampled_frame_s": 775,
+      "title": "Attention pattern into value intuition",
+      "cognitive_purpose_hypothesis": "which earlier concepts contribute to contextual update",
+      "native_visual_observation": "circle matrix condensed; vectors mapped to illustrative dog/animal feature axes",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    },
+    {
+      "beat_id": "att_ch6_video_11",
+      "approx_interval_start_s": 815,
+      "approx_interval_end_s": 940,
+      "sampled_frame_s": 830,
+      "title": "W_V, per-token Values and weighted sum",
+      "cognitive_purpose_hypothesis": "attention weights transport selected value information to target token",
+      "native_visual_observation": "red W_V matrix; V_i vectors; columns show contributions, ΔE and updated E",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    },
+    {
+      "beat_id": "att_ch6_video_12",
+      "approx_interval_start_s": 940,
+      "approx_interval_end_s": 1095,
+      "sampled_frame_s": 955,
+      "title": "Parameter and dimensional accounting",
+      "cognitive_purpose_hypothesis": "Q/K/V learned matrices, value projections and output dimensions",
+      "native_visual_observation": "named matrix sizes; 12,288-dimensional embedding; 128-dim intermediate; composition",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    },
+    {
+      "beat_id": "att_ch6_video_13",
+      "approx_interval_start_s": 1095,
+      "approx_interval_end_s": 1165,
+      "sampled_frame_s": 1110,
+      "title": "Self-attention + alternative text examples",
+      "cognitive_purpose_hypothesis": "cross-token pattern changes across contexts and examples",
+      "native_visual_observation": "French translation and crash/story examples; fresh tokens while preserving same attention operation",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    },
+    {
+      "beat_id": "att_ch6_video_14",
+      "approx_interval_start_s": 1165,
+      "approx_interval_end_s": 1340,
+      "sampled_frame_s": 1180,
+      "title": "Multi-headed attention",
+      "cognitive_purpose_hypothesis": "many independent attention patterns and projected updates combine",
+      "native_visual_observation": "multiple W_Q/W_K/W_V heads and stacked matrices; sum updates then final output map",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    },
+    {
+      "beat_id": "att_ch6_video_15",
+      "approx_interval_start_s": 1340,
+      "approx_interval_end_s": 1480,
+      "sampled_frame_s": 1355,
+      "title": "Return to big picture + additional analogies",
+      "cognitive_purpose_hypothesis": "context update integrated into repeated transformer stack; conditional token word sense",
+      "native_visual_observation": "wide block stack, sentence ambiguous 'one', model parameter budget",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    },
+    {
+      "beat_id": "att_ch6_video_16",
+      "approx_interval_start_s": 1480,
+      "approx_interval_end_s": 1569,
+      "sampled_frame_s": 1495,
+      "title": "Scope and credits",
+      "cognitive_purpose_hypothesis": "lesson frames attention as one component rather than full Transformer",
+      "native_visual_observation": "about 1/3 of Attention Is All You Need, references/end screen",
+      "source_level": "NATIVE_FRAME_OBSERVED__NARRATIVE_INTENT_INFERRED",
+      "timecode_precision": "APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS"
+    }
+  ],
+  "motion_cases": [
+    {
+      "a_s": 137,
+      "b_s": 147,
+      "mean_abs_diff_gray_320x180": 11.55,
+      "changed_fraction_gt25": 0.115,
+      "semantic_context": "mole embedding/context images"
+    },
+    {
+      "a_s": 290,
+      "b_s": 300,
+      "mean_abs_diff_gray_320x180": 26.97,
+      "changed_fraction_gt25": 0.541,
+      "semantic_context": "sentence → embedding"
+    },
+    {
+      "a_s": 397,
+      "b_s": 407,
+      "mean_abs_diff_gray_320x180": 9.81,
+      "changed_fraction_gt25": 0.085,
+      "semantic_context": "query projection"
+    },
+    {
+      "a_s": 522,
+      "b_s": 532,
+      "mean_abs_diff_gray_320x180": 19.58,
+      "changed_fraction_gt25": 0.219,
+      "semantic_context": "attention weights"
+    },
+    {
+      "a_s": 733,
+      "b_s": 743,
+      "mean_abs_diff_gray_320x180": 37.66,
+      "changed_fraction_gt25": 0.78,
+      "semantic_context": "normalized attention matrix"
+    },
+    {
+      "a_s": 817,
+      "b_s": 827,
+      "mean_abs_diff_gray_320x180": 34.89,
+      "changed_fraction_gt25": 0.814,
+      "semantic_context": "vector→Value matrix context"
+    },
+    {
+      "a_s": 872,
+      "b_s": 882,
+      "mean_abs_diff_gray_320x180": 1.32,
+      "changed_fraction_gt25": 0.009,
+      "semantic_context": "deliberate relatively static inspection of weights"
+    },
+    {
+      "a_s": 1220,
+      "b_s": 1230,
+      "mean_abs_diff_gray_320x180": 1.75,
+      "changed_fraction_gt25": 0.016,
+      "semantic_context": "multihead matrix held"
+    },
+    {
+      "a_s": 1432,
+      "b_s": 1442,
+      "mean_abs_diff_gray_320x180": 26.43,
+      "changed_fraction_gt25": 0.332,
+      "semantic_context": "semantic closure"
+    }
+  ],
+  "interpretation": {
+    "object_continuity": "persistent sentence token E_i, Q_i/K_i/V_i plus same attention matrix across beats; changing abstraction lens, not all literal graphic identities",
+    "attention_pacing": "alternates significant morph/reveal with holds for long matrices; actual spoken sync not measured",
+    "visual_grammar": [
+      "same concrete sentence anchored across formalism stages",
+      "semantic color roles query yellow, key cyan/green, values red",
+      "focus one query matrix column before generalizing",
+      "before/after projection",
+      "causal masking and normalization",
+      "weighted value transport into contextual token update",
+      "return from local mechanism to multihead architecture"
+    ],
+    "strengths": [
+      "reasoning remains linked to contextual word example",
+      "progressive re-use of variables and objects",
+      "dynamic link of numeric operation to geometrical and matrix presentations",
+      "explicit causal separation of Q/K matching and V transport"
+    ],
+    "weaknesses": [
+      "dense grids and 12,288-dimensional parameter matrices difficult at 1280x720",
+      "significant stretches depend on already having learned prior chapter",
+      "some visual motifs of entities are pedagogical metaphors rather than actual internal neuron interpretability evidence"
+    ]
+  },
+  "gate": {
+    "native_encoded_file_acquired": 1,
+    "source_video_frame_covered": 1,
+    "full_video_audio_word_aligned": 0,
+    "required_separate_video_audits": 15,
+    "status": "ONE_USER_UPLOADED_NATIVE_FILM_VISUALLY_AUDITED__AUDIO_ALIGNMENT_NOT_CERTIFIED__FIFTEEN_FULL_LESSON_STUDY_INCOMPLETE",
+    "quality_inference": "NOT_CAUSAL_EFFECT_EVIDENCE_FOR_LEARNFLOW",
+    "provider_api_calls": 0,
+    "production": "BLOCKED"
+  }
+}

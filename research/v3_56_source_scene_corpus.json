@@ -1,0 +1,836 @@
+{
+  "schema_version": "v3-56-deep-source-audit-v1",
+  "source": "First-party 3b1b/videos via authenticated GitHub repo fetch; checked source classes and lexical calls, not executing any class",
+  "rights": "CC BY-NC-SA 4.0; no source or media copied into LearnFlow",
+  "rows": [
+    {
+      "lesson_id": "la_span",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2016/eola/chapter2.py",
+      "blob_sha": "c5f01b7e301b420c1407d82ab70bdd1a7c703407",
+      "url": "https://github.com/3b1b/videos/blob/c5f01b7e301b420c1407d82ab70bdd1a7c703407/_2016/eola/chapter2.py",
+      "line_count": 1266,
+      "class_count": 36,
+      "scene_class_evidence": [
+        {
+          "name": "ShowVaryingLinearCombinations",
+          "line": 206
+        },
+        {
+          "name": "LinearDependentVectors",
+          "line": 505
+        },
+        {
+          "name": "VectorsToDotsScene",
+          "line": 627
+        },
+        {
+          "name": "ThreeDVectorSpan",
+          "line": 793
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 64,
+        "self_wait": 53,
+        "transform_family": 59,
+        "updater": 0
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "la_linear",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2016/eola/chapter3.py",
+      "blob_sha": "0fc0fc4b1450023a500bc07b8189dc88d0516220",
+      "url": "https://github.com/3b1b/videos/blob/0fc0fc4b1450023a500bc07b8189dc88d0516220/_2016/eola/chapter3.py",
+      "line_count": 1754,
+      "class_count": 55,
+      "scene_class_evidence": [
+        {
+          "name": "TransformJustOneVector",
+          "line": 213
+        },
+        {
+          "name": "TransformManyVectors",
+          "line": 240
+        },
+        {
+          "name": "TransformInfiniteGrid",
+          "line": 303
+        },
+        {
+          "name": "FollowIHatJHat",
+          "line": 577
+        },
+        {
+          "name": "SneakyNonlinearTransformation",
+          "line": 483
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 114,
+        "self_wait": 108,
+        "transform_family": 74,
+        "updater": 0
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "la_matrix",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2016/eola/chapter4.py",
+      "blob_sha": "11ea83ef488501b2732ebed8169f17b8c0b1348d",
+      "url": "https://github.com/3b1b/videos/blob/11ea83ef488501b2732ebed8169f17b8c0b1348d/_2016/eola/chapter4.py",
+      "line_count": 1083,
+      "class_count": 33,
+      "scene_class_evidence": [
+        {
+          "name": "TwoSuccessiveTransformations",
+          "line": 214
+        },
+        {
+          "name": "RotationThenShear",
+          "line": 228
+        },
+        {
+          "name": "PumpVectorThroughRotationThenShear",
+          "line": 368
+        },
+        {
+          "name": "AskAboutCommutativity",
+          "line": 739
+        },
+        {
+          "name": "ThreeSuccessiveTransformations",
+          "line": 951
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 77,
+        "self_wait": 66,
+        "transform_family": 38,
+        "updater": 0
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "la_det",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2016/eola/chapter5.py",
+      "blob_sha": "23488e8906d85177a92c967271c4fc96d90858c9",
+      "url": "https://github.com/3b1b/videos/blob/23488e8906d85177a92c967271c4fc96d90858c9/_2016/eola/chapter5.py",
+      "line_count": 1132,
+      "class_count": 58,
+      "scene_class_evidence": [
+        {
+          "name": "DiagonalExampleWithSquare",
+          "line": 202
+        },
+        {
+          "name": "BreakBlobIntoGridSquares",
+          "line": 271
+        },
+        {
+          "name": "DeterminantIsZero",
+          "line": 397
+        },
+        {
+          "name": "FlipSpaceOver",
+          "line": 470
+        },
+        {
+          "name": "Transforming3DCube",
+          "line": 704
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 59,
+        "self_wait": 65,
+        "transform_family": 29,
+        "updater": 0
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "la_eigen",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2016/eola/chapter10.py",
+      "blob_sha": "087296d6c068cd4bae863af117f568ca76bd1c5d",
+      "url": "https://github.com/3b1b/videos/blob/087296d6c068cd4bae863af117f568ca76bd1c5d/_2016/eola/chapter10.py",
+      "line_count": 2300,
+      "class_count": 49,
+      "scene_class_evidence": [
+        {
+          "name": "VectorKnockedOffSpan",
+          "line": 197
+        },
+        {
+          "name": "VectorRemainsOnSpan",
+          "line": 226
+        },
+        {
+          "name": "FullSneakyEigenspace",
+          "line": 357
+        },
+        {
+          "name": "Rotate90Degrees",
+          "line": 1501
+        },
+        {
+          "name": "BasisVectorsAreEigenvectors",
+          "line": 1812
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 157,
+        "self_wait": 132,
+        "transform_family": 101,
+        "updater": 0
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "la_dot",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2016/eola/chapter7.py",
+      "blob_sha": "3c51dbe964a00c87c2dc1db51662cb86c03a315a",
+      "url": "https://github.com/3b1b/videos/blob/3c51dbe964a00c87c2dc1db51662cb86c03a315a/_2016/eola/chapter7.py",
+      "line_count": 2311,
+      "class_count": 62,
+      "scene_class_evidence": [
+        {
+          "name": "GeometricInterpretation",
+          "line": 241
+        },
+        {
+          "name": "ProjectOntoUnitVectorNumberline",
+          "line": 1411
+        },
+        {
+          "name": "ProjectLineOfDots",
+          "line": 1556
+        },
+        {
+          "name": "ShowSingleProjection",
+          "line": 1775
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 182,
+        "self_wait": 91,
+        "transform_family": 117,
+        "updater": 0
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "la_cross",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2016/eola/chapter8p2.py",
+      "blob_sha": "c2acc3cef00df1614c5b22e4a7119aceaf8fae68",
+      "url": "https://github.com/3b1b/videos/blob/c2acc3cef00df1614c5b22e4a7119aceaf8fae68/_2016/eola/chapter8p2.py",
+      "line_count": 986,
+      "class_count": 25,
+      "scene_class_evidence": [
+        {
+          "name": "ThreeDMovingVariableVector",
+          "line": 780
+        },
+        {
+          "name": "ThreeDProjectToPerpendicular",
+          "line": 837
+        },
+        {
+          "name": "ThreeDTripleCrossProduct",
+          "line": 777
+        },
+        {
+          "name": "ThreeDDotProductWithCross",
+          "line": 869
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 68,
+        "self_wait": 38,
+        "transform_family": 40,
+        "updater": 0
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "calc_essence",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2017/eoc/chapter1.py",
+      "blob_sha": "b452b709149de1dd558cb096d2b618fd36d26fdf",
+      "url": "https://github.com/3b1b/videos/blob/b452b709149de1dd558cb096d2b618fd36d26fdf/_2017/eoc/chapter1.py",
+      "line_count": 2866,
+      "class_count": 27,
+      "scene_class_evidence": [
+        {
+          "name": "IntroduceCircle",
+          "line": 594
+        },
+        {
+          "name": "ApproximateOneRing",
+          "line": 699
+        },
+        {
+          "name": "GraphRectangles",
+          "line": 1001
+        },
+        {
+          "name": "PlayingTowardsDADX",
+          "line": 2247
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 199,
+        "self_wait": 138,
+        "transform_family": 129,
+        "updater": 0
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "calc_deriv",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2017/eoc/chapter2.py",
+      "blob_sha": "e1e2744aee8076beae608f289e30fa88ba1e5fa4",
+      "url": "https://github.com/3b1b/videos/blob/e1e2744aee8076beae608f289e30fa88ba1e5fa4/_2017/eoc/chapter2.py",
+      "line_count": 2608,
+      "class_count": 30,
+      "scene_class_evidence": [
+        {
+          "name": "IntroduceCar",
+          "line": 212
+        },
+        {
+          "name": "CompareTwoTimes",
+          "line": 676
+        },
+        {
+          "name": "SecantLineToTangentLine",
+          "line": 1266
+        },
+        {
+          "name": "ParadoxAtTEquals0",
+          "line": 2068
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 233,
+        "self_wait": 119,
+        "transform_family": 109,
+        "updater": 0
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "calc_integration",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2017/eoc/chapter8.py",
+      "blob_sha": "03c419c62caba6aa75207e554f8cde2ad352859e",
+      "url": "https://github.com/3b1b/videos/blob/03c419c62caba6aa75207e554f8cde2ad352859e/_2017/eoc/chapter8.py",
+      "line_count": 2775,
+      "class_count": 34,
+      "scene_class_evidence": [
+        {
+          "name": "PlotVelocity",
+          "line": 230
+        },
+        {
+          "name": "AreaUnderVGraph",
+          "line": 499
+        },
+        {
+          "name": "CarJourneyApproximation",
+          "line": 1365
+        },
+        {
+          "name": "FundamentalTheorem",
+          "line": 2257
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 242,
+        "self_wait": 139,
+        "transform_family": 142,
+        "updater": 0
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "calc_exp",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2017/eoc/chapter5.py",
+      "blob_sha": "0b4ee2272b436aec69e1a893dec929536b013159",
+      "url": "https://github.com/3b1b/videos/blob/0b4ee2272b436aec69e1a893dec929536b013159/_2017/eoc/chapter5.py",
+      "line_count": 2062,
+      "class_count": 30,
+      "scene_class_evidence": [
+        {
+          "name": "ExpFootnoteOpeningQuote",
+          "line": 4
+        },
+        {
+          "name": "LastVideo",
+          "line": 17
+        },
+        {
+          "name": "PopulationSizeGraphVsPopulationMassGraph",
+          "line": 64
+        },
+        {
+          "name": "DoublingPopulation",
+          "line": 68
+        },
+        {
+          "name": "GraphOfTwoToT",
+          "line": 444
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 138,
+        "self_wait": 101,
+        "transform_family": 84,
+        "updater": 0
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "prob_bayes",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2019/bayes/part1.py",
+      "blob_sha": "e9a61edddcc232733c6f66e017f517ec1a62289c",
+      "url": "https://github.com/3b1b/videos/blob/e9a61edddcc232733c6f66e017f517ec1a62289c/_2019/bayes/part1.py",
+      "line_count": 4907,
+      "class_count": 47,
+      "scene_class_evidence": [
+        {
+          "name": "ReasonByRepresentativeSample",
+          "line": 1479
+        },
+        {
+          "name": "NewEvidenceUpdatesPriorBeliefs",
+          "line": 1822
+        },
+        {
+          "name": "CreateFormulaFromDiagram",
+          "line": 2218
+        },
+        {
+          "name": "DiscussFormulaAndAreaModel",
+          "line": 2828
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 321,
+        "self_wait": 165,
+        "transform_family": 261,
+        "updater": 39
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "compo_fourier",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2019/diffyq/part4/fourier_series_scenes.py",
+      "blob_sha": "962bf525eaceef8eed74d96e818fe2c2b703e68a",
+      "url": "https://github.com/3b1b/videos/blob/962bf525eaceef8eed74d96e818fe2c2b703e68a/_2019/diffyq/part4/fourier_series_scenes.py",
+      "line_count": 1909,
+      "class_count": 10,
+      "scene_class_evidence": [
+        {
+          "name": "ComplexFourierSeriesExample",
+          "line": 8
+        },
+        {
+          "name": "DemonstrateAddingArrows",
+          "line": 408
+        },
+        {
+          "name": "IncreaseOrderOfApproximation",
+          "line": 1451
+        },
+        {
+          "name": "AddVectorsOneByOne",
+          "line": 1758
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 83,
+        "self_wait": 38,
+        "transform_family": 89,
+        "updater": 28
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "nn_intro",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2017/nn/part1.py",
+      "blob_sha": "d43aca59590cd64f55e5c2e3ab51954a603f70d4",
+      "url": "https://github.com/3b1b/videos/blob/d43aca59590cd64f55e5c2e3ab51954a603f70d4/_2017/nn/part1.py",
+      "line_count": 4665,
+      "class_count": 55,
+      "scene_class_evidence": [
+        {
+          "name": "PixelsAsSquares",
+          "line": 60
+        },
+        {
+          "name": "IntroduceEachLayer",
+          "line": 1036
+        },
+        {
+          "name": "EdgeDetection",
+          "line": 2090
+        },
+        {
+          "name": "IntroduceWeights",
+          "line": 2237
+        },
+        {
+          "name": "IntroduceSigmoid",
+          "line": 2717
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 275,
+        "self_wait": 155,
+        "transform_family": 237,
+        "updater": 1
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "nn_gradient",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2017/nn/part2.py",
+      "blob_sha": "59ee68919fe7ded41de2c22e877a6359ccb1d798",
+      "url": "https://github.com/3b1b/videos/blob/59ee68919fe7ded41de2c22e877a6359ccb1d798/_2017/nn/part2.py",
+      "line_count": 3792,
+      "class_count": 61,
+      "scene_class_evidence": [
+        {
+          "name": "IntroduceCostFunction",
+          "line": 585
+        },
+        {
+          "name": "SingleVariableCostFunction",
+          "line": 1440
+        },
+        {
+          "name": "GradientDescentAlgorithm",
+          "line": 1946
+        },
+        {
+          "name": "CostSurfaceSteps",
+          "line": 2139
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 189,
+        "self_wait": 111,
+        "transform_family": 134,
+        "updater": 3
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "nn_gpt",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2024/transformers/generation.py",
+      "blob_sha": "ce191a3438a4a5d11b3e8a267d9a2fed358d162e",
+      "url": "https://github.com/3b1b/videos/blob/ce191a3438a4a5d11b3e8a267d9a2fed358d162e/_2024/transformers/generation.py",
+      "line_count": 987,
+      "class_count": 24,
+      "scene_class_evidence": [
+        {
+          "name": "SimpleAutogregression",
+          "line": 112
+        },
+        {
+          "name": "AltSimpleAutoRegression",
+          "line": 399
+        },
+        {
+          "name": "AnnotateNextWord",
+          "line": 412
+        },
+        {
+          "name": "QuickerRegression",
+          "line": 456
+        },
+        {
+          "name": "AutoregressionGPT3",
+          "line": 460
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 19,
+        "self_wait": 11,
+        "transform_family": 15,
+        "updater": 0
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "nn_attention",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2024/transformers/attention.py",
+      "blob_sha": "806af030062a7e00703ed2708c0a503f01bad22f",
+      "url": "https://github.com/3b1b/videos/blob/806af030062a7e00703ed2708c0a503f01bad22f/_2024/transformers/attention.py",
+      "line_count": 4094,
+      "class_count": 20,
+      "scene_class_evidence": [
+        {
+          "name": "AttentionPatterns",
+          "line": 10
+        },
+        {
+          "name": "MyseteryNovel",
+          "line": 1453
+        },
+        {
+          "name": "RoadNotTaken",
+          "line": 1548
+        },
+        {
+          "name": "QueryMap",
+          "line": 1715
+        },
+        {
+          "name": "KeyMap",
+          "line": 1839
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 216,
+        "self_wait": 148,
+        "transform_family": 204,
+        "updater": 1
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    },
+    {
+      "lesson_id": "nn_mlp",
+      "repository": "3b1b/videos",
+      "branch": "master",
+      "path": "_2024/transformers/mlp.py",
+      "blob_sha": "dbb4e71cdd93d8f984efec48903281f6b62cb794",
+      "url": "https://github.com/3b1b/videos/blob/dbb4e71cdd93d8f984efec48903281f6b62cb794/_2024/transformers/mlp.py",
+      "line_count": 2628,
+      "class_count": 16,
+      "scene_class_evidence": [
+        {
+          "name": "LastTwoChapters",
+          "line": 8
+        },
+        {
+          "name": "AltLastTwoChapters",
+          "line": 182
+        },
+        {
+          "name": "MLPIcon",
+          "line": 214
+        },
+        {
+          "name": "MLPStepsPreview",
+          "line": 230
+        },
+        {
+          "name": "MatricesVsIntuition",
+          "line": 377
+        }
+      ],
+      "code_lexical_calls": {
+        "self_play": 184,
+        "self_wait": 118,
+        "transform_family": 194,
+        "updater": 6
+      },
+      "semantics": "SOURCE_CODE_ONLY",
+      "certifies": "classes and code-level existence of animation constructs",
+      "does_not_certify": [
+        "used in final edited video",
+        "frame timestamps",
+        "voice alignment",
+        "smoothness/effective pedagogy",
+        "license to copy code"
+      ],
+      "match_confidence": "REPO_CHAPTER_MATCH__NOT_SHOT_VERIFIED"
+    }
+  ],
+  "scope": "Scene source indicators of visual mechanism, not encoded video or playback timeline."
+}

@@ -1,0 +1,338 @@
+{
+  "checkpoint": "V3-56",
+  "package": "USER_SUPPLIED_TIMESTAMPED_TRANSCRIPT_NATIVE_FRAME_CROSSCHECK",
+  "pr_number": 90,
+  "prior_head_before_user_input": "c1d8c013d74b9c98311ba2ea51d1c8c64485561a",
+  "source": {
+    "origin": "USER_UPLOADED_TRANSCRIPT_TEXT_WITH_TIMECODES",
+    "file_sha256": "4a6eed896d548af41526e4995b66d7ef35951a6bfdfe1d106ee8764d2a98f3a5",
+    "file_bytes": 31405,
+    "parsed_timestamped_segments": 449,
+    "distinct_timestamps": 449,
+    "first_transcript_time_s": 0,
+    "last_transcript_cue_s": 1545,
+    "timecodes_monotonic": true,
+    "transcript_ends_before_media_by_approximately_s": 24.19,
+    "asr_engine_model_or_human_verification_provenance": "NOT_PROVIDED",
+    "not_verified_against_native_pcm": true,
+    "copyright": "Only semantic paraphrases, source event indices and SHA-256 hashes committed, not source transcript text"
+  },
+  "native_video": {
+    "source": "SAME_USER_UPLOADED_ATTENTION_CH6_MP4",
+    "sha256": "439e154fffbb8696a37753d765c4f64bc06d25fbb17cb3d98bcc842045d85cb9",
+    "duration_s": 1569.191429,
+    "decode": "OpenCV H264 source seek at 2s spacing, 8 frames per 12 anchors = 96 fresh direct frames, 3 local contact sheets not committed to GitHub",
+    "source_evidence_level": "ACTUAL_NATIVE_VISIBLE_FRAME_SAMPLES"
+  },
+  "rows": [
+    {
+      "anchor_id": "mole",
+      "user_transcript_cue_s": 120,
+      "source_event_index_zero_based": 35,
+      "source_file_line": 6,
+      "source_segment_utf8_sha256": "58d1cbe3d2f53a6c3c8a92fd04da1f0c5e0d1bdc9be711f5c11e2c437ac39c61",
+      "utterance_semantic_paraphrase_vi": "Phát biểu ba ngữ cảnh cho từ mole",
+      "video_sampled_visible_change_interval_s": [
+        118,
+        120
+      ],
+      "native_visual_witness_vi": "Ví dụ mole bắt đầu xuất hiện bằng chữ American...",
+      "native_decoded_frame_at_s": 120,
+      "native_decoded_luma_sha256": "a3732d9f7894f6d2cdfa2208445c3ffa3c5ccb29af10ef54ead7b6615f694662",
+      "transcript_cue_to_visible_window_offset_s": [
+        -2,
+        0
+      ],
+      "caption_to_video_relation_classification": "PROVISIONAL_TRANSCRIPT_TO_VIDEO_ONLY",
+      "speech_words_verified_in_native_audio": false,
+      "actual_speech_onset_s": null,
+      "native_word_alignment_accuracy": null,
+      "visual_interval_precision": "TWO_SECOND_SAMPLED_WITNESS_BRACKET_NOT_EXACT_FRAME_START"
+    },
+    {
+      "anchor_id": "running_sentence",
+      "user_transcript_cue_s": 275,
+      "source_event_index_zero_based": 85,
+      "source_file_line": 10,
+      "source_segment_utf8_sha256": "9823dc879146578863f1dad87405f78a0fbf2961fd535ae13f83517f906aa688",
+      "utterance_semantic_paraphrase_vi": "Câu ví dụ chứa fluffy blue creature",
+      "video_sampled_visible_change_interval_s": [
+        271,
+        273
+      ],
+      "native_visual_witness_vi": "Câu xuất hiện một phần 04:33; hoàn chỉnh 04:35",
+      "native_decoded_frame_at_s": 275,
+      "native_decoded_luma_sha256": "bb3a4b88b9b328982d280117cf5ad2bd9b698a25d3b86c8c6e5c423e4b0852dc",
+      "transcript_cue_to_visible_window_offset_s": [
+        -4,
+        -2
+      ],
+      "caption_to_video_relation_classification": "PROVISIONAL_TRANSCRIPT_TO_VIDEO_ONLY",
+      "speech_words_verified_in_native_audio": false,
+      "actual_speech_onset_s": null,
+      "native_word_alignment_accuracy": null,
+      "visual_interval_precision": "TWO_SECOND_SAMPLED_WITNESS_BRACKET_NOT_EXACT_FRAME_START"
+    },
+    {
+      "anchor_id": "query_motivating",
+      "user_transcript_cue_s": 379,
+      "source_event_index_zero_based": 117,
+      "source_file_line": 15,
+      "source_segment_utf8_sha256": "e419eca159451f1df68c04a8d5443526a18aca1c37f6a74d397835c18300f2aa",
+      "utterance_semantic_paraphrase_vi": "Noun đặt câu hỏi về tính từ phía trước",
+      "video_sampled_visible_change_interval_s": [
+        375,
+        377
+      ],
+      "native_visual_witness_vi": "Bubble câu hỏi xuất hiện mờ 06:17 và rõ 06:19",
+      "native_decoded_frame_at_s": 379,
+      "native_decoded_luma_sha256": "70379f6d2b4e706e04e9142a23bd6f5389a01942a18cccf04e085809e11dbada",
+      "transcript_cue_to_visible_window_offset_s": [
+        -4,
+        -2
+      ],
+      "caption_to_video_relation_classification": "PROVISIONAL_TRANSCRIPT_TO_VIDEO_ONLY",
+      "speech_words_verified_in_native_audio": false,
+      "actual_speech_onset_s": null,
+      "native_word_alignment_accuracy": null,
+      "visual_interval_precision": "TWO_SECOND_SAMPLED_WITNESS_BRACKET_NOT_EXACT_FRAME_START"
+    },
+    {
+      "anchor_id": "query_to_key",
+      "user_transcript_cue_s": 467,
+      "source_event_index_zero_based": 142,
+      "source_file_line": 18,
+      "source_segment_utf8_sha256": "ba216fb19bb9217ee008e2c179d98f96a6866756667c348a7ec03d55c66f1b94",
+      "utterance_semantic_paraphrase_vi": "Bắt đầu giới thiệu key matrix",
+      "video_sampled_visible_change_interval_s": [
+        467,
+        469
+      ],
+      "native_visual_witness_vi": "Ở 07:47 hình nhân vật, tới 07:49 trình bày phép chiếu W_K",
+      "native_decoded_frame_at_s": 467,
+      "native_decoded_luma_sha256": "3f8acade4b1f2aa4ad7c7305cbaa0ca82e9f93b6dccaf57e180831857f242e03",
+      "transcript_cue_to_visible_window_offset_s": [
+        0,
+        2
+      ],
+      "caption_to_video_relation_classification": "PROVISIONAL_TRANSCRIPT_TO_VIDEO_ONLY",
+      "speech_words_verified_in_native_audio": false,
+      "actual_speech_onset_s": null,
+      "native_word_alignment_accuracy": null,
+      "visual_interval_precision": "TWO_SECOND_SAMPLED_WITNESS_BRACKET_NOT_EXACT_FRAME_START"
+    },
+    {
+      "anchor_id": "score_matrix",
+      "user_transcript_cue_s": 507,
+      "source_event_index_zero_based": 153,
+      "source_file_line": 20,
+      "source_segment_utf8_sha256": "849d96141af92d499f50b7ec5a220f6cfe248652f68fdfda900179df646fea00",
+      "utterance_semantic_paraphrase_vi": "Đo độ phù hợp bằng dot product",
+      "video_sampled_visible_change_interval_s": [
+        506,
+        508
+      ],
+      "native_visual_witness_vi": "08:28 bắt đầu dựng lưới Q/K; dấu chấm lớn ở khoảng 08:36–08:38",
+      "native_decoded_frame_at_s": 510,
+      "native_decoded_luma_sha256": "34181fb870d729cec3a012e5ce85922a163a08a7549c6223be3e47d3833a65a0",
+      "transcript_cue_to_visible_window_offset_s": [
+        -1,
+        1
+      ],
+      "caption_to_video_relation_classification": "PROVISIONAL_TRANSCRIPT_TO_VIDEO_ONLY",
+      "speech_words_verified_in_native_audio": false,
+      "actual_speech_onset_s": null,
+      "native_word_alignment_accuracy": null,
+      "visual_interval_precision": "TWO_SECOND_SAMPLED_WITNESS_BRACKET_NOT_EXACT_FRAME_START"
+    },
+    {
+      "anchor_id": "softmax",
+      "user_transcript_cue_s": 592,
+      "source_event_index_zero_based": 175,
+      "source_file_line": 23,
+      "source_segment_utf8_sha256": "d6aa905d8712a62fbf8a8e15c418dc74a4721642e09fa6f463746306231fb997",
+      "utterance_semantic_paraphrase_vi": "Tuyên bố tính softmax trên từng cột",
+      "video_sampled_visible_change_interval_s": [
+        588,
+        590
+      ],
+      "native_visual_witness_vi": "Nhân vật và chữ Softmax! xuất hiện lúc 09:50, giữ tới 09:52",
+      "native_decoded_frame_at_s": 592,
+      "native_decoded_luma_sha256": "7d345da7b51efe10b0be542b69192c1d607e9263b72b7f67b5bf8dc340bdd11d",
+      "transcript_cue_to_visible_window_offset_s": [
+        -4,
+        -2
+      ],
+      "caption_to_video_relation_classification": "PROVISIONAL_TRANSCRIPT_TO_VIDEO_ONLY",
+      "speech_words_verified_in_native_audio": false,
+      "actual_speech_onset_s": null,
+      "native_word_alignment_accuracy": null,
+      "visual_interval_precision": "TWO_SECOND_SAMPLED_WITNESS_BRACKET_NOT_EXACT_FRAME_START"
+    },
+    {
+      "anchor_id": "mask",
+      "user_transcript_cue_s": 733,
+      "source_event_index_zero_based": 213,
+      "source_file_line": 29,
+      "source_segment_utf8_sha256": "5ce2ff0f928c445ae65b10950acb804434c62a7064164e73057e47f41d317a50",
+      "utterance_semantic_paraphrase_vi": "Về việc đặt điểm số bị chặn thành âm vô cùng trước softmax",
+      "video_sampled_visible_change_interval_s": [
+        737,
+        739
+      ],
+      "native_visual_witness_vi": "12:15 hiển thị hai bảng; 12:19 các ô bị che biến thành −∞",
+      "native_decoded_frame_at_s": 733,
+      "native_decoded_luma_sha256": "b09c083a698ad68c16b6ab2187a20461a8cb81cf8bfbd861f34e12e05cafdc92",
+      "transcript_cue_to_visible_window_offset_s": [
+        4,
+        6
+      ],
+      "caption_to_video_relation_classification": "PROVISIONAL_TRANSCRIPT_TO_VIDEO_ONLY",
+      "speech_words_verified_in_native_audio": false,
+      "actual_speech_onset_s": null,
+      "native_word_alignment_accuracy": null,
+      "visual_interval_precision": "TWO_SECOND_SAMPLED_WITNESS_BRACKET_NOT_EXACT_FRAME_START"
+    },
+    {
+      "anchor_id": "values",
+      "user_transcript_cue_s": 824,
+      "source_event_index_zero_based": 239,
+      "source_file_line": 33,
+      "source_segment_utf8_sha256": "cd857a550892f43429dc9e91d852715a89a38a820d0597dd9d8ab713f26b5a14",
+      "utterance_semantic_paraphrase_vi": "Giới thiệu ma trận Value thứ ba",
+      "video_sampled_visible_change_interval_s": [
+        826,
+        828
+      ],
+      "native_visual_witness_vi": "13:44 minh họa chữ-vectors, khoảng 13:48 bật ma trận W_V màu đỏ",
+      "native_decoded_frame_at_s": 824,
+      "native_decoded_luma_sha256": "cd9c72553322c24419b49360d082eb181514825b0de6eddbc439bb4eed5a6280",
+      "transcript_cue_to_visible_window_offset_s": [
+        2,
+        4
+      ],
+      "caption_to_video_relation_classification": "PROVISIONAL_TRANSCRIPT_TO_VIDEO_ONLY",
+      "speech_words_verified_in_native_audio": false,
+      "actual_speech_onset_s": null,
+      "native_word_alignment_accuracy": null,
+      "visual_interval_precision": "TWO_SECOND_SAMPLED_WITNESS_BRACKET_NOT_EXACT_FRAME_START"
+    },
+    {
+      "anchor_id": "weighting",
+      "user_transcript_cue_s": 882,
+      "source_event_index_zero_based": 253,
+      "source_file_line": 36,
+      "source_segment_utf8_sha256": "07dee0e8f1a2b660b8571d4c2510e54268ece1a8e84e6ada24f314a5435d8c10",
+      "utterance_semantic_paraphrase_vi": "Nhân Value với trọng số trong từng cột",
+      "video_sampled_visible_change_interval_s": [
+        882,
+        884
+      ],
+      "native_visual_witness_vi": "14:42 giữ sơ đồ; khoảng 14:44 bảng trọng số cột được hé lộ",
+      "native_decoded_frame_at_s": 882,
+      "native_decoded_luma_sha256": "7df9d9d251b9d5bb6b1a66182a863d180ce559947072aa5a9ec1bfe6d393dc20",
+      "transcript_cue_to_visible_window_offset_s": [
+        0,
+        2
+      ],
+      "caption_to_video_relation_classification": "PROVISIONAL_TRANSCRIPT_TO_VIDEO_ONLY",
+      "speech_words_verified_in_native_audio": false,
+      "actual_speech_onset_s": null,
+      "native_word_alignment_accuracy": null,
+      "visual_interval_precision": "TWO_SECOND_SAMPLED_WITNESS_BRACKET_NOT_EXACT_FRAME_START"
+    },
+    {
+      "anchor_id": "multihead",
+      "user_transcript_cue_s": 1237,
+      "source_event_index_zero_based": 350,
+      "source_file_line": 52,
+      "source_segment_utf8_sha256": "847e40612ad9fe1dd45b67b46f763c7f2173748fbfd04c670527d72913d92749",
+      "utterance_semantic_paraphrase_vi": "Định nghĩa multi-headed attention",
+      "video_sampled_visible_change_interval_s": [
+        1235,
+        1237
+      ],
+      "native_visual_witness_vi": "20:35 còn hình single head, 20:37 chuyển sang stack nhiều head",
+      "native_decoded_frame_at_s": 1237,
+      "native_decoded_luma_sha256": "2385b72366e3ff9ff599d01d2cd3d3b634e78774e14edc0436905e523f1e7607",
+      "transcript_cue_to_visible_window_offset_s": [
+        -2,
+        0
+      ],
+      "caption_to_video_relation_classification": "PROVISIONAL_TRANSCRIPT_TO_VIDEO_ONLY",
+      "speech_words_verified_in_native_audio": false,
+      "actual_speech_onset_s": null,
+      "native_word_alignment_accuracy": null,
+      "visual_interval_precision": "TWO_SECOND_SAMPLED_WITNESS_BRACKET_NOT_EXACT_FRAME_START"
+    },
+    {
+      "anchor_id": "output",
+      "user_transcript_cue_s": 1365,
+      "source_event_index_zero_based": 390,
+      "source_file_line": 57,
+      "source_segment_utf8_sha256": "0d165092bf9fd77a78053b1884123e6ecb5fa6d9bdbf395ef5cbcebebb820ab3",
+      "utterance_semantic_paraphrase_vi": "Các value-up matrices được ghép thành output matrix",
+      "video_sampled_visible_change_interval_s": [
+        1370,
+        1372
+      ],
+      "native_visual_witness_vi": "22:44 có head-specific maps, 22:52 mới thấy nhãn Output matrix",
+      "native_decoded_frame_at_s": 1370,
+      "native_decoded_luma_sha256": "c21f6c43c1b8f322a949d034165f0ddee6851c3e48eafebfc799335e36e0a7d6",
+      "transcript_cue_to_visible_window_offset_s": [
+        5,
+        7
+      ],
+      "caption_to_video_relation_classification": "PROVISIONAL_TRANSCRIPT_TO_VIDEO_ONLY",
+      "speech_words_verified_in_native_audio": false,
+      "actual_speech_onset_s": null,
+      "native_word_alignment_accuracy": null,
+      "visual_interval_precision": "TWO_SECOND_SAMPLED_WITNESS_BRACKET_NOT_EXACT_FRAME_START"
+    },
+    {
+      "anchor_id": "return_context",
+      "user_transcript_cue_s": 1415,
+      "source_event_index_zero_based": 409,
+      "source_file_line": 60,
+      "source_segment_utf8_sha256": "0a7a763e61504390eeda276be01a7067bd22fcc1bc58443c13ef7197e931c927",
+      "utterance_semantic_paraphrase_vi": "Lặp lại các khối Attention và MLP",
+      "video_sampled_visible_change_interval_s": [
+        1413,
+        1415
+      ],
+      "native_visual_witness_vi": "23:29 attention–MLP cùng có mặt; 23:35 cấu trúc nhiều lớp bắt đầu hiển thị",
+      "native_decoded_frame_at_s": 1415,
+      "native_decoded_luma_sha256": "4204537b622caf68312f7abdb9ff9fceef726de6f381ae56330a31fe12bad6c4",
+      "transcript_cue_to_visible_window_offset_s": [
+        -2,
+        0
+      ],
+      "caption_to_video_relation_classification": "PROVISIONAL_TRANSCRIPT_TO_VIDEO_ONLY",
+      "speech_words_verified_in_native_audio": false,
+      "actual_speech_onset_s": null,
+      "native_word_alignment_accuracy": null,
+      "visual_interval_precision": "TWO_SECOND_SAMPLED_WITNESS_BRACKET_NOT_EXACT_FRAME_START"
+    }
+  ],
+  "rigor": {
+    "timestamped_transcript_is_user_supplied_not_independent_asr": true,
+    "lexical_content_not_manually_revalidated_by_listening": true,
+    "native_word_alignment_count": 0,
+    "text_to_native_visual_correspondence_count": 12,
+    "small_sample_visual_onset_bracket_not_exact_edit_frame": true,
+    "peak_difference_not_semantic_event": true,
+    "no_model_api": true,
+    "not_a_controlled_quality_benchmark": true,
+    "production": "BLOCKED"
+  },
+  "conclusion": {
+    "transcript_ingest": "PASS",
+    "twelve_anchors_temporal_text_to_native_frame_grounding": "BOUNDED_PASS",
+    "independent_native_audio_word_accuracy": "NO_GO",
+    "reliable_native_word_level_alignment": "NOT_VERIFIED",
+    "pedagogical_timing_mechanism": "RESEARCH_ONLY_GROUNDED",
+    "agent_architecture": "RESEARCH_ONLY_GO_NOT_INTEGRATED",
+    "production": "BLOCKED",
+    "fifteen_video_study": "NO_GO"
+  }
+}

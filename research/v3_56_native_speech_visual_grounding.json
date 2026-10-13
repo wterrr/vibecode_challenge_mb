@@ -1,0 +1,495 @@
+{
+  "checkpoint": "V3-56",
+  "experiment": "NATIVE_SPEECH_VISUAL_GROUNDING",
+  "study_status": "REAL_NATIVE_PCM_AND_NATIVE_VISUAL_TIMING_MEASURED__SPEECH_SEMANTICS_NO_GO",
+  "frozen_preregister_commit": "fc3a403c5a4d79ea0ac5c5409bfdf6a5f2aa7575",
+  "original_mp4": {
+    "filename": "Attention in transformers, step-by-step _ Deep Learning Chapter 6.mp4",
+    "sha256": "439e154fffbb8696a37753d765c4f64bc06d25fbb17cb3d98bcc842045d85cb9",
+    "h264_fps": 30,
+    "total_native_frames": 47076,
+    "duration_s": 1569.191429
+  },
+  "audio": {
+    "stream_codec": "aac",
+    "pcm_decode": "ffmpeg -vn -ac 1 -ar 8000 -f s16le",
+    "decoded_duration_s": 1569.158125,
+    "pcm_sample_rate_hz": 8000,
+    "pcm_samples": 12553265,
+    "acoustic_metric": "RMS per 500ms within 48s windows centered on external cues. Contains narration + music/sfx; cannot label speaker/silence/words.",
+    "manual_audio_listening_verified": false,
+    "native_spoken_word_transcript": null,
+    "word_alignment_native": false
+  },
+  "visual": {
+    "decoder": "cv2.VideoCapture native H264 seek, native-frame grayscale resized 320x180",
+    "sample_spacing_s": 2,
+    "first_frame_sha256_of_resized_luma": true,
+    "change_metric": "mean(abs(luma2-luma1)) on 0-255 pixels, with fraction pixels difference >25",
+    "min_samples_per_anchor": 15
+  },
+  "offline_asr_due_diligence": {
+    "checked_local_modules": {
+      "faster_whisper": false,
+      "whisper": false,
+      "vosk": false,
+      "whisperx": false,
+      "transformers": false
+    },
+    "cached_model_weights_found": false,
+    "container_network": "NO_DNS_HUGGINGFACE_AND_GITHUB_RAW",
+    "provider_model_api_used": false,
+    "candidates": [
+      {
+        "name": "openai/whisper",
+        "code_and_weights_license": "MIT according official README",
+        "runtime": "local PyTorch + ffmpeg, but Python package/checkpoint unavailable",
+        "status": "BLOCKED_WEIGHTS"
+      },
+      {
+        "name": "SYSTRAN/faster-whisper",
+        "runtime_license": "MIT",
+        "runtime": "local CTranslate2 CPU int8 + converted Whisper weights",
+        "status": "BLOCKED_PACKAGE_AND_WEIGHTS"
+      },
+      {
+        "name": "ggml-org/whisper.cpp",
+        "runtime_license": "MIT",
+        "runtime": "local optimized C++ CPU with GGML Whisper model weights",
+        "status": "BLOCKED_EXECUTABLE_AND_WEIGHTS"
+      },
+      {
+        "name": "m-bain/WhisperX",
+        "runtime_license": "BSD-2-Clause for wrapper, separate license checks for aligner model",
+        "runtime": "requires ASR + wav2vec2 phoneme model and VAD",
+        "status": "BLOCKED_ASR_AND_ALIGNMENT_WEIGHTS"
+      }
+    ],
+    "fallback": "No speech-content recognition; do not reinterpret 2outube captions or RMS as native word timing."
+  },
+  "rows": [
+    {
+      "anchor_id": "mole",
+      "external_caption_proxy_start_s": 109,
+      "native_visual_probe_center_s": 121,
+      "native_sample_period_s": 2,
+      "native_frame_samples_count": 15,
+      "native_sampled_pts_range_s": [
+        109,
+        137
+      ],
+      "native_first_frame_grayscale_sha256": "37a3694ec53c43e88638f9a17da961b8385076b2e7a7ec72845fb15f91c8feb2",
+      "native_largest_visual_change_window_s": [
+        119,
+        121
+      ],
+      "native_largest_mean_abs_gray_diff": 36.888,
+      "native_largest_fraction_luminance_change_gt25": 0.9534,
+      "native_near_still_window_s": [
+        125,
+        127
+      ],
+      "native_near_still_mean_abs_gray_diff": 0,
+      "native_acoustic_pcm_rms_median_in_proxy_window": 0.153365,
+      "external_proxy_to_largest_visual_change_start_s": 10,
+      "cue_to_visual_is_not_native_speech_latency": true,
+      "native_spoken_phrase_transcribed": null,
+      "native_speech_onset_s": null,
+      "native_utterance_to_visual_lead_lag_s": null,
+      "word_error_rate": null,
+      "audio_visual_alignment_verdict": "UNVERIFIED_NATIVE_SPEECH",
+      "measurement_note": "Peak chosen from 2s-spaced decoded video frames, not exact visual event onset; PCM RMS includes music/FX and cannot identify speech; caption cue is third-party timing."
+    },
+    {
+      "anchor_id": "running_sentence",
+      "external_caption_proxy_start_s": 269,
+      "native_visual_probe_center_s": 275,
+      "native_sample_period_s": 2,
+      "native_frame_samples_count": 15,
+      "native_sampled_pts_range_s": [
+        263,
+        291
+      ],
+      "native_first_frame_grayscale_sha256": "4c3165c1bd6b209080496cc18e71f4feded6a4f126b299a5ba1a2b031f03829c",
+      "native_largest_visual_change_window_s": [
+        269,
+        271
+      ],
+      "native_largest_mean_abs_gray_diff": 32.542,
+      "native_largest_fraction_luminance_change_gt25": 0.7884,
+      "native_near_still_window_s": [
+        275,
+        277
+      ],
+      "native_near_still_mean_abs_gray_diff": 0.009,
+      "native_acoustic_pcm_rms_median_in_proxy_window": 0.157391,
+      "external_proxy_to_largest_visual_change_start_s": 0,
+      "cue_to_visual_is_not_native_speech_latency": true,
+      "native_spoken_phrase_transcribed": null,
+      "native_speech_onset_s": null,
+      "native_utterance_to_visual_lead_lag_s": null,
+      "word_error_rate": null,
+      "audio_visual_alignment_verdict": "UNVERIFIED_NATIVE_SPEECH",
+      "measurement_note": "Peak chosen from 2s-spaced decoded video frames, not exact visual event onset; PCM RMS includes music/FX and cannot identify speech; caption cue is third-party timing."
+    },
+    {
+      "anchor_id": "query_motivating",
+      "external_caption_proxy_start_s": 357,
+      "native_visual_probe_center_s": 382,
+      "native_sample_period_s": 2,
+      "native_frame_samples_count": 15,
+      "native_sampled_pts_range_s": [
+        370,
+        398
+      ],
+      "native_first_frame_grayscale_sha256": "1b30c931d796e92cda41c5377206bc7627d5c759f9b428e45ec833c7ffde1b46",
+      "native_largest_visual_change_window_s": [
+        374,
+        376
+      ],
+      "native_largest_mean_abs_gray_diff": 11.981,
+      "native_largest_fraction_luminance_change_gt25": 0.1478,
+      "native_near_still_window_s": [
+        386,
+        388
+      ],
+      "native_near_still_mean_abs_gray_diff": 0.004,
+      "native_acoustic_pcm_rms_median_in_proxy_window": 0.152872,
+      "external_proxy_to_largest_visual_change_start_s": 17,
+      "cue_to_visual_is_not_native_speech_latency": true,
+      "native_spoken_phrase_transcribed": null,
+      "native_speech_onset_s": null,
+      "native_utterance_to_visual_lead_lag_s": null,
+      "word_error_rate": null,
+      "audio_visual_alignment_verdict": "UNVERIFIED_NATIVE_SPEECH",
+      "measurement_note": "Peak chosen from 2s-spaced decoded video frames, not exact visual event onset; PCM RMS includes music/FX and cannot identify speech; caption cue is third-party timing."
+    },
+    {
+      "anchor_id": "query_to_key",
+      "external_caption_proxy_start_s": 458,
+      "native_visual_probe_center_s": 478,
+      "native_sample_period_s": 2,
+      "native_frame_samples_count": 15,
+      "native_sampled_pts_range_s": [
+        466,
+        494
+      ],
+      "native_first_frame_grayscale_sha256": "6642d0dacdd34044552a3912a0862b6d73027648de4bb0b77f243bdf1587a18c",
+      "native_largest_visual_change_window_s": [
+        466,
+        468
+      ],
+      "native_largest_mean_abs_gray_diff": 36.904,
+      "native_largest_fraction_luminance_change_gt25": 0.8361,
+      "native_near_still_window_s": [
+        474,
+        476
+      ],
+      "native_near_still_mean_abs_gray_diff": 0,
+      "native_acoustic_pcm_rms_median_in_proxy_window": 0.150527,
+      "external_proxy_to_largest_visual_change_start_s": 8,
+      "cue_to_visual_is_not_native_speech_latency": true,
+      "native_spoken_phrase_transcribed": null,
+      "native_speech_onset_s": null,
+      "native_utterance_to_visual_lead_lag_s": null,
+      "word_error_rate": null,
+      "audio_visual_alignment_verdict": "UNVERIFIED_NATIVE_SPEECH",
+      "measurement_note": "Peak chosen from 2s-spaced decoded video frames, not exact visual event onset; PCM RMS includes music/FX and cannot identify speech; caption cue is third-party timing."
+    },
+    {
+      "anchor_id": "score_matrix",
+      "external_caption_proxy_start_s": 514,
+      "native_visual_probe_center_s": 526,
+      "native_sample_period_s": 2,
+      "native_frame_samples_count": 15,
+      "native_sampled_pts_range_s": [
+        514,
+        542
+      ],
+      "native_first_frame_grayscale_sha256": "9b646b61389a39224b103c8d7fcf1fdc6828ce92ded6956bdeb98211ce9eae7c",
+      "native_largest_visual_change_window_s": [
+        526,
+        528
+      ],
+      "native_largest_mean_abs_gray_diff": 15.218,
+      "native_largest_fraction_luminance_change_gt25": 0.2165,
+      "native_near_still_window_s": [
+        520,
+        522
+      ],
+      "native_near_still_mean_abs_gray_diff": 0,
+      "native_acoustic_pcm_rms_median_in_proxy_window": 0.156642,
+      "external_proxy_to_largest_visual_change_start_s": 12,
+      "cue_to_visual_is_not_native_speech_latency": true,
+      "native_spoken_phrase_transcribed": null,
+      "native_speech_onset_s": null,
+      "native_utterance_to_visual_lead_lag_s": null,
+      "word_error_rate": null,
+      "audio_visual_alignment_verdict": "UNVERIFIED_NATIVE_SPEECH",
+      "measurement_note": "Peak chosen from 2s-spaced decoded video frames, not exact visual event onset; PCM RMS includes music/FX and cannot identify speech; caption cue is third-party timing."
+    },
+    {
+      "anchor_id": "softmax",
+      "external_caption_proxy_start_s": 589,
+      "native_visual_probe_center_s": 600,
+      "native_sample_period_s": 2,
+      "native_frame_samples_count": 15,
+      "native_sampled_pts_range_s": [
+        588,
+        616
+      ],
+      "native_first_frame_grayscale_sha256": "41b467ebfa139a71f12a72dd305d4ba3e5d8bfd3d0d35ef5485a13c1850a5529",
+      "native_largest_visual_change_window_s": [
+        588,
+        590
+      ],
+      "native_largest_mean_abs_gray_diff": 36.079,
+      "native_largest_fraction_luminance_change_gt25": 0.8348,
+      "native_near_still_window_s": [
+        608,
+        610
+      ],
+      "native_near_still_mean_abs_gray_diff": 0.41,
+      "native_acoustic_pcm_rms_median_in_proxy_window": 0.15384,
+      "external_proxy_to_largest_visual_change_start_s": -1,
+      "cue_to_visual_is_not_native_speech_latency": true,
+      "native_spoken_phrase_transcribed": null,
+      "native_speech_onset_s": null,
+      "native_utterance_to_visual_lead_lag_s": null,
+      "word_error_rate": null,
+      "audio_visual_alignment_verdict": "UNVERIFIED_NATIVE_SPEECH",
+      "measurement_note": "Peak chosen from 2s-spaced decoded video frames, not exact visual event onset; PCM RMS includes music/FX and cannot identify speech; caption cue is third-party timing."
+    },
+    {
+      "anchor_id": "mask",
+      "external_caption_proxy_start_s": 691,
+      "native_visual_probe_center_s": 711,
+      "native_sample_period_s": 2,
+      "native_frame_samples_count": 15,
+      "native_sampled_pts_range_s": [
+        699,
+        727
+      ],
+      "native_first_frame_grayscale_sha256": "c8e2b5eb2fc2323015b4baa1cb393c0876bb82d78f3c03917c94ffd45d2c4ff5",
+      "native_largest_visual_change_window_s": [
+        707,
+        709
+      ],
+      "native_largest_mean_abs_gray_diff": 19.153,
+      "native_largest_fraction_luminance_change_gt25": 0.2474,
+      "native_near_still_window_s": [
+        719,
+        721
+      ],
+      "native_near_still_mean_abs_gray_diff": 0.02,
+      "native_acoustic_pcm_rms_median_in_proxy_window": 0.154742,
+      "external_proxy_to_largest_visual_change_start_s": 16,
+      "cue_to_visual_is_not_native_speech_latency": true,
+      "native_spoken_phrase_transcribed": null,
+      "native_speech_onset_s": null,
+      "native_utterance_to_visual_lead_lag_s": null,
+      "word_error_rate": null,
+      "audio_visual_alignment_verdict": "UNVERIFIED_NATIVE_SPEECH",
+      "measurement_note": "Peak chosen from 2s-spaced decoded video frames, not exact visual event onset; PCM RMS includes music/FX and cannot identify speech; caption cue is third-party timing."
+    },
+    {
+      "anchor_id": "values",
+      "external_caption_proxy_start_s": 815,
+      "native_visual_probe_center_s": 827,
+      "native_sample_period_s": 2,
+      "native_frame_samples_count": 15,
+      "native_sampled_pts_range_s": [
+        815,
+        843
+      ],
+      "native_first_frame_grayscale_sha256": "ce0963d193982c4c53d6f69ed2e8e8165084709e397cd9db0fc57f77d5358e60",
+      "native_largest_visual_change_window_s": [
+        815,
+        817
+      ],
+      "native_largest_mean_abs_gray_diff": 33.329,
+      "native_largest_fraction_luminance_change_gt25": 0.7481,
+      "native_near_still_window_s": [
+        841,
+        843
+      ],
+      "native_near_still_mean_abs_gray_diff": 0.172,
+      "native_acoustic_pcm_rms_median_in_proxy_window": 0.154836,
+      "external_proxy_to_largest_visual_change_start_s": 0,
+      "cue_to_visual_is_not_native_speech_latency": true,
+      "native_spoken_phrase_transcribed": null,
+      "native_speech_onset_s": null,
+      "native_utterance_to_visual_lead_lag_s": null,
+      "word_error_rate": null,
+      "audio_visual_alignment_verdict": "UNVERIFIED_NATIVE_SPEECH",
+      "measurement_note": "Peak chosen from 2s-spaced decoded video frames, not exact visual event onset; PCM RMS includes music/FX and cannot identify speech; caption cue is third-party timing."
+    },
+    {
+      "anchor_id": "weighting",
+      "external_caption_proxy_start_s": 862,
+      "native_visual_probe_center_s": 888,
+      "native_sample_period_s": 2,
+      "native_frame_samples_count": 15,
+      "native_sampled_pts_range_s": [
+        876,
+        904
+      ],
+      "native_first_frame_grayscale_sha256": "94953118e6a8b59b483e63655805765215098aa58ff5088ccd7ba27664c22bbd",
+      "native_largest_visual_change_window_s": [
+        894,
+        896
+      ],
+      "native_largest_mean_abs_gray_diff": 10.652,
+      "native_largest_fraction_luminance_change_gt25": 0.128,
+      "native_near_still_window_s": [
+        876,
+        878
+      ],
+      "native_near_still_mean_abs_gray_diff": 0,
+      "native_acoustic_pcm_rms_median_in_proxy_window": 0.156681,
+      "external_proxy_to_largest_visual_change_start_s": 32,
+      "cue_to_visual_is_not_native_speech_latency": true,
+      "native_spoken_phrase_transcribed": null,
+      "native_speech_onset_s": null,
+      "native_utterance_to_visual_lead_lag_s": null,
+      "word_error_rate": null,
+      "audio_visual_alignment_verdict": "UNVERIFIED_NATIVE_SPEECH",
+      "measurement_note": "Peak chosen from 2s-spaced decoded video frames, not exact visual event onset; PCM RMS includes music/FX and cannot identify speech; caption cue is third-party timing."
+    },
+    {
+      "anchor_id": "multihead",
+      "external_caption_proxy_start_s": 1231,
+      "native_visual_probe_center_s": 1239,
+      "native_sample_period_s": 2,
+      "native_frame_samples_count": 15,
+      "native_sampled_pts_range_s": [
+        1227,
+        1255
+      ],
+      "native_first_frame_grayscale_sha256": "07d8c6af525cd2f886d3dbee784ad7cd590bbf22240adeec321c955bfac451c4",
+      "native_largest_visual_change_window_s": [
+        1235,
+        1237
+      ],
+      "native_largest_mean_abs_gray_diff": 31.19,
+      "native_largest_fraction_luminance_change_gt25": 0.6544,
+      "native_near_still_window_s": [
+        1229,
+        1231
+      ],
+      "native_near_still_mean_abs_gray_diff": 0.004,
+      "native_acoustic_pcm_rms_median_in_proxy_window": 0.153161,
+      "external_proxy_to_largest_visual_change_start_s": 4,
+      "cue_to_visual_is_not_native_speech_latency": true,
+      "native_spoken_phrase_transcribed": null,
+      "native_speech_onset_s": null,
+      "native_utterance_to_visual_lead_lag_s": null,
+      "word_error_rate": null,
+      "audio_visual_alignment_verdict": "UNVERIFIED_NATIVE_SPEECH",
+      "measurement_note": "Peak chosen from 2s-spaced decoded video frames, not exact visual event onset; PCM RMS includes music/FX and cannot identify speech; caption cue is third-party timing."
+    },
+    {
+      "anchor_id": "output",
+      "external_caption_proxy_start_s": 1349,
+      "native_visual_probe_center_s": 1350,
+      "native_sample_period_s": 2,
+      "native_frame_samples_count": 15,
+      "native_sampled_pts_range_s": [
+        1338,
+        1366
+      ],
+      "native_first_frame_grayscale_sha256": "0046fd99569ac99a942b7b098970f5ec162ca9fcdfa17e3bb44d000b27479557",
+      "native_largest_visual_change_window_s": [
+        1342,
+        1344
+      ],
+      "native_largest_mean_abs_gray_diff": 36.735,
+      "native_largest_fraction_luminance_change_gt25": 0.938,
+      "native_near_still_window_s": [
+        1362,
+        1364
+      ],
+      "native_near_still_mean_abs_gray_diff": 0,
+      "native_acoustic_pcm_rms_median_in_proxy_window": 0.151362,
+      "external_proxy_to_largest_visual_change_start_s": -7,
+      "cue_to_visual_is_not_native_speech_latency": true,
+      "native_spoken_phrase_transcribed": null,
+      "native_speech_onset_s": null,
+      "native_utterance_to_visual_lead_lag_s": null,
+      "word_error_rate": null,
+      "audio_visual_alignment_verdict": "UNVERIFIED_NATIVE_SPEECH",
+      "measurement_note": "Peak chosen from 2s-spaced decoded video frames, not exact visual event onset; PCM RMS includes music/FX and cannot identify speech; caption cue is third-party timing."
+    },
+    {
+      "anchor_id": "return_context",
+      "external_caption_proxy_start_s": 1413,
+      "native_visual_probe_center_s": 1436,
+      "native_sample_period_s": 2,
+      "native_frame_samples_count": 15,
+      "native_sampled_pts_range_s": [
+        1424,
+        1452
+      ],
+      "native_first_frame_grayscale_sha256": "d1a22b5ac908c6c9c6ec87d12b213f924d3baa44162aca36890e4b765d396253",
+      "native_largest_visual_change_window_s": [
+        1434,
+        1436
+      ],
+      "native_largest_mean_abs_gray_diff": 19.718,
+      "native_largest_fraction_luminance_change_gt25": 0.2859,
+      "native_near_still_window_s": [
+        1424,
+        1426
+      ],
+      "native_near_still_mean_abs_gray_diff": 0.23,
+      "native_acoustic_pcm_rms_median_in_proxy_window": 0.156561,
+      "external_proxy_to_largest_visual_change_start_s": 21,
+      "cue_to_visual_is_not_native_speech_latency": true,
+      "native_spoken_phrase_transcribed": null,
+      "native_speech_onset_s": null,
+      "native_utterance_to_visual_lead_lag_s": null,
+      "word_error_rate": null,
+      "audio_visual_alignment_verdict": "UNVERIFIED_NATIVE_SPEECH",
+      "measurement_note": "Peak chosen from 2s-spaced decoded video frames, not exact visual event onset; PCM RMS includes music/FX and cannot identify speech; caption cue is third-party timing."
+    }
+  ],
+  "v355_comparison": {
+    "native_v355_attention_mp4": "v355_attention_reversed_query/composed_attention_native.mp4",
+    "measured_v355_duration_s": 63.8,
+    "fps": 15,
+    "resolution": "1280x720",
+    "source": "Exact-head V3-55 run #38328985561 native artifact checked separately",
+    "matched_efficacy_design": false,
+    "confound": "3B1B clip 1569.19s / 30fps vs LearnFlow synthetic Attention 63.8s / 15fps; no fair preference/learning comparison",
+    "observed_reusable": [
+      "host-grounded attention score and value mixture",
+      "finite director ops intro/compare/normalize/inspect/transport/compose",
+      "real H264/AAC and native media QA"
+    ],
+    "unproved": [
+      "cross-representation semantic object continuity between text/E/Q/K/V/score matrix",
+      "verified semantic narration anchor with native words",
+      "query example-to-whole score matrix generalization",
+      "explicit causal masking from prefix example",
+      "purposeful hold semantics linked to narration",
+      "human reader comprehension"
+    ]
+  },
+  "research_gates": {
+    "audio_pcm_decoded": "PASS",
+    "frames_measured_for_12_anchors": "PASS",
+    "independent_native_phrase_accuracy": "NO_GO_ZERO_OF_TWELVE",
+    "prereg_native_speech_gate_minimum": 8,
+    "reliable_sentence_level_alignment": "NOT_VERIFIED",
+    "reliable_phrase_level_alignment": "NOT_VERIFIED",
+    "reliable_word_level_alignment": "NOT_VERIFIED",
+    "native_proxy_to_visual_descriptive_statistics": "PASS_WITH_PROVENANCE_WARNING",
+    "pedagogical_mechanism_design": "BOUNDED_RESEARCH_GO_AS_VISUAL_AND_CAPTION_PROXY_INFERENCE",
+    "actual_learner_improvement": "NOT_TESTED",
+    "architecture_proposal": "RESEARCH_GO_OPTIONAL_CONTRACT_ONLY",
+    "production": "BLOCKED",
+    "model_provider_requests": 0,
+    "no_main_merge": true
+  },
+  "copyright": "No user original video/audio frames/transcript copied into GitHub. Numeric measurements and SHA-only receipt."
+}
