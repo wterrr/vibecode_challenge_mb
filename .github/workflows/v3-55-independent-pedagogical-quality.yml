@@ -82,7 +82,7 @@ jobs:
           assert r['production']=='BLOCKED' and r['main_merge'] is False
           assert len({x['native_video_sha256'] for x in r['cases']})==3
           for folder,name in (
-             ('v355_fraction_2_3_to_4_6','host_grounded_lesson.mp4'),
+             ('dev_v355_fraction_2_3_to_4_6','host_grounded_lesson.mp4'),
              ('v355_ordered_process_rekeyed','storytelling_host_with_audio.mp4'),
              ('v355_attention_reversed_query','composed_attention_native.mp4')):
              assert (root/folder/name).stat().st_size > 40000
