@@ -30,7 +30,7 @@ def test_three_new_family_inputs_all_host_grounded():
     a, b, c = build_new_cases(load_registration(ROOT))
     assert a["id"] == IDS[0] and a["source"] == [2, 3]
     assert a["target"] == [4, 6]
-    assert all(g["id"].startswith("v55_") for g in b["graphics"])
+    assert all(g["id"].startswith("z_") for g in b["graphics"])
     graph = decode_model_facing_scene(b)
     validate_transformations(graph, offline_host_plan(graph))
     assert c["query"] == [0, 1]
