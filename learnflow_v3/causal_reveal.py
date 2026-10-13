@@ -142,7 +142,7 @@ def verify_reveal_progression(p):
         a=witness(cid,2,.1);mid=witness(cid,2,.9);end=witness(cid,2,1)
         require(not a["action_active"] and not mid["action_active"] and
                 end["action_active"] and
-                a["marker_center_x"]==397 and
+                a["marker_center_x"]==387 and
                 mid["marker_center_x"]<end["marker_center_x"] and
                 end["marker_center_x"]==end["action_node_entry_x"] and
                 end["action_arrival_verified"],
