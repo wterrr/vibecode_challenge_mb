@@ -1,0 +1,89 @@
+name: V3-57 Evidence-Bound Pedagogical Native Slice — NO MODEL API
+
+on:
+  push:
+    branches: [chatgpt/v3-57-pedagogical-storytelling-prototype]
+  pull_request:
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_57_pedagogical_slice_preregister.json"
+      - "learnflow_v3/pedagogical_storytelling_slice.py"
+      - "scripts/run_v3_57_pedagogical_slice.py"
+      - "tests/v3/test_v3_57_pedagogical_slice.py"
+      - ".github/workflows/v3-57-pedagogical-storytelling.yml"
+      - "reports/v3_57_pedagogical_slice.md"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+
+jobs:
+  offline-pedagogy-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install offline validation requirements
+        timeout-minutes: 9
+        run: |
+          timeout -k 10s 400s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Validate 3 host facts and frozen checkpoint invariants
+        timeout-minutes: 6
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_57_pedagogical_slice.py \
+            tests/v3/test_v3_56_user_timestamped_transcript.py \
+            tests/v3/test_v3_55_independent_pedagogical_quality.py
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+      - name: Assert no model/API provider integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path("scripts/run_v3_57_pedagogical_slice.py").read_text()
+          m=Path("learnflow_v3/pedagogical_storytelling_slice.py").read_text()
+          for pat in ("open"+"router.ai", "chat"+"completions", "requests."+"post",
+                      "url"+"open(", "model_"+"authored_python"):
+              assert pat not in s and pat not in m
+          print("V357=HOST_OFFLINE_ONLY_NO_MODEL_API")
+          PY
+
+  actual-native-three-video-build:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    needs: [offline-pedagogy-integrity]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install offline FFmpeg/eSpeak-NG/CMU fonts
+        timeout-minutes: 10
+        run: |
+          bash scripts/bootstrap_v3_30_native.sh
+      - name: Install native host math/renderer requirements
+        timeout-minutes: 9
+        run: |
+          timeout -k 10s 400s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Render 3 exact host-approved native MP4s and inspect encoded pixels
+        timeout-minutes: 25
+        run: |
+          python scripts/run_v3_57_pedagogical_slice.py --output-dir artifacts/v357
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v357-3family-offline-native-prototype
+          path: artifacts/v357/
+          retention-days: 7
+          if-no-files-found: warn
