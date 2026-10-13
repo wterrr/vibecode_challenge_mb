@@ -40,6 +40,35 @@ def test_synthetic_only_author_choice_is_bounded(case):
     assert c["ledger_sha256"]==plan(case).evidence_sha256
 
 @pytest.mark.parametrize("case",list(IDS))
+def test_strict_python_fixture_and_json_wire_roundtrip_share_host_validation(case):
+    # Python's strict Tuple != list; JSON arrays are allowed through JSON mode.
+    candidate=synthetic_candidate(case)
+    assert isinstance(candidate["observable_beats"],tuple)
+    parsed=json.loads(json.dumps(candidate))
+    assert isinstance(parsed["observable_beats"],list)
+    with pytest.raises(ValidationError,match="observable_beats"):
+        ProposedStory.model_validate(parsed)
+    host=certify_candidate(parsed)
+    assert host["origin"]==ORIGIN
+    assert host["approval"]=="DATA_SCHEMA_AND_HOST_PROVENANCE_ONLY"
+    assert host["pedagogical_quality"]=="UNRATED"
+    assert host["production"]=="BLOCKED"
+
+    # The JSON wire adapter must NOT bypass proof-bearing adversarial validators.
+    parsed["observable_beats"][0]["witness_mode"]="SEMANTIC_MOTION"
+    with pytest.raises(ValidationError,match="V358_FAKE_MOTION_WITNESS"):
+        certify_candidate(parsed)
+    parsed=json.loads(json.dumps(candidate))
+    parsed["observable_beats"].append(parsed["observable_beats"][0])
+    with pytest.raises(ValidationError,match="observable_beats"):
+        certify_candidate(parsed)
+    parsed=json.loads(json.dumps(candidate))
+    parsed["allow_publish"]=True
+    with pytest.raises(ValidationError,match="allow_publish"):
+        certify_candidate(parsed)
+
+
+@pytest.mark.parametrize("case",list(IDS))
 def test_authoring_must_not_invent_motion_for_static_hold(case):
     c=synthetic_candidate(case)
     c["observable_beats"][0]["witness_mode"]="SEMANTIC_MOTION"
