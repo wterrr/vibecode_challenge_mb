@@ -79,7 +79,7 @@ All 18 exact URLs below were opened and first-party Read content examined; visib
 
 ## 4. V3 Pedagogical Explanation Contract (PEC)
 
-The proposal is research-only and **NOT WIRED** to production. Machine-readable version [v3_56_agent_prompt_architecture.json](../research/v3_56_agent_prompt_architecture.json) provides exact Draft 2020-12 JSON schema, required fields, per-agent system/developer instruction drafts and safety checks. Mandatory groups:
+The proposal is research-only and **NOT WIRED** to production. Machine-readable version [v3_56_agent_prompt_architecture.json](../research/v3_56_agent_prompt_architecture.json) provides Draft 2020-12 JSON schema, required fields and typed safety checks. The expanded per-role [research-only system/developer prompt templates](../research/v3_56_agent_prompt_templates.md) define concrete cognitive, narration, visual, motion and critic responsibilities; none is active in production. Mandatory groups:
 
 1. `scope`: canonical topic/approved claims + host evidence digest.
 2. `learning_difficulty`: hypothesized misconception, probe question, explicitly not measured learner state.
