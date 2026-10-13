@@ -216,6 +216,12 @@ def build_revision(source_video, source_receipt, out_dir):
     require(audio_source==audio_new,"AUDIO_STREAM_CHANGED")
     # Samples use certified frame indices, never narration word align guesses.
     native=[]
+    semantic_region={
+      "fraction_equivalence":(145,240,1135,555),
+      "process_heldout_unknown":(500,280,785,405),
+      "attention_reversed_query":(98,350,325,503)
+    }[p.case_id]
+    region=tuple(round(x/4) for x in semantic_region)
     for i in (2,):
         n=counts[i]
         for relative in (.1,.5,1.0):
@@ -226,10 +232,27 @@ def build_revision(source_video, source_receipt, out_dir):
             expected=render_image_causal(p,i,true_progress).resize((320,180))
             err=mean_diff(decoded,expected)
             require(err<19,"NATIVE_FRAME_NOT_EXPECTED_STATE")
+            # A whole-frame MAE can hide a wrong semantic state in a small ROI.
+            # Demand that decoded footage is closer to its approved semantic
+            # stage than the explicitly FALSE opposite (pre/post) stage.
+            counter_t=0.0 if true_progress>=.95 else 1.0
+            false_stage=render_image_causal(p,i,counter_t).resize((320,180))
+            decoded_roi=decoded.crop(region)
+            correct_roi=expected.crop(region)
+            false_roi=false_stage.crop(region)
+            local_err=mean_diff(decoded_roi,correct_roi)
+            wrong_err=mean_diff(decoded_roi,false_roi)
+            require(local_err<13,
+                    "NATIVE_SEMANTIC_REGION_MISMATCH")
+            require(wrong_err>local_err+1.0,
+                    "NATIVE_SEMANTIC_STATE_NOT_DISCRIMINABLE")
             native.append({"case_id":p.case_id,"beat":i,
                            "frame_index":sum(counts[:i])+j,
                            "host_progress":round(true_progress,4),
-                           "decoded_host_MAE_255":round(err,4)})
+                           "decoded_host_MAE_255":round(err,4),
+                           "region_host_MAE_255":round(local_err,4),
+                           "opposite_semantic_state_MAE_255":round(wrong_err,4),
+                           "decoded_region_supports_expected_state":True})
     result={
         "checkpoint":"V3-59","case_id":p.case_id,
         "parent_source_sha256":sha(source_video),
