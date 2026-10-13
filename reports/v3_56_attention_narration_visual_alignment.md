@@ -96,3 +96,10 @@ Physically available [V3-55 exact native Attention reversed-query video](https:/
 | Production | BLOCKED |
 
 **Conclusion:** The useful contribution is a falsifiable **narration-intent ↔ visible semantic witness** specification that tolerates motivated lead/lag and purposeful holds, now grounded in original MP4 frames and externally timestamped language cues. This is much stronger than Read-only extrapolation but cannot be called certified native narration sync or quality improvement.
+
+
+### Evidence-depth update — Native Speech–Visual Grounding (2026-10-13)
+
+A new within-V3-56 source-scoped probe preregistered before measurements (`fc3a403c5a4d79ea0ac5c5409bfdf6a5f2aa7575`) used the **same original uploaded 26:09 Attention MP4** and the same 12 external-caption anchors. Actual decoded audio = **12,553,265 mono PCM samples at 8kHz**, 0.5s RMS; video = **180 directly decoded 2s-spaced native image samples** around anchors with frame SHA, strongest/weakest measured image change intervals. See [report](v3_56_native_speech_visual_grounding.md) and [receipt](../research/v3_56_native_speech_visual_grounding.json).
+
+**Do not retrospectively upgrade external captions, frame-change peaks, or native audio RMS to observed words:** environment lacks ASR packages and pretrained model weights, with blocked model-host downloads; human native speech transcription was not independently performed. **Native word/sentence/phrase alignment = NO-GO, 0/12 verified versus >=8 prereg threshold**. The initial 12 external-cue-to-frame correspondences remain valid in their limited scope, not speech alignment. Visual explanation and optional PEC architecture = **bounded research only**, real learning outcomes and production release remain BLOCKED. No model API, no main merge, no V2 Core changes.
