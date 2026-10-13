@@ -107,3 +107,10 @@ Future host semantic validation must enforce (a) static witness has no motion re
 
 **Integrity test** `python scripts/verify_v3_56_deep_video_audit.py` is intentionally allowed to exit 0 only when it reports this explicit NO-GO status, to enforce honest provenance rather than hide an unavailable video audit behind a successful CI.
 
+
+
+## Dated correction — user supplied actual Attention Ch6 MP4 after preceding report
+
+This earlier report was true **at the time written**: no original native edited films had been acquired. The user has subsequently supplied the **full native Chapter 6 Attention MP4** (SHA `439e154fffbb8696a37753d765c4f64bc06d25fbb17cb3d98bcc842045d85cb9`). We directly decoded and visually inspected frames across the 26:09 file, including 105 samples every 15s and ~70 denser samples, and verified an AAC soundtrack physically exists. See [new native-video evidence report](v3_56_attention_ch6_native_video_audit.md), [timestamp receipt](../research/v3_56_attention_ch6_native_video_receipt.json).
+
+**Current amended count: 1 of 15 original edited complete native files visually sampled, 0 of 15 complete word-aligned audiovisual pedagogical reviews.** The Read-only 113 beats in the prior dataset remain read-based, not retroactively labeled timestamps. The displayed earlier `0/15` film-available count is historical; the full requirement of 15 matched video + speech audits remains NO-GO. Scope is V3-56 Draft PR #90 only, production blocked.
