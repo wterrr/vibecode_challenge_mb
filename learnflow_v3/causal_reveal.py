@@ -23,8 +23,8 @@ from learnflow_v3.matched_pedagogy_ablation import (
 # Frozen, research-only transition state thresholds; not measured speech times.
 FRACTION_GUIDE_START = .16
 FRACTION_REVEAL = .79
-ATTENTION_WEIGHT_REVEAL = .85
-PROCESS_ACTION_ARRIVAL = .98
+ATTENTION_WEIGHT_REVEAL = 1.0
+PROCESS_ACTION_ARRIVAL = 1.0
 
 
 def witness(case_id: str, beat_index: int, progress: float) -> dict:
