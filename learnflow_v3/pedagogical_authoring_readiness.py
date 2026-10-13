@@ -83,15 +83,21 @@ def synthetic_candidate(case_id:str)->dict:
         "ledger_sha256":p.evidence_sha256,
         "learner_problem":"Which visible change would establish the approved claim without inventing a fact?",
         "closure_question":"What observation would distinguish the demonstrated case from an unsupported one?",
-        "observable_beats":[{"beat_index":i,"operation":b.operation,
+        "observable_beats":tuple({"beat_index":i,"operation":b.operation,
             "claim_id":b.claim_id,"referent_id":b.referent_id,
             "visual_justification":rationale[b.operation],
             "witness_mode":"SEMANTIC_MOTION" if b.operation in MOVEMENT else "OBSERVE_HOLD",
-            "display_lag_intent":"UNKNOWN"} for i,b in enumerate(p.beats)],
+            "display_lag_intent":"UNKNOWN"} for i,b in enumerate(p.beats)),
         "allow_publish":False}
 
 def certify_candidate(raw:dict)->dict:
-    candidate=ProposedStory.model_validate(raw)
+    """Validate model-facing JSON under strict JSON semantics, not Python-list semantics.
+
+    JSON arrays are the wire representation of observable_beats tuples.
+    Host-generated Python fixtures use actual tuples for model_validate().
+    No field, value, ordering, provenance or publishing constraint is weakened.
+    """
+    candidate=ProposedStory.model_validate_json(json.dumps(raw,allow_nan=False))
     return {"case_id":candidate.case_id,"origin":candidate.origin,
         "ledger_sha256":candidate.ledger_sha256,
         "approval":"DATA_SCHEMA_AND_HOST_PROVENANCE_ONLY",
