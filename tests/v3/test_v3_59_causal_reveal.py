@@ -112,3 +112,29 @@ def test_non_motion_beats_remain_untouched_parent_pixel_for_pixel():
         for idx in (0,1,3,4):
             # V3-59 changes only beat 2, so all other images are byte-identical.
             assert cr.render_image_causal(p,idx,.4).tobytes()==render_image(p,idx,.4).tobytes()
+
+
+def test_three_arm_independent_panel_honesty_and_duplicate_rejection():
+    from scripts.run_v3_59_causal_reveal import validate_three_arm_reviews
+    from learnflow_v3.matched_pedagogy_ablation import CRITERIA
+    cases=list(STEPS)
+    key={"cases":{c:{c+"_"+x+".mp4":{"treatment":"hidden"}
+                      for x in "ABC"} for c in cases}}
+    assert validate_three_arm_reviews([],key)["gate"]=="NO_GO"
+    one=[{"rater_id":"r01","case_id":c,"clip_id":c+"_"+x+".mp4",
+          **{k:"3" for k in CRITERIA}}
+         for c in cases for x in "ABC"]
+    assert len(one)==9
+    assert validate_three_arm_reviews(one,key)["gate"]=="NO_GO"
+    with pytest.raises(Blocked,match="DUPLICATE_REVIEW"):
+        validate_three_arm_reviews(one+[one[0]],key)
+    with pytest.raises(Blocked,match="INCOMPLETE_NINE_VIDEO_PANEL"):
+        validate_three_arm_reviews(one[:-1],key)
+    with pytest.raises(Blocked,match="INVALID_SUBJECTIVE_RATING"):
+        validate_three_arm_reviews([dict(one[0],clarity="9")]+one[1:],key)
+    fake_complete=[dict(r,rater_id="r"+str(i)) for i in range(3) for r in one]
+    report=validate_three_arm_reviews(fake_complete,key)
+    # Synthetic rows exercise a validator, NOT proof of actual independent raters.
+    assert report["quality"]=="RATINGS_RECEIVED_PENDING_PROVENANCE_AUDIT"
+    assert report["student_learning_gain"]=="NOT_MEASURED"
+    assert report["gate"]=="PANEL_PRESENT_NOT_LEARNING_PROOF"
