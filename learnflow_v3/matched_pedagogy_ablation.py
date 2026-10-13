@@ -207,7 +207,7 @@ def evaluate_submissions(rows,key,minimum_raters=3):
             require(value=="" or str(value) in ("1","2","3","4","5"),
                 "INVALID_RATING")
     for rat in review_ids:
-        require({(case,clip) for r,case,clip in seen if r==rat}==expected,
+        require({pair for reviewer,pair in seen if reviewer==rat}==expected,
                 "INCOMPLETE_REVIEW_PACKET")
     if len(review_ids)<minimum_raters:
         return {"review_quality":"INSUFFICIENT_INDEPENDENT_REVIEWERS",
