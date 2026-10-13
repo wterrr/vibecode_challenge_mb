@@ -1,0 +1,61 @@
+name: V3-56 Pedagogical Design Research Audit — NO MODEL API
+
+on:
+  push:
+    branches: [chatgpt/v3-56-evidence-pedagogical-agent-research]
+  pull_request:
+    paths:
+      - "research/v3_56_3b1b_lesson_evidence.json"
+      - "research/v3_56_agent_prompt_architecture.json"
+      - "research/v3_56_abc_evaluation_protocol.json"
+      - "benchmarks/learnflowbench/v3/v3_56_pedagogical_agent_research_preregister.json"
+      - "scripts/verify_v3_56_research.py"
+      - "tests/v3/test_v3_56_pedagogical_research.py"
+      - ".github/workflows/v3-56-pedagogical-design-research.yml"
+      - "reports/v3_56_pedagogical_prompt_architecture.md"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+
+jobs:
+  frozen-offline-evidence-research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing lightweight research/schema verification requirements
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: V3-56 exact contract/research honesty and adversarial tests
+        timeout-minutes: 4
+        run: |
+          python scripts/verify_v3_56_research.py
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_56_pedagogical_research.py \
+            tests/v3/test_v3_55_independent_pedagogical_quality.py \
+            tests/v3/test_v3_54_model_candidate_quality.py
+      - name: Recheck frozen V2, V3 and LearnFlowBench protocol
+        timeout-minutes: 3
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+      - name: Assert no model credential passed to research workflow
+        timeout-minutes: 1
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          f=Path(".github/workflows/v3-56-pedagogical-design-research.yml").read_text()
+          assert "secrets." not in f and "OPENROUTER_API_KEY" not in f and "GEMINI_API_KEY" not in f
+          assert "run_v3_56_research.py" not in f
+          print("V356=OFFLINE_SPEC_AUDIT_ONLY_NO_PROVIDER_OR_PRODUCTION_EDIT")
+          PY
