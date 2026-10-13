@@ -4,12 +4,17 @@ on:
   push:
     branches: [chatgpt/v3-20-narration-visual-event-gate]
   pull_request:
+    branches: [main]
     paths:
       - "app/**"
       - "learnflow_v3/**"
       - "tests/v3/**"
       - "scripts/verify_v3_event_alignment.py"
       - ".github/workflows/v3-event-alignment.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
