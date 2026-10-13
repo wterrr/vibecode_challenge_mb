@@ -11,8 +11,10 @@ on:
       - ".github/workflows/v3-44-semantic-visual-narration.yml"
       - "benchmarks/learnflowbench/v3/v3_44_semantic_visual_redesign_preregister.json"
       - "reports/v3_44_semantic_visual_narration_redesign.md"
-      - "PLAN_V3.md"
-      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

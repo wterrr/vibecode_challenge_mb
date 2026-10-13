@@ -13,8 +13,10 @@ on:
       - "benchmarks/learnflowbench/v3/v3_51_creative_scene_preregister.json"
       - "reports/v3_51_creative_authoring_freedom.md"
       - ".github/workflows/v3-51-creative-scenegraph.yml"
-      - "PLAN_V3.md"
-      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

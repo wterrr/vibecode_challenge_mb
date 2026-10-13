@@ -14,8 +14,10 @@ on:
       - ".github/workflows/v3-46-visual-quality-benchmark.yml"
       - "benchmarks/learnflowbench/v3/v3_46_visual_quality_preregister.json"
       - "reports/v3_46_visual_quality_benchmark.md"
-      - "PLAN_V3.md"
-      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

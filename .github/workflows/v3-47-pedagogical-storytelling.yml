@@ -13,8 +13,10 @@ on:
       - "benchmarks/learnflowbench/v3/v3_47_pedagogical_grammar_preregister.json"
       - ".github/workflows/v3-47-pedagogical-storytelling.yml"
       - "reports/v3_47_pedagogical_storytelling.md"
-      - "PLAN_V3.md"
-      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
