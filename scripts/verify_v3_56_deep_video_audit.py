@@ -13,6 +13,7 @@ BEATS=Path("research/v3_56_deep_pedagogical_beats.json")
 SOURCES=Path("research/v3_56_source_scene_corpus.json")
 ARCH=Path("research/v3_56_agent_prompt_architecture.json")
 READ=Path("research/v3_56_3b1b_lesson_evidence.json")
+NATIVE=Path("research/v3_56_attention_ch6_native_video_receipt.json")
 
 
 def read(p):
@@ -61,6 +62,33 @@ def check():
     require("STATIC_COMPARISON" in item["properties"]["witness_type"]["enum"]
             and "SYMBOLIC_DEDUCTION" in item["properties"]["witness_type"]["enum"]
             and item.get("allOf"),"STATIC_WITNESS_UNSUPPORTED")
+    native=read(NATIVE)
+    require(native["checkpoint"]=="V3-56" and native["origin"]=="USER_SUPPLIED_UPLOADED_FULL_MP4",
+            "NATIVE_PROVENANCE")
+    require(len(native["content_sha256"])==64 and native["shared_media_redistributed_to_repo"] is False,
+            "NATIVE_HASH_OR_COPYRIGHT")
+    media=native["media"]
+    require(media["width"]==1280 and media["height"]==720 and media["fps_num"]==30
+            and media["video_codec"]=="h264" and media["audio_codec"]=="aac"
+            and media["total_decodable_frame_index_count"]==47076,"NATIVE_MEDIA_CONTRACT")
+    inspection=native["visual_inspection"]
+    require(inspection["frame_images_verified_directly"] is True and
+            inspection["number_global_frame_times_every_15s"]>=100 and
+            len(inspection["timestamped_visual_beats"])>=15,
+            "INSUFFICIENT_NATIVE_FILM_COVERAGE")
+    require(inspection["words_in_audio_manually_transcribed"] is False and
+            inspection["word_alignment_measured"] is False,
+            "AUDIO_ALIGNMENT_FALSE_CLAIM")
+    require(inspection["original_clip_audio_stream_present"] is True,
+            "AUDIO_STREAM_NOT_CHECKED")
+    require(native["gate"]["native_encoded_file_acquired"]==1 and
+            native["gate"]["full_video_audio_word_aligned"]==0,
+            "NATIVE_EVIDENCE_WRONG_SCOPE")
+    for beat in inspection["timestamped_visual_beats"]:
+        require(0<=beat["sampled_frame_s"]<media["duration_s"] and
+                beat["approx_interval_start_s"]<=beat["sampled_frame_s"]<=beat["approx_interval_end_s"] and
+                beat["timecode_precision"]=="APPROXIMATE_SECTION_BOUNDARIES_NOT_FRAME_EXACT_CUTS",
+                "FAKE_OR_OUT_OF_BOUNDS_NATIVE_PTS")
     real_native_video_count=sum(x["complete_native_video_inspected"] for x in byid.values())
     video_verdict="VIDEO_AUDIT_PASS" if real_native_video_count>=preg["all_video_required_count"] else "VIDEO_AUDIT_NO_GO"
     require(video_verdict=="VIDEO_AUDIT_NO_GO","IMPOSSIBLE_NATIVE_ATTESTATION")
@@ -69,6 +97,9 @@ def check():
             "read_pedagogical_beats":beats["totals"]["read_pedagogical_beats"],
             "full_video_timeline_and_audio":video_verdict,
             "actual_native_video_review_count":real_native_video_count,
+            "native_uploaded_video_visual_samples_verified":native["gate"]["source_video_frame_covered"],
+            "native_uploaded_video_audio_stream_verified":int(inspection["original_clip_audio_stream_present"]),
+            "native_uploaded_video_word_alignment_count":native["gate"]["full_video_audio_word_aligned"],
             "required_native_video_review_count":preg["all_video_required_count"],
             "human_learning_gains":"NOT_TESTED",
             "next_checkpoint_blocked_on_media":True,"model_api_calls":0,"production":"BLOCKED"}
