@@ -64,3 +64,17 @@ No role may invent a canonical claim ID. A user-provided preference is not scien
 | Critic → publication | quality improvement claims supported by controlled external ratings, otherwise UNRATED | `HUMAN_QUALITY_UNRATED` |
 
 **V3-56 status:** research specification only. The typing schema can reject malformed data, but implementing host cross-reference validation and demonstrating model/provider schema compatibility are *future work*, not implied successes. No prompt, production Core module or provider integration was modified.
+
+## V3-56 deep-audit correction: pedagogical counterexamples (source-scoped, not video-timing claims)
+
+The original V3-56 prompt drafts over-favored required motion and invariant object transformations; **18 verified first-party Read pages** and 18 related scene-source files show this is not a universal pedagogy rule. Three strong counterexamples:
+
+1. **Euler's number e, Read "Finding the Derivative".** The author explicitly notes the absence of an obvious geometric picture and chooses **numeric/symbolic exploration**. If cognitive clarity is better served by a static equation, graph or numeric table, Visual Thinking should select `SYMBOLIC_DEDUCTION`, not create an imaginary deformation or fake before/after.
+2. **Fourier series Read introduction.** An advanced formula is **previewed before its components are explained**, then revisited. Script Agent may mark this as `unresolved_formula_teaser` with an eventual grounded resolution; "always intuition before all symbolic math" is too rigid.
+3. **Bayes representative sample and linear-transformation reference grid.** A static frequency partition and a static background reference axis can be vital explanatory anchors while nearby values or grids transform. `STATIC_COMPARISON` and `QUESTION_HOLD` are legitimate observations, and don't require a motion index.
+
+**Research-side host contract update:** `expected_observable_explanation[].transformation_index = null` only with `STATIC_COMPARISON`, `QUESTION_HOLD` or `SYMBOLIC_DEDUCTION`; genuine `DECODABLE_PIXEL_TRANSITION`, `HOST_VERIFIED_GEOMETRY`, `SOURCE_BACKED_STATE` and `NOT_YET_RENDERABLE` require a nonnegative integer reference. `verified_transformations=[]` is valid for an intentionally static explanatory step.
+
+**Required human check on future experiments:** "Could one certified static representation communicate this more clearly than an animation?" Register static-first negative cases alongside motion-first cases, blinded. A measurable gain cannot be inferred from scene-code volume or `self.play` frequency.
+
+**Source evidence scope:** `research/v3_56_deep_pedagogical_beats.json` reconstructs Read order only, `research/v3_56_source_scene_corpus.json` establishes first-party source scene classes only. Neither certifies edited MP4 timing or learner understanding. The 15 native-video audit remains a separate NO-GO gate until frame/audio receipts exist.
