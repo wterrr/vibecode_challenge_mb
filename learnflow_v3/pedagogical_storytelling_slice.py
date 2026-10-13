@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from fractions import Fraction
 from hashlib import sha256
-import json,math,subprocess,wave
+import json,math,subprocess,wave,shutil
 from PIL import Image,ImageDraw,ImageFont
 
 WIDTH,HEIGHT,FPS=1280,720,15
@@ -105,7 +105,8 @@ def validate(p):
  return facts(p.case_id)
 
 def font(n):
- for path in ("/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+ for path in ("/usr/share/fonts/truetype/cmu/cmunrm.ttf",
+              "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
               "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"):
   if Path(path).is_file():return ImageFont.truetype(path,n)
  return ImageFont.load_default()
@@ -189,7 +190,9 @@ def render_image(p,idx,progress):
  return frame
 
 def speak(s,path):
- subprocess.run(["espeak","-s","168","-v","en","-w",str(path),s],
+ tts=shutil.which("espeak-ng") or shutil.which("espeak")
+ if not tts:raise RuntimeError("V357_NATIVE_TTS_MISSING")
+ subprocess.run([tts,"-s","168","-v","en","-w",str(path),s],
    check=True,timeout=30,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
  with wave.open(str(path),"rb") as w:
   params=(w.getnchannels(),w.getsampwidth(),w.getframerate())
