@@ -114,7 +114,7 @@ def render_static_control(source_video,source_receipt,out):
     subprocess.run(["ffmpeg","-nostdin","-v","error","-y",
         "-i",str(static_video),"-i",str(source_video),
         "-map","0:v:0","-map","1:a:0","-c:v","copy","-c:a","copy",
-        "-frames:v",str(fact["video_frames"]),str(result)],check=True,timeout=80)
+        str(result)],check=True,timeout=80)
     other=probe(result)
     require(other["video_frames"]==fact["video_frames"],"FRAME_MATCH")
     require(abs(other["video_duration_s"]-fact["video_duration_s"])<=1/FPS,
