@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOWS = ROOT / ".github" / "workflows"
 DOCUMENTS = {"PLAN_V3.md", "LEARNFLOW_V3_RESEARCH_NOTES.md"}
 BROAD_V3 = {"learnflow_v3/**", "tests/v3/**", "benchmarks/**", "app/**"}
-EXEMPT = {"v3-ci-scope-audit.yml"}
+EXEMPT = {"v3-ci-scope-audit.yml", "v3-canonical-docs.yml"}
 EXPECTED_PRIMARY = {
     "v3-57-pedagogical-storytelling.yml",
     "v3-58-matched-pedagogy.yml",
@@ -112,10 +112,14 @@ def audit() -> dict:
     docs_only = tuple(sorted(DOCUMENTS))
     docs_triggered = sorted(
         name for name, cfg in result.items()
-        if selected(cfg, base_branch="chatgpt/v3-58-matched-pedagogy-evaluation", changed=docs_only)
+        if name not in EXEMPT and selected(cfg, base_branch="chatgpt/v3-58-matched-pedagogy-evaluation", changed=docs_only)
     )
     if docs_triggered:
         errors.append(f"DOCS_ONLY_STILL_TRIGGER_V3: {docs_triggered}")
+    if not selected(result["v3-canonical-docs.yml"],
+                    base_branch="chatgpt/v3-58-matched-pedagogy-evaluation",
+                    changed=docs_only):
+        errors.append("LIGHTWEIGHT_DOCUMENTATION_CHECK_NOT_TRIGGERED")
 
     for name in EXPECTED_PRIMARY:
         if name not in result or pulls(result[name]) is None:
