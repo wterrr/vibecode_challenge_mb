@@ -5,11 +5,16 @@ on:
     branches:
       - chatgpt/v3-08-math-blackboard-renderers
   pull_request:
+    branches: [main]
     paths:
       - "learnflow_v3/**"
       - "tests/v3/**"
       - "scripts/verify_v3_math_patterns.py"
       - ".github/workflows/v3-math-patterns.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

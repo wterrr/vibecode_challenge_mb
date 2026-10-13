@@ -5,11 +5,16 @@ on:
     branches:
       - chatgpt/v3-12-fail-closed-publication
   pull_request:
+    branches: [main]
     paths:
       - "learnflow_v3/**"
       - "tests/v3/**"
       - "scripts/verify_v3_publication_gate.py"
       - ".github/workflows/v3-fail-closed-publication.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

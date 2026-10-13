@@ -4,6 +4,7 @@ on:
   push:
     branches: [chatgpt/v3-28-grounded-general-lesson-compiler]
   pull_request:
+    branches: [main]
     paths:
       - "learnflow_v3/source_grounded_compiler.py"
       - "learnflow_v3/multidomain_coverage.py"
@@ -11,6 +12,10 @@ on:
       - "scripts/verify_v3_28_grounded_compiler.py"
       - "tests/v3/**"
       - ".github/workflows/v3-grounded-compiler.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

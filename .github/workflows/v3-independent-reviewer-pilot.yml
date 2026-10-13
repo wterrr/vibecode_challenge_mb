@@ -4,12 +4,17 @@ on:
   push:
     branches: [chatgpt/v3-25-independent-reviewer-pilot]
   pull_request:
+    branches: [main]
     paths:
       - "learnflow_v3/**"
       - "tests/v3/**"
       - "scripts/verify_v3_independent_pilot.py"
       - "scripts/aggregate_v3_25_quality_responses.py"
       - ".github/workflows/v3-independent-reviewer-pilot.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
