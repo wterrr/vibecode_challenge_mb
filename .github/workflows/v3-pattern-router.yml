@@ -5,10 +5,15 @@ on:
     branches:
       - chatgpt/v3-04-visual-pattern-router
   pull_request:
+    branches: [main]
     paths:
       - "learnflow_v3/**"
       - "tests/v3/**"
       - ".github/workflows/v3-pattern-router.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

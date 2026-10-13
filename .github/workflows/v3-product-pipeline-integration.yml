@@ -4,12 +4,17 @@ on:
   push:
     branches: [chatgpt/v3-18-product-pipeline-binary-preview]
   pull_request:
+    branches: [main]
     paths:
       - "app/**"
       - "learnflow_v3/**"
       - "tests/v3/**"
       - "scripts/verify_v3_product_pipeline.py"
       - ".github/workflows/v3-product-pipeline-integration.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

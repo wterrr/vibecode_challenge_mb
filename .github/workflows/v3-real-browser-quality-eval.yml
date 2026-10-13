@@ -4,11 +4,16 @@ on:
   push:
     branches: [chatgpt/v3-26-real-browser-independent-quality-eval]
   pull_request:
+    branches: [main]
     paths:
       - "learnflow_v3/**"
       - "scripts/run_v3_26_browser_e2e.py"
       - "tests/v3/**"
       - ".github/workflows/v3-real-browser-quality-eval.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
