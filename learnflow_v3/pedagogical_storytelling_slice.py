@@ -44,6 +44,9 @@ WORDS={
  "Keep the outcome unknown until independent condition evidence arrives.")}
 REFERENT={"attention_reversed_query":"context_token_b",
  "fraction_equivalence":"same_whole","process_heldout_unknown":"condition_gate"}
+MOTION_BEATS={"attention_reversed_query":frozenset((1,2,3)),
+ "fraction_equivalence":frozenset((2,3)),
+ "process_heldout_unknown":frozenset((2,3))}
 
 @dataclass(frozen=True)
 class Beat:
@@ -84,7 +87,7 @@ def facts(case_id):
 def plan(case_id):
  ev=facts(case_id)
  beats=tuple(Beat(i,op,CLAIMS[case_id][i],REFERENT[case_id],WORDS[case_id][i],
-  "STATIC_COMPARISON" if i==0 else "NATIVE_SEMANTIC_TRANSFORMATION")
+  "NATIVE_SEMANTIC_TRANSFORMATION" if i in MOTION_BEATS[case_id] else "STATIC_COMPARISON")
   for i,op in enumerate(STEPS[case_id]))
  result=Plan(case_id,hash_obj(ev),beats)
  validate(result)
@@ -100,7 +103,7 @@ def validate(p):
  for i,b in enumerate(p.beats):
   if (b.index!=i or b.claim_id!=CLAIMS[p.case_id][i] or
       b.referent_id!=REFERENT[p.case_id] or b.narration!=WORDS[p.case_id][i] or
-      b.witness_type!=("STATIC_COMPARISON" if i==0 else "NATIVE_SEMANTIC_TRANSFORMATION")):
+      b.witness_type!=("NATIVE_SEMANTIC_TRANSFORMATION" if i in MOTION_BEATS[p.case_id] else "STATIC_COMPARISON")):
    raise ValueError("V357_UNGROUNDED_BEAT")
  return facts(p.case_id)
 
