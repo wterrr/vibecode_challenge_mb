@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
-from learnflow_v3.pedagogical_storytelling_slice import Plan,plan,validate,REFERENT
+from learnflow_v3.pedagogical_storytelling_slice import Plan,plan,validate,REFERENT,MOTION_BEATS
 
 SCHEMA_PATH="research/v3_56_agent_prompt_architecture.json"
 SCOPE_DESCRIPTIONS={
@@ -52,7 +52,8 @@ def build_pec(p,root):
  truth=validate(p);d,m,q,kind,why=SCOPE_DESCRIPTIONS[p.case_id]
  refs=REFERENT[p.case_id]
  transforms=[]
- for b in p.beats[1:]:
+ for b in p.beats:
+  if b.index not in MOTION_BEATS[p.case_id]:continue
   transforms.append({
    "operation":b.operation,
    "input_object_ids":[refs],"output_object_ids":[refs],
@@ -62,16 +63,18 @@ def build_pec(p,root):
    "invariants":["claim_ledger_preserved","referent_identity_preserved",
                  "unverified_condition_not_promoted"],
    "renderer_capability_id":"v357_finite_"+b.operation.lower()})
+ indices={i:j for j,i in enumerate(sorted(MOTION_BEATS[p.case_id]))}
  anchors=[{"beat_id":p.case_id+"_"+str(b.index),
            "claim_ids":[b.claim_id],"referenced_object_ids":[refs],
-           "referenced_transform_indexes":[] if b.index==0 else [b.index-1],
+           "referenced_transform_indexes":[indices[b.index]] if b.index in indices else [],
            "relative_order":b.index,"time_source":"ORDER_ONLY"} for b in p.beats]
  witness=[{"witness_id":p.case_id+"_w"+str(b.index),
-           "transformation_index":None if b.index==0 else b.index-1,
+           "transformation_index":indices.get(b.index),
            "before_state":"Question is unresolved" if b.index==0 else "Previous verified state",
            "after_state":"Question posed" if b.index==0 else "Next certified finite state",
            "witness_region":"PRIMARY_SEMANTIC_VIEW",
-           "witness_type":"QUESTION_HOLD" if b.index==0 else "DECODABLE_PIXEL_TRANSITION"}
+           "witness_type":"QUESTION_HOLD" if b.index==0 else (
+              "DECODABLE_PIXEL_TRANSITION" if b.index in indices else "STATIC_COMPARISON")}
           for b in p.beats]
  c={"contract_version":"research-v3-56-proposal-v1",
     "scope":{"topic_id":p.case_id,
@@ -119,7 +122,8 @@ def validate_pec(c,p,root):
  require(len(c["persistent_semantic_objects"])==1 and
          c["persistent_semantic_objects"][0]["object_id"]==refs,
          "SEMANTIC_ID_LAUNDERED")
- require(len(c["verified_transformations"])==4 and
+ indices={i:j for j,i in enumerate(sorted(MOTION_BEATS[p.case_id]))}
+ require(len(c["verified_transformations"])==len(indices) and
          len(c["narration_anchors"])==len(c["expected_observable_explanation"])==5,
          "OPERATION_COUNT")
  for i,b in enumerate(p.beats):
@@ -129,13 +133,14 @@ def validate_pec(c,p,root):
           anchor["referenced_object_ids"]==[refs] and
           anchor["relative_order"]==i and
           anchor["time_source"]=="ORDER_ONLY","NARRATION_ANCHOR")
-  expected=[] if i==0 else [i-1]
+  expected=[indices[i]] if i in indices else []
   require(anchor["referenced_transform_indexes"]==expected and
-          wit["transformation_index"]==(None if i==0 else i-1) and
-          wit["witness_type"]==("QUESTION_HOLD" if i==0 else "DECODABLE_PIXEL_TRANSITION"),
+          wit["transformation_index"]==indices.get(i) and
+          wit["witness_type"]==("QUESTION_HOLD" if i==0 else (
+            "DECODABLE_PIXEL_TRANSITION" if i in indices else "STATIC_COMPARISON")),
           "WITNESS_INDEX_FORGED")
-  if i:
-   t=c["verified_transformations"][i-1]
+  if i in indices:
+   t=c["verified_transformations"][indices[i]]
    require(t["operation"]==b.operation and t["claim_ids"]==[b.claim_id] and
      t["input_object_ids"]==t["output_object_ids"]==[refs] and
      t["host_evidence_sha256"]==p.evidence_sha256 and
