@@ -1,6 +1,6 @@
 """V3-57 offline host-storytelling: semantic evidence not motion decoration."""
 from dataclasses import replace
-import copy,math
+import copy,math,hashlib,json
 from PIL import ImageChops,ImageStat
 import pytest
 
@@ -118,3 +118,37 @@ def test_v356_pec_mutations_fail_closed(mutation):
     mutation(pec)
     with pytest.raises(ValueError,match="V357_PEC_"):
         validate_pec(pec,p,ROOT)
+
+
+def test_v357_native_runner_digest_function_not_shadowed_by_movie_hash(tmp_path,monkeypatch):
+    """Reproduce the prior UnboundLocalError across all three host PEC receipts.
+
+    Native encoding and ffprobe are stubbed here; the real H264/AAC and pixel
+    checks remain mandatory in the separate GitHub Actions native media job.
+    """
+    import scripts.run_v3_57_pedagogical_slice as runner
+    from learnflow_v3.pedagogical_explanation_adapter import digest as pec_digest
+
+    def fake_native(host_plan, destination):
+        destination.mkdir(parents=True,exist_ok=False)
+        payload=(b"offline_fixture_not_valid_video"*600)
+        (destination/"pedagogical_slice.mp4").write_bytes(payload)
+        return {"native_mp4_sha256":hashlib.sha256(payload).hexdigest(),
+                "beat_receipts":[]}
+
+    monkeypatch.setattr(runner,"render_native",fake_native)
+    monkeypatch.setattr(runner,"probe",lambda _path:5.0)
+    monkeypatch.setattr(runner,"native_witnesses",lambda _path,_receipt:[{"verified":"UNIT_STUB"}])
+    output=tmp_path/"v357_unit"
+    result=runner.run(output)
+    assert result["technical_native_movie_count"]==3
+    assert result["production"]=="BLOCKED"
+    for cid in runner.ORDER:
+        receipt=json.loads((output/cid/"receipt.json").read_text())
+        pec=json.loads((output/cid/"research_pec.json").read_text())
+        assert receipt["v356_pec_sha256"]==pec_digest(pec)
+        assert receipt["native_mp4_sha256"]==hashlib.sha256(
+            (output/cid/"pedagogical_slice.mp4").read_bytes()).hexdigest()
+        assert receipt["v356_pec_schema"]=="research-v3-56-proposal-v1"
+    # No genuine playback, native codec validation, or model authorship is
+    # inferred from the mocked unit fixture.
