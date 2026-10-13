@@ -85,7 +85,9 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           f=Path(".github/workflows/v3-56-pedagogical-design-research.yml").read_text()
-          assert "secrets." not in f and "OPENROUTER_API_KEY" not in f and "GEMINI_API_KEY" not in f
-          assert "run_v3_56_research.py" not in f
+          # Compose forbidden patterns so the check does not match its own source.
+          banned = ("se" + "crets.", "OPEN" + "ROUTER_API_KEY",
+                    "GEM" + "INI_API_KEY", "run_" + "v3_56_research.py")
+          assert all(value not in f for value in banned)
           print("V356=OFFLINE_SPEC_AUDIT_ONLY_NO_PROVIDER_OR_PRODUCTION_EDIT")
           PY
