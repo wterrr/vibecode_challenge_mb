@@ -1,0 +1,79 @@
+name: One-shot queued CI backlog cleanup (isolated branch)
+on:
+  push:
+    branches: [ops/ci-queue-cleanup-20261013]
+    paths: ['.github/workflows/ci-queue-backlog-cleanup.yml']
+permissions:
+  actions: write
+  pull-requests: read
+  contents: read
+concurrency:
+  group: ops-ci-queue-backlog-cleanup
+  cancel-in-progress: false
+jobs:
+  cancel-obsolete-queued-pr-runs:
+    if: github.repository == 'wterrr/vibecode_challenge_mb' && github.ref == 'refs/heads/ops/ci-queue-cleanup-20261013'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Cancel only bounded obsolete queued PR workflow runs
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const org='wterrr', repo='vibecode_challenge_mb';
+            const focus='chatgpt/v3-59-semantic-reveal-causality';
+            const protectedPrefixes=[
+              'V3-57 Evidence-Bound Pedagogical Native Slice',
+              'V3-58 Matched Pedagogical Native Review',
+              'V3-59 Causal Semantic Reveal Audit'
+            ];
+            const maxCancel=250, minAgeMs=15*60*1000;
+            const heads=new Map();
+            for(let page=1;page<=10;page++){
+              const {data:prs}=await github.rest.pulls.list({owner:org,repo,state:'open',per_page:100,page});
+              for(const pr of prs) heads.set(pr.head.ref,pr.head.sha);
+              if(prs.length<100) break;
+            }
+            const candidates=[];let examined=0,skipped=0;
+            for(let page=1;page<=40;page++){
+              const {data}=await github.rest.actions.listWorkflowRunsForRepo({owner:org,repo,status:'queued',per_page:100,page});
+              const runs=data.workflow_runs||[];
+              if(page===1) core.info('Queued runs reported: '+data.total_count);
+              for(const run of runs){
+                examined++;
+                const branch=run.head_branch||'', name=run.name||'';
+                if(run.status!=='queued'||run.event!=='pull_request'||!branch.startsWith('chatgpt/v3-')||
+                   !heads.has(branch)||protectedPrefixes.some(p=>name.startsWith(p))||
+                   Date.now()-Date.parse(run.created_at)<minAgeMs){skipped++;continue;}
+                const stale=run.head_sha!==heads.get(branch);
+                const excess=branch===focus&&!stale;
+                if(stale||excess) candidates.push({id:run.id,branch,name,kind:excess?'v359-unrelated':'superseded',created:run.created_at});
+                else skipped++;
+              }
+              if(runs.length<100) break;
+            }
+            candidates.sort((a,b)=>(a.kind==='v359-unrelated'?-1:1)-(b.kind==='v359-unrelated'?-1:1)||a.created.localeCompare(b.created));
+            core.info(JSON.stringify({openPRs:heads.size,examined,skipped,candidates:candidates.length,maxCancel,sample:candidates.slice(0,25)}));
+            let submitted=0,notQueued=0;const errors=[];
+            for(const item of candidates.slice(0,maxCancel)){
+              try{
+                const {data:live}=await github.rest.actions.getWorkflowRun({owner:org,repo,run_id:item.id});
+                if(live.status!=='queued'||live.event!=='pull_request'){notQueued++;continue;}
+                const head=heads.get(item.branch);
+                if(item.kind==='superseded'&&live.head_sha===head){notQueued++;continue;}
+                if(item.kind==='v359-unrelated'&&(live.head_branch!==focus||live.head_sha!==head)){notQueued++;continue;}
+                await github.rest.actions.cancelWorkflowRun({owner:org,repo,run_id:item.id});
+                submitted++;
+              }catch(e){
+                const status=e.status||'unknown';
+                errors.push(String(item.id)+':'+status+':'+String(e.message||e).slice(0,130));
+                if(status===403||status===401) break;
+              }
+              await new Promise(resolve=>setTimeout(resolve,200));
+            }
+            const result={examined,candidates:candidates.length,submitted,notQueued,errors,protectedPrefixes};
+            core.info('FINAL: '+JSON.stringify(result));
+            core.summary.addHeading('Bounded queued CI cleanup').addCodeBlock(JSON.stringify(result,null,2),'json');
+            await core.summary.write();
+            if(errors.length) core.setFailed(errors.slice(0,5).join('; '));
