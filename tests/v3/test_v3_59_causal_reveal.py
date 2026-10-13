@@ -55,13 +55,22 @@ def test_process_marker_arrival_before_action_activation_never_false_pass():
     c="process_heldout_unknown"
     assert cr.witness(c,2,0)["action_active"] is False
     assert cr.witness(c,2,.9)["action_active"] is False
-    assert cr.witness(c,2,1)["action_active"] is True
+    end=cr.witness(c,2,1)
+    assert end["action_active"] is True
+    assert end["marker_center_x"]==end["action_center_x"]==640
+    assert end["marker_center_y"]==337
+    assert end["action_arrival_verified"] is True
+    assert cr.witness(c,2,.9)["marker_center_x"]<640
+    assert cr.witness(c,2,.9)["action_arrival_verified"] is False
     assert cr.witness(c,2,1)["condition"]=="UNKNOWN_NOT_VERIFIED"
     assert cr.witness(c,2,1)["success_claim"] is False
     assert facts(c)["condition"]=="UNKNOWN_NOT_VERIFIED"
     a=cr.render_image_causal(plan(c),2,.9)
     b=cr.render_image_causal(plan(c),2,1)
     assert a.getpixel((640,290))!=b.getpixel((640,290))
+    # Marker physically reaches the destination center, not y=426 off-graph.
+    assert b.getpixel((640,337))!=a.getpixel((640,337))
+    assert b.getpixel((640,337))==(236,239,244)  # WHITE arrival witness
 
 def test_attention_do_not_announce_normalized_values_before_cue():
     c="attention_reversed_query"
