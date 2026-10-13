@@ -14,6 +14,11 @@ on:
       - "research/v3_56_attention_ch6_native_video_receipt.json"
       - "research/v3_56_attention_alignment_preregister.json"
       - "research/v3_56_attention_native_caption_alignment.json"
+      - "research/v3_56_native_speech_grounding_preregister.json"
+      - "research/v3_56_native_speech_visual_grounding.json"
+      - "reports/v3_56_native_speech_visual_grounding.md"
+      - "scripts/verify_v3_56_native_speech_grounding.py"
+      - "tests/v3/test_v3_56_native_speech_grounding.py"
       - "reports/v3_56_attention_narration_visual_alignment.md"
       - "scripts/verify_v3_56_attention_alignment.py"
       - "tests/v3/test_v3_56_attention_alignment.py"
@@ -56,11 +61,13 @@ jobs:
           python scripts/verify_v3_56_research.py
           python scripts/verify_v3_56_deep_video_audit.py
           python scripts/verify_v3_56_attention_alignment.py
+          python scripts/verify_v3_56_native_speech_grounding.py
           python -m pytest -q --confcutdir=tests/v3 \
             tests/v3/test_v3_56_pedagogical_research.py \
             tests/v3/test_v3_56_deep_video_audit.py \
             tests/v3/test_v3_56_attention_ch6_native_receipt.py \
             tests/v3/test_v3_56_attention_alignment.py \
+            tests/v3/test_v3_56_native_speech_grounding.py \
             tests/v3/test_v3_55_independent_pedagogical_quality.py \
             tests/v3/test_v3_54_model_candidate_quality.py
       - name: Recheck frozen V2, V3 and LearnFlowBench protocol
