@@ -57,3 +57,27 @@ def test_audio_rms_is_not_a_word_timing_estimator():
     assert all(any("spoken words" in x for x in r["unverified_scope"]) for r in d["alignment_rows"])
     assert any(any(x<0.01 for x in r["audio_rms_sample_points"]) for r in d["alignment_rows"])
     assert d["outcome"]["native_word_level_alignment"]=="NOT_MEASURED"
+
+
+def test_v3_research_pec_separates_external_caption_from_native_verified_speech():
+    from jsonschema import Draft202012Validator
+    from scripts.verify_v3_56_research import load as read_repo, ARCH
+    schema=read_repo(ARCH)["schema"]["properties"]["narration_visual_evidence"]["items"]
+    Draft202012Validator.check_schema(schema)
+    record={
+      "beat_id":"attention_query_1",
+      "text_cue_source":"EXTERNAL_CAPTION_PROXY",
+      "caption_time_s":382,
+      "native_visible_sample_times_s":[382,388,394],
+      "relation":"LEAD",
+      "audio_content_certification":"CAPTION_PROXY_ONLY",
+      "native_media_sha256":"439e154fffbb8696a37753d765c4f64bc06d25fbb17cb3d98bcc842045d85cb9",
+      "claim_scope":"GROUNDED_SCRIPT_TOPIC"
+    }
+    validator=Draft202012Validator(schema)
+    assert not list(validator.iter_errors(record))
+    record["audio_content_certification"]="NATIVE_FORCED_ALIGNMENT_VERIFIED"
+    assert list(validator.iter_errors(record)), "external caption cannot claim native forced alignment"
+    record["audio_content_certification"]="CAPTION_PROXY_ONLY"
+    record["claim_scope"]="NATIVE_AUDIO_VISUAL_ALIGNED"
+    assert list(validator.iter_errors(record)), "external caption cannot claim verified native speech"
