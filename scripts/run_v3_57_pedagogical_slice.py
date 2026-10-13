@@ -102,8 +102,8 @@ def run(output):
   receipt["v356_pec_schema"]="research-v3-56-proposal-v1"
   path=output/case/"pedagogical_slice.mp4"
   require(path.is_file() and path.stat().st_size>10000,"MEDIA_MISSING")
-  digest=hashlib.sha256(path.read_bytes()).hexdigest()
-  require(receipt["native_mp4_sha256"]==digest,"NATIVE_SHA")
+  movie_sha256=hashlib.sha256(path.read_bytes()).hexdigest()
+  require(receipt["native_mp4_sha256"]==movie_sha256,"NATIVE_SHA")
   duration=probe(path)
   witnesses=native_witnesses(path,receipt)
   receipt["container_duration_s"]=round(duration,3)
