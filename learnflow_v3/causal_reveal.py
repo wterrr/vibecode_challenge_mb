@@ -45,6 +45,10 @@ def witness(case_id: str, beat_index: int, progress: float) -> dict:
                      preserved_area="2/3")
     elif case_id == "process_heldout_unknown" and beat_index == 2:
         state.update(action_active=progress >= PROCESS_ACTION_ARRIVAL,
+                     marker_center_x=round(370+270*progress),
+                     marker_center_y=337,
+                     action_center_x=640,
+                     action_arrival_verified=progress >= PROCESS_ACTION_ARRIVAL and round(370+270*progress)==640,
                      condition="UNKNOWN_NOT_VERIFIED", success_claim=False)
     elif case_id == "attention_reversed_query" and beat_index == 2:
         state.update(weights_visible=progress >= ATTENTION_WEIGHT_REVEAL,
@@ -92,10 +96,17 @@ def render_image_causal(p, beat_index: int, progress: float):
             text(d,(635,537),"Each of the three parts will become two",
                  24,AMBER,anchor="mm")
     elif p.case_id == "process_heldout_unknown" and beat_index == 2:
-        # The moving marker (at y=426) must reach ACTION before activation.
+        # Override V3-57's marker at y=426 (it stopped before ACTION),
+        # re-anchor movement to the actual START→ACTION graph edge at y=337.
+        # ACTION activates only when marker CENTER reaches node CENTER x=640.
+        d.rectangle((207,402,678,462),fill=BLACK)
         color = GREEN if state["action_active"] else (55,67,86)
         d.rounded_rectangle((510,283,770,393),radius=24,fill=color)
         text(d,(640,338),"ACTION",31,BLACK,anchor="mm")
+        x=state["marker_center_x"]
+        d.line((370,337,x,337),fill=AMBER,width=7)
+        d.ellipse((x-13,324,x+13,350),
+                  fill=WHITE,outline=AMBER,width=3)
     elif p.case_id == "attention_reversed_query" and beat_index == 2:
         # Remove parent early result labels at x=110, preserving score bars x>=325.
         d.rectangle((94,356,321,493), fill=BLACK)
@@ -130,7 +141,12 @@ def verify_reveal_progression(p):
     elif cid == "process_heldout_unknown":
         a=witness(cid,2,.1);mid=witness(cid,2,.9);end=witness(cid,2,1)
         require(not a["action_active"] and not mid["action_active"] and
-                end["action_active"],"ACTION_EARLY_ACTIVATION")
+                end["action_active"] and
+                a["marker_center_x"]==397 and
+                mid["marker_center_x"]<end["marker_center_x"] and
+                end["marker_center_x"]==end["action_center_x"] and
+                end["action_arrival_verified"],
+                "ACTION_EARLY_ACTIVATION")
         require(end["condition"]=="UNKNOWN_NOT_VERIFIED" and
                 end["success_claim"] is False,"PROCESS_FALSE_PASS")
         roi=(520,295,760,385)
