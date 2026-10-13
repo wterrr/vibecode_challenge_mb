@@ -1201,3 +1201,8 @@ Files: `benchmarks/learnflowbench/v3/v3_59_causal_reveal_preregister.json`, `lea
 
 
 V3-59 post-implementation hardening: inherited V3-57 Process marker physically ended at x≈610,y426 below ACTION entry x540,y337; new V3-59 research-only renderer replaces it with actual graph-anchored marker from (370,337)→(540,337), checks arrival-entry equality before activating ACTION. Extended negative/visual tests assert exact destination and decoded-frame region favors the certified semantic state over its opposite; not merely low whole-image MAE. Exact-head GitHub Actions still required before native technical PASS. Rater count zero, student learning NOT MEASURED, production BLOCKED.
+
+
+## CI Recovery & Workflow Fan-out Remediation — operational branch 2026-10-13
+
+Infrastructure-only work tracked by Issue #94 and branch `ops/v3-ci-fanout-gate-20261013` stacked on V3-59 PR #93. Specialized V3 workflow path filters no longer re-run for shared canonical-document updates; legacy `learnflow_v3/**` / `tests/v3/**` catch-all PR checks are restricted to `main` integration; per-workflow PR concurrency bounds pending duplicates without cancelling in-progress experimental evidence. Separate lightweight canonical-docs and fail-closed PR-trigger-matrix CI added. Exact-head ops CI and cleanup run #38347969904 are PENDING. Do not count reduction in queued count as successful cancellation without job receipt; no research/production promotion.
