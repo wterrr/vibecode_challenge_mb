@@ -1,0 +1,66 @@
+{
+  "checkpoint": "V3-59",
+  "title": "Causal Reveal Ordering & Decoded Semantic Witness Repair",
+  "parent_pr": 92,
+  "parent_sha": "d9d8830c0486a0c25b0ca924a091084b267425fe",
+  "registration_kind": "FIRST_CHILD_COMMIT",
+  "registered_before_implementation": true,
+  "branch": "chatgpt/v3-59-semantic-reveal-causality",
+  "cases": [
+    "attention_reversed_query",
+    "fraction_equivalence",
+    "process_heldout_unknown"
+  ],
+  "motivation": "V3-58 directly observed result-before-mechanism: softmax weight labels before normalization witness; six fraction partitions and 4/6 shown before split; ACTION highlighted before marker arrives.",
+  "frozen_methods": {
+    "baseline": "Use EXACT V3-57 host-original and V3-58 static controls; do not modify V3-57 renderer or V3-58 source receipts.",
+    "revision": "Research-only add-on render_image_causal(plan,beat,progress) with finite host evidence; do not invent claims or change narration.",
+    "attention": "Withhold softmax numerical weight labels until the graphical normalization cue has completed; label normalization as exponential scores divided by exponential sum.",
+    "fraction": "Maintain three-part 2/3 partition at onset; extend three subdivision guides, only then reveal six-part 4/6 partition; invariant whole and shaded area.",
+    "process": "ACTION node inactive until transition marker arrives at the destination; UNKNOWN condition remains explicitly unverified.",
+    "media": "For each case decode V3-57 actual frames, create new H264 video same frame count and original stream-copied AAC; 1280x720 15fps; use actual frame count not inaccurate receipt count.",
+    "scope": "Still one finite synthetic host-authored storyboard, NOT autonomous agent creativity and NOT production integration."
+  },
+  "frozen_witness_gates": {
+    "onset_fraction": "initial fraction beat must show old three partition and 2/3 without early six-way guides or 4/6 result",
+    "middle_fraction": "old partition remains while three internal split guides grow; count of six/4-6 only after guides full",
+    "final_fraction": "six partitions and 4/6 present with exactly invariant four shaded subparts of six",
+    "onset_process": "ACTION inactive until transition marker crosses arrival threshold",
+    "final_process": "ACTION active only after destination arrival; never claim CHECK passed",
+    "onset_attention": "no numeric normalized weights before normalization graphical cue",
+    "final_attention": "normalized host weights and unit sum shown once cue complete",
+    "negative_cases": [
+      "early_fraction_result",
+      "premature_action_activation",
+      "premature_weight_reveal",
+      "unknown_promoted_to_pass",
+      "unmatched_AAC",
+      "receipt_frames_trusted_without_decode",
+      "forged_ledger_or_new_claim"
+    ]
+  },
+  "acceptance": {
+    "three_new_native_movies": 3,
+    "parent_motion_and_static_unchanged": true,
+    "same_AAC_elementary_packet_sha": true,
+    "same_physical_decoded_frames": true,
+    "math_invariants_and_semantic_timing_assertions": true,
+    "negative_mutations_rejected": true,
+    "no_new_model_API": true,
+    "no_model_authored_code_execution": true,
+    "v2_core_unchanged": true,
+    "production_prompts_unchanged": true,
+    "no_main_merge": true,
+    "independent_raters_collected": 0,
+    "pedagogical_quality": "UNRATED_PENDING_THREE_INDEPENDENT_REVIEWERS",
+    "learning_gain": "NOT_MEASURED",
+    "real_model_creativity": "NOT_TESTED",
+    "production": "BLOCKED"
+  },
+  "non_claims": [
+    "Pixel changes alone do not prove educational benefit",
+    "Semantic reveal repaired at host-contract level is not a model generalization result",
+    "No word-level spoken-language alignment and no measured human understanding",
+    "V3-58 early-result static arm remains a bundled reveal+motion confound"
+  ]
+}
