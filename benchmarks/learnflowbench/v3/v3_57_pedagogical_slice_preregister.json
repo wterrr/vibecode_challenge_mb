@@ -1,0 +1,123 @@
+{
+  "checkpoint": "V3-57",
+  "title": "Evidence-Grounded Pedagogical Storytelling Offline Vertical Slice",
+  "registered_before_implementation": true,
+  "parent_pr": 90,
+  "parent_sha": "38a8ba0c69a58ac18ad3296f6e847cbdeb6dbe91",
+  "base_branch": "chatgpt/v3-56-evidence-pedagogical-agent-research",
+  "scope": "NEW_CHILD_DRAFT_PR_ONLY__HOST_OFFLINE_BOUNDING_TEST_NOT_PRODUCTION",
+  "frozen_input_cases": [
+    {
+      "id": "attention_reversed_query",
+      "family": "transformer_attention",
+      "source": "V3-52/53 validated QKV",
+      "query": [
+        0,
+        1
+      ],
+      "keys": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "values": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "steps": [
+        "QUESTION_HOLD",
+        "SCORE_SELECTION",
+        "SOFTMAX_NORMALIZATION",
+        "CONTENT_TRANSPORT",
+        "CLOSURE"
+      ]
+    },
+    {
+      "id": "fraction_equivalence",
+      "family": "mathematics",
+      "source": "V3-49 fraction host proof",
+      "initial": [
+        2,
+        3
+      ],
+      "factor": 2,
+      "target": [
+        4,
+        6
+      ],
+      "steps": [
+        "QUESTION_HOLD",
+        "AREA_PARTITION",
+        "SUBDIVIDE",
+        "EQUIVALENCE_LINK",
+        "CLOSURE"
+      ]
+    },
+    {
+      "id": "process_heldout_unknown",
+      "family": "ordered_process",
+      "source": "V3-47 UNKNOWN condition semantics",
+      "outcome": "UNKNOWN_NOT_VERIFIED",
+      "steps": [
+        "QUESTION_HOLD",
+        "STATE_SETUP",
+        "STATE_TRANSITION",
+        "CONDITION_PROBE",
+        "CLOSURE"
+      ]
+    }
+  ],
+  "objective": "Make a reproducible native audio/video vertical slice that changes onscreen mathematical / semantic state in finite host-approved ways, with semantic object identity and independently auditable frame witnesses. Do not claim autonomous pedagogical authoring.",
+  "contracts": {
+    "narration": "Host-owned synthetic eSpeak beat narration. Segment bound matches beat WAV duration; word timing UNMEASURED",
+    "fact_proof": "Fractions exact via fractions.Fraction; Q/K/softmax weighted sum host-calculated; UNKNOWN process status never promoted",
+    "visual": "Each beat has explicit finite action, approved ledger facts, persistent semantic_ref, witness pre/post and SHA",
+    "model_authored": false,
+    "copy_3b1b_media": false,
+    "no_untrusted_python": true
+  },
+  "acceptance": {
+    "three_movies": true,
+    "encoded_h264_aac": true,
+    "drawn_1280x720": true,
+    "supported_families": 3,
+    "at_least_one_before_after_per_family": true,
+    "frame_pixel_witness_not_learning_quality": true,
+    "host_semantic_validator_with_mutation_tests": true,
+    "preregistered_reference_to_parent": true,
+    "technical_gate": "PASS only after native video inspected",
+    "pedagogy_quality": "UNRATED_UNTIL_HUMAN_AND_FAIR_AB",
+    "model_creativity": "NOT_TESTED",
+    "word_level_sync": "UNMEASURED",
+    "zero_model_api_calls": true,
+    "no_main_merge": true,
+    "no_v2_core_mods": true,
+    "production": "BLOCKED"
+  },
+  "limits": [
+    "Pillow/FFmpeg finite host prototype is not a general 3B1B/Manim grammar",
+    "Three host-fixtures are not evidence of generalization to unseen domain",
+    "Do not infer strong pedagogy from pixel motion, audio existence, or hash diversity",
+    "Frozen V3-56 CI queued; do not assume technical PASS on exact HEAD"
+  ],
+  "deliverables": [
+    "learnflow_v3/pedagogical_storytelling_slice.py",
+    "scripts/run_v3_57_pedagogical_slice.py",
+    "tests/v3/test_v3_57_pedagogical_slice.py",
+    ".github/workflows/v3-57-pedagogical-storytelling.yml",
+    "reports/v3_57_pedagogical_slice.md",
+    "PLAN_V3.md",
+    "LEARNFLOW_V3_RESEARCH_NOTES.md"
+  ]
+}
