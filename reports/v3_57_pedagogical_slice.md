@@ -92,3 +92,18 @@ The new dedicated workflow runs offline contract tests on PR/push; on push, it b
 - V2 production: **BLOCKED**, no `main` merge.
 
 **Next single checkpoint only after head tests:** a genuinely matched offline visual baseline/candidate test with blinded raters and acceptance thresholds for learning clarity; or a narrow evidence-bound model-authored PEC proposal, only if there is explicit authorization for any provider-model API cost. Merely passing these three native demos does not establish a competitive 3B1B teaching system.
+
+
+## 6. Post-audit PEC-to-compiler adapter — strictly separated visual hold versus real motion
+
+While reviewing the draft, a real integration gap was identified: simply adding a proprietary `Plan/Beat` to a new renderer would **not** demonstrate the V3-56 Pedagogical Explanation Contract controlling the video. V3-57 now adds `learnflow_v3/pedagogical_explanation_adapter.py` (research-only, opt-in). The runner MUST build a complete PEC object from the immutable host plan and validate it against the **unaltered V3-56 `research/v3_56_agent_prompt_architecture.json` Draft 2020-12 JSON Schema**, then independently cross-check its claim IDs, evidence SHA, semantic referent continuity, exact approved finite operation, referenced transformation indexes and no-publication gate. The resulting PEC data (no third-party media) is emitted beside each native MP4 as `research_pec.json` and its hash recorded in the case receipt.
+
+Another important counterexample surfaced from the *native pixel measurements*: `STATE_SETUP`, `AREA_PARTITION` and end `CLOSURE` are deliberate static comparisons, **not** proven animated transitions. The adapter encodes them as `STATIC_COMPARISON` with `transformation_index=null`; the opening is `QUESTION_HOLD` with null index. Only physically moving events are declared `DECODABLE_PIXEL_TRANSITION` with nonnegative index:
+
+- Attention: score compare, softmax normalization, value transport (3 motion transformations).
+- Fraction: subdivide and equivalence link (2).
+- Process: state transition and condition probe (2).
+
+This avoids laundering an unchanged frame into a claimed causal animation. All narration anchors use `time_source=ORDER_ONLY`: eSpeak segment scheduling **is not word-level verified speech alignment**. `unsupported_capability_outcome` remains `DEFERRED_HUMAN_REVIEW` with `may_publish=false`, even if native MP4 technically compiles. `test_v3_57_pedagogical_slice.py` now includes mutation tests that reject false learner validation, forged numeric SHA/claim/reference, fake `MEASURED_WORD_ALIGNMENT`, and publication permission escalation.
+
+**Gate qualification:** this is a legitimate schema-level PEC→finite renderer prototype, not general learned pedagogical creativity. It does not certify that an LLM can author correct PEC inputs, nor that the resulting static/moving visual stories are superior to V3-55 or comprehensible to a learner. Exact-head GitHub CI and its video artifact still need a completed runner; local measured videos remain research-only.
