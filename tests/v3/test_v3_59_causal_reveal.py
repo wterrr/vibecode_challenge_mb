@@ -147,3 +147,17 @@ def test_three_arm_independent_panel_honesty_and_duplicate_rejection():
     assert report["quality"]=="RATINGS_RECEIVED_PENDING_PROVENANCE_AUDIT"
     assert report["student_learning_gain"]=="NOT_MEASURED"
     assert report["gate"]=="PANEL_PRESENT_NOT_LEARNING_PROOF"
+
+
+@pytest.mark.parametrize("topic,roi", [
+    ("fraction_equivalence",(145,240,1135,555)),
+    ("process_heldout_unknown",(500,280,785,405)),
+    ("attention_reversed_query",(98,350,325,503)),
+])
+def test_semantic_region_counterfactual_is_not_equivalent(topic,roi):
+    p=plan(topic)
+    before=cr.render_image_causal(p,2,0).crop(roi)
+    after=cr.render_image_causal(p,2,1).crop(roi)
+    # Actual semantic content differs, not only non-semantic global pixels.
+    semantic_delta=sum(ImageStat.Stat(ImageChops.difference(before,after)).mean)/3
+    assert semantic_delta > 1.0
