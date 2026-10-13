@@ -1,0 +1,101 @@
+{
+  "checkpoint": "V3-58",
+  "title": "Matched Motion Ablation, Independent Pedagogical Review & Agent Authoring Readiness",
+  "parent_pr": 91,
+  "parent_sha": "48a7b8d955a442b5f693c7e8fcaae0f8c44effa8",
+  "registered_before_implementation": true,
+  "registration_kind": "FIRST_CHILD_COMMIT",
+  "branch": "chatgpt/v3-58-matched-pedagogy-evaluation",
+  "origin": "HOST_SYNTHETIC_OFFLINE_CONTROLLED_ABLATION_NOT_LLM",
+  "cases": [
+    "attention_reversed_query",
+    "fraction_equivalence",
+    "process_heldout_unknown"
+  ],
+  "families": [
+    "transformer_attention",
+    "fraction_equivalence",
+    "ordered_process"
+  ],
+  "primary_study": "Within-case comparison of exact V3-57 motion candidate to matched static within-beat (end-state held) control; same fixed 5 beats, same QKV/Fraction/UNKNOWN facts, same host narration, same native timings, 15fps 1280x720 H264/AAC; independent paired reviews required.",
+  "intervention_definition": {
+    "A": "Original V3-57 authored-by-host animated beat states",
+    "B": "Keep end-state t=1.0 throughout each beat; no intra-beat animation, retain between-beat cuts",
+    "fidelity_confound": "Static-first treatment previews end state earlier; can test presence of intra-beat animation but cannot isolate all pedagogical factors",
+    "ablation_limits": [
+      "Holding end-state from beat start may reveal result earlier and bias causal explanation; score as combined reveal/pacing intervention",
+      "Between-beat cuts are still transformations",
+      "Cannot infer general teaching benefit from visual metrics without human learning outcomes"
+    ]
+  },
+  "preregistered_variables": {
+    "independent": "animation within each beat, otherwise preserved exact same plan/voice/time",
+    "dependent_proxies": [
+      "decoded pixel evidence of temporal change",
+      "motion visibility witness continuity",
+      "visual text legibility human rating"
+    ],
+    "not_outcomes": [
+      "learning gains",
+      "student recall",
+      "aesthetic supremacy",
+      "LLM pedagogical reasoning"
+    ]
+  },
+  "acceptance": {
+    "movies": 6,
+    "matched_pairs": 3,
+    "zero_model_api_calls": true,
+    "no_new_external_video_or_text_data": true,
+    "ffprobe_h264_aac": true,
+    "metadata_fps": 15,
+    "metadata_resolution": [
+      1280,
+      720
+    ],
+    "matched_frames_and_aac_packet_sha_per_pair": true,
+    "host_evidence_sha_match": true,
+    "unsupported_status_remains_unknown": true,
+    "static_control_diff_exceeds_motion_for_no_pair": false,
+    "blinded_packets_with_key_outside_review": true,
+    "blank_ratings_not_fabricated": true,
+    "blind_review_quality": "UNRATED_UNTIL_INDEPENDENT_REVIEWERS",
+    "model_authorship": "NOT_TESTED",
+    "agent_readiness": "VALIDATION_ONLY_WITH_SYNTHETIC_FIXTURE",
+    "production": "BLOCKED",
+    "main_merge": false,
+    "v2_core_unchanged": true
+  },
+  "rater_protocol": {
+    "independent_reviewers_target": 3,
+    "random_assignment": "Deterministic SHA256 of (parent SHA + case ID + condition) assign positions and publish after results",
+    "questions": [
+      "Which treatment makes the causal state change more understandable and why?",
+      "Could the learner predict the next change?",
+      "Are claim and on-screen evidence consistent?",
+      "Do any transitions happen before the explanation is established?",
+      "Is text legible at normal 720p display?",
+      "Are statically held frames better than motion in any beat?"
+    ],
+    "score_anchors": "Ordinal 1-5 subjective response for clarity, causal witness, continuity, legibility, pacing; 'unratable' allowed",
+    "metric_guard": "No computed pixel motion or arbitrary size threshold substitutes for external humans"
+  },
+  "quality_gates": {
+    "technical": "PASS only if source/paired movies physically ffprobe/decoded/matched AAC with CI artifact verified",
+    "learning": "NO_GO_UNTESTED",
+    "creative_authoring": "NO_GO_UNTESTED",
+    "pedagogical": "UNRATED",
+    "not_a_comparison_to_3b1b": true
+  },
+  "outputs": [
+    "learnflow_v3/matched_pedagogy_ablation.py",
+    "learnflow_v3/pedagogical_authoring_readiness.py",
+    "scripts/run_v3_58_matched_review.py",
+    "tests/v3/test_v3_58_matched_review.py",
+    ".github/workflows/v3-58-matched-pedagogy.yml",
+    "reports/v3_58_matched_pedagogical_review.md",
+    "PLAN_V3.md",
+    "LEARNFLOW_V3_RESEARCH_NOTES.md"
+  ],
+  "safety": "No model inference, no 3B1B copyrighted material in repo, no arbitrary LLM Python, no V2 Core / production dispatch changes."
+}
