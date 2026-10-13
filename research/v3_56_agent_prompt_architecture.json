@@ -225,7 +225,8 @@
               "type": "string"
             }
           }
-        }
+        },
+        "description": "Finite verified causal motions; an empty list is VALID when a lesson beat uses a certified static comparison, question hold, or symbolic reasoning."
       },
       "narration_anchors": {
         "type": "array",
@@ -298,8 +299,16 @@
               "type": "string"
             },
             "transformation_index": {
-              "type": "integer",
-              "minimum": 0
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Must be null when the explanatory witness is intentionally static, quiz hold, or symbolic reasoning without an asserted motion."
             },
             "before_state": {
               "type": "string"
@@ -315,11 +324,48 @@
                 "DECODABLE_PIXEL_TRANSITION",
                 "HOST_VERIFIED_GEOMETRY",
                 "SOURCE_BACKED_STATE",
-                "NOT_YET_RENDERABLE"
+                "NOT_YET_RENDERABLE",
+                "STATIC_COMPARISON",
+                "QUESTION_HOLD",
+                "SYMBOLIC_DEDUCTION"
               ]
             }
-          }
-        }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "witness_type": {
+                    "enum": [
+                      "STATIC_COMPARISON",
+                      "QUESTION_HOLD",
+                      "SYMBOLIC_DEDUCTION"
+                    ]
+                  }
+                },
+                "required": [
+                  "witness_type"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "transformation_index": {
+                    "type": "null"
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "transformation_index": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "description": "An actual semantic witness may be a time-linked native transformation OR a deliberate static comparison or reasoning hold. Required physical native receipt only when later rendered."
       },
       "explanatory_closure": {
         "type": "object",
@@ -406,7 +452,7 @@
         "probe_question"
       ],
       "system_instruction": "You are a LearnFlow V3 research-stage Narrative Design specialist. Never introduce unsupported claims, arbitrary execution, source-unsupported visual mechanisms, or alter frozen V2 Core. No model API is to be called in V3-56.",
-      "developer_instruction": "Sequence question, prediction, grounded visual discovery, formalization, reflection; each narration beat points to a visible observation, not only a time estimate.",
+      "developer_instruction": "Sequence question, prediction, grounded visual discovery, formalization, reflection; each narration beat points to a visible observation, not only a time estimate. Deep-audit correction: an explicitly unresolved formula preview is allowed before explanation, as in 3B1B Fourier Read, if a later verified beat resolves it. Questions may pause on static frames.",
       "structured_output": "Only the relevant typed subset of PedagogicalExplanationContract; host canonicalizes IDs and validates cross-references.",
       "host_validator": "host rejects narration not mapped to claim/visual evidence, ignores fabricated word timestamps"
     },
@@ -421,7 +467,7 @@
         "verified_transformations"
       ],
       "system_instruction": "You are a LearnFlow V3 research-stage Visual Thinking specialist. Never introduce unsupported claims, arbitrary execution, source-unsupported visual mechanisms, or alter frozen V2 Core. No model API is to be called in V3-56.",
-      "developer_instruction": "Choose representation and invariant object references; require meaningful before/after witness; if unable represent mechanism, explicitly unsupported rather than decorative card.",
+      "developer_instruction": "Choose representation and invariant object references; require meaningful before/after witness; if unable represent mechanism, explicitly unsupported rather than decorative card. Deep-audit correction: choose deliberate STATIC_COMPARISON, QUESTION_HOLD or SYMBOLIC_DEDUCTION when it is more truthful and clearer than animation; never force object motion. Causal animation preference is conditional, not universal.",
       "structured_output": "Only the relevant typed subset of PedagogicalExplanationContract; host canonicalizes IDs and validates cross-references.",
       "host_validator": "new V3 sidecar only; frozen V2 Core layout contract stays untouched"
     },
@@ -525,7 +571,10 @@
     "A visual representation is no-op/unsafe if its decoded witness cannot establish the pedagogical claim: reject it, never label creative PASS.",
     "Any unsupported operation yields UNSUPPORTED_CAPABILITY with may_publish=false unless a validated semantically-equivalent alternative exists.",
     "V2 Core receives unchanged data/protocol; V3 sidecar is opt-in and separate from legacy VisualDirectorOutput.",
-    "Human comprehension is UNRATED unless independently collected; renderer-level pixel change alone insufficient."
+    "Human comprehension is UNRATED unless independently collected; renderer-level pixel change alone insufficient.",
+    "Counterexample from verified 3B1B Read: Euler e chapter acknowledges a geometric visualization is not always available and switches to numerical exploration. Motion is not mandatory; a static/symbolic witness is valid if it conveys an evidence-backed distinction.",
+    "Counterexample from Fourier Read: a formula may be displayed as an intentional unanswered teaser before its symbols are unpacked. Require narration to label teaser as unresolved, not forcibly rewrite all lessons to visual-before-formal.",
+    "Never award a static explanatory comparison or intentional quiz hold a fake before/after motion witness; transformed-object and static proof paths require different QA/critic contracts."
   ],
   "integration_recommendation": {
     "architecture": "V3 research sidecar; share approved claim catalog and host semantic referents, attach cognitive/visual witness fields after V2 PedagogyPlan; issue distinct V3 visual plan to optional renderer; do not retrofit old Core",
@@ -538,6 +587,7 @@
       "arbitrary Fourier phasor synthesis",
       "generalized teacher-style quizzes and measured comprehension"
     ],
-    "commercialization_caution": "do not embed 3b1b/videos CC BY-NC-SA media/source code; emulate only high-level pedagogy, implement original host algorithms"
+    "commercialization_caution": "do not embed 3b1b/videos CC BY-NC-SA media/source code; emulate only high-level pedagogy, implement original host algorithms",
+    "found_design_gap_v356_initial_spec": "V3-56 first PEC inadvertently demanded transformation_index on every witness, excluding legitimate static reasoning. Deep audit adds null index for static comparison, question hold, symbolic deduction; maintains strict integer index for native motion witnesses."
   }
 }
