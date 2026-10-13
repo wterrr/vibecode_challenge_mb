@@ -67,7 +67,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "la_linear",
@@ -129,7 +130,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "la_matrix",
@@ -189,7 +191,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "la_det",
@@ -249,7 +252,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "la_eigen",
@@ -309,7 +313,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "la_dot",
@@ -369,7 +374,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "la_cross",
@@ -429,7 +435,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "calc_essence",
@@ -489,7 +496,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "calc_deriv",
@@ -551,7 +559,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "calc_integration",
@@ -611,7 +620,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "calc_exp",
@@ -671,7 +681,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "prob_bayes",
@@ -731,7 +742,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "compo_fourier",
@@ -791,7 +803,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "nn_intro",
@@ -851,7 +864,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "nn_gradient",
@@ -911,7 +925,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "nn_gpt",
@@ -971,7 +986,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "nn_attention",
@@ -1031,7 +1047,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     },
     {
       "lesson_id": "nn_mlp",
@@ -1091,7 +1108,8 @@
         "time-coded in-video animation not inspected",
         "no experimental learner outcomes",
         "relative pedagogy quality vs alternatives not measured"
-      ]
+      ],
+      "confidence_class": "READ_DIRECT_FOR_DOCUMENT_CONTENT__INTERPRETIVE_PEDAGOGY__NO_VERIFIED_SHOT_TIMECODES"
     }
   ],
   "evidence_provenance_policy": "Only source code classes for 3 rows directly inspected. Timings per video or specific audio clips not verified and recorded UNKNOWN."
