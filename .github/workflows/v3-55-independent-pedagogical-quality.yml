@@ -1,0 +1,136 @@
+name: V3-55 Independent Pedagogical Native Quality (HOST ONLY)
+
+on:
+  push:
+    branches: [chatgpt/v3-55-independent-pedagogical-quality]
+  pull_request:
+    paths:
+      - "learnflow_v3/independent_pedagogical_quality.py"
+      - "scripts/run_v3_55_independent_quality.py"
+      - "tests/v3/test_v3_55_independent_pedagogical_quality.py"
+      - "benchmarks/learnflowbench/v3/v3_55_independent_pedagogical_quality_preregister.json"
+      - ".github/workflows/v3-55-independent-pedagogical-quality.yml"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+      - "reports/v3_55_independent_pedagogical_quality.md"
+
+permissions:
+  contents: read
+
+jobs:
+  independent-native-family-proof:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing native runner requirements
+        timeout-minutes: 12
+        run: |
+          bash scripts/bootstrap_v3_30_native.sh
+          timeout -k 10s 400s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: V3-55 adversarial contract and frozen previous checkpoint tests
+        timeout-minutes: 8
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_55_independent_pedagogical_quality.py \
+            tests/v3/test_v3_54_model_candidate_quality.py \
+            tests/v3/test_v3_53_creative_director.py \
+            tests/v3/test_v3_52_semantic_motion.py \
+            tests/v3/test_v3_51_creative_scene_graph.py \
+            tests/v3/test_v3_50_one_query_attention.py \
+            tests/v3/test_v3_49_grounded_claims.py \
+            tests/v3/test_v3_48_pedagogical_quality.py \
+            tests/v3/test_v3_47_pedagogical_grammar.py \
+            tests/v3/test_v3_45_semantic_scene_wire.py \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py
+      - name: Frozen V2 core and V3 LearnFlowBench research protocol
+        timeout-minutes: 6
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+      - name: Pull pinned sandboxed no-network Manim image
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Generate three real independent-family HOST MP4, never model API
+        timeout-minutes: 26
+        run: |
+          python scripts/run_v3_55_independent_quality.py --output-dir "$RUNNER_TEMP/v355"
+      - name: Verify exact media receipts, flags and quality NO-GO
+        timeout-minutes: 3
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          root=Path(os.environ['RUNNER_TEMP'])/'v355'
+          r=json.loads((root/'v355_evidence_and_limitations.json').read_text())
+          assert r['checkpoint']=='V3-55'
+          assert r['native_video_count']==3
+          assert r['technical_media_family_gates']=='PASS_BOUNDED'
+          assert r['creative_visual_quality']=='NO_GO_NOT_ESTABLISHED'
+          assert r['human_scores'] is None
+          assert r['model_api_posts']==0
+          assert r['genuine_model_authoring']=='NOT_TESTED'
+          assert r['production']=='BLOCKED' and r['main_merge'] is False
+          assert len({x['native_video_sha256'] for x in r['cases']})==3
+          for folder,name in (
+             ('v355_fraction_2_3_to_4_6','host_grounded_lesson.mp4'),
+             ('v355_ordered_process_rekeyed','storytelling_host_with_audio.mp4'),
+             ('v355_attention_reversed_query','composed_attention_native.mp4')):
+             assert (root/folder/name).stat().st_size > 40000
+          packet=root/'external_review_packet'
+          assert len(list(packet.glob('*_timeline.jpg')))==3
+          print('V3_55=THREE_NATIVE_HOST_STORYBOARDS_TECHNICAL_ONLY_QUALITY_NO_GO')
+          PY
+      - name: Upload real MP4, frame/claim proof and UNRATED review packet
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-55-THREE-DOMAIN-NATIVE-HOST-TRIAL-QUALITY-NO-GO
+          path: ${{ runner.temp }}/v355/
+          retention-days: 14
+          if-no-files-found: warn
+
+  independent-pr-contract:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Python dependencies no apt no Docker no provider
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 380s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Frozen off-line family and adversarial claims
+        timeout-minutes: 7
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_55_independent_pedagogical_quality.py \
+            tests/v3/test_v3_54_model_candidate_quality.py \
+            tests/v3/test_v3_53_creative_director.py \
+            tests/v3/test_v3_52_semantic_motion.py \
+            tests/v3/test_v3_51_creative_scene_graph.py \
+            tests/v3/test_v3_50_one_query_attention.py \
+            tests/v3/test_v3_49_grounded_claims.py \
+            tests/v3/test_v3_47_pedagogical_grammar.py \
+            tests/v3/test_v3_45_semantic_scene_wire.py
+      - name: V2/V3 frozen benchmark and product protocol
+        timeout-minutes: 3
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
