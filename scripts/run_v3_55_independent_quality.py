@@ -36,7 +36,7 @@ FAMILIES = ("fraction_equivalence", "ordered_process", "transformer_attention")
 def build_new_cases(reg: dict) -> tuple[dict, dict, dict]:
     rows = reg["independent_cases"]
     fr = rows[0]
-    fraction = {"id": FRACTION, "role": "preregistered_host_visual_reuse",
+    fraction = {"id": "dev_" + FRACTION, "role": "preregistered_host_visual_reuse",
                 "source": fr["source"], "target": fr["target"],
                 "factor": fr["factor"]}
     evidence = ground(FractionTopic(topic_id=FRACTION,
@@ -98,7 +98,7 @@ def run(out: pathlib.Path) -> dict:
     checks = [verify_case_result(family, item) for family, item
               in zip(FAMILIES, (f, p, a))]
     paths = (
-       out / FRACTION / "host_grounded_lesson.mp4",
+       out / ("dev_" + FRACTION) / "host_grounded_lesson.mp4",
        out / PROCESS / "storytelling_host_with_audio.mp4",
        out / ATTENTION / "composed_attention_native.mp4"
     )
