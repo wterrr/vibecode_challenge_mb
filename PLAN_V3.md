@@ -1146,3 +1146,6 @@ Future prerequisite to close this CP evidence GAP (not automatic new task): obta
 
 
 V3-56 tooling postscript: added `scripts/run_v3_56_local_asr_candidates.py` as opt-in CPU-only local CTranslate2 ASR *candidate* generation requiring an exact original MP4 SHA and license-verified weight SHA/directory. It cannot fetch model weights and was NOT executed due to unavailable model. `tests/v3/test_v3_56_local_asr_candidates.py` fail closed on missing/wrong rights or input without doing inference; CI includes only these offline negative tests. No new agent, no production Core change, native word verification remains **0/12 NO-GO**.
+
+
+V3-56 CI guard review: the original workflow's self-inspection test embedded all forbidden string literals directly in the scanned workflow, causing a deterministic false positive. Fixed by constructing denylist strings from pieces inside Python while retaining the exact rejected values; commit `692a63847ef8d3f6a2c7102f940f40da725010e1`. Offline evidence integrity was tested independently on the original MP4 (12 anchors, 180 frames, all AAC 1569.158125s decoded, SHA match), but exact-head GitHub Actions remain required; do not claim CI pass until workflows complete. Native speech remains 0/12 NO-GO.
