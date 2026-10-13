@@ -49,7 +49,7 @@ def build_new_cases(reg: dict) -> tuple[dict, dict, dict]:
     # Second independent ID namespace, all topology references rebound;
     # not a new real-world condition and must never claim PASS/FAIL.
     graphics = raw["graphics"]
-    ids = {g["id"]: "v55_" + g["id"] for g in graphics}
+    ids = {g["id"]: "z_" + g["id"][2:] for g in graphics}
     for graphic in graphics:
         graphic["id"] = ids[graphic["id"]]
         if graphic["kind"] == "edge":
