@@ -421,6 +421,132 @@
             ]
           }
         }
+      },
+      "narration_visual_evidence": {
+        "type": "array",
+        "description": "Research-side proxy-to-native bridge. Optional in pre-A/B/C PEC, never injected into frozen V2 Core.",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "beat_id",
+            "text_cue_source",
+            "caption_time_s",
+            "native_visible_sample_times_s",
+            "relation",
+            "audio_content_certification",
+            "native_media_sha256",
+            "claim_scope"
+          ],
+          "properties": {
+            "beat_id": {
+              "type": "string",
+              "minLength": 2
+            },
+            "text_cue_source": {
+              "enum": [
+                "EXTERNAL_CAPTION_PROXY",
+                "HOST_WRITTEN_SCRIPT",
+                "NATIVE_ASR_REVIEWED",
+                "NONE"
+              ]
+            },
+            "caption_time_s": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "native_visible_sample_times_s": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": 0
+              },
+              "minItems": 1
+            },
+            "relation": {
+              "enum": [
+                "LEAD",
+                "OVERLAP",
+                "FOLLOW",
+                "UNKNOWN"
+              ]
+            },
+            "audio_content_certification": {
+              "enum": [
+                "STREAM_ONLY",
+                "CAPTION_PROXY_ONLY",
+                "NATIVE_WORDS_MANUALLY_VERIFIED",
+                "NATIVE_FORCED_ALIGNMENT_VERIFIED"
+              ]
+            },
+            "native_media_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "claim_scope": {
+              "enum": [
+                "OBSERVED_SCREEN_ONLY",
+                "GROUNDED_SCRIPT_TOPIC",
+                "NATIVE_AUDIO_VISUAL_ALIGNED"
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "text_cue_source": {
+                    "const": "EXTERNAL_CAPTION_PROXY"
+                  }
+                },
+                "required": [
+                  "text_cue_source"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "audio_content_certification": {
+                    "enum": [
+                      "STREAM_ONLY",
+                      "CAPTION_PROXY_ONLY"
+                    ]
+                  },
+                  "claim_scope": {
+                    "enum": [
+                      "OBSERVED_SCREEN_ONLY",
+                      "GROUNDED_SCRIPT_TOPIC"
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "audio_content_certification": {
+                    "const": "STREAM_ONLY"
+                  }
+                },
+                "required": [
+                  "audio_content_certification"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "claim_scope": {
+                    "enum": [
+                      "OBSERVED_SCREEN_ONLY",
+                      "GROUNDED_SCRIPT_TOPIC"
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
       }
     }
   },
@@ -452,7 +578,7 @@
         "probe_question"
       ],
       "system_instruction": "You are a LearnFlow V3 research-stage Narrative Design specialist. Never introduce unsupported claims, arbitrary execution, source-unsupported visual mechanisms, or alter frozen V2 Core. No model API is to be called in V3-56.",
-      "developer_instruction": "Sequence question, prediction, grounded visual discovery, formalization, reflection; each narration beat points to a visible observation, not only a time estimate. Deep-audit correction: an explicitly unresolved formula preview is allowed before explanation, as in 3B1B Fourier Read, if a later verified beat resolves it. Questions may pause on static frames.",
+      "developer_instruction": "Sequence question, prediction, grounded visual discovery, formalization, reflection; each narration beat points to a visible observation, not only a time estimate. Deep-audit correction: an explicitly unresolved formula preview is allowed before explanation, as in 3B1B Fourier Read, if a later verified beat resolves it. Questions may pause on static frames. V3-56 evidence: external caption cues may LEAD the corresponding physical image, OVERLAP, or FOLLOW it. Do not require word- and visual-onset equality; provide source provenance and unresolved sync uncertainty.",
       "structured_output": "Only the relevant typed subset of PedagogicalExplanationContract; host canonicalizes IDs and validates cross-references.",
       "host_validator": "host rejects narration not mapped to claim/visual evidence, ignores fabricated word timestamps"
     },
@@ -496,7 +622,7 @@
         "unsupported_capability_outcome"
       ],
       "system_instruction": "You are a LearnFlow V3 research-stage Independent QA specialist. Never introduce unsupported claims, arbitrary execution, source-unsupported visual mechanisms, or alter frozen V2 Core. No model API is to be called in V3-56.",
-      "developer_instruction": "Compare intended cognitive change to decoded visual witness and claim evidence; separate technical gate from human pedagogical judgment.",
+      "developer_instruction": "Compare intended cognitive change to decoded visual witness and claim evidence; separate technical gate from human pedagogical judgment. V3-56 evidence: a still matrix under audible signal is not a silent beat. Reject native-word-alignment claims derived from third-party timed captions or audio RMS.",
       "structured_output": "Only the relevant typed subset of PedagogicalExplanationContract; host canonicalizes IDs and validates cross-references.",
       "host_validator": "fail closed missing source, candidate artifacts, blurry text; mark human educational benefit UNRATED"
     }
@@ -574,7 +700,10 @@
     "Human comprehension is UNRATED unless independently collected; renderer-level pixel change alone insufficient.",
     "Counterexample from verified 3B1B Read: Euler e chapter acknowledges a geometric visualization is not always available and switches to numerical exploration. Motion is not mandatory; a static/symbolic witness is valid if it conveys an evidence-backed distinction.",
     "Counterexample from Fourier Read: a formula may be displayed as an intentional unanswered teaser before its symbols are unpacked. Require narration to label teaser as unresolved, not forcibly rewrite all lessons to visual-before-formal.",
-    "Never award a static explanatory comparison or intentional quiz hold a fake before/after motion witness; transformed-object and static proof paths require different QA/critic contracts."
+    "Never award a static explanatory comparison or intentional quiz hold a fake before/after motion witness; transformed-object and static proof paths require different QA/critic contracts.",
+    "Narration-to-visual relation LEAD/OVERLAP/FOLLOW is a research hypothesis unless native audio phrase boundaries are independently certified. Third-party caption timestamps and native frame PTS are distinct source streams; audio waveform/RMS only attests signal, never wording or speech pause.",
+    "An EXTERNAL_CAPTION_PROXY source may only produce CAPTION_PROXY_ONLY or STREAM_ONLY, never NATIVE_WORDS_MANUALLY_VERIFIED or NATIVE_FORCED_ALIGNMENT_VERIFIED, and cannot assert NATIVE_AUDIO_VISUAL_ALIGNED. Host enforces cross-field restrictions beyond JSON schema.",
+    "Static visual hold is not equivalent to narrator silence; mixed narration/music audio RMS cannot prove a pause."
   ],
   "integration_recommendation": {
     "architecture": "V3 research sidecar; share approved claim catalog and host semantic referents, attach cognitive/visual witness fields after V2 PedagogyPlan; issue distinct V3 visual plan to optional renderer; do not retrofit old Core",
@@ -588,6 +717,11 @@
       "generalized teacher-style quizzes and measured comprehension"
     ],
     "commercialization_caution": "do not embed 3b1b/videos CC BY-NC-SA media/source code; emulate only high-level pedagogy, implement original host algorithms",
-    "found_design_gap_v356_initial_spec": "V3-56 first PEC inadvertently demanded transformation_index on every witness, excluding legitimate static reasoning. Deep audit adds null index for static comparison, question hold, symbolic deduction; maintains strict integer index for native motion witnesses."
+    "found_design_gap_v356_initial_spec": "V3-56 first PEC inadvertently demanded transformation_index on every witness, excluding legitimate static reasoning. Deep audit adds null index for static comparison, question hold, symbolic deduction; maintains strict integer index for native motion witnesses.",
+    "native_alignment_v356": {
+      "evidence": "12 user-uploaded original 26m MP4 frame-cue windows + external YouTube timed caption mirror, original AAC PCM 1569s, no word-speech recognition",
+      "path": "research/v3_56_attention_native_caption_alignment.json",
+      "effect": "Proposed optional PEC narration_visual_evidence keeps caption_time_s and native_visible_sample_times_s separate, supports LEAD/OVERLAP/FOLLOW/UNKNOWN, prohibits proxy-to-native-speech laundering."
+    }
   }
 }
