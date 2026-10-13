@@ -108,3 +108,10 @@ Confirmed V3-55 native Attention reversed-query H264/AAC artifact `v355_attentio
 **Single next permissible activity, inside V3-56 scope rather than jumping to V3-57:** Provide a local offline ASR checkpoint with SHA/model licence and trusted install path (or a permitted media interface with actual spoken-word listening), then run *exactly the same 12 frozen anchor windows* and independently compare with caption hypotheses. Only after >=8 native phrases are verified with error-bound timestamps may the native speech gate change. Do not run a service API or use the public transcript as phoneme ground truth.
 
 Machine tests `scripts/verify_v3_56_native_speech_grounding.py`, `tests/v3/test_v3_56_native_speech_grounding.py` explicitly reject forged transcript, false WER, fake visual PTS, caption/speech timestamp conflation, changed licence status and production GO.
+
+
+### Reproducible local-ASR path (provided but NOT run)
+
+A separate [offline-only optional runner](../scripts/run_v3_56_local_asr_candidates.py) now exists for a **later** explicitly supplied licensed local CTranslate2 Whisper checkpoint. It requires the exact original media SHA, the local weights' SHA-256, origin/license receipt and allowed-use acknowledgement. It accepts only a model DIRECTORY, passes `local_files_only=True`, and never requests hosted inference or automatically downloads model files. It produces **ASR CANDIDATES ONLY**, not native certified speech. Original transcript candidates must stay outside the repository unless a later privacy/rights review explicitly authorizes them. New negative tests `tests/v3/test_v3_56_local_asr_candidates.py` verify failure on wrong video SHA, absent model files, incorrect weight digest and unapproved rights, **without running any ASR**.
+
+This implementation closes a *reproducibility tooling* gap but **does not resolve the missing model checkpoint, manual listening or native word-alignment NO-GO**. Retain native audio phrase gate at 0/12.
