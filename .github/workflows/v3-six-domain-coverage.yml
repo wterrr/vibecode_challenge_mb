@@ -4,12 +4,17 @@ on:
   push:
     branches: [chatgpt/v3-27-six-domain-coverage-audit]
   pull_request:
+    branches: [main]
     paths:
       - "benchmarks/learnflowbench/v3/v3_27_locked_development_topics.json"
       - "learnflow_v3/**"
       - "scripts/verify_v3_27_six_domain_coverage.py"
       - "tests/v3/**"
       - ".github/workflows/v3-six-domain-coverage.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

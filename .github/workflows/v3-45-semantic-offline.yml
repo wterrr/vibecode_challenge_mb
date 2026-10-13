@@ -12,8 +12,10 @@ on:
       - "benchmarks/learnflowbench/v3/v3_45_semantic_scene_protocol_preregister.json"
       - ".github/workflows/v3-45-semantic-offline.yml"
       - "reports/v3_45_semantic_scene_protocol.md"
-      - "PLAN_V3.md"
-      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

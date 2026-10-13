@@ -11,8 +11,10 @@ on:
       - "benchmarks/learnflowbench/v3/v3_48_quality_transfer_preregister.json"
       - ".github/workflows/v3-48-pedagogical-quality.yml"
       - "reports/v3_48_pedagogical_quality_transfer.md"
-      - "PLAN_V3.md"
-      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

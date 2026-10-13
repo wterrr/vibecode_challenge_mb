@@ -4,12 +4,17 @@ on:
   push:
     branches: [chatgpt/v3-integration-closure-audit]
   pull_request:
+    branches: [main]
     paths:
       - "learnflow_v3/**"
       - "tests/v3/**"
       - "scripts/audit_v3_reachability.py"
       - "scripts/verify_v3_integration_closure.py"
       - ".github/workflows/v3-integration-closure.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

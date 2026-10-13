@@ -11,8 +11,10 @@ on:
       - "benchmarks/learnflowbench/v3/v3_49_grounded_claims_preregister.json"
       - ".github/workflows/v3-49-grounded-fraction-claims.yml"
       - "reports/v3_49_grounded_claims.md"
-      - "PLAN_V3.md"
-      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

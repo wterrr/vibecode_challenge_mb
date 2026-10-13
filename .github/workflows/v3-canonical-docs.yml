@@ -1,0 +1,42 @@
+name: V3 Canonical Research Documents (LIGHTWEIGHT)
+
+on:
+  pull_request:
+    paths:
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+      - ".github/workflows/v3-canonical-docs.yml"
+  push:
+    branches: [main]
+    paths:
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+      - ".github/workflows/v3-canonical-docs.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  canonical-research-document-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify canonical documents exist, are nonempty, and preserve V3 scope
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for filename in ("PLAN_V3.md", "LEARNFLOW_V3_RESEARCH_NOTES.md"):
+              source = Path(filename)
+              assert source.is_file(), f"MISSING_CANONICAL_DOCUMENT: {filename}"
+              body = source.read_text(encoding="utf-8")
+              assert len(body.strip()) > 500, f"EMPTY_CANONICAL_DOCUMENT: {filename}"
+              assert "V3" in body, f"CANONICAL_RESEARCH_SCOPE_MISSING: {filename}"
+              print(f"CANONICAL_DOC_PASS: {filename} ({len(body)} characters)")
+          PY

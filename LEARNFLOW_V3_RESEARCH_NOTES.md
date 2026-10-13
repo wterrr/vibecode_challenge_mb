@@ -3582,3 +3582,8 @@ First child V3-59 prereg commit `148f1b73cdedce9ed1b1e4af6a9d5251d33903c4` ancho
 
 
 V3-59 further causal-witness finding: action-node color by itself does not prove arrival; parent marker never reached the ACTION node's actual center. Newly introduced marker mapping is physically tied to the START→ACTION graph line at y=337 and entry x540, and activation waits for exact host-certified completion. Native image QA now computes **within-semantic-ROI** match to the legal pre/post state versus the opposite state, preventing a globally similar H264 frame from masking a causal inversion. Offline test mutations assert 3 region disparities; do not upgrade this to independent comprehension/quality evidence without decoded CI media and external panel.
+
+
+## CI fan-out causality and mitigation (2026-10-13)
+
+GitHub Actions backlog exceeded 2,000 queued runs across 81 workflow files in the stacked V3-59 tree (vs 21 on main); live completed workflow successes rule out an asserted total platform outage. Direct workflow inspection found two trigger-amplifiers: shared PLAN_V3/Research Notes in specialized V3 checkpoint PR paths and legacy broad globs `learnflow_v3/**` or `tests/v3/**` in historical full integration workflows. Remediation PR is stacked atop PR #93 but does not edit its research code: remove shared-doc paths from specialized gates, restrict historical expensive catch-all PR checks to main integration (preserve push branches), add per-workflow per-PR concurrency with `cancel-in-progress: false`, one cheap docs gate and an offline falsifiable trigger-matrix script. Observe native CI and queued cancellation receipts before claiming effects. Evidence: `reports/ci_recovery_v3_59.md` and Issue #94.

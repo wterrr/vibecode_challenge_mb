@@ -4,11 +4,16 @@ on:
   push:
     branches: [chatgpt/v3-24-visual-storytelling-refinement]
   pull_request:
+    branches: [main]
     paths:
       - "learnflow_v3/**"
       - "scripts/verify_v3_teaching_storyboard.py"
       - "tests/v3/**"
       - ".github/workflows/v3-teaching-storyboard.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

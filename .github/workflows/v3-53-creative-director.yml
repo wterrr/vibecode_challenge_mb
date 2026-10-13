@@ -11,8 +11,10 @@ on:
       - "benchmarks/learnflowbench/v3/v3_53_creative_director_preregister.json"
       - ".github/workflows/v3-53-creative-director.yml"
       - "reports/v3_53_creative_director.md"
-      - "PLAN_V3.md"
-      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

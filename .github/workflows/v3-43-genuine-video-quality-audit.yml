@@ -10,8 +10,10 @@ on:
       - "benchmarks/learnflowbench/v3/v3_43_genuine_video_quality_preregister.json"
       - ".github/workflows/v3-43-genuine-video-quality-audit.yml"
       - "reports/v3_43_genuine_video_quality_audit.md"
-      - "PLAN_V3.md"
-      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

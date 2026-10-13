@@ -11,9 +11,11 @@ on:
       - "scripts/run_v3_58_matched_review.py"
       - "tests/v3/test_v3_58_matched_review.py"
       - ".github/workflows/v3-58-matched-pedagogy.yml"
-      - "PLAN_V3.md"
-      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
       - "reports/v3_58_matched_pedagogical_review.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
