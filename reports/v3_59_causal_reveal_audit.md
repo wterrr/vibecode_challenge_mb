@@ -51,3 +51,9 @@ Workflow: `.github/workflows/v3-59-causal-reveal.yml` first runs offline adversa
 | Production | BLOCKED |
 
 **Next decision after exact-head evidence:** inspect CI jobs AND actually decoded MP4 frames/semantics before local-tech PASS; external raters independently judge 9 masked clips and provide timestamps. Even positive reviewer scores do not demonstrate causal improvement in student learning without an actual randomized learner-outcome study.
+
+## Post-implementation QA hardening (pending GitHub CI)
+
+A direct source-level check found that the original Process moving marker ended at x≈610, y=426, below and short of ACTION center (640,337), so merely making ACTION green at the end was not a physically grounded arrival. In the V3-59 opt-in renderer the old off-graph marker is overwritten, a newly anchored marker travels from START's output at (370,337) to the actual ACTION center (640,337), and ACTION activates only on host-verified center arrival at progress 1.0. Regression tests assert exact destination coordinates, action state and decoded-rendered color witness. The unchanged V3-57 baseline still exhibits the original defect by design.
+
+Direct-native QA additionally checks three **semantic ROIs** in decoded output, rejecting a movie frame that looks closer to the opposite (pre/post) semantic state or cannot be distinguished from that state even if a global full-frame MAE is small. Separate tests freeze nonzero pre/post regional differences for all 3 cases. These are fail-closed *implementation assertions*, still awaiting exact-head CI and physical movie receipts. Visual closeness and region separation still do NOT prove viewers understood the lesson.
