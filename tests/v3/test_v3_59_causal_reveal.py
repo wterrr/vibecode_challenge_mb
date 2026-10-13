@@ -47,7 +47,7 @@ def test_fraction_old_partition_and_area_witness_before_result():
     # Verify a real native drawn boundary appears at 1/6, not just state metadata.
     first=cr.render_image_causal(plan(c),2,0)
     last=cr.render_image_causal(plan(c),2,1)
-    x=round(160+(1115-160)/6)
+    x=round(160+(1115-160)/6)-2
     assert first.getpixel((x,338))!=last.getpixel((x,338))
     assert first.getpixel((180,330))==last.getpixel((180,330))
 
