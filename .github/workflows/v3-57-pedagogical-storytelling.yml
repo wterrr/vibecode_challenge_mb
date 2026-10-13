@@ -7,6 +7,7 @@ on:
     paths:
       - "benchmarks/learnflowbench/v3/v3_57_pedagogical_slice_preregister.json"
       - "learnflow_v3/pedagogical_storytelling_slice.py"
+      - "learnflow_v3/pedagogical_explanation_adapter.py"
       - "scripts/run_v3_57_pedagogical_slice.py"
       - "tests/v3/test_v3_57_pedagogical_slice.py"
       - ".github/workflows/v3-57-pedagogical-storytelling.yml"
