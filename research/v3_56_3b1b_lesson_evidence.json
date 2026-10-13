@@ -1,0 +1,1098 @@
+{
+  "checkpoint": "V3-56",
+  "frozen_registration_first_commit": "665b85526f4d0ae7ae0473f7701b3d12e894d3ce",
+  "licensing": {
+    "read_source": "public first party read sites; descriptions paraphrased; no screenshot/code reproduction",
+    "scene_code": "3b1b/videos content CC BY-NC-SA 4.0; 3b1b/manim engine MIT; Manim Community separate engine; do NOT copy scene assets/code into product"
+  },
+  "study_mode": "18 FIRST_PARTY_READS_OPENED; EMBEDDED_IMAGE_VIDEO_MARKERS IDENTIFIED; 3 matching first-party scene code files READ; NO full media frame or audio timeline audited",
+  "rows": [
+    {
+      "lesson_id": "la_span",
+      "cluster": "linear-algebra",
+      "read_url": "https://www.3blue1brown.com/lessons/span/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "end by contrasting 2-D span against collinear line"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "MATCHED_SOURCE_FILE_INSPECTED_NOT_RUN",
+        "path": "https://github.com/3b1b/videos/blob/master/_2016/eola/chapter2.py",
+        "sha": "c5f01b7e301b420c1407d82ab70bdd1a7c703407",
+        "evidence": "inspected source classes ShowVaryingLinearCombinations, LinearDependentVectors"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "scaling two basis vectors reaches a set of points"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "coordinates are fixed arrows regardless of basis"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "two labeled basis vectors + resulting tip"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "two labeled basis vectors + resulting tip"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "change two scalar coefficients while vector identities persist"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "scalars→vector combination→reachable set"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "end by contrasting 2-D span against collinear line"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "la_linear",
+      "cluster": "geometric-transformation",
+      "read_url": "https://www.3blue1brown.com/lessons/linear-transformations/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "which pictured transforms count as linear"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "MATCHED_SOURCE_FILE_INSPECTED_NOT_RUN",
+        "path": "https://github.com/3b1b/videos/blob/master/_2016/eola/chapter3.py",
+        "sha": "0fc0fc4b1450023a500bc07b8189dc88d0516220",
+        "evidence": "inspected source classes TransformManyVectors and TransformInfiniteGrid"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "matrices transform a coordinate space"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "matrix only stores arithmetic"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "grid + basis arrows + test point"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "grid + basis arrows + test point"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "apply shared map to grid and point, preserve parallel lines"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "geometric grid→basis matrix columns→input mapping"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "which pictured transforms count as linear"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "la_matrix",
+      "cluster": "geometric-transformation",
+      "read_url": "https://www.3blue1brown.com/lessons/matrix-multiplication/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "same point endpoint under equivalent groupings"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "LESSON_SPECIFIC_SOURCE_UNVERIFIED",
+        "note": "Some Read pages link a source; source-to-video scene mapping and exact commit not certified"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "product of matrices is successive space transforms"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "matrix product is ad hoc number recipe"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "fixed test point on persistent grid; first + second transform"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "fixed test point on persistent grid; first + second transform"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "rotate/shear sequentially then collapse to composition"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "two motions→composed operator→associativity"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "same point endpoint under equivalent groupings"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "la_det",
+      "cluster": "geometric-transformation",
+      "read_url": "https://www.3blue1brown.com/lessons/determinant/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "why determinant zero kills area"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "LESSON_SPECIFIC_SOURCE_UNVERIFIED",
+        "note": "Some Read pages link a source; source-to-video scene mapping and exact commit not certified"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "determinant measures area-scale under map"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "determinant is arbitrary 2x2 formula"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "unit square + deformed region boundary"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "unit square + deformed region boundary"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "transform entire region, track oriented area ratio"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "unit square→area factor→zero determinant collapse"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "why determinant zero kills area"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "la_eigen",
+      "cluster": "geometric-transformation",
+      "read_url": "https://www.3blue1brown.com/lessons/eigenvalues/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "interpret eigenvalue as directional scale"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "LESSON_SPECIFIC_SOURCE_UNVERIFIED",
+        "note": "Some Read pages link a source; source-to-video scene mapping and exact commit not certified"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "special directions survive linear map without turning"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "every vector after A only scales"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "persistent candidate arrow and underlying grid"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "persistent candidate arrow and underlying grid"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "transform grid while one direction stays collinear"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "generic transformed arrows→invariant direction→eigen equation"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "interpret eigenvalue as directional scale"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "la_dot",
+      "cluster": "spatial-reasoning",
+      "read_url": "https://www.3blue1brown.com/lessons/dot-products/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "vector encodes a one-dimensional linear functional"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "LESSON_SPECIFIC_SOURCE_UNVERIFIED",
+        "note": "Some Read pages link a source; source-to-video scene mapping and exact commit not certified"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "dot product as projection and linear functional"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "dot product only multiply-add coordinates"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "two arrows, fixed projection axis"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "two arrows, fixed projection axis"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "project one onto other; continue into scalar mapping"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "projection→signed scalar→duality"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "vector encodes a one-dimensional linear functional"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "la_cross",
+      "cluster": "spatial-reasoning",
+      "read_url": "https://www.3blue1brown.com/lessons/cross-products/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "connect cross product to oriented area"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "LESSON_SPECIFIC_SOURCE_UNVERIFIED",
+        "note": "Some Read pages link a source; source-to-video scene mapping and exact commit not certified"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "parallelogram area and orientation from two vectors"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "cross product only mysterious determinant mnemonic"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "two vectors spanning a parallelogram"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "two vectors spanning a parallelogram"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "change vectors while preserving parallelogram identity"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "2-D signed area→determinant→3-D orientation"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "connect cross product to oriented area"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "calc_essence",
+      "cluster": "calculus",
+      "read_url": "https://www.3blue1brown.com/lessons/essence-of-calculus/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "derive circle area via triangle and connect to FTC"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "LESSON_SPECIFIC_SOURCE_UNVERIFIED",
+        "note": "Some Read pages link a source; source-to-video scene mapping and exact commit not certified"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "integral intuition by slicing circle into rings"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "πr² is an unexplained fact"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "circle, expanding concentric rings, unwrapped strip"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "circle, expanding concentric rings, unwrapped strip"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "slice ring then straighten into nearly rectangles"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "circle geometry→thin rectangles→area under graph"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "derive circle area via triangle and connect to FTC"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "calc_deriv",
+      "cluster": "calculus",
+      "read_url": "https://www.3blue1brown.com/lessons/derivatives/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "resolve paradox without dividing by literal zero"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "MATCHED_SOURCE_FILE_INSPECTED_NOT_RUN",
+        "path": "https://github.com/3b1b/videos/blob/master/_2017/eoc/chapter2.py",
+        "sha": "e1e2744aee8076beae608f289e30fa88ba1e5fa4",
+        "evidence": "inspected source classes IntroduceCar, ShowSpeedometer and CompareTwoTimes"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "instantaneous velocity as limit of finite differences"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "speed at one isolated instant is a ratio of no interval"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "car trajectory, secant endpoints and tangent"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "car trajectory, secant endpoints and tangent"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "shrink separation between two persistent points"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "car speed→secant slope→tangent limit"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "resolve paradox without dividing by literal zero"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "calc_integration",
+      "cluster": "calculus",
+      "read_url": "https://www.3blue1brown.com/lessons/integration/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "why accumulating infinitely many contributions reduces to two endpoint values"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "LESSON_SPECIFIC_SOURCE_UNVERIFIED",
+        "note": "Some Read pages link a source; source-to-video scene mapping and exact commit not certified"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "sum of thin slices matches endpoint antiderivative change"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "integral is only symbolic reverse differentiation"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "area strips + moving upper endpoint"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "area strips + moving upper endpoint"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "grow accumulation while corresponding area function updates"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "Riemann additions→A(x)→FTC endpoints"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "why accumulating infinitely many contributions reduces to two endpoint values"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "calc_exp",
+      "cluster": "calculus",
+      "read_url": "https://www.3blue1brown.com/lessons/eulers-number/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "why e^x has its own derivative"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "LESSON_SPECIFIC_SOURCE_UNVERIFIED",
+        "note": "Some Read pages link a source; source-to-video scene mapping and exact commit not certified"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "exponential growth whose derivative is proportional"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "e merely an arbitrary constant"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "population markers + continuous growth curve"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "population markers + continuous growth curve"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "population scales over equal time intervals"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "discrete doubling→continuous rate→special base e"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "why e^x has its own derivative"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "prob_bayes",
+      "cluster": "probability-area",
+      "read_url": "https://www.3blue1brown.com/lessons/bayes-theorem/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "posterior denominator includes all evidence cases"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "LESSON_SPECIFIC_SOURCE_UNVERIFIED",
+        "note": "Some Read pages link a source; source-to-video scene mapping and exact commit not certified"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "updated beliefs via partitioned areas"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "base-rate neglect and inverted conditional probability"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "population rectangle subdivided by condition and outcome"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "population rectangle subdivided by condition and outcome"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "resize/condition subregion while area identities retained"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "base prevalence→likelihood rectangles→posterior ratio"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "posterior denominator includes all evidence cases"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "compo_fourier",
+      "cluster": "composition-temporal",
+      "read_url": "https://www.3blue1brown.com/lessons/fourier-series/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "complex shapes emerge from simple motions"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "LESSON_SPECIFIC_SOURCE_UNVERIFIED",
+        "note": "Some Read pages link a source; source-to-video scene mapping and exact commit not certified"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "complex drawing as sum of uniformly rotating vectors"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "one complex path needs an equally complex primitive motion"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "vector chain with persistent phase/frequency IDs"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "vector chain with persistent phase/frequency IDs"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "rotate components while tip-to-tail sum traces path"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "heat flow question→rotating arrows→drawn path"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "complex shapes emerge from simple motions"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "nn_intro",
+      "cluster": "computation-temporal",
+      "read_url": "https://www.3blue1brown.com/lessons/neural-networks/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "explain numeric activations not personified brains"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "LESSON_SPECIFIC_SOURCE_UNVERIFIED",
+        "note": "Some Read pages link a source; source-to-video scene mapping and exact commit not certified"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "digit pixels map through weighted neuron activations"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "neurons are little intelligent decisions"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "input pixel grid and activation nodes"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "input pixel grid and activation nodes"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "propagate changes through layers with identity of each unit"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "drawn digit→activation propagation→predicted digit"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "explain numeric activations not personified brains"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "nn_gradient",
+      "cluster": "computation-temporal",
+      "read_url": "https://www.3blue1brown.com/lessons/gradient-descent/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "reduced cost, no claim of global optimum"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "LESSON_SPECIFIC_SOURCE_UNVERIFIED",
+        "note": "Some Read pages link a source; source-to-video scene mapping and exact commit not certified"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "parameter updates lower a measured cost"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "model learns by memorizing explicit digit rules"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "point on loss landscape and parameter update arrow"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "point on loss landscape and parameter update arrow"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "iteratively move parameters along gradient"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "cost definition→local slope→update sequence"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "reduced cost, no claim of global optimum"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "nn_gpt",
+      "cluster": "computation-temporal",
+      "read_url": "https://www.3blue1brown.com/lessons/gpt/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "distinguish architecture from actual understanding"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "LESSON_SPECIFIC_SOURCE_UNVERIFIED",
+        "note": "Some Read pages link a source; source-to-video scene mapping and exact commit not certified"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "next-token prediction from embeddings through stack"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "LLM simply stores whole phrases or understands text like humans"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "token boxes then embedding vectors and layered blocks"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "token boxes then embedding vectors and layered blocks"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "flow contextual token representation through stages"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "prompt tokens→embedding→architecture→next-token distribution"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "distinguish architecture from actual understanding"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "nn_attention",
+      "cluster": "computation-temporal",
+      "read_url": "https://www.3blue1brown.com/lessons/attention/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "same token behaves differently given context"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "LESSON_SPECIFIC_SOURCE_UNVERIFIED",
+        "note": "Some Read pages link a source; source-to-video scene mapping and exact commit not certified"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "context-dependent information mixing changes token meaning"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "attention is just an arbitrary arrow drawn between words"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "persistent tokens, Q/K projections, values and context"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "persistent tokens, Q/K projections, values and context"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "scores→softmax→weighted transport to context"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "ambiguous text example→dot products→weighted value sum"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "same token behaves differently given context"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    },
+    {
+      "lesson_id": "nn_mlp",
+      "cluster": "computation-temporal",
+      "read_url": "https://www.3blue1brown.com/lessons/mlp/",
+      "evidence_read": {
+        "status": "DIRECT_OFFICIAL_READ_PAGE_OPENED",
+        "anchor": "does not assert a unique location for stored facts"
+      },
+      "evidence_visual": {
+        "status": "PAGE_EMBEDDED_IMAGE_AND_OR_VIDEO_MARKERS",
+        "limitation": "Embedded visual markers inspected via Read text, not full frame-level video; not evidence of actual shot composition"
+      },
+      "evidence_video": {
+        "status": "NOT_VIEWED_END_TO_END",
+        "timestamp": "UNKNOWN",
+        "per_frame_alignment": "UNKNOWN"
+      },
+      "evidence_source": {
+        "status": "LESSON_SPECIFIC_SOURCE_UNVERIFIED",
+        "note": "Some Read pages link a source; source-to-video scene mapping and exact commit not certified"
+      },
+      "mental_model_entry": {
+        "status": "READ_INFERRED_INTERPRETATION",
+        "value": "MLP layers as nonlinear feature transformation with possible associations"
+      },
+      "potential_misconception": {
+        "status": "INFERRED_NOT_A_MEASURED_LEARNER_MISCONCEPTION",
+        "value": "single neuron literally stores one fact"
+      },
+      "visual_metaphor": {
+        "status": "READ_GROUNDED_ANALYSIS",
+        "value": "token feature vector and intermediate activations"
+      },
+      "object_identity_and_continuity": {
+        "status": "DESIGN_INTERPRETATION_NOT_RENDER_PROOF",
+        "value": "token feature vector and intermediate activations"
+      },
+      "semantic_transform": {
+        "status": "READ_GROUNDED_OPERATION_HYPOTHESIS",
+        "value": "feature expansion, activation and projection back"
+      },
+      "narration_timing": {
+        "status": "UNVERIFIED",
+        "anchor_point_hypothesis": "Place described transformation during the matching explanation; exact second and word-level audio are unknown"
+      },
+      "progressive_abstraction": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "observed association→transformer MLP role→caution about attribution"
+      },
+      "explanatory_closure": {
+        "status": "READ_GROUNDED_INTERPRETATION",
+        "value": "does not assert a unique location for stored facts"
+      },
+      "evidence_class": "READ_DIRECT_PLUS_DESIGN_INFERENCE__NO_FULL_VIDEO_TIMECODES",
+      "open_unknowns": [
+        "time-coded in-video animation not inspected",
+        "no experimental learner outcomes",
+        "relative pedagogy quality vs alternatives not measured"
+      ]
+    }
+  ],
+  "evidence_provenance_policy": "Only source code classes for 3 rows directly inspected. Timings per video or specific audio clips not verified and recorded UNKNOWN."
+}
