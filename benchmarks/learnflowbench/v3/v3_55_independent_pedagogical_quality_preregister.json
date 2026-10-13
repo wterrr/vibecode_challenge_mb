@@ -1,0 +1,145 @@
+{
+  "checkpoint": "V3-55",
+  "parent_sha": "d5cb959fcf3cfc0aa6f1c03aba05ac1ef8017ba5",
+  "registered_before_implementation": true,
+  "registration_kind": "FIRST_BRANCH_COMMIT",
+  "origin": "HOST_SYNTHETIC_NOT_MODEL_AUTHORED",
+  "source_report": "reports/v3_55_independent_pedagogical_quality.md",
+  "frozen_baseline": {
+    "run_id": 38231886537,
+    "artifact_id": 11738443652,
+    "source": "V3-54 reused V3-51 attention HOST mock candidate videos",
+    "cases": [
+      {
+        "id": "mock_token_network",
+        "sha256": "f908468fc1b722bfa64e3c2079d0f21b8ffac0189a9a18614d73b899e8a15c49",
+        "frames": 632,
+        "seconds": 42.1333
+      },
+      {
+        "id": "mock_score_comparison",
+        "sha256": "9fb9828570be82ef0ca60fea9cb61cc55b500d5d9c9955a65031747d9854312e",
+        "frames": 623,
+        "seconds": 41.5333
+      },
+      {
+        "id": "mock_symbolic_equivalence",
+        "sha256": "f29fbe7d4db17af2f18ec2efe2f0bb49af15c808bde1388854d56ff0c1346f98",
+        "frames": 788,
+        "seconds": 52.5333
+      }
+    ],
+    "sample_non_background_occupancy_range": [
+      0.005,
+      0.028
+    ],
+    "observed_limitations": [
+      "small typography on 1280x720",
+      "large negative space",
+      "mostly labels, bars and arrows",
+      "semantic-change quality not certified"
+    ],
+    "matched_AB_warning": "V3-54 videos are different topic (Attention only) from two V3-55 cases; comparisons are contextual not causal matched A/B."
+  },
+  "independent_cases": [
+    {
+      "id": "v355_fraction_2_3_to_4_6",
+      "family": "fraction_equivalence",
+      "source": [
+        2,
+        3
+      ],
+      "target": [
+        4,
+        6
+      ],
+      "factor": 2,
+      "required_visual": "each existing source-cell physically subdivided with retained shaded-area identity then verified arithmetic equality",
+      "claim_rule": "topic-local hashed exact rational arithmetic derived from V3-49, never reuse V3-45 global F1-F3"
+    },
+    {
+      "id": "v355_ordered_process_rekeyed",
+      "family": "ordered_process",
+      "semantics": "Start to Verify to Finish; unresolved condition UNKNOWN",
+      "required_visual": "stable node-edge identities, visibly routed traversal, CHECK ? with no invented true/false",
+      "limit": "New geometry and graph IDs but NOT an unseen process concept; explicit disclosure"
+    },
+    {
+      "id": "v355_attention_reversed_query",
+      "family": "transformer_attention",
+      "query": [
+        0,
+        1
+      ],
+      "keys": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "values": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "dimension": 2,
+      "required_visual": "score comparison then softmax, continuous colored weighted-value transport and verified context; reversing Q must reverse weighting",
+      "claim_rule": "host recomputation and hash-bounded Attention ledger"
+    }
+  ],
+  "frozen_comparators": {
+    "fraction": "V3-49 new ratio family and V3-47 semantic subdivision renderer",
+    "process": "V3-47 held-out/rekeyed process and V3-45 node-edge no-overlap",
+    "attention": "V3-53 compositional Attention Director; NOT V3-51 mock playback"
+  },
+  "acceptance": {
+    "three_real_native_mp4": true,
+    "codec": "H264/AAC",
+    "resolution": [
+      1280,
+      720
+    ],
+    "fps": 15,
+    "zero_provider_requests": true,
+    "production": "BLOCKED",
+    "no_main_merge": true,
+    "pre_registered_visual_conditions": [
+      "exact frame/AAC mux and rendered decoded before/after probes",
+      "fraction source cuts ABSENT before and PRESENT after with verified label",
+      "process CHECK ? visible, never fabricated PASS/FAIL; no node-edge collision",
+      "attention context region initially empty, then two color contributions weighted by certified softmax",
+      "negative tests for false ratio, evidence tamper, wrong scene semantics, invented predicate, reversed weight mutation, synthetic-as-model spoof",
+      "independent inspectable timeline contact sheets and unrevealed AB reviewer packet",
+      "small-font/overlap/crowding audit with manual visual timestamps, not proxy-only"
+    ],
+    "technical_pass_requires": "all three new scoped case MP4s plus exact native QA, unit mutations, frozen V2/V3/Bench CI and artifact SHA independently reviewed",
+    "creative_quality_pass_requires": "blinded human review or defensible direct human visual examination of actual render with recorded rubric/qualitative attribution and improvement against genuinely matched controls; not MAE or occupancy alone",
+    "human_rubric": [
+      "explanatory clarity",
+      "causal transform visibility",
+      "object continuity",
+      "typography legibility",
+      "timing versus narration",
+      "visual hierarchy"
+    ],
+    "no_fabricated_human_scores": true,
+    "negative_outcome": "QUALITY_NO_GO_IF_DRAWINGS_REMAIN_DECORATIVE",
+    "no_model_or_learning_claims": true
+  },
+  "scope_restrictions": [
+    "Only these 3 case families; not evidence of six-domain generalization",
+    "HOST_ONLY and no arbitrary generated Python",
+    "No reruns of V3-50 paid-model one-shot",
+    "No pretrained or live model API calls",
+    "No claim of student learning gains"
+  ]
+}
