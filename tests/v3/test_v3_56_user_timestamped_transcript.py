@@ -63,3 +63,34 @@ def test_user_source_to_native_witness_does_not_infer_word_for_word_sync():
     assert a["output"]["user_transcript_cue_s"]==1365
     assert all(row["actual_speech_onset_s"] is None for row in d["rows"])
     assert all(row["source_segment_utf8_sha256"] != row["native_decoded_luma_sha256"] for row in d["rows"])
+
+
+def test_pec_marks_user_provided_timed_text_and_disallows_native_word_promotion():
+    from jsonschema import Draft202012Validator
+    from scripts.verify_v3_56_research import load as read_repo, ARCH
+    spec=read_repo(ARCH)["schema"]["properties"]["narration_visual_evidence"]["items"]
+    Draft202012Validator.check_schema(spec)
+    v=Draft202012Validator(spec)
+    receipt,_=docs()
+    r=receipt["rows"][0]
+    entry={
+        "beat_id":"mole_phrase",
+        "text_cue_source":"USER_SUPPLIED_TIMED_TRANSCRIPT_UNVERIFIED",
+        "caption_time_s":120,
+        "native_visible_sample_times_s":[118,120,122],
+        "relation":"UNKNOWN",
+        "audio_content_certification":"USER_TIMED_TEXT_ONLY",
+        "native_media_sha256":receipt["native_video"]["sha256"],
+        "transcript_source_sha256":receipt["source"]["file_sha256"],
+        "transcript_fragment_sha256":r["source_segment_utf8_sha256"],
+        "claim_scope":"GROUNDED_SCRIPT_TOPIC"
+    }
+    assert not list(v.iter_errors(entry))
+    entry["audio_content_certification"]="NATIVE_FORCED_ALIGNMENT_VERIFIED"
+    assert list(v.iter_errors(entry))
+    entry["audio_content_certification"]="USER_TIMED_TEXT_ONLY"
+    entry["claim_scope"]="NATIVE_AUDIO_VISUAL_ALIGNED"
+    assert list(v.iter_errors(entry))
+    del entry["transcript_fragment_sha256"]
+    entry["claim_scope"]="GROUNDED_SCRIPT_TOPIC"
+    assert list(v.iter_errors(entry))
