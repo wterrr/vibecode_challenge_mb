@@ -11,6 +11,9 @@ on:
       - "research/v3_56_deep_video_audit_preregister.json"
       - "research/v3_56_source_scene_corpus.json"
       - "research/v3_56_deep_pedagogical_beats.json"
+      - "research/v3_56_attention_ch6_native_video_receipt.json"
+      - "reports/v3_56_attention_ch6_native_video_audit.md"
+      - "tests/v3/test_v3_56_attention_ch6_native_receipt.py"
       - "reports/v3_56_deep_video_audit_addendum.md"
       - "scripts/verify_v3_56_deep_video_audit.py"
       - "tests/v3/test_v3_56_deep_video_audit.py"
@@ -50,6 +53,7 @@ jobs:
           python -m pytest -q --confcutdir=tests/v3 \
             tests/v3/test_v3_56_pedagogical_research.py \
             tests/v3/test_v3_56_deep_video_audit.py \
+            tests/v3/test_v3_56_attention_ch6_native_receipt.py \
             tests/v3/test_v3_55_independent_pedagogical_quality.py \
             tests/v3/test_v3_54_model_candidate_quality.py
       - name: Recheck frozen V2, V3 and LearnFlowBench protocol
