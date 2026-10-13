@@ -448,7 +448,8 @@
                 "EXTERNAL_CAPTION_PROXY",
                 "HOST_WRITTEN_SCRIPT",
                 "NATIVE_ASR_REVIEWED",
-                "NONE"
+                "NONE",
+                "USER_SUPPLIED_TIMED_TRANSCRIPT_UNVERIFIED"
               ]
             },
             "caption_time_s": {
@@ -479,7 +480,8 @@
                 "STREAM_ONLY",
                 "CAPTION_PROXY_ONLY",
                 "NATIVE_WORDS_MANUALLY_VERIFIED",
-                "NATIVE_FORCED_ALIGNMENT_VERIFIED"
+                "NATIVE_FORCED_ALIGNMENT_VERIFIED",
+                "USER_TIMED_TEXT_ONLY"
               ]
             },
             "native_media_sha256": {
@@ -492,6 +494,16 @@
                 "GROUNDED_SCRIPT_TOPIC",
                 "NATIVE_AUDIO_VISUAL_ALIGNED"
               ]
+            },
+            "transcript_source_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "description": "SHA of user-supplied unverified timestamped transcript; does not certify native AAC spoken words"
+            },
+            "transcript_fragment_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "description": "SHA of source timestamped phrase; source text is not copied into git"
             }
           },
           "allOf": [
@@ -536,6 +548,38 @@
               },
               "then": {
                 "properties": {
+                  "claim_scope": {
+                    "enum": [
+                      "OBSERVED_SCREEN_ONLY",
+                      "GROUNDED_SCRIPT_TOPIC"
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "text_cue_source": {
+                    "const": "USER_SUPPLIED_TIMED_TRANSCRIPT_UNVERIFIED"
+                  }
+                },
+                "required": [
+                  "text_cue_source"
+                ]
+              },
+              "then": {
+                "required": [
+                  "transcript_source_sha256",
+                  "transcript_fragment_sha256"
+                ],
+                "properties": {
+                  "audio_content_certification": {
+                    "enum": [
+                      "USER_TIMED_TEXT_ONLY",
+                      "STREAM_ONLY"
+                    ]
+                  },
                   "claim_scope": {
                     "enum": [
                       "OBSERVED_SCREEN_ONLY",
@@ -703,7 +747,9 @@
     "Never award a static explanatory comparison or intentional quiz hold a fake before/after motion witness; transformed-object and static proof paths require different QA/critic contracts.",
     "Narration-to-visual relation LEAD/OVERLAP/FOLLOW is a research hypothesis unless native audio phrase boundaries are independently certified. Third-party caption timestamps and native frame PTS are distinct source streams; audio waveform/RMS only attests signal, never wording or speech pause.",
     "An EXTERNAL_CAPTION_PROXY source may only produce CAPTION_PROXY_ONLY or STREAM_ONLY, never NATIVE_WORDS_MANUALLY_VERIFIED or NATIVE_FORCED_ALIGNMENT_VERIFIED, and cannot assert NATIVE_AUDIO_VISUAL_ALIGNED. Host enforces cross-field restrictions beyond JSON schema.",
-    "Static visual hold is not equivalent to narrator silence; mixed narration/music audio RMS cannot prove a pause."
+    "Static visual hold is not equivalent to narrator silence; mixed narration/music audio RMS cannot prove a pause.",
+    "V3-56 user-provided 449 timestamps are text-provenance only. Do not equate timed text with actual native AAC phrase onset, WER, human audible confirmation or forced alignment. 2-second video sampled bracket is not precise edited shot onset.",
+    "Native visible words can DISAGREE with user timestamped transcript: at ~02:00 transcript American true mole versus video American shrew mole. Mark disagreement without silently editing either or assuming original native audio phonemes."
   ],
   "integration_recommendation": {
     "architecture": "V3 research sidecar; share approved claim catalog and host semantic referents, attach cognitive/visual witness fields after V2 PedagogyPlan; issue distinct V3 visual plan to optional renderer; do not retrofit old Core",
@@ -722,6 +768,11 @@
       "evidence": "12 user-uploaded original 26m MP4 frame-cue windows + external YouTube timed caption mirror, original AAC PCM 1569s, no word-speech recognition",
       "path": "research/v3_56_attention_native_caption_alignment.json",
       "effect": "Proposed optional PEC narration_visual_evidence keeps caption_time_s and native_visible_sample_times_s separate, supports LEAD/OVERLAP/FOLLOW/UNKNOWN, prohibits proxy-to-native-speech laundering."
+    },
+    "user_transcript_v356": {
+      "receipt": "research/v3_56_user_timestamped_transcript_receipt.json",
+      "method": "User-uploaded transcript SHA, 449 ordered unique timecodes, 12 actual video semantic windows; spoken words not independently certified.",
+      "runtime": "UNINTEGRATED_RESEARCH_ONLY"
     }
   }
 }
