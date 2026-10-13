@@ -11,8 +11,10 @@ on:
       - "benchmarks/learnflowbench/v3/v3_52_semantic_motion_preregister.json"
       - ".github/workflows/v3-52-semantic-motion.yml"
       - "reports/v3_52_semantic_motion.md"
-      - "PLAN_V3.md"
-      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

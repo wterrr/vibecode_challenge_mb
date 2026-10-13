@@ -39,8 +39,10 @@ on:
       - "tests/v3/test_v3_56_pedagogical_research.py"
       - ".github/workflows/v3-56-pedagogical-design-research.yml"
       - "reports/v3_56_pedagogical_prompt_architecture.md"
-      - "PLAN_V3.md"
-      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

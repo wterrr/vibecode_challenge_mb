@@ -12,8 +12,10 @@ on:
       - "benchmarks/learnflowbench/v3/v3_54_model_candidate_quality_preregister.json"
       - ".github/workflows/v3-54-model-candidate-quality.yml"
       - "reports/v3_54_model_candidate_quality.md"
-      - "PLAN_V3.md"
-      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read

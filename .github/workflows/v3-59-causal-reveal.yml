@@ -11,8 +11,10 @@ on:
       - "tests/v3/test_v3_59_causal_reveal.py"
       - ".github/workflows/v3-59-causal-reveal.yml"
       - "reports/v3_59_causal_reveal_audit.md"
-      - "PLAN_V3.md"
-      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
