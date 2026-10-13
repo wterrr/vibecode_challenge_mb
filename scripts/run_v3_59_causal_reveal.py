@@ -4,10 +4,13 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import csv
+import shutil
+from hashlib import sha256
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path: sys.path.insert(0,str(ROOT))
-from learnflow_v3.matched_pedagogy_ablation import IDS,require
+from learnflow_v3.matched_pedagogy_ablation import IDS,require,sha,probe,aac_sha,CRITERIA,RATINGS_FIELDS
 from learnflow_v3.causal_reveal import build_revision,verify_reveal_progression
 from learnflow_v3.pedagogical_storytelling_slice import plan
 
@@ -27,7 +30,58 @@ def registration():
             "INVALID_RELEASE_SCOPE")
     return r
 
-def run(src:Path,out:Path):
+def create_three_arm_packet(src:Path, v358:Path, out:Path, results):
+    """All three arms share source narration, count & facts; mask CONDITIONS, not visuals."""
+    target=out/"reviewer_blinded"
+    require(not target.exists(),"REVIEW_PACKET_EXISTS")
+    target.mkdir(parents=True)
+    mapping={"checkpoint":"V3-59","reviewer_key_separate":True,
+             "independent_reviewers":0,"quality":"UNRATED","cases":{}}
+    records=[]
+    for case in IDS:
+        original=src/case/"pedagogical_slice.mp4"
+        static=v358/"paired"/case/"static_control.mp4"
+        repair=out/case/"causal_revision.mp4"
+        paths={"original_motion":original,"static_end_state":static,
+               "causal_reveal":repair}
+        require(all(p.is_file() for p in paths.values()),"ARM_MISSING")
+        audio={name:aac_sha(p) for name,p in paths.items()}
+        frames={name:probe(p)["video_frames"] for name,p in paths.items()}
+        require(len(set(audio.values()))==1,"THREE_ARM_AUDIO_MISMATCH")
+        require(len(set(frames.values()))==1,"THREE_ARM_FRAME_MISMATCH")
+        order=sorted(paths,key=lambda name: sha256(
+            (PARENT+case+name).encode()).hexdigest())
+        mapping["cases"][case]={}
+        for j,arm in enumerate(order):
+            clip=f"{case}_{chr(65+j)}.mp4"
+            shutil.copyfile(paths[arm],target/clip)
+            mapping["cases"][case][clip]={"treatment":arm,
+                    "sha256":sha(target/clip)}
+            records.append({"rater_id":"","case_id":case,"clip_id":clip,
+                  **{criterion:"" for criterion in CRITERIA},
+                  "confidence":"","failure_notes":""})
+    with (target/"blank_review.csv").open("w",newline="",encoding="utf-8") as f:
+        writer=csv.DictWriter(f,fieldnames=RATINGS_FIELDS)
+        writer.writeheader()
+        writer.writerows(records)
+    (target/"REVIEWER_INSTRUCTIONS.txt").write_text(
+        "V3-59 review packet: three condition-masked native videos per topic.\n"
+        "Please rate all nine clips independently for clarity, causal witness,\n"
+        "referent continuity, readability and pacing (ordinal 1-5), or leave blank.\n"
+        "Log specific seconds for early answers or misleading transformations.\n"
+        "All clips within a topic preserve factual host evidence, narration and duration.\n"
+        "Treatment is visually inferable; this is NOT double-blind.\n"
+        "No data have been collected; scores are blank by design.\n"
+        "No rating alone proves a student learning improvement.\n",
+        encoding="utf-8")
+    (out/"admin_treatment_key.json").write_text(
+        json.dumps(mapping,indent=2,sort_keys=True)+"\n",encoding="utf-8")
+    return {"masked_clips":len(records),"complete_external_raters":0,
+            "quality":"UNRATED_NO_REVIEWERS",
+            "all_three_arms_native_AAC_and_video_frames_matched":True}
+
+
+def run(src:Path, v358:Path, out:Path):
     registration()
     require(not out.exists(),"FRESH_OUTPUT_REQUIRED")
     out.mkdir(parents=True)
@@ -36,10 +90,12 @@ def run(src:Path,out:Path):
         match=build_revision(src/cid/"pedagogical_slice.mp4",
                              src/cid/"receipt.json",out/cid)
         matches.append(match)
+    packet=create_three_arm_packet(src,v358,out,matches)
     result={
         "checkpoint":"V3-59","parent_pr":92,
         "parent_sha":PARENT,"prereg_commit":PREREG,
         "results":matches,
+        "masked_three_arm_reviewer_packet":packet,
         "all_semantic_gates_host_pass":all(
             m["semantic_gate"]["semantic_gate"]=="PASS_HOST_ONLY" for m in matches),
         "all_audio_packets_equal":all(
@@ -62,6 +118,8 @@ def run(src:Path,out:Path):
 if __name__=="__main__":
     parser=argparse.ArgumentParser()
     parser.add_argument("--v357-dir",type=Path,required=True)
+    parser.add_argument("--v358-dir",type=Path,required=True,
+                        help="Fresh, verified V3-58 static control output")
     parser.add_argument("--output-dir",type=Path,required=True)
     args=parser.parse_args()
-    run(args.v357_dir,args.output_dir)
+    run(args.v357_dir,args.v358_dir,args.output_dir)
