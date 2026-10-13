@@ -5,10 +5,15 @@ on:
     branches:
       - chatgpt/v3-03-signal-preservation-proof
   pull_request:
+    branches: [main]
     paths:
       - "learnflow_v3/**"
       - "tests/v3/**"
       - ".github/workflows/v3-signal-preservation.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
