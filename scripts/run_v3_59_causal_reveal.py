@@ -26,7 +26,7 @@ def registration():
     require(r["cases"]==list(IDS) and
             r["acceptance"]["no_new_model_API"] and
             r["acceptance"]["production"]=="BLOCKED" and
-            not r["acceptance"]["no_main_merge"] is False,
+            r["acceptance"]["no_main_merge"] is True,
             "INVALID_RELEASE_SCOPE")
     return r
 
@@ -80,6 +80,39 @@ def create_three_arm_packet(src:Path, v358:Path, out:Path, results):
             "quality":"UNRATED_NO_REVIEWERS",
             "all_three_arms_native_AAC_and_video_frames_matched":True}
 
+
+
+def validate_three_arm_reviews(rows, admin_key, minimum_raters=3):
+    """Quality cannot be declared rated without a real complete masked panel."""
+    expected={(case,clip) for case,clips in admin_key["cases"].items()
+              for clip in clips}
+    if not rows:
+        return {"quality":"UNRATED_NO_REVIEWERS","independent_raters":0,
+                "student_learning_gain":"NOT_MEASURED","gate":"NO_GO"}
+    seen=set()
+    raters=set()
+    for r in rows:
+        rid=str(r.get("rater_id","")).strip()
+        pair=(r.get("case_id"),r.get("clip_id"))
+        require(bool(rid) and pair in expected,"REVIEW_CASE_OR_RATER_INVALID")
+        require((rid,pair) not in seen,"DUPLICATE_REVIEW")
+        seen.add((rid,pair))
+        raters.add(rid)
+        for criterion in CRITERIA:
+            val=str(r.get(criterion,"")).strip()
+            require(val in ("","1","2","3","4","5"),
+                    "INVALID_SUBJECTIVE_RATING")
+    for rid in raters:
+        require({pair for r,pair in seen if r==rid}==expected,
+                "INCOMPLETE_NINE_VIDEO_PANEL")
+    if len(raters)<minimum_raters:
+        return {"quality":"INSUFFICIENT_INDEPENDENT_REVIEWERS",
+                "independent_raters":len(raters),
+                "student_learning_gain":"NOT_MEASURED","gate":"NO_GO"}
+    return {"quality":"RATINGS_RECEIVED_PENDING_PROVENANCE_AUDIT",
+            "independent_raters":len(raters),
+            "student_learning_gain":"NOT_MEASURED",
+            "gate":"PANEL_PRESENT_NOT_LEARNING_PROOF"}
 
 def run(src:Path, v358:Path, out:Path):
     registration()
