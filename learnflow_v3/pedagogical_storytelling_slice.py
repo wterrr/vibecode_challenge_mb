@@ -149,7 +149,7 @@ def render_image(p,idx,progress):
    for half in range(1,6,2):
     x=int(x0+half*(x1-x0)/6)
     d.line((x,y0,x,y0+(y1-y0)*progress),fill=AMBER,width=7)
-  if idx>=3:d.line((x0,448,x1,448),fill=GREEN,width=4)
+  if idx>=3:d.line((x0,448,x0+int((x1-x0)*(progress if idx==3 else 1)),448),fill=GREEN,width=5)
   text(d,(635,483),"2 / 3" if idx<=1 else "4 / 6",46,anchor="mm")
   if idx>=3:text(d,(635,548),"Same shaded area — equal fraction",25,GREEN,anchor="mm")
   if idx==0:text(d,(635,211),"What could change without changing the whole?",25,AMBER,anchor="mm")
@@ -173,6 +173,11 @@ def render_image(p,idx,progress):
    text(d,(110,380),f"w(A) = {weights[0]:.3f}",22,CYAN)
    text(d,(110,456),f"w(B) = {weights[1]:.3f}",22,AMBER)
    d.ellipse((957,446,997,486),fill=AMBER)
+   if idx==2:
+    d.rounded_rectangle((390,516,910,535),outline=SOFT,radius=7,width=2)
+    width=max(1,int(520*weights[1]*progress))
+    d.rounded_rectangle((390,516,390+width,535),radius=7,fill=AMBER)
+  if idx==3:d.line((360,510,360+int(570*progress),510),fill=GREEN,width=9)
   if idx>=3:text(d,(670,545),f"context = [{ctx[0]:.3f}, {ctx[1]:.3f}]",29,GREEN,anchor="mm")
   if idx==0:text(d,(640,526),"Which value will carry more information?",25,AMBER,anchor="mm")
  else:
@@ -184,7 +189,11 @@ def render_image(p,idx,progress):
    text(d,(x,338),name,31,BLACK,anchor="mm")
    if j<2:d.line((x+140,337,nodes[j+1][1]-141,337),fill=SOFT,width=5)
   if idx==2:
-   x=int(220+390*progress);d.ellipse((x,410,x+24,434),fill=GREEN)
+   x=int(220+390*progress)
+   d.line((230,426,x,426),fill=GREEN,width=14)
+   d.ellipse((x-15,406,x+35,456),fill=GREEN)
+  if idx==3:
+   d.arc((915-int(75*progress),255-int(50*progress),1185+int(75*progress),421+int(50*progress)),0,360,fill=AMBER,width=6)
   if idx>=3:text(d,(635,482),"Outcome: UNKNOWN, not PASS or FAIL",29,AMBER,anchor="mm")
   elif idx==0:text(d,(635,490),"What evidence would be needed at CHECK?",26,AMBER,anchor="mm")
  return frame
