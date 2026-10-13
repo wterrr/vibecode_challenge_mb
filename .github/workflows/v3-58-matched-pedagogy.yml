@@ -1,0 +1,104 @@
+name: V3-58 Matched Pedagogical Native Review (NO MODEL API)
+
+on:
+  push:
+    branches: [chatgpt/v3-58-matched-pedagogy-evaluation]
+  pull_request:
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_58_matched_pedagogy_preregister.json"
+      - "learnflow_v3/pedagogical_authoring_readiness.py"
+      - "learnflow_v3/matched_pedagogy_ablation.py"
+      - "scripts/run_v3_58_matched_review.py"
+      - "tests/v3/test_v3_58_matched_review.py"
+      - ".github/workflows/v3-58-matched-pedagogy.yml"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+      - "reports/v3_58_matched_pedagogical_review.md"
+
+permissions:
+  contents: read
+
+jobs:
+  v358-strict-typed-pedagogy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install offline test tools
+        timeout-minutes: 12
+        run: |
+          timeout -k 10s 420s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Frozen V3-57 and V3-58 adversarial checks
+        timeout-minutes: 9
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_58_matched_review.py \
+            tests/v3/test_v3_57_pedagogical_slice.py \
+            tests/v3/test_v3_55_independent_pedagogical_quality.py
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+      - name: Assert no model calls in new V3-58 files
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          paths=["learnflow_v3/pedagogical_authoring_readiness.py",
+                 "learnflow_v3/matched_pedagogy_ablation.py",
+                 "scripts/run_v3_58_matched_review.py"]
+          banned=("open"+"router.ai","chat"+"completions","requests."+"post",
+                  "url"+"open(","model"+"_authored_python")
+          for path in paths:
+              content=Path(path).read_text()
+              assert all(s not in content for s in banned), path
+          print("V358=STRICT_SYNTHETIC_ONLY_QUALITY_UNRATED")
+          PY
+
+  v358-real-native-six-movie-pairs:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    needs: [v358-strict-typed-pedagogy]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Offline native dependencies
+        timeout-minutes: 12
+        run: |
+          bash scripts/bootstrap_v3_30_native.sh
+          timeout -k 10s 420s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Rebuild exact V3-57 three native videos offline
+        timeout-minutes: 25
+        run: |
+          python scripts/run_v3_57_pedagogical_slice.py --output-dir artifacts/v357
+      - name: Render three matched motion-vs-static pairs and prove audio packet equality
+        timeout-minutes: 22
+        run: |
+          python scripts/run_v3_58_matched_review.py \
+            --v357-dir artifacts/v357 --output-dir artifacts/v358
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v358-blinded-independent-review-six-movies
+          path: artifacts/v358/reviewer_blinded/
+          retention-days: 7
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v358-technical-matched-receipts-ADMIN-NOT-FOR-REVIEWER
+          path: |
+            artifacts/v358/v358_results.json
+            artifacts/v358/admin_unblind_key.json
+          retention-days: 7
+          if-no-files-found: warn
