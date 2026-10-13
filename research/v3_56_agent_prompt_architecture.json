@@ -1,0 +1,543 @@
+{
+  "checkpoint": "V3-56",
+  "origin": "RESEARCH_PROPOSED_SIDE_CAR_NOT_PRODUCTION",
+  "schema": {
+    "title": "PedagogicalExplanationContract",
+    "version": "research-v3-56-proposal-v1",
+    "status": "UNINTEGRATED_RESEARCH_ONLY",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "contract_version",
+      "scope",
+      "learning_difficulty",
+      "target_mental_model",
+      "visual_representation",
+      "persistent_semantic_objects",
+      "verified_transformations",
+      "narration_anchors",
+      "expected_observable_explanation",
+      "explanatory_closure",
+      "unsupported_capability_outcome"
+    ],
+    "properties": {
+      "contract_version": {
+        "const": "research-v3-56-proposal-v1"
+      },
+      "scope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "topic_id",
+          "approved_claim_ids",
+          "host_ledger_sha256"
+        ],
+        "properties": {
+          "topic_id": {
+            "type": "string"
+          },
+          "approved_claim_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "host_ledger_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      },
+      "learning_difficulty": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "description",
+          "misconception_hypothesis",
+          "probe_question",
+          "source_scope"
+        ],
+        "properties": {
+          "description": {
+            "type": "string",
+            "minLength": 12
+          },
+          "misconception_hypothesis": {
+            "type": "string"
+          },
+          "probe_question": {
+            "type": "string",
+            "minLength": 8
+          },
+          "source_scope": {
+            "enum": [
+              "HYPOTHESIZED_FROM_TASK",
+              "VALIDATED_LEARNER_EVIDENCE"
+            ]
+          }
+        }
+      },
+      "target_mental_model": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "model_description",
+          "observable_change"
+        ],
+        "properties": {
+          "model_description": {
+            "type": "string",
+            "minLength": 12
+          },
+          "observable_change": {
+            "type": "string",
+            "minLength": 12
+          }
+        }
+      },
+      "visual_representation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "representation_kind",
+          "why_this_representation",
+          "capability_ids"
+        ],
+        "properties": {
+          "representation_kind": {
+            "enum": [
+              "spatial_grid",
+              "area_partition",
+              "vector_field",
+              "graph_state",
+              "timeline",
+              "weighted_transport",
+              "symbolic_equivalence",
+              "other_verified"
+            ]
+          },
+          "why_this_representation": {
+            "type": "string",
+            "minLength": 12
+          },
+          "capability_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          }
+        }
+      },
+      "persistent_semantic_objects": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "object_id",
+            "semantic_role",
+            "identity_invariant",
+            "claim_ids"
+          ],
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,40}$"
+            },
+            "semantic_role": {
+              "type": "string"
+            },
+            "identity_invariant": {
+              "type": "string"
+            },
+            "claim_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            }
+          }
+        }
+      },
+      "verified_transformations": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "operation",
+            "input_object_ids",
+            "output_object_ids",
+            "claim_ids",
+            "host_evidence_sha256",
+            "precondition",
+            "postcondition",
+            "invariants",
+            "renderer_capability_id"
+          ],
+          "properties": {
+            "operation": {
+              "type": "string"
+            },
+            "input_object_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "output_object_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "claim_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "host_evidence_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "precondition": {
+              "type": "string"
+            },
+            "postcondition": {
+              "type": "string"
+            },
+            "invariants": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "renderer_capability_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "narration_anchors": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "beat_id",
+            "claim_ids",
+            "referenced_object_ids",
+            "referenced_transform_indexes",
+            "relative_order",
+            "time_source"
+          ],
+          "properties": {
+            "beat_id": {
+              "type": "string"
+            },
+            "claim_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "referenced_object_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "referenced_transform_indexes": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "relative_order": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "time_source": {
+              "enum": [
+                "ORDER_ONLY",
+                "AUDIO_DERIVED_BEAT_FRAME",
+                "MEASURED_WORD_ALIGNMENT"
+              ]
+            }
+          }
+        }
+      },
+      "expected_observable_explanation": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "witness_id",
+            "transformation_index",
+            "before_state",
+            "after_state",
+            "witness_region",
+            "witness_type"
+          ],
+          "properties": {
+            "witness_id": {
+              "type": "string"
+            },
+            "transformation_index": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "before_state": {
+              "type": "string"
+            },
+            "after_state": {
+              "type": "string"
+            },
+            "witness_region": {
+              "type": "string"
+            },
+            "witness_type": {
+              "enum": [
+                "DECODABLE_PIXEL_TRANSITION",
+                "HOST_VERIFIED_GEOMETRY",
+                "SOURCE_BACKED_STATE",
+                "NOT_YET_RENDERABLE"
+              ]
+            }
+          }
+        }
+      },
+      "explanatory_closure": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "return_to_probe",
+          "known_limitations"
+        ],
+        "properties": {
+          "return_to_probe": {
+            "type": "string"
+          },
+          "known_limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "unsupported_capability_outcome": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "state",
+          "reason_codes",
+          "may_publish",
+          "allowed_fallback"
+        ],
+        "properties": {
+          "state": {
+            "enum": [
+              "SUPPORTED",
+              "UNSUPPORTED_CAPABILITY",
+              "UNSUPPORTED_EVIDENCE",
+              "DEFERRED_HUMAN_REVIEW"
+            ]
+          },
+          "reason_codes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "may_publish": {
+            "type": "boolean"
+          },
+          "allowed_fallback": {
+            "enum": [
+              "NONE",
+              "DISCLOSE_LIMITATION_ONLY",
+              "SEMANTICALLY_EQUIVALENT_VERIFIED_ALTERNATIVE"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "roles": [
+    {
+      "role": "pedagogy_agent",
+      "responsibility": "Cognitive Design",
+      "current_module": "pedagogy_agent/hermes.py",
+      "sidecar_section": "pedagogy_spec_v3",
+      "owns_fields": [
+        "difficulty",
+        "target_mental_model",
+        "preconception",
+        "probe_question"
+      ],
+      "system_instruction": "You are a LearnFlow V3 research-stage Cognitive Design specialist. Never introduce unsupported claims, arbitrary execution, source-unsupported visual mechanisms, or alter frozen V2 Core. No model API is to be called in V3-56.",
+      "developer_instruction": "Explain initial learner model and learner confusion, propose contrastive example and what observation disambiguates; never make new factual assertion.",
+      "structured_output": "Only the relevant typed subset of PedagogicalExplanationContract; host canonicalizes IDs and validates cross-references.",
+      "host_validator": "host rejects missing relevant approved claim references; misconceptions are hypotheses not learner measurements"
+    },
+    {
+      "role": "script_agent",
+      "responsibility": "Narrative Design",
+      "current_module": "script_agent/hermes.py",
+      "sidecar_section": "script_spec_v3",
+      "owns_fields": [
+        "narration_anchors",
+        "explanatory_closure",
+        "probe_question"
+      ],
+      "system_instruction": "You are a LearnFlow V3 research-stage Narrative Design specialist. Never introduce unsupported claims, arbitrary execution, source-unsupported visual mechanisms, or alter frozen V2 Core. No model API is to be called in V3-56.",
+      "developer_instruction": "Sequence question, prediction, grounded visual discovery, formalization, reflection; each narration beat points to a visible observation, not only a time estimate.",
+      "structured_output": "Only the relevant typed subset of PedagogicalExplanationContract; host canonicalizes IDs and validates cross-references.",
+      "host_validator": "host rejects narration not mapped to claim/visual evidence, ignores fabricated word timestamps"
+    },
+    {
+      "role": "visual_director",
+      "responsibility": "Visual Thinking",
+      "current_module": "visual_director/hermes.py",
+      "sidecar_section": "visual_director_spec_v3",
+      "owns_fields": [
+        "visual_representation",
+        "persistent_semantic_objects",
+        "verified_transformations"
+      ],
+      "system_instruction": "You are a LearnFlow V3 research-stage Visual Thinking specialist. Never introduce unsupported claims, arbitrary execution, source-unsupported visual mechanisms, or alter frozen V2 Core. No model API is to be called in V3-56.",
+      "developer_instruction": "Choose representation and invariant object references; require meaningful before/after witness; if unable represent mechanism, explicitly unsupported rather than decorative card.",
+      "structured_output": "Only the relevant typed subset of PedagogicalExplanationContract; host canonicalizes IDs and validates cross-references.",
+      "host_validator": "new V3 sidecar only; frozen V2 Core layout contract stays untouched"
+    },
+    {
+      "role": "creative_motion_director",
+      "responsibility": "Motion Design",
+      "current_module": "learnflow_v3/creative_motion_director.py",
+      "sidecar_section": "motion_spec_v3",
+      "owns_fields": [
+        "verified_transformations",
+        "narration_anchors",
+        "expected_observable_explanation"
+      ],
+      "system_instruction": "You are a LearnFlow V3 research-stage Motion Design specialist. Never introduce unsupported claims, arbitrary execution, source-unsupported visual mechanisms, or alter frozen V2 Core. No model API is to be called in V3-56.",
+      "developer_instruction": "Schedule finite verified transformations and highlights from host facts; no free Python, no numeric invention, no unbounded camera.",
+      "structured_output": "Only the relevant typed subset of PedagogicalExplanationContract; host canonicalizes IDs and validates cross-references.",
+      "host_validator": "compiler enforces finite capabilities, claim hashes, stable IDs, temporal order, actual native H264 before/after verification"
+    },
+    {
+      "role": "pedagogical_visual_critic",
+      "responsibility": "Independent QA",
+      "current_module": "learnflow_v3/artifact_critic.py",
+      "sidecar_section": "critic_spec_v3",
+      "owns_fields": [
+        "expected_observable_explanation",
+        "unsupported_capability_outcome"
+      ],
+      "system_instruction": "You are a LearnFlow V3 research-stage Independent QA specialist. Never introduce unsupported claims, arbitrary execution, source-unsupported visual mechanisms, or alter frozen V2 Core. No model API is to be called in V3-56.",
+      "developer_instruction": "Compare intended cognitive change to decoded visual witness and claim evidence; separate technical gate from human pedagogical judgment.",
+      "structured_output": "Only the relevant typed subset of PedagogicalExplanationContract; host canonicalizes IDs and validates cross-references.",
+      "host_validator": "fail closed missing source, candidate artifacts, blurry text; mark human educational benefit UNRATED"
+    }
+  ],
+  "existing_reuse_audit": [
+    {
+      "area": "V2 pedagogy model",
+      "path": "pedagogy_agent/hermes.py",
+      "observed": "measurable objectives, approved IDs, analogies, assessment probes; not initial learner model contract",
+      "boundary": "do not add V3 keys to V2 PedagogyPlan"
+    },
+    {
+      "area": "V2 script",
+      "path": "script_agent/hermes.py",
+      "observed": "indexes→host restored claim_ids; explicit teaching_function and narration length; no visual decisions",
+      "boundary": "new V3 sidecar attaches beat-to-observable instead of editing claim index protocol"
+    },
+    {
+      "area": "V2 Visual Director",
+      "path": "visual_director/hermes.py",
+      "observed": "only 4 frozen layout intents; explicit CONCEPT_CARD fallback for dense scenes; no motion/camera",
+      "boundary": "no production prompt edits; develop separate V3 director task, never silently switch V2 to new grammar"
+    },
+    {
+      "area": "V3 Creative SceneGraph",
+      "path": "learnflow_v3/creative_scene_graph.py",
+      "observed": "6 finite operations reveal,emphasize,connect,hide,move,replace, typed layouts PROCESS COMPARISON FREEFORM GRID, attention A1-A4 grounding only",
+      "boundary": "not generic physics geometry"
+    },
+    {
+      "area": "V3 visual grammar",
+      "path": "learnflow_v3/pedagogical_visual_grammar.py",
+      "observed": "5 finite fraction/process transformations; UNKNOWN truth only; no free-form scene",
+      "boundary": "not evidence of real predicate branches or all-domain simulation"
+    },
+    {
+      "area": "V3 creative director",
+      "path": "learnflow_v3/creative_motion_director.py",
+      "observed": "attention 4 mandatory causal stages plus intro/inspect; QKV host ledger; 3 scene styles",
+      "boundary": "do not infer domain-general motion agent"
+    },
+    {
+      "area": "V3 candidate gate",
+      "path": "learnflow_v3/creative_candidate_acceptance.py",
+      "observed": "strict V3-54 candidate acceptance still topic-bound to frozen Attention",
+      "boundary": "schema change requires new path, not loosening V3-54 guarantee"
+    },
+    {
+      "area": "V3 visual QA",
+      "path": "learnflow_v3/creative_visual_quality_gate.py",
+      "observed": "sampled non-background/difference proxies",
+      "boundary": "no human comprehension metric"
+    },
+    {
+      "area": "critic/reviewer",
+      "path": "learnflow_v3/independent_quality_pilot.py",
+      "observed": "independent human rater packet machinery exists; frozen V3-16 excluded; scores not fabricated",
+      "boundary": "reuse rather than new agent process"
+    },
+    {
+      "area": "native AV QA",
+      "path": "learnflow_v3/lesson_quality.py",
+      "observed": "codec/audio/pixel media audit, word-level alignment UNMEASURED",
+      "boundary": "no invented utterance timestamps"
+    }
+  ],
+  "host_owned_invariants": [
+    "Claim IDs are exact subset of frozen approved ledger and hashed host evidence; no added factual outcomes.",
+    "All declared before/after witness transformations reference persistent existing objects and known finite renderer capabilities.",
+    "Object identity preserved by deterministic host ID mapping; any split/merge needs explicit multiplicity map.",
+    "Narration beat ordering derived from verified audio/frame schedule, not model-invented seconds.",
+    "A visual representation is no-op/unsafe if its decoded witness cannot establish the pedagogical claim: reject it, never label creative PASS.",
+    "Any unsupported operation yields UNSUPPORTED_CAPABILITY with may_publish=false unless a validated semantically-equivalent alternative exists.",
+    "V2 Core receives unchanged data/protocol; V3 sidecar is opt-in and separate from legacy VisualDirectorOutput.",
+    "Human comprehension is UNRATED unless independently collected; renderer-level pixel change alone insufficient."
+  ],
+  "integration_recommendation": {
+    "architecture": "V3 research sidecar; share approved claim catalog and host semantic referents, attach cognitive/visual witness fields after V2 PedagogyPlan; issue distinct V3 visual plan to optional renderer; do not retrofit old Core",
+    "compatible_with_v2": "yes if sidecar never enters frozen V2 schemas and V2 route unchanged",
+    "unsupported_now": [
+      "continuous grid deformation outside existing specialized compilers",
+      "free camera/path choice",
+      "3D vector rotation field generality",
+      "probabilistic area rescaling with real conditional facts",
+      "arbitrary Fourier phasor synthesis",
+      "generalized teacher-style quizzes and measured comprehension"
+    ],
+    "commercialization_caution": "do not embed 3b1b/videos CC BY-NC-SA media/source code; emulate only high-level pedagogy, implement original host algorithms"
+  }
+}
