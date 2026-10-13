@@ -7,6 +7,13 @@ on:
     paths:
       - "research/v3_56_3b1b_lesson_evidence.json"
       - "research/v3_56_agent_prompt_architecture.json"
+      - "research/v3_56_agent_prompt_templates.md"
+      - "research/v3_56_deep_video_audit_preregister.json"
+      - "research/v3_56_source_scene_corpus.json"
+      - "research/v3_56_deep_pedagogical_beats.json"
+      - "reports/v3_56_deep_video_audit_addendum.md"
+      - "scripts/verify_v3_56_deep_video_audit.py"
+      - "tests/v3/test_v3_56_deep_video_audit.py"
       - "research/v3_56_abc_evaluation_protocol.json"
       - "benchmarks/learnflowbench/v3/v3_56_pedagogical_agent_research_preregister.json"
       - "scripts/verify_v3_56_research.py"
@@ -39,8 +46,10 @@ jobs:
         timeout-minutes: 4
         run: |
           python scripts/verify_v3_56_research.py
+          python scripts/verify_v3_56_deep_video_audit.py
           python -m pytest -q --confcutdir=tests/v3 \
             tests/v3/test_v3_56_pedagogical_research.py \
+            tests/v3/test_v3_56_deep_video_audit.py \
             tests/v3/test_v3_55_independent_pedagogical_quality.py \
             tests/v3/test_v3_54_model_candidate_quality.py
       - name: Recheck frozen V2, V3 and LearnFlowBench protocol
