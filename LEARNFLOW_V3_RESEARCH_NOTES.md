@@ -3538,3 +3538,6 @@ Artifacts `research/v3_56_native_speech_visual_grounding.json`, `reports/v3_56_n
 
 
 Future offline reproduction guard: `scripts/run_v3_56_local_asr_candidates.py` requires pre-present model.bin (local CTranslate2), model SHA, rights/license metadata, original video SHA and `local_files_only=True`. It produces **unverified ASR candidates** outside git; not a provider model API, not a forced aligner, not evidence any words were actually spoken. Tests for absent weights/invalid SHA/rights are offline only; runner not executed in this checkpoint. Preserve native speech 0/12 NO-GO.
+
+
+V3-56 CI guard review: the original workflow's self-inspection test embedded all forbidden string literals directly in the scanned workflow, causing a deterministic false positive. Fixed by constructing denylist strings from pieces inside Python while retaining the exact rejected values; commit `692a63847ef8d3f6a2c7102f940f40da725010e1`. Offline evidence integrity was tested independently on the original MP4 (12 anchors, 180 frames, all AAC 1569.158125s decoded, SHA match), but exact-head GitHub Actions remain required; do not claim CI pass until workflows complete. Native speech remains 0/12 NO-GO.
