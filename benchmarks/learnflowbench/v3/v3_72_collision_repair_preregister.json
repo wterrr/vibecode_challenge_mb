@@ -15,7 +15,7 @@
   "original_physical_sources": {
     "artifact_id": 11803073498,
     "attention_reversed_query": {
-      "sha256": "",
+      "sha256": "199e8061288e3bbcde0d313e32217fe539da0f3bd04706ffbec5f99bb0bc582a",
       "beats_s": [
         [
           0,
@@ -41,7 +41,7 @@
       "video_frames_expected": 355
     },
     "process_heldout_unknown": {
-      "sha256": "789dbabe29433be68fdf033cbc26e88ca9254d257c908e9f8aeddf609a344127110f6c7111419f",
+      "sha256": "789dbabe29433be68fdf033cbc26e88ca9254d257c908e9f8aeddf6092b4a08a",
       "beats_s": [
         [
           0,
@@ -65,7 +65,8 @@
         ]
       ],
       "video_frames_expected": 344
-    }
+    },
+    "hash_source": "Original ZIP #11803073498, actual decoded bytes and V3-57 receipt.json; SHA verified before implementation"
   },
   "root_causes": {
     "attention": "Inherited V3-57 score-A rectangle y=365..411 overlaps SCORE B title anchored at y=399; the V3-59 causal layer changes only weights and retains this layout. Existing tests check semantics/pixel differences, not measured text/shape occupancy.",
