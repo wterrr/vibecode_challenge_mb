@@ -1,0 +1,72 @@
+{
+  "checkpoint": "V3-61",
+  "title": "Offline Masked Human Review Interface & Submission Integrity",
+  "registration_kind": "FIRST_CHILD_COMMIT",
+  "registered_before_implementation": true,
+  "parent_pr": 96,
+  "parent_sha": "42dfb0216ea82c9fe22d7995e1f99fd02acbe0d1",
+  "source_preregister_blob_sha": "dbf16ee2bbf1e338cab73c8e521551637044c952",
+  "source_native_artifact_id": 11863660782,
+  "source_native_run": 38495153475,
+  "design": "REVIEWER_UI_COLLECTION_INSTRUMENT_NOT_HUMAN_EVIDENCE",
+  "cases": [
+    "attention_reversed_query",
+    "fraction_equivalence",
+    "process_heldout_unknown"
+  ],
+  "masked_clips_sha256": {
+    "attention_reversed_query_A.mp4": "6d0718d489e261fddcc0474b0a38bcf1781142d7268d4d93a363fcf3d5415c3e",
+    "attention_reversed_query_B.mp4": "199e8061288e3bbcde0d313e32217fe539da0f3bd04706ffbec5f99bb0bc582a",
+    "attention_reversed_query_C.mp4": "6662f7974c703e2c5d1a7ea05dde801d28f40d0615b444995f9661fad0b58423",
+    "fraction_equivalence_A.mp4": "f7240a5dd0587c9220280a55dab113d424185142ce34970b2656de40fe1ab393",
+    "fraction_equivalence_B.mp4": "7a013bedf7d3e24fa624f253b1007a56247ecf81c0c2f5361cb84a1c20352d8c",
+    "fraction_equivalence_C.mp4": "c0f2a67bd0440fcdbd9110a904c621336fb20fce954468406a1df6bf7fb2913b",
+    "process_heldout_unknown_A.mp4": "6f063c171b8700c433794b15fa2cce8792fb45cc6c98eb7cd99a001a9851e99c",
+    "process_heldout_unknown_B.mp4": "789dbabe29433be68fdf033cbc26e88ca9254d257c908e9f8aeddf6092b4a08a",
+    "process_heldout_unknown_C.mp4": "2a49a94779d83916a1253b7f5b7a230e3ea92ae81b0ef326813f3f33714e9a4a"
+  },
+  "forms": 3,
+  "expected_clips_per_reviewer": 9,
+  "source_rating_fields": [
+    "rater_id",
+    "case_id",
+    "clip_id",
+    "clarity",
+    "causal_witness",
+    "semantic_continuity",
+    "legibility",
+    "pacing",
+    "confidence",
+    "watched_full_video",
+    "replay_count",
+    "timestamp_failure_notes"
+  ],
+  "frozen_acceptance": {
+    "offline_no_remote_scripts_or_network": true,
+    "no_analytics_no_external_services": true,
+    "no_treatment_key_in_browser_bundle": true,
+    "no_original_motion_static_causal_names_in_reviewer_bundle": true,
+    "three_counterbalanced_assigned_form_orders": true,
+    "all_five_ordinal_scores_required": true,
+    "valid_pseudonymous_rater_id": true,
+    "full_playback_event_and_self_attestation_required": true,
+    "low_ratings_require_timestamped_failure_note": true,
+    "exact_v360_csv_schema_and_nine_records": true,
+    "export_csv_with_no_automatic_submission": true,
+    "operator_uses_v360_seal_before_unblinding": true,
+    "negative_and_browser_smoke_tests": true,
+    "no_real_rater_fabrication": true,
+    "no_main_merge": true,
+    "model_calls": 0,
+    "production": "BLOCKED",
+    "pedagogical_quality": "UNRATED_NO_REVIEWERS",
+    "learning_gain": "NOT_MEASURED"
+  },
+  "threats": [
+    "Local UI cannot prove actual human attention, identity, independence or full comprehension",
+    "HTML event completion can be manipulated; self-report and coordinator attestation still required",
+    "Masking of treatment names does not make study double-blind",
+    "Local file browser playback needs tested browser; CSV must be sealed before unblinding",
+    "UI usability and 9 test-only inputs are not human evidence"
+  ]
+}
