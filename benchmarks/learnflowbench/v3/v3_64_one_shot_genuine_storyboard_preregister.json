@@ -1,0 +1,121 @@
+{
+  "checkpoint": "V3-64",
+  "name": "Genuine One-Shot Model-Authored Five-Role Storyboard on New Heldout Geometry Question",
+  "registration": "FIRST_CHILD_COMMIT_BEFORE_IMPLEMENTATION",
+  "parent_pr": 99,
+  "parent_sha": "2ef842ba9baf7f56c7a3906b8aa1c793ef437b12",
+  "preregister_date": "2026-10-14",
+  "new_heldout_query": "Why does a 3-by-4 array have the same number of objects as a 4-by-3 array?",
+  "domain": "elementary_geometry_and_discrete_mathematics",
+  "not_previously_rendered": true,
+  "host_verified_facts": {
+    "rows_initial": 3,
+    "columns_initial": 4,
+    "rows_final": 4,
+    "columns_final": 3,
+    "object_count": 12,
+    "multiplication_initial": "3 × 4 = 12",
+    "multiplication_final": "4 × 3 = 12",
+    "invariant": "same twelve individually identifiable unit squares",
+    "requires_spatial_rearrangement": true
+  },
+  "anti_leakage": "No previous V3-62/63 sample storyboard for this topic; model sees host facts + semantics + JSON grammar, not an example answer",
+  "frozen_baseline": "Deterministic host-authored minimal storyboard of same mathematical fact and exactly five acts, kept distinct from model proposal.",
+  "roles": [
+    "cognitive_designer",
+    "narrative_designer",
+    "visual_thinker",
+    "motion_director",
+    "visual_critic"
+  ],
+  "request_plan": {
+    "provider": "openrouter",
+    "model": "openai/gpt-6-luna",
+    "single_http_post_max": 1,
+    "retries": 0,
+    "temperature_field": "OMITTED",
+    "fallback": false,
+    "tools": false,
+    "web_search": false,
+    "max_output_tokens": 2100,
+    "maximum_prompt_utf8_bytes": 14000,
+    "estimated_max_input_tokens": 4000,
+    "expected_cost_cap_usd": 0.02,
+    "live_trigger": "ONCE_MANUAL_TRIGGER_FILE_CREATED",
+    "secret": "OPENROUTER_API_KEY",
+    "provider_require_parameters": true,
+    "strict_json_schema": true,
+    "save_sanitized_model_provenance": true
+  },
+  "schema_contract": {
+    "schema_version": "v3-64-five-role-heldout-storyboard-v1",
+    "num_beats": 5,
+    "order": [
+      "QUESTION",
+      "SETUP",
+      "TRANSFORM",
+      "WITNESS",
+      "CLOSE"
+    ],
+    "object_ids": "unit_00 .. unit_11 exact 12 identities",
+    "allowed_grid_columns": [
+      3,
+      4
+    ],
+    "approved_causal_operation": "ARRANGE_3x4_TO_4x3",
+    "allowed_motion": [
+      "rearrange_identity_preserving",
+      "group_columns",
+      "group_rows"
+    ],
+    "conclusion_only_at_or_after": "WITNESS",
+    "no_unverified_math": true,
+    "model_narration": "unverified until reviewed; original API text not used as factual proof",
+    "must_not_execute_model_code": true
+  },
+  "native_gate": {
+    "renderer": "new_host_authored_generic_array_grid_scene_compiler",
+    "container": "ffmpeg H264/AAC",
+    "frame_size": [
+      1280,
+      720
+    ],
+    "fps": 15,
+    "compare_with_host_baseline": true,
+    "physical_decode": true,
+    "checksum": true,
+    "audio_packet_hash": true,
+    "visual_witness": true,
+    "content_human_quality": "UNRATED",
+    "student_learning": "NOT_MEASURED"
+  },
+  "no_go_conditions": [
+    "MISSING_OR_EXPIRED_GH_SECRET",
+    "UNSUPPORTED_ENDPOINT_MODEL_CAPABILITY",
+    "FIRST_POST_HTTP_ERROR_DO_NOT_RETRY",
+    "UNVERIFIED_JSON_UNSUPPORTED_ROLE_OR_FACT",
+    "NATIVE_RENDER_OR_FRAME_FAIL",
+    "ANY_DUPLICATE_REQUEST",
+    "MODEL_CANDIDATE_NOT_DIFFERENT_FROM_BASELINE"
+  ],
+  "prohibitions": [
+    "no_merge_main",
+    "no_V2_Core_edits",
+    "no_production_prompt_edits",
+    "no_3B1B_source_or_media_copy",
+    "no_claim_of_3B1B_parity",
+    "no_assumed_human_learning_gain"
+  ],
+  "expected_outcomes": [
+    "PROVIDER_BONA_FIDE_AUTHORING_PASSED_AND_COMPILED_NATIVE",
+    "PROVIDER_RESPONSE_REJECTED_BY_HOST",
+    "NO_PROVIDER_CALL_ENVIRONMENT_BLOCKED",
+    "PROVIDER_ATTEMPT_FAILED_NO_RETRY"
+  ],
+  "evidence_labels": {
+    "true_model_trial": "PROVIDER_RESPONSE_WITH_SANITIZED_REQUEST_ID_NOT_HOST_FIXTURE",
+    "pedagogical_quality": "UNRATED",
+    "generalization": "ONE_SAMPLE_ONLY_NOT_ESTABLISHED",
+    "production": "BLOCKED"
+  }
+}
