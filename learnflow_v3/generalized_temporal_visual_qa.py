@@ -167,7 +167,9 @@ def validate_frame(frame: Frame, *, clearance: int = MIN_CLEARANCE) -> dict:
                 dst.rect.top + clearance <= edge.y <= dst.rect.bottom - clearance,
                 "EDGE_TOPOLOGY_OR_BOUNDARY")
     edge_lookup = {e.edge_id: e for e in frame.edges}
-    for i, obj in enumerate(objs):
+    # Prioritize the specific temporal boundary gate before broad box
+    # collision errors regardless of which object was inserted first in IR.
+    for obj in objs:
         if obj.kind == "marker":
             edge = edge_lookup.get(obj.edge_id)
             require(edge is not None, "ORPHAN_MARKER")
@@ -177,6 +179,7 @@ def validate_frame(frame: Frame, *, clearance: int = MIN_CLEARANCE) -> dict:
                     obj.rect.right <= dst.left - clearance and
                     obj.rect.top <= edge.y <= obj.rect.bottom,
                     "MARKER_PENETRATES_NODE")
+    for i, obj in enumerate(objs):
         for other in objs[i+1:]:
             if not overlap(obj.rect.tuple(), other.rect.tuple(), clearance):
                 continue
