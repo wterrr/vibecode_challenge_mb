@@ -56,7 +56,6 @@ def run(root:Path,out:Path,*,visual_quality:bool=False,
     if quality_gate_v374:
         # V3-74's exporter covers ONLY strict horizontal Process visual ROI.
         # Never "pass" an uninstrumented Fraction renderer or a mixed batch.
-        from learnflow_v3.creative_manim_ablation import Blocked
         if visual_quality or set(selected_fixtures or ()) != {"v345-synthetic-process"}:
             raise Blocked("V374_UNSUPPORTED_FAMILY_OR_VISUAL_MODE_NO_EXPORTER")
     elif selected_fixtures is not None:
