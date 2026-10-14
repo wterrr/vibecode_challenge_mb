@@ -103,6 +103,7 @@ def validate_telemetry(rows,actual_video_frames,*,min_coverage=.94):
             "actual_glyph_shape_intersections":[{"frame":ix,"a":a,"b":b}
                                                 for ix,a,b in collisions],
             "telemetry_coverage":"TRACKED_NATIVE_FRAME_SAMPLES_CONSERVATIVE",
+            "bbox_provenance":"ACTUAL_MANIM_CMU_AT_CONSTRUCT_PLUS_1P07_INDICATE_ENVELOPE_NOT_DYNAMIC",
             "full_native_pixel_validation":"NOT_CLAIMED"}
 
 def read_runtime(path:Path,max_lines=4000):
