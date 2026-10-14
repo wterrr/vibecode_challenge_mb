@@ -2,7 +2,7 @@
 import copy
 import pytest
 from jsonschema import Draft202012Validator
-from scripts.verify_v3_56_research import check, load, ARCH, PROTOCOL, MATRIX
+from scripts.verify_v3_56_research import check, load, ARCH, PROTOCOL, MATRIX, ROOT, validate_frozen_ablation_arms
 
 
 def valid_research_contract():
@@ -71,7 +71,10 @@ def test_negative_controls_are_predeclared_and_outputs_unrated():
     assert len(evaluation["measurement"]["negative_controls"])>=8
     assert evaluation["human_evaluation_results"] is None
     assert evaluation["inference"]["retry_budget"]==0
-    assert evaluation["variants"][0]["renderer"]==evaluation["variants"][1]["renderer"]
+    assert validate_frozen_ablation_arms(evaluation["variants"]) == {
+        "A_B_same_renderer": True, "B_C_same_prompt": True,
+        "A_B_prompt_contrast": True, "B_C_renderer_contrast": True,
+    }
 
 
 def test_no_fabricated_timecodes_or_code_transfer():
@@ -82,3 +85,40 @@ def test_no_fabricated_timecodes_or_code_transfer():
       assert r["evidence_source"]["status"] in (
           "MATCHED_SOURCE_FILE_INSPECTED_NOT_RUN","LESSON_SPECIFIC_SOURCE_UNVERIFIED")
     assert "no screenshot/code reproduction" in study["licensing"]["read_source"]
+
+
+# V3-69: frozen protocol must be byte-for-byte original, not rewritten to
+# silence a failing verifier. This is a raw Git blob digest, not a timestamp.
+def test_v369_original_v356_protocol_immutable_git_blob():
+    from hashlib import sha1
+    raw=(ROOT / PROTOCOL).read_bytes()
+    git_blob=b"blob " + str(len(raw)).encode("ascii") + b"\\0" + raw
+    assert sha1(git_blob).hexdigest() == "7206371d69ec5ca3670417314314a62e16b1b31c"
+
+
+@pytest.mark.parametrize("arm,field,replacement", [
+    (0, "id", "B"),
+    (1, "id", "A"),
+    (2, "id", "B"),
+    (0, "renderer", "different V2 renderer"),
+    (1, "renderer", "new V3 renderer"),
+    (1, "renderer", "same renderer as A"),
+    (2, "renderer", "SAME frozen V2 Core as A"),
+    (0, "prompt", "new sidecar prompt"),
+    (1, "prompt", "unmodified HEAD 42dd591 V2 pipeline"),
+    (2, "prompt", "prompt close to B"),
+    (2, "prompt", "unmodified HEAD 42dd591 V2 pipeline"),
+])
+def test_v369_mutated_arm_is_rejected(arm, field, replacement):
+    variants=copy.deepcopy(load(PROTOCOL)["variants"])
+    variants[arm][field]=replacement
+    with pytest.raises(AssertionError, match=r"V356_FROZEN_ARM_"):
+        validate_frozen_ablation_arms(variants)
+
+
+def test_v369_swapped_arms_or_missing_arm_rejected():
+    variants=copy.deepcopy(load(PROTOCOL)["variants"])
+    with pytest.raises(AssertionError, match=r"V356_FROZEN_ARM_"):
+        validate_frozen_ablation_arms([variants[1], variants[0], variants[2]])
+    with pytest.raises(AssertionError, match=r"V356_AB_C_MISSING"):
+        validate_frozen_ablation_arms(variants[:2])

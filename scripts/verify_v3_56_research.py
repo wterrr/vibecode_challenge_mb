@@ -20,6 +20,38 @@ def require(condition, reason):
 def load(name):
     return json.loads((ROOT/name).read_text(encoding="utf-8"))
 
+# V3-69: the frozen V3-56 protocol has deliberate, explicit references rather
+# than copied strings. Check the exact archived spellings; never normalize arbitrary
+# variants and never rewrite the original preregistration.
+def validate_frozen_ablation_arms(variants) -> dict:
+    require(isinstance(variants, list) and len(variants) == 3,
+            "AB_C_MISSING")
+    expected = (
+        {"id": "A", "prompt": "unmodified HEAD 42dd591 V2 pipeline",
+         "renderer": "frozen V2 Core"},
+        {"id": "B", "prompt": "V3 research agent sidecar prompt (after future approval)",
+         "renderer": "SAME frozen V2 Core as A"},
+        {"id": "C", "prompt": "identical to B",
+         "renderer": "V3 checked finite operations guarded by evidence and object identity"},
+    )
+    for actual, locked in zip(variants, expected):
+        require(isinstance(actual, dict), "ARM_NOT_OBJECT")
+        require(all(actual.get(key) == value for key, value in locked.items()),
+                "FROZEN_ARM_" + locked["id"] + "_DRIFT")
+    a, b, c = variants
+    # Only the two SPECIFIED references may be dereferenced.
+    b_resolved_renderer = a["renderer"] if b["renderer"] == "SAME frozen V2 Core as A" else b["renderer"]
+    c_resolved_prompt = b["prompt"] if c["prompt"] == "identical to B" else c["prompt"]
+    require(a["renderer"] == b_resolved_renderer, "PROMPT_AB_NOT_MATCHED")
+    require(b["prompt"] == c_resolved_prompt, "RENDERER_BC_NOT_MATCHED")
+    require(a["prompt"] != b["prompt"], "PROMPT_CONTRAST_COLLAPSED")
+    require(b_resolved_renderer != c["renderer"], "RENDERER_CONTRAST_COLLAPSED")
+    return {
+        "A_B_same_renderer": True, "B_C_same_prompt": True,
+        "A_B_prompt_contrast": True, "B_C_renderer_contrast": True,
+    }
+
+
 def check() -> dict:
     p,m,a,e=(load(path) for path in (REG,MATRIX,ARCH,PROTOCOL))
     require(p["parent_sha"]==PARENT and m["frozen_registration_first_commit"]==FIRST,
@@ -54,9 +86,8 @@ def check() -> dict:
         "AGENT_ROLE_COVERAGE")
     require("creative_scene_graph.py" in str(a["existing_reuse_audit"]),"MISSING_REUSE_FIRST")
     require(len(a["host_owned_invariants"])>=7,"MISSING_HOST_GATES")
-    v=e["variants"]; require([x["id"] for x in v]==["A","B","C"],"AB_C_MISSING")
-    require(v[0]["renderer"]==v[1]["renderer"],"PROMPT_AB_NOT_MATCHED")
-    require(v[1]["prompt"]==v[2]["prompt"],"RENDERER_BC_NOT_MATCHED")
+    v=e["variants"]
+    validate_frozen_ablation_arms(v)
     require(len(e["dataset"]["frozen_preregistered_heldout_topics"])>=4,"HELDOUT_TOO_SMALL")
     require(e["inference"]["max_requests_per_topic_arm"]==1 and
             e["inference"]["retry_budget"]==0,"FAIR_BUDGET")
