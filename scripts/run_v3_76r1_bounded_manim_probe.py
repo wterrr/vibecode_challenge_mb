@@ -23,6 +23,7 @@ if str(ROOT) not in sys.path:
 from learnflow_v3.creative_manim_ablation import Blocked
 from learnflow_v3.creative_manim_runner import IMAGE,FPS
 from learnflow_v3.v376_native_manim_probe import instrument
+from learnflow_v3.v376_native_runtime_readability import contrast_ratio
 
 
 SOURCE = """# V3-51 GENERIC HOST COMPILED SOURCE NEVER MODEL PYTHON
@@ -139,6 +140,15 @@ def main(output: Path) -> dict:
             result["telemetry_parse_error"]=True
     result["runtime_rows"]=len(rows)
     result["runtime_first_row_nonempty"]=bool(rows and rows[0]["objects"])
+    text=[o for row in rows for o in row["objects"] if o["role"]=="text"]
+    proven=[o for o in text if o.get("color_source")=="CONSTRUCT_TIME_SVG_LEAF_FILL"
+            and o.get("glyph_rgbs")]
+    result["measured_svg_text_observations"]=len(proven)
+    result["measured_svg_text_contrast_min"]=(
+        min(contrast_ratio(rgb) for o in proven for rgb in o["glyph_rgbs"])
+        if proven else 0)
+    result["black_text_container_false_positive_prevented"]=bool(
+        proven and result["measured_svg_text_contrast_min"]>=4.5)
     pass_gate=(
         result["render_returncode"]==0 and
         not result["render_timed_out"] and
@@ -147,6 +157,8 @@ def main(output: Path) -> dict:
         result["video_frames"]>=15 and
         result["runtime_rows"]>=15 and
         result["runtime_first_row_nonempty"] and
+        len(proven)>=15 and
+        result["measured_svg_text_contrast_min"]>=4.5 and
         "v376_stage_after_flush.marker" in result["stage_markers"]
     )
     result["runtime_gate"]=(
