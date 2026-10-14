@@ -1,0 +1,88 @@
+name: V3-65R1 One-Shot GET Recovery After Pre-Network Import Failure
+on:
+  push:
+    branches: [chatgpt/v3-65-provider-get-diagnostics]
+    paths:
+      - "research/V365R1_GET_IMPORT_RECOVERY_TRIGGER.txt"
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: V365R1-ONLY-ONCE-GET-RECOVERY
+  cancel-in-progress: false
+jobs:
+  one_import_fixed_GET_diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GH_TOKEN: ${{ github.token }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      CURRENT_RUN_ID: ${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify earlier live run stopped at import and never entered GET helper
+        run: |
+          set -euo pipefail
+          test "$(cat research/V365R1_GET_IMPORT_RECOVERY_TRIGGER.txt)" = "V365R1_ONCE_NO_EARLIER_GET_2026_10_14_ZERO_INFERENCE"
+          python - <<'PY'
+          import json,os,urllib.request
+          token=os.environ["GH_TOKEN"]
+          root="https://api.github.com/repos/wterrr/vibecode_challenge_mb/"
+          def fetch(path):
+              req=urllib.request.Request(root+path,headers={
+                  "Authorization":"Bearer "+token,
+                  "Accept":"application/vnd.github+json"})
+              with urllib.request.urlopen(req,timeout=20) as f:return json.load(f)
+          old=fetch("actions/runs/38504156707")
+          assert old["status"]=="completed" and old["conclusion"]=="failure"
+          assert old["head_sha"]=="e42eaa3fa6bfebc6701c9607a89ba217f55b4f2e"
+          jobs=fetch("actions/runs/38504156707/jobs")["jobs"]
+          assert len(jobs)==1
+          failed=[s["name"] for s in jobs[0]["steps"] if s.get("conclusion")=="failure"]
+          assert failed==["Make maximum 2 allowlisted metadata GETs and publish redacted receipt only"]
+          # The frozen log of this step shows ModuleNotFoundError at import,
+          # before the body of diagnostic() or any OpenRouter GET can execute.
+          oldruns=fetch("actions/runs?branch=chatgpt%2Fv3-65-provider-get-diagnostics&event=push&per_page=100")["workflow_runs"]
+          previous=[r["id"] for r in oldruns
+              if r["id"]!=int(os.environ["CURRENT_RUN_ID"])
+              and str(r.get("path","")).endswith("/v3-65r1-provider-get-recovery.yml")]
+          assert not previous,"V365R1_RECOVERY_ALREADY_USED"
+          print("V365R1_PRIOR_IMPORT_FAILURE_AND_UNIQUE_RECOVERY_VERIFIED")
+          PY
+      - name: Reuse offline tests including direct CLI import smoke, no network
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -r requirements.txt "pytest>=8,<10" "pillow>=11,<13" \
+            "jsonschema>=4,<5" "numpy>=1.24,<3" pyyaml
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_65_provider_get_diagnostics.py
+          python scripts/run_v3_65_provider_get_diagnostics.py --help
+      - name: Perform public catalog and authenticated key GET at most once each
+        run: |
+          python scripts/run_v3_65_provider_get_diagnostics.py \
+            --output artifacts/v365r1/V365R1_GET_ONLY_SANITIZED.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          doc=json.loads(Path("artifacts/v365r1/V365R1_GET_ONLY_SANITIZED.json").read_text())
+          assert doc["checkpoint"]=="V3-65"
+          assert doc["get_attempts"]<=2 and doc["inference_posts"]==0
+          assert doc["historical_root_cause"]=="UNDETERMINED"
+          assert doc["historical_post_http_code"]=="NOT_CAPTURED_CANNOT_RECOVER"
+          assert doc["production"]=="BLOCKED"
+          assert not doc["raw_key_or_provider_response_persisted"]
+          assert not doc["exact_account_balance_persisted"]
+          print("V365R1_SANITIZED_METADATA_RESULT_NO_INFERENCE")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v365R1-SANITIZED-GET-DIAGNOSTIC-RECOVERY
+          path: artifacts/v365r1/V365R1_GET_ONLY_SANITIZED.json
+          if-no-files-found: warn
+          retention-days: 14
