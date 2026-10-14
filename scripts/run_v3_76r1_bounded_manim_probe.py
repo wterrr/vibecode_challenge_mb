@@ -62,7 +62,7 @@ def compile_smoke() -> str:
     source=instrument(SOURCE,fixture())
     check(source.count("V3-76 HOST INJECTED ACTUAL MANIM")==1,
           "HOST_PROBE_INJECTION_MISSING")
-    check("v376_stage_before_bbox" in source, "NO_BBOX_STAGE")
+    check("_v376_stage(\'before_bbox\')" in source, "NO_BBOX_STAGE")
     return source
 
 
