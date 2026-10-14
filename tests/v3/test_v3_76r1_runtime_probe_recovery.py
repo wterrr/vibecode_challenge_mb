@@ -85,8 +85,21 @@ def test_r1_actual_cmu_bounds_precached_before_frame_updater_with_conservative_e
 
 def test_a3_effective_svg_glyph_fill_not_black_parent_color():
     from learnflow_v3.v376_native_runtime_readability import validate_telemetry
-    from tests.v3.test_v3_76_native_runtime_readability import stream
-    rows=stream()
+    rows=[]
+    for i in range(120):
+        rows.append({"seq":i,"scene_time_s":i/15.,"dt":1/15.,
+            "objects":[
+               {"id":"chrome","role":"text","bbox_px":[70,50,300,92],
+                "rgb":[0.,0.,0.],"opacity":1.,"parent":""},
+               {"id":"value","role":"text","bbox_px":[120,205,260,232],
+                "rgb":[0.,0.,0.],"opacity":1.,"parent":""},
+               {"id":"bar","role":"shape","bbox_px":[120,280,360,316],
+                "rgb":[.9,.7,.4],"opacity":1.,"parent":""},
+               {"id":"node","role":"shape","bbox_px":[500,250,700,380],
+                "rgb":[.4,.7,.7],"opacity":1.,"parent":""},
+               {"id":"label","role":"text","bbox_px":[552,295,648,322],
+                "rgb":[0.,0.,0.],"opacity":1.,"parent":"node"},
+            ]})
     for row in rows:
         for o in row["objects"]:
             if o["role"]=="text":
@@ -120,4 +133,4 @@ def test_a3_preregister_no_lowering_contrast_before_fix():
     assert amend["amendment"]=="A3_SVG_GLYPH_COLOR_PROVENANCE"
     assert amend["evidence"]["run"]==38541169374
     assert amend["evidence"]["artifact"]==11882608398
-    assert amend["no_main_merge"] if "no_main_merge" in amend else "merging main" in amend["non_goals"]
+    assert "merging main" in amend["non_goals"]
