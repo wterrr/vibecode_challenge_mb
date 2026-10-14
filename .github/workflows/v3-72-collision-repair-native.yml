@@ -1,0 +1,78 @@
+name: V3-72 Timeline Geometry and Corrected Native AV (NO MODEL API)
+on:
+  push:
+    branches: [chatgpt/v3-72-timeline-layout-motion-repair]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_72_collision_repair_preregister.json'
+      - 'learnflow_v3/v372_timeline_safe_renderer.py'
+      - 'scripts/run_v3_72_native_collision_repair.py'
+      - 'tests/v3/test_v3_72_collision_geometry.py'
+      - '.github/workflows/v3-72-collision-repair-native.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_72_collision_repair_preregister.json'
+      - 'learnflow_v3/v372_timeline_safe_renderer.py'
+      - 'scripts/run_v3_72_native_collision_repair.py'
+      - 'tests/v3/test_v3_72_collision_geometry.py'
+      - '.github/workflows/v3-72-collision-repair-native.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: v372-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  geometry-mutation-and-real-native-repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install offline Pillow+pytest and native FFmpeg
+        run: |
+          python -m pip install --disable-pip-version-check 'pytest>=8,<10' 'Pillow>=10,<13'
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+      - name: Reproduce two original collisions and test each intermediate geometry frame
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_72_collision_geometry.py
+      - name: Download ORIGINAL frozen V3-57 native source without treatment key
+        run: |
+          mkdir -p /tmp/v372-source
+          curl --fail --show-error --silent --location --retry 2 --max-time 180 \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/wterrr/vibecode_challenge_mb/actions/artifacts/11803073498/zip' \
+            -o /tmp/v372-source.zip
+          unzip -t /tmp/v372-source.zip
+      - name: Render TWO NEW native MP4 with original AAC and decoded before/after evidence
+        run: |
+          python scripts/run_v3_72_native_collision_repair.py \
+            --v357-source-zip /tmp/v372-source.zip \
+            --output-dir artifacts/v372
+          test "$(find artifacts/v372 -maxdepth 1 -name '*.mp4' | wc -l)" -eq 2
+          test "$(find artifacts/v372 -maxdepth 1 -name '*before_after.png' | wc -l)" -eq 2
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('artifacts/v372/v372_native_receipt.json').read_text())
+          assert data['versioned_video_count']==2
+          assert sum(x['all_frame_geometry_checks'] for x in data['cases'])==699
+          assert all(x['full_decode']=='PASS' and x['audio_bitstream_parity'] for x in data['cases'])
+          assert data['original_9_masked_mp4_modified'] is False
+          assert data['viewer_final_review']=='NOT_PASS_PENDING_INDEPENDENT_REVIEW'
+          print("V3-72 native 2 MP4s verified with 699/699 full-time-frame checks")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v372-2-NEW-native-collision-corrected-MP4-and-decoded-comparison-NOT-HUMAN-RATED
+          path: artifacts/v372/
+          if-no-files-found: error
+          retention-days: 7
