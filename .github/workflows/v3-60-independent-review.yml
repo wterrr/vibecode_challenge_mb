@@ -54,6 +54,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install native media probe and decoder
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          ffprobe -version | head -n 1
+          ffmpeg -version | head -n 1
       - name: Recover EXACT V3-59 native movie artifact (no model calls)
         run: |
           mkdir -p /tmp/v360-clips
