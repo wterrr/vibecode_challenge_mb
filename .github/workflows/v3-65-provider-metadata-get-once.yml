@@ -1,0 +1,79 @@
+name: V3-65 One-Time OpenRouter GET-Only Metadata Audit (ZERO Inference)
+# NEVER run this job on PR, docs, tests, normal branch push or V3-64 trigger.
+on:
+  push:
+    branches: [chatgpt/v3-65-provider-get-diagnostics]
+    paths:
+      - "research/V365_ONCE_METADATA_GET_TRIGGER.txt"
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: V365-ONCE-METADATA-GET-REPO
+  cancel-in-progress: false
+jobs:
+  exactly_two_or_fewer_safe_gets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GH_TOKEN: ${{ github.token }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      CURRENT_RUN_ID: ${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check unique trigger and fail if previous V3-65 live audit exists
+        run: |
+          set -euo pipefail
+          test "$(cat research/V365_ONCE_METADATA_GET_TRIGGER.txt)" = "V365_ONCE_TWO_GETS_2026_10_14_NO_PROVIDER_POST"
+          python - <<'PY'
+          import os,json,urllib.request
+          req=urllib.request.Request(
+            "https://api.github.com/repos/wterrr/vibecode_challenge_mb/actions/runs?branch=chatgpt%2Fv3-65-provider-get-diagnostics&event=push&per_page=100",
+            headers={"Authorization":"Bearer "+os.environ["GH_TOKEN"],
+                     "Accept":"application/vnd.github+json"})
+          with urllib.request.urlopen(req,timeout=22) as response:
+              runs=json.load(response)["workflow_runs"]
+          prior=[a["id"] for a in runs
+              if a["id"]!=int(os.environ["CURRENT_RUN_ID"]) and
+              str(a.get("path","")).endswith("/v3-65-provider-metadata-get-once.yml")]
+          assert not prior,"V365_PRIOR_LIVE_GET_AUDIT_EXISTS_NO_DUPLICATION"
+          print("V365_SINGLE_GET_AUDIT_TRIGGER_VERIFIED")
+          PY
+      - name: Install V3-38 and V3-64 validator dependencies (no inference)
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -r requirements.txt "pytest>=8,<10" "jsonschema>=4,<5" \
+            "pillow>=11,<13" "numpy>=1.24,<3" pyyaml
+      - name: Run V3-65 safe sender and GET-only negative tests
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_65_provider_get_diagnostics.py
+      - name: Make maximum 2 allowlisted metadata GETs and publish redacted receipt only
+        run: |
+          python scripts/run_v3_65_provider_get_diagnostics.py \
+            --output artifacts/v365/V365_SANITIZED_GET_ONLY_RESULT.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path("artifacts/v365/V365_SANITIZED_GET_ONLY_RESULT.json").read_text())
+          assert r["checkpoint"]=="V3-65"
+          assert r["inference_posts"]==0 and r["get_attempts"]<=2
+          assert r["historical_root_cause"]=="UNDETERMINED"
+          assert r["historical_post_http_code"]=="NOT_CAPTURED_CANNOT_RECOVER"
+          assert r["production"]=="BLOCKED"
+          assert not r["raw_key_or_provider_response_persisted"]
+          assert not r["exact_account_balance_persisted"]
+          print("V365_GET_ONLY_EVIDENCE_SEALED_NO_INFERENCE")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v365-OPENROUTER-METADATA-GET-ONLY-SANITIZED
+          path: artifacts/v365/V365_SANITIZED_GET_ONLY_RESULT.json
+          if-no-files-found: warn
+          retention-days: 14
