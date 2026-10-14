@@ -1,0 +1,68 @@
+name: V3-73 Generalized Temporal Visual QA and Heldout Native Clips (NO MODEL)
+on:
+  push:
+    branches: [chatgpt/v3-73-generalized-temporal-visual-qa]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_73_temporal_qa_preregister.json'
+      - 'learnflow_v3/generalized_temporal_visual_qa.py'
+      - 'scripts/run_v3_73_generalized_visual_qa.py'
+      - 'tests/v3/test_v3_73_generalized_temporal_visual_qa.py'
+      - '.github/workflows/v3-73-generalized-visual-qa.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_73_temporal_qa_preregister.json'
+      - 'learnflow_v3/generalized_temporal_visual_qa.py'
+      - 'scripts/run_v3_73_generalized_visual_qa.py'
+      - 'tests/v3/test_v3_73_generalized_temporal_visual_qa.py'
+      - '.github/workflows/v3-73-generalized-visual-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: v373-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  strict-unseen-timeline-and-three-native-clips:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reuse canonical native dependencies, no model inference
+        timeout-minutes: 9
+        run: |
+          timeout -k 10s 420s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 -r requirements.txt 'numpy>=1.24,<3' pyyaml 'Pillow>=10,<13'
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+      - name: Hostile mutation tests, three heldout scenes and V3-72 adapter
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_73_generalized_temporal_visual_qa.py
+      - name: Render three actual versioned native H264 diagnostic MP4s and full decode
+        run: |
+          python scripts/run_v3_73_generalized_visual_qa.py --output-dir artifacts/v373
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('artifacts/v373')
+          r=json.loads((p/'v373_native_qa_receipt.json').read_text())
+          assert len(list(p.glob('*.mp4')))==3
+          assert r['native_heldout_clips']==3
+          assert r['native_video_frames_total']==135
+          assert r['v372_adapter']['full_exported_ROI_frames_covered']==699
+          assert all(c['full_native_decode']=='PASS' for c in r['results'])
+          assert all(c['frame_qa']['checked_frames']==45 for c in r['results'])
+          assert r['pedagogical_quality']=='UNRATED' and r['production']=='BLOCKED'
+          print('V373 HELDOUT NATIVE PHYSICAL QA = 3 MP4, 135/135 timelines, 699 V372 ROI frames; no human outcome claim')
+          PY
+          test ! -d private_review_submissions
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v373-3-silent-heldout-diagnostic-native-MP4-and-boundary-receipts-NOT-HUMAN-QUALITY
+          path: artifacts/v373/
+          retention-days: 7
+          if-no-files-found: error
