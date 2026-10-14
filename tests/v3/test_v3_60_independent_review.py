@@ -127,7 +127,7 @@ def test_admin_key_rejects_forged_shas_treatment_or_unregistered_clips():
     with pytest.raises(ReviewBlocked, match="ADMIN_HASH_DRIFT"):
         validate_admin(forged)
     forged = copy.deepcopy(key)
-    forged["cases"][example][clip]["treatment"] = "original_motion"
+    forged["cases"][example][clip]["treatment"] = "static_end_state"
     with pytest.raises(ReviewBlocked, match="ADMIN_TREATMENT_INCOMPLETE"):
         validate_admin(forged)
 
