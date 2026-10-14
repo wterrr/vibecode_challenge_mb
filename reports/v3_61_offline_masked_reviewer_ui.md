@@ -26,7 +26,7 @@ Source artifact: successful V3-60 run [#38495153475](https://github.com/wterrr/v
 | 3 assigned forms, 9 clips each, no admin mapping | PASS |
 | Native Node CSV and Python negative tests | PASS |
 | Real Chromium basic file-mode smoke with 0 network | PASS |
-| End-to-end 9-clip TEST-ONLY browser CSV download | Dedicated strict rerun in progress; do not claim success prematurely |
+| End-to-end 9-clip TEST-ONLY browser CSV download | **PASS** on run #38496967796, no test-only CSV uploaded |
 | Valid external reviewers | **0** |
 | Real human quality, learning gain, model authoring | **UNRATED / NOT_MEASURED / NOT_TESTED** |
 | Production | **BLOCKED** |
@@ -35,4 +35,4 @@ Source artifact: successful V3-60 run [#38495153475](https://github.com/wterrr/v
 
 The browser cannot attest real identity, informed consent, noncollusion, genuine watching, comprehension, or assessor independence. Treatment is visually inferable, so this is **condition-masked, not double-blind**. The original V3-58 static treatment confounds motion with early answer exposure. No new efficacy result is produced by UI tests. To close V3-60 scientific gate, recruit at least 3 external humans, assign one form each, keep treatment key separately sealed, collect complete nine-video ratings, lock original CSV by SHA prior to unblinding, independently audit reviewer provenance, and report paired ordinal deltas without claiming learner impact.
 
-**Verdict:** V3-61 *collection infrastructure* technically ready subject to exact-head final CI; human educational quality **NO-GO / UNRATED**.
+**Verdict:** V3-61 *collection infrastructure* technically PASS at code HEAD `57804be7` (run #38496967796); PR-head checks still must be observed. Human educational quality **NO-GO / UNRATED**.
