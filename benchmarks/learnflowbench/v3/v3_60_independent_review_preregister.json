@@ -1,0 +1,113 @@
+{
+  "checkpoint": "V3-60",
+  "title": "Independent Three-Arm Pedagogical Quality Evaluation / Blind Protocol",
+  "parent_pr": 93,
+  "parent_sha": "506b3ccf3bf23aa3163d585496f1e91046109b18",
+  "registration_kind": "FIRST_CHILD_COMMIT",
+  "registered_before_implementation": true,
+  "protocol_version": "v3-60-preregister-v1",
+  "date_utc": "2026-10-14",
+  "origin": "FROZEN_EXISTING_V3_59_NATIVE_ARTIFACTS",
+  "method": "REVIEW_READY_NOT_HUMAN_SCORED",
+  "artifact_provenance": {
+    "native_run_id": 38380316466,
+    "masked_video_artifact_id": 11803826367,
+    "admin_receipt_artifact_id": 11804490041,
+    "native_source_pr": 93,
+    "admin_treatment_key_source": "v359-native-semantic-receipts-ADMIN-NOT-FOR-REVIEWERS/admin_treatment_key.json",
+    "key_disclosure": "DO_NOT_PUBLISH_UNBLINDED_BEFORE_RATING_LOCK"
+  },
+  "frozen_cases": [
+    "attention_reversed_query",
+    "fraction_equivalence",
+    "process_heldout_unknown"
+  ],
+  "masked_clips_sha256": {
+    "attention_reversed_query_A.mp4": "6d0718d489e261fddcc0474b0a38bcf1781142d7268d4d93a363fcf3d5415c3e",
+    "attention_reversed_query_B.mp4": "199e8061288e3bbcde0d313e32217fe539da0f3bd04706ffbec5f99bb0bc582a",
+    "attention_reversed_query_C.mp4": "6662f7974c703e2c5d1a7ea05dde801d28f40d0615b444995f9661fad0b58423",
+    "fraction_equivalence_A.mp4": "f7240a5dd0587c9220280a55dab113d424185142ce34970b2656de40fe1ab393",
+    "fraction_equivalence_B.mp4": "7a013bedf7d3e24fa624f253b1007a56247ecf81c0c2f5361cb84a1c20352d8c",
+    "fraction_equivalence_C.mp4": "c0f2a67bd0440fcdbd9110a904c621336fb20fce954468406a1df6bf7fb2913b",
+    "process_heldout_unknown_A.mp4": "6f063c171b8700c433794b15fa2cce8792fb45cc6c98eb7cd99a001a9851e99c",
+    "process_heldout_unknown_B.mp4": "789dbabe29433be68fdf033cbc26e88ca9254d257c908e9f8aeddf6092b4a08a",
+    "process_heldout_unknown_C.mp4": "2a49a94779d83916a1253b7f5b7a230e3ea92ae81b0ef326813f3f33714e9a4a"
+  },
+  "frozen_arm_count": 3,
+  "frozen_clip_count": 9,
+  "reviewer_protocol": {
+    "min_independent_external_reviewers": 3,
+    "one_complete_scoring_packet_per_reviewer": true,
+    "ratings_per_reviewer": 9,
+    "criteria": [
+      "clarity",
+      "causal_witness",
+      "semantic_continuity",
+      "legibility",
+      "pacing"
+    ],
+    "ordinal_scale": {
+      "min": 1,
+      "max": 5,
+      "anchors": {
+        "1": "misleading/very hard to follow",
+        "2": "major difficulties",
+        "3": "adequate but weaknesses",
+        "4": "clear with minor weaknesses",
+        "5": "exceptionally clear with no material flaw"
+      }
+    },
+    "missingness": "DO_NOT_IMPUTE; unrated clips block completeness and gate",
+    "confidence_scale": {
+      "1": "very uncertain",
+      "5": "very confident"
+    },
+    "timestamped_failure_notes": "Mandatory if any criterion <=2 or apparent misleading early reveal; otherwise optional",
+    "watch_order": "Per-reviewer predetermined case order and A/B/C cyclic rotation; blinded condition labels; may replay and record replay",
+    "independence": "External humans, distinct consented reviewers; pseudonyms; host must separately check eligibility and conflicts; metadata cannot prove independence",
+    "rating_lock": "Review scores SHA-256 and receipt created BEFORE opening admin mapping; never transmit admin mapping to reviewers"
+  },
+  "analysis": {
+    "primary": "Per-reviewer-within-topic paired change in causal_witness score of causal_reveal minus original_motion; separately versus static_end_state",
+    "secondary": [
+      "clarity",
+      "semantic_continuity",
+      "legibility",
+      "pacing"
+    ],
+    "estimand": "Descriptive ordinal median of paired differences per topic and across reviewer-topic units; no significance claim with n=3",
+    "directional_screen": {
+      "median_primary_vs_original_at_least": 0.5,
+      "median_primary_vs_static_at_least": 0.5,
+      "topics_nonnegative_vs_both_at_least": 2,
+      "median_legibility_causal_vs_original_at_least": -0.5
+    },
+    "reporting": "Report all 3 topic deltas, individual blinded ratings, missingness and disagreement; no pooled independent n=9 inference, no p values",
+    "human_educational_effect": "NOT_MEASURED; reviewer scores are not learner performance"
+  },
+  "validity_threats": [
+    "V3-58 static arm advances result reveal as well as removing motion; not pure motion-only counterfactual",
+    "Raters can infer which version has motion; single-blind condition labels, not double-blind",
+    "Three raters and three hand-picked synthetic topics cannot establish population generalization",
+    "Same narration / AAC does not prove word-level speech/visual alignment",
+    "Technical native/pixel validation cannot substitute for human comprehension",
+    "Automatic code gate cannot authenticate human independence without host attestations"
+  ],
+  "acceptance": {
+    "media_integrity_all_9_sha256": true,
+    "aac_equal_and_decoded_frames_equal_within_case": true,
+    "distinct_masked_treatment_labels": true,
+    "record_reviewers_currently": 0,
+    "packet_and_schema_offline_tests": true,
+    "admin_key_separate": true,
+    "strict_missingness_and_duplicate_protection": true,
+    "no_fabricated_ratings": true,
+    "no_model_api": true,
+    "no_main_merge": true,
+    "no_v2_core_or_production_prompts": true,
+    "model_creativity": "NOT_TESTED",
+    "learning_gain": "NOT_MEASURED",
+    "human_quality": "UNRATED_PENDING_EXTERNAL_PANEL",
+    "production": "BLOCKED"
+  }
+}
