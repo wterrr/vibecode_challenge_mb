@@ -25,7 +25,10 @@ def test_smoke_is_host_only_and_same_instrumented_class():
     assert source.startswith("# V3-51 GENERIC HOST COMPILED SOURCE")
     assert "class GeneratedLesson(Scene)" in source
     assert source.count("V3-76 HOST INJECTED ACTUAL MANIM")==1
-    assert "get_bounding_box()" in source
+    assert "_cache_obj.get_left()[0]" in source
+    assert "_cache_obj.get_right()[0]" in source
+    assert "_cache_obj.get_top()[1]" in source
+    assert "_cache_obj.get_bottom()[1]" in source
     assert "v376_stage_before_bbox.marker" not in source
     assert "v376_stage_" in source and "_v376_fp.write" in source
     assert "self.play(FadeIn" in source
@@ -69,12 +72,13 @@ def test_no_change_to_study_pedagogy_outcomes():
 
 def test_r1_actual_cmu_bounds_precached_before_frame_updater_with_conservative_envelope():
     src=compile_smoke()
-    before=src.index("_cache_bb=_cache_obj.get_bounding_box()")
+    before=src.index("_cache_obj.get_left()[0]")
     callback=src.index("def _v376_capture(dt):")
     assert before<callback
     runtime=src[callback:]
     assert "_v376_bounds=_v376_bbox_cache.get(name)" in runtime
-    assert "bb=obj.get_bounding_box()" not in runtime
+    assert "_cache_obj.get_left()[0]" not in runtime
+    assert "_v376_bounds=_v376_bbox_cache.get(name)" in runtime
     assert "*1.07/2" in src
     assert "v376_stage_before_precache_bbox.marker" in src
     assert "v376_stage_after_precache_bbox.marker" in src
