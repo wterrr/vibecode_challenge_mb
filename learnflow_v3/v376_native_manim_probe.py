@@ -4,7 +4,7 @@ Manim (in Docker) reports bounding boxes of actual CMU glyph mobjects after
 animations update. The recorder does not trust source Pillow proxies.
 No provider-authored Python, no network/secret mount, no visual overlay.
 
-A sample represents a Manim update tick, not automatically an encoded frame.
+A sample is a Manim update tick and uses construct-time Manim glyph bounds with a conservative Indicate envelope. It is NOT exact frame-varying geometry or automatically an encoded frame.
 Downstream MUST independently verify timestamps/count against decoded H264.
 """
 from __future__ import annotations
@@ -62,6 +62,28 @@ def instrument(source:str,story)->str:
         "        def _v376_stage(label):",
         "            if _v376_serial[0]==0:",
         "                _V376Path('/output/v376_stage_'+label+'.marker').write_text('REACHED')",
+        "        # R1: actual CMU geometry is measured ONCE at construct time.",
+        "        # The bounded compiler allows FadeIn/Connect/Indicate only.",
+        "        # This does NOT certify time-varying Manim glyph geometry.",
+        "        _v376_bbox_cache={}",
+        "        for _cache_name,_cache_role,_cache_obj,_cache_parent in _v376_objects:",
+        "            if _cache_name=='chrome_brand':",
+        "                _V376Path('/output/v376_stage_before_precache_bbox.marker').write_text('REACHED')",
+        "            _cache_bb=_cache_obj.get_bounding_box()",
+        "            _cache_x0=min(float(v[0]) for v in _cache_bb)",
+        "            _cache_x1=max(float(v[0]) for v in _cache_bb)",
+        "            _cache_y0=min(float(v[1]) for v in _cache_bb)",
+        "            _cache_y1=max(float(v[1]) for v in _cache_bb)",
+        "            # Reserve Indicate(scale_factor=1.07) intermediate extent.",
+        "            _cache_cx=(_cache_x0+_cache_x1)/2",
+        "            _cache_cy=(_cache_y0+_cache_y1)/2",
+        "            _cache_w=(_cache_x1-_cache_x0)*1.07/2",
+        "            _cache_h=(_cache_y1-_cache_y0)*1.07/2",
+        "            _v376_bbox_cache[_cache_name]=(",
+        "                _cache_cx-_cache_w,_cache_cy-_cache_h,",
+        "                _cache_cx+_cache_w,_cache_cy+_cache_h)",
+        "            if _cache_name=='chrome_brand':",
+        "                _V376Path('/output/v376_stage_after_precache_bbox.marker').write_text('REACHED')",
         "        def _v376_capture(dt):",
         "            _v376_stage('entered')",
         "            if _v376_serial[0]==0:",
@@ -81,10 +103,12 @@ def instrument(source:str,story)->str:
         "            for name,role,obj,parent in _v376_objects:",
         "                if id(obj) not in _v376_family: continue",
         "                if not _v376_first_record[0]:_v376_stage('before_bbox')",
-        "                bb=obj.get_bounding_box()",
+        "                # No get_bounding_box() within a live Manim updater:",
+        "                # measured precache coordinates, explicit non-dynamic scope.",
+        "                _v376_bounds=_v376_bbox_cache.get(name)",
+        "                if _v376_bounds is None:raise RuntimeError('V376_UNCACHED_OBJECT')",
         "                if not _v376_first_record[0]:_v376_stage('after_bbox')",
-        "                x0=min(float(v[0]) for v in bb); x1=max(float(v[0]) for v in bb)",
-        "                y0=min(float(v[1]) for v in bb); y1=max(float(v[1]) for v in bb)",
+        "                x0,y0,x1,y1=_v376_bounds",
         "                # Actual Manim camera coordinates -> 1280x720 pixels.",
         "                box=[(x0+config.frame_width/2)*1280/config.frame_width,",
         "                     (config.frame_height/2-y1)*720/config.frame_height,",
