@@ -1,0 +1,104 @@
+{
+  "checkpoint": "V3-73",
+  "date": "2026-10-14",
+  "registration": "FIRST_CHILD_BEFORE_IMPLEMENTATION",
+  "parent": {
+    "pr": 108,
+    "sha": "149fb7eccdf860eb7ccf9b7b0cf04a493026c0f7"
+  },
+  "scope": "research-only generalized timeline geometry QA component and guarded diagnostic video renderer; NOT yet wired into V2 Core or production renderer",
+  "reuse": {
+    "v2_collision": "learnflow_v2/layout/collision.py#detect_box_collisions detects pure positive-area overlaps for immutable static LayoutGraph only; V2 untouched",
+    "v2_scenegraph": "learnflow_v2/scenegraph/validation.py validates static concept refs and semantic keys, NOT time-aware position/rendered pixels; untouched",
+    "v372": "learnflow_v3/v372_timeline_safe_renderer.py uses case-specific score rects, marker bounds, all 699 frame positions; original not modified; adapter will reuse its certified geometry to challenge new generic validator",
+    "qa_boundary": "Renderer must export complete typed every-frame geometry, including text occupied bounds, moving circle radius+stroke, declared permitted containments and stable object identity. Missing/inconsistent claims MUST fail closed."
+  },
+  "frozen_prior_sources": [
+    "benchmarks/learnflowbench/v3/v3_72_collision_repair_preregister.json",
+    "benchmarks/learnflowbench/v3/v3_60_independent_review_preregister.json"
+  ],
+  "failure_inventory": [
+    {
+      "text": "Text/shape occlusion",
+      "trace": "Attention score B intersects first score bar in original V3-59",
+      "expected": "intersecting text and shape must reject on every frame"
+    },
+    {
+      "text": "Circle entering node",
+      "trace": "Process x540 center penetrates ACTION left x510",
+      "expected": "radius+stroke+6px gap, reject boundary penetration mid-transition"
+    },
+    {
+      "text": "Frame missing",
+      "trace": "source geometry absent or frame index skip",
+      "expected": "fail closed; never mark a partial timeline pass"
+    },
+    {
+      "text": "Identity jump",
+      "trace": "same semantic object id moves implausibly far between adjacent frames",
+      "expected": "catch teleport while permitted smooth motion stays valid"
+    },
+    {
+      "text": "Off-canvas or invalid numeric",
+      "trace": "negative/far bounds, NaN or Inf",
+      "expected": "fail closed"
+    },
+    {
+      "text": "Improper overlap policy",
+      "trace": "different parent relationship abused to bypass collisions",
+      "expected": "only explicitly whitelisted node-contained label/approved bar fill relationships; check actual geometry"
+    },
+    {
+      "text": "Semantic/visual mismatch",
+      "trace": "declared geometry diverges from shapes actually rendered",
+      "expected": "renderer consumes same immutable frame IR and checks decoded pixel witnesses"
+    },
+    {
+      "text": "Unseen domain",
+      "trace": "new scenes not V3-72 fixed cases",
+      "expected": "holdout performance without naming Attention/Process/Fraction code branches"
+    }
+  ],
+  "locked_holdouts": [
+    {
+      "id": "h731_math_numberline",
+      "domain": "Mathematics",
+      "shape": "line+dot+annotation",
+      "frames": 45,
+      "seed": 7301
+    },
+    {
+      "id": "h732_biology_signal",
+      "domain": "Biology",
+      "shape": "two boxes+edge+traveling marker",
+      "frames": 45,
+      "seed": 7302
+    },
+    {
+      "id": "h733_computer_science_flow",
+      "domain": "Computer Science",
+      "shape": "three nodes+highlight+text",
+      "frames": 45,
+      "seed": 7303
+    }
+  ],
+  "metrics": {
+    "min_clearance_px": 6,
+    "max_center_step_px": 24,
+    "frame_count_per_heldout": 45,
+    "negative_cases_min": 10,
+    "source_v372_attention_frames": 355,
+    "source_v372_process_frames": 344,
+    "native_mp4_requirement": "3 actual new diagnostic H264 1280x720 15fps files. Full native decode and SHA receipts. These are SILENT geometry witness clips, NOT narrated lesson quality evidence.",
+    "timeline_requirement": "all 3x45 heldout frames plus all V3-72 699 timepoints via adapter; reject missing frame and edge crossing at non-endpoint indices",
+    "review": "Human quality remains UNRATED, production BLOCKED. Engineering PASS must not override original user's final viewer review."
+  },
+  "boundaries": {
+    "no_main_merge": true,
+    "no_model_api": true,
+    "no_provider_get": true,
+    "no_v2_core_or_production_prompt_edit": true,
+    "no_existing_mp4_replacement": true,
+    "explicit_research_only_integration": true
+  }
+}
