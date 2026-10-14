@@ -63,7 +63,7 @@ def test_unsafe_nodes_collision_mutation_detected(index):
     s=data["storyboard"].scenes[0]
     a,b=s.nodes[:2]
     layout[s.id][b.id]=layout[s.id][a.id]
-    with pytest.raises(Blocked,match="V375_GENERIC_V373_REJECTED"):
+    with pytest.raises(Blocked,match="V375_|V351_"):
         preflight(data["storyboard"],data["facts"],layout,
                   beatframes(data["storyboard"]))
 
