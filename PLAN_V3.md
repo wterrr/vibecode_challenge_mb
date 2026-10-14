@@ -1201,3 +1201,8 @@ Files: `benchmarks/learnflowbench/v3/v3_59_causal_reveal_preregister.json`, `lea
 
 
 V3-59 post-implementation hardening: inherited V3-57 Process marker physically ended at x≈610,y426 below ACTION entry x540,y337; new V3-59 research-only renderer replaces it with actual graph-anchored marker from (370,337)→(540,337), checks arrival-entry equality before activating ACTION. Extended negative/visual tests assert exact destination and decoded-frame region favors the certified semantic state over its opposite; not merely low whole-image MAE. Exact-head GitHub Actions still required before native technical PASS. Rater count zero, student learning NOT MEASURED, production BLOCKED.
+
+
+## V3-60 — Independent Three-Arm Pedagogical Quality Review (2026-10-14)
+
+Based on V3-59 Draft PR #93 exact HEAD `506b3ccf`. First child preregistered before implementation at `89c7e92` on `chatgpt/v3-60-independent-pedagogical-review`. Frozen nine V3-59 native masked videos (three topics × three arms; original/motion, static, causal) by SHA-256. Built `scripts/run_v3_60_independent_review.py`, hostile score/masking tests, dedicated native integrity CI, reviewer instructions and report `reports/v3_60_independent_pedagogical_evaluation.md`. Native MP4 SHA/codec/frame/AAC verified locally; reviewer kit has only masked clips and EMPTY score forms; admin key stays separately held. No human reviews: quality **UNRATED**, learning **NOT MEASURED**, model authoring **NOT TESTED**, production **BLOCKED**. Require 3+ actual external independent raters, masked forms, sealed scores before unblinding, auditor provenance and descriptive paired analysis before any pedagogical GO. No V2 Core or production-prompt edits, no model API or main merge.
