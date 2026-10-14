@@ -61,3 +61,30 @@ jobs:
           assert "temperature" not in request
           print("V364_OFFLINE_PREFLIGHT_NO_NEW_MODEL_POST")
           PY
+
+  full_native_host_test_preflight_no_API:
+    needs: frozen-new-topic-and-provider-negative-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deterministic video/test speech dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng fonts-dejavu-core
+          python -m pip install --disable-pip-version-check \
+            -r requirements.txt "pillow>=11,<13" "jsonschema>=4,<5" \
+            "numpy>=1.24,<3" pyyaml
+      - name: Real H264 and AAC: render entire two-movie HOST TEST ONLY pair
+        run: |
+          python scripts/run_v3_64_native_preflight.py \
+            --output "$RUNNER_TEMP/V364_HOST_TEST_ONLY_NATIVE"
+          ffprobe -v error -show_entries stream=codec_name \
+            -of compact "$RUNNER_TEMP/V364_HOST_TEST_ONLY_NATIVE/host_TEST_ONLY.mp4"
+          ffprobe -v error -show_entries stream=codec_name \
+            -of compact "$RUNNER_TEMP/V364_HOST_TEST_ONLY_NATIVE/model_unverified.mp4"
