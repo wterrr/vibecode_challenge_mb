@@ -108,7 +108,7 @@ def test_host_owned_compiler_instrumentation_actually_targets_native_object_vari
     assert "call_updater=False" in out
     assert "v376_probe_first_tick.marker" in out
     assert out.index("V3-76 HOST INJECTED") < out.index("self.play(")
-    assert "_v376_out.write_text" in out
+    assert "_v376_fp=_v376_out.open" in out
     assert "mock_score_comparison" not in out
     assert "from pathlib import Path as _V376Path" in out
 
