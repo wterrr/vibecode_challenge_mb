@@ -50,7 +50,8 @@ def instrument(source:str,story)->str:
     entry=[
         "        # V3-76 HOST INJECTED ACTUAL MANIM MOBJECT BBOX PROBE",
         "        _v376_out = _V376Path("+repr(OUTFILE)+")",
-        "        _v376_out.write_text('',encoding='utf-8')",
+        "        _v376_fp=_v376_out.open('w',encoding='utf-8')",
+        "        _V376Path('/output/v376_probe_initialized.marker').write_text('READY')",
         "        _v376_objects = [",
     ]
     for identity,role,var,parent in names:
@@ -59,7 +60,16 @@ def instrument(source:str,story)->str:
         "        ]",
         "        _v376_serial=[0]",
         "        def _v376_capture(dt):",
-        "            _v376_family={id(o) for o in self.get_mobject_family_members()}",
+        "            if _v376_serial[0]==0:",
+        "                _V376Path('/output/v376_probe_first_tick.marker').write_text('ENTERED')",
+        "            # Manim Text has thousands of leaf glyph points; never",
+        "            # recursively enumerate full Scene family inside a per-frame",
+        "            # observer. Named compiler groups own registered labels as",
+        "            # DIRECT children, so a one-level set is complete in scope.",
+        "            _v376_roots=tuple(self.mobjects)",
+        "            _v376_family={id(o) for o in _v376_roots}",
+        "            for _root in _v376_roots:",
+        "                _v376_family.update(id(o) for o in _root.submobjects)",
         "            _v376_rows=[]",
         "            for name,role,obj,parent in _v376_objects:",
         "                if id(obj) not in _v376_family: continue",
@@ -78,11 +88,11 @@ def instrument(source:str,story)->str:
         "            row={'seq':_v376_serial[0],",
         "                 'scene_time_s':float(getattr(self,'time',0.)),",
         "                 'dt':float(dt),'objects':_v376_rows}",
-        "            with _v376_out.open('a',encoding='utf-8') as f:",
-        "                f.write(_v376json.dumps(row,separators=(',',':'))+'\\n')",
+        "            _v376_fp.write(_v376json.dumps(row,separators=(',',':'))+'\\n')",
+        "            if _v376_serial[0]%15==0:_v376_fp.flush()",
         "            _v376_serial[0]+=1",
         "        _v376_monitor=VMobject()",
-        "        _v376_monitor.add_updater(lambda mob,dt:_v376_capture(dt))",
+        "        _v376_monitor.add_updater(lambda mob,dt:_v376_capture(dt),call_updater=False)",
         "        self.add(_v376_monitor)",
     ]
     inject="\n".join(entry)+"\n"
