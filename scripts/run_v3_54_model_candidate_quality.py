@@ -38,7 +38,8 @@ def registered()->dict:
     return r
 
 
-def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False):
+def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False,
+             runtime_v376:bool=False):
     folder.mkdir()
     packet=mock_candidate_bytes(raw)
     accepted,diag=accept(packet)
@@ -53,6 +54,8 @@ def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False):
         story.model_dump_json(indent=2)+"\n")
     (folder/"actual_v2_scenegraphs.json").write_text(
         json.dumps([g.model_dump(mode="json") for g in graphs],indent=2)+"\n")
+    if runtime_v376 and not strict_v375:
+        raise Blocked("V376_REQUIRES_STRICT_V375_PREFLIGHT")
     voice,beats,wav=_audio(folder,audio_proxy(story))
     v375_preflight=None
     if strict_v375:
@@ -60,7 +63,11 @@ def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False):
         v375_preflight=preflight(story,facts,layout,
                                  [int(b["frames"]) for b in beats])
     source=folder/"host_compiled_finite_manim.py"
-    source.write_text(manim(story,facts,graphs,layout,voice))
+    host_code=manim(story,facts,graphs,layout,voice)
+    if runtime_v376:
+        from learnflow_v3.v376_native_manim_probe import instrument
+        host_code=instrument(host_code,story)
+    source.write_text(host_code)
     render,sandbox=_docker_manim(folder,source)
     movie=folder/"mock_candidate_native.mp4"
     mux=deterministic_mux(render,wav,movie,beats)
@@ -74,6 +81,13 @@ def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False):
         v375_native=native_gate(movie,media["frames"],v375_preflight)
         if v375_native["native_sha256"]!=sha(movie):
             raise Blocked("V375_VIDEO_HASH_MISMATCH")
+    v376_runtime=None
+    if runtime_v376:
+        from learnflow_v3.v376_native_runtime_readability import evaluate
+        telemetry=folder/"manim_output"/"v376_runtime_geometry.jsonl"
+        v376_runtime=evaluate(movie,telemetry,media["frames"])
+        if v376_runtime["movie_sha256"]!=sha(movie):
+            raise Blocked("V376_NATIVE_MOVIE_RECEIPT_DRIFT")
     signature=digest({
         "scene_layouts":[s.layout for s in story.scenes],
         "scene_node_kinds":[[n.kind for n in s.nodes] for s in story.scenes],
@@ -90,6 +104,7 @@ def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False):
        "v2_scenegraph_adapter_sha256":sha(folder/"actual_v2_scenegraphs.json"),
        "structure_signature_sha256":signature,
        **({"v375_creative_integrated_quality_gate":v375_native} if strict_v375 else {}),
+       **({"v376_runtime_native_readability":v376_runtime} if runtime_v376 else {}),
        "graph_count":len(graphs),"beat_count":len(story.beats),
        "av":media,"mux":mux,"visual_quality_proxy":quality,
        "sandbox":sandbox,"visual_educational_quality":"UNRATED",

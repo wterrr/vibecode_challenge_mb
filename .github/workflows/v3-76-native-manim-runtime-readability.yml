@@ -1,0 +1,92 @@
+name: V3-76 Native Manim Runtime Glyph and Pixel Readability (NO MODEL API)
+on:
+  push:
+    branches: [chatgpt/v3-76-native-runtime-geometry-pixel-readability]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_76_native_runtime_readability_preregister.json'
+      - 'learnflow_v3/v376_native_manim_probe.py'
+      - 'learnflow_v3/v376_native_runtime_readability.py'
+      - 'scripts/run_v3_54_model_candidate_quality.py'
+      - 'scripts/run_v3_76_native_runtime_readability.py'
+      - 'tests/v3/test_v3_76_native_runtime_readability.py'
+      - '.github/workflows/v3-76-native-manim-runtime-readability.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_76_native_runtime_readability_preregister.json'
+      - 'learnflow_v3/v376_native_manim_probe.py'
+      - 'learnflow_v3/v376_native_runtime_readability.py'
+      - 'scripts/run_v3_54_model_candidate_quality.py'
+      - 'scripts/run_v3_76_native_runtime_readability.py'
+      - 'tests/v3/test_v3_76_native_runtime_readability.py'
+      - '.github/workflows/v3-76-native-manim-runtime-readability.yml'
+permissions:
+  contents: read
+concurrency:
+  group: v376-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  actual-manim-runtime-and-native-pixel-provenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 46
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reuse pinned CMU fonts, FFmpeg and espeak
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Reuse canonical offline renderer dependencies
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Preregistered hostile corruption and Manim injection tests
+        timeout-minutes: 6
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_76_native_runtime_readability.py
+      - name: Pull existing pin Manim sandbox
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Render V3-54 source through actual Manim font probe and independent H264 pixel witness
+        timeout-minutes: 28
+        run: |
+          python scripts/run_v3_76_native_runtime_readability.py --output-dir "$RUNNER_TEMP/v376_native_runtime"
+          python - <<'PY'
+          import json,os,pathlib,hashlib,subprocess
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'v376_native_runtime'
+          receipt=json.loads((root/'v376_research_gate_receipt.json').read_text())
+          assert receipt['checkpoint']=='V3-76'
+          assert receipt['production']=='BLOCKED' and receipt['model_api_calls']==0
+          assert len(receipt['cases'])==3
+          assert receipt['accepted_cases']+receipt['rejected_cases']==3
+          # This run is meaningful only if runtime Manim emitted physical
+          # telemetry at least once. Passing negative tests alone is not GO.
+          probes=[case for case in receipt['cases'] if case['runtime_telemetry_created']]
+          assert probes, 'V376_NO_REAL_MANIM_RUNTIME_TELEMETRY_PRODUCED'
+          for c in probes:
+              native=root/c['id']/'mock_candidate_native.mp4'
+              if native.exists():
+                  assert c['candidate_mp4_sha256']==hashlib.sha256(native.read_bytes()).hexdigest()
+                  probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-of','json',str(native)]))
+                  streams={s['codec_type']:s for s in probe['streams']}
+                  assert streams['video']['codec_name']=='h264' and streams['audio']['codec_name']=='aac'
+              assert (root/c['id']/'manim_output'/'v376_runtime_geometry.jsonl').is_file()
+          print('V376 RESEARCH EVIDENCE: runtime telemetries',len(probes),'bounded PASS:',receipt['accepted_cases'],'NO-GO:',receipt['rejected_cases'])
+          PY
+      - name: Frozen V2 and study protocol verification
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v376-real-Manim-runtime-CMU-glyph-telemetry-H264-AAC-and-visual-NOGO
+          path: ${{ runner.temp }}/v376_native_runtime/
+          retention-days: 7
+          if-no-files-found: warn
