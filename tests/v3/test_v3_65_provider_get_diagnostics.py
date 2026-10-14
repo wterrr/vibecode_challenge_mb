@@ -160,3 +160,17 @@ def test_redirect_not_followed_to_leak_token():
     no=NeverFollowRedirect()
     assert no.redirect_request(None,None,302,"Found",{},
         "https://evil.example/steal") is None
+
+
+def test_direct_script_invocation_imports_repo_without_network():
+    """Replicates GitHub's python scripts/... entrypoint, not pytest import mode."""
+    from pathlib import Path
+    import sys,subprocess
+    root=Path(__file__).resolve().parents[2]
+    cmd=[sys.executable,str(root/"scripts/run_v3_65_provider_get_diagnostics.py"),
+         "--help"]
+    result=subprocess.run(cmd,cwd=root,capture_output=True,text=True,
+                          timeout=20,check=False)
+    assert result.returncode==0, result.stderr[-300:]
+    assert "--output" in result.stdout
+    assert "ModuleNotFoundError" not in result.stderr
