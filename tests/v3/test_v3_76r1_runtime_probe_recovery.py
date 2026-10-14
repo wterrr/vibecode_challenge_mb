@@ -82,3 +82,42 @@ def test_r1_actual_cmu_bounds_precached_before_frame_updater_with_conservative_e
     assert "*1.07/2" in src
     assert "v376_stage_before_precache_bbox.marker" in src
     assert "v376_stage_after_precache_bbox.marker" in src
+
+def test_a3_effective_svg_glyph_fill_not_black_parent_color():
+    from learnflow_v3.v376_native_runtime_readability import validate_telemetry
+    from tests.v3.test_v3_76_native_runtime_readability import stream
+    rows=stream()
+    for row in rows:
+        for o in row["objects"]:
+            if o["role"]=="text":
+                o["rgb"]=[0.,0.,0.]  # Manim Text container's incorrect BLACK style
+                o["glyph_rgbs"]=[[.92,.94,.96]]
+                o["color_source"]="CONSTRUCT_TIME_SVG_LEAF_FILL"
+    evidence=validate_telemetry(rows,120)
+    assert not evidence["contrast_defects"],evidence["contrast_defects"]
+    # Worst actual child fill color wins; dark glyph may not be averaged away.
+    for row in rows:
+        for o in row["objects"]:
+            if o["role"]=="text":
+                o["glyph_rgbs"].append([.13,.13,.13])
+    bad=validate_telemetry(rows,120)
+    assert bad["contrast_defects"]
+
+
+def test_a3_glyph_fill_provenance_required_in_physical_runner():
+    from scripts.run_v3_76r1_bounded_manim_probe import compile_smoke
+    source=compile_smoke()
+    assert "_cache_obj.get_family()" in source
+    assert "_glyph.get_fill_color().to_rgb()" in source
+    assert "V376_NO_EFFECTIVE_SVG_GLYPH_COLOR" in source
+    check=(ROOT/"learnflow_v3/v376_native_runtime_readability.py").read_text()
+    assert "NATIVE_TEXT_GLYPH_FILL_PROVENANCE_MISSING" in check
+    assert "min(contrast_ratio(color) for color in candidates)" in check
+
+
+def test_a3_preregister_no_lowering_contrast_before_fix():
+    amend=json.loads((ROOT/"benchmarks/learnflowbench/v3/v3_76r1_recovery_amendment_a3.json").read_text())
+    assert amend["amendment"]=="A3_SVG_GLYPH_COLOR_PROVENANCE"
+    assert amend["evidence"]["run"]==38541169374
+    assert amend["evidence"]["artifact"]==11882608398
+    assert amend["no_main_merge"] if "no_main_merge" in amend else "merging main" in amend["non_goals"]
