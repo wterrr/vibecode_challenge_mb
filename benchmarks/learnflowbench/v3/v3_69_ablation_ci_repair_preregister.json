@@ -1,0 +1,47 @@
+{
+  "checkpoint": "V3-69",
+  "kind": "FIRST_CHILD_PREREGISTRATION_BEFORE_CI_REPAIR",
+  "date": "2026-10-14",
+  "parent": {
+    "pr": 104,
+    "sha": "ba6dbb10d115a206a34fb89d04ecd1e625c8b7f2",
+    "branch": "chatgpt/v3-68-readonly-key-cap-attestation"
+  },
+  "issue": {
+    "historical_failing_job_id": 115669901530,
+    "historical_error": "V356_PROMPT_AB_NOT_MATCHED",
+    "cause_hypothesis": "Archived V3-56 arm B/C use explicit natural-language references; strict raw-string comparison rejects semantically correct A/B renderer and B/C prompt equivalence."
+  },
+  "frozen_originals": {
+    "protocol_path": "research/v3_56_abc_evaluation_protocol.json",
+    "protocol_git_blob_sha": "7206371d69ec5ca3670417314314a62e16b1b31c",
+    "preregister_path": "benchmarks/learnflowbench/v3/v3_56_pedagogical_agent_research_preregister.json",
+    "must_not_modify": true
+  },
+  "scope": "ONE_CHECKPOINT_RESEARCH_ONLY_V356_ABLATION_CONTRACT_CI_REPAIR",
+  "acceptance": [
+    "Check the actual failure against frozen V3-56 protocol before modifying code.",
+    "Make A/B renderer equivalent ONLY when B exactly uses the archived explicit reference to A and A exactly names the frozen renderer.",
+    "Make B/C prompt equivalent ONLY when C exactly uses the archived explicit reference to B and B exactly names the research sidecar prompt.",
+    "Never normalize arbitrary text or weaken the frozen experimental contrasts; require A vs B distinct prompt, B vs C distinct renderer, frozen arm identities and supported exact values.",
+    "Regression mutation controls must reject alternative/missing arm ID, changed A/B renderer, changed B/C prompt, and contrast collapse.",
+    "Preserve the archived protocol and all previously frozen V3 receipts; report original cause and limits.",
+    "Run V3-56 exact offline verifier/tests on the new HEAD and monitor exact-head CI; do not conflate push and PR success."
+  ],
+  "safety": {
+    "model_http_posts": 0,
+    "provider_gets": 0,
+    "key_mutations": 0,
+    "production_prompt_changes": 0,
+    "v2_core_changes": 0,
+    "main_merge": false,
+    "production": "BLOCKED"
+  },
+  "scientific_boundaries": {
+    "human_pedagogical_quality": "UNRATED",
+    "learning_gain": "NOT_MEASURED",
+    "genuine_model_creativity": "NOT_TESTED",
+    "old_v364_http_cause": "UNDETERMINED",
+    "new_paid_inference": "NOT_AUTHORIZED"
+  }
+}
