@@ -1,0 +1,58 @@
+{
+  "checkpoint": "V3-71",
+  "title": "Physical Masked Reviewer Media Preflight, Custody and Panel Activation Boundary",
+  "date_utc": "2026-10-14",
+  "scope": "RESEARCH_ONLY_OFFLINE_NO_EXTERNAL_REVIEWERS",
+  "parent": {
+    "pr": 106,
+    "sha": "4f12f5a5b093b2d44719dc1ddb02733a70444267",
+    "branch": "chatgpt/v3-70-human-review-intake-integrity"
+  },
+  "registration": "FIRST_CHILD_BEFORE_SYSTEMATIC_FFMPEG_FULL_DECODE_AND_METRIC_AUDIT",
+  "transparency": "BEFORE_THIS_PREREG the investigator downloaded original V3-61 artifact, inspected ZIP metadata, verified each video SHA-256 and codec using ffprobe, and visually previewed four timestamped frames per video. These observations are exploratory, NOT prospective evidence; no inferential claims or blinded reviewer scores.",
+  "source": {
+    "review_ui_artifact_id": 11863189967,
+    "source_run_id": 38496967796,
+    "source_pr": 97,
+    "kit_file_count": 16,
+    "masked_movies": 9,
+    "reviewer_forms": 3,
+    "source_manifest": "MASKED_MANIFEST.json",
+    "original_frozen_registration": "benchmarks/learnflowbench/v3/v3_60_independent_review_preregister.json",
+    "original_v361_registration": "benchmarks/learnflowbench/v3/v3_61_offline_review_ui_preregister.json",
+    "zero_admin_mapping": true
+  },
+  "protocol": {
+    "native_decode": "Run ffmpeg -xerror decode of all frames for each exact hash-matched MP4; verify H264/AAC 1280x720 15fps, same video frames, AAC packet SHA per topic.",
+    "kit_integrity": "Exactly 16 files; 9 media + 3 HTML + JS/CSS + START_HERE + MASKED_MANIFEST; reject unexpected executable or admin files; verify manifest and all 9 movie SHA-256 with original V3-60 prereg.",
+    "visual_preflight": "Descriptive, no human scores. Capture 4 sample timestamps per video at fractions [0.12, 0.34, 0.58, 0.82] and annotate separately without inspecting treatment assignment. Systematic 1fps change summaries on the visible teaching canvas exclude lower subtitle and UI strips; report as pixel-only proxy, not comprehension.",
+    "distribution": "Preserve original masked-only artifact unaltered for external reviewers. Document one form per reviewer, separate admin key, private original consent/custody and V3-70 local score-lock path. No emails or outreach without approved recipient identities.",
+    "scientific_gates": "No reviewer panel exists currently; V3-60 independent score analysis remains blocked regardless of technical results. Static arm confounds motion and early result exposure."
+  },
+  "acceptance": [
+    "Exact existing frozen nine native video SHA256 match; full nine-video decode and within-topic AAC/frame parity; manifest treatment mapping withheld.",
+    "Systematic audit receipt and blinded contact sheets generated only from unchanged MP4s; optional pixel proxy explicitly labeled not a human score.",
+    "Original first-party preflight kit downloadable and kept separate from admin mapping; no video edits or fabricated consent/reviews.",
+    "No changes to old V3-60/61/70 registrations, outcome thresholds, locked source videos or original V3-64 API status.",
+    "Dedicated self-contained offline negative tests where possible, do not add broad job-fanout; never model/provider API or secret access.",
+    "Update canonical PLAN_V3/Research Notes and report fail-closed limitations; report actual CI status only after verified."
+  ],
+  "limits": {
+    "real_human_reviewers": 0,
+    "human_quality": "UNRATED",
+    "learning_gain": "NOT_MEASURED",
+    "model_creativity": "NOT_TESTED",
+    "parity_3b1b": "NOT_DEMONSTRATED",
+    "production": "BLOCKED"
+  },
+  "prohibitions": {
+    "model_post": 0,
+    "provider_get": 0,
+    "key_mutation": 0,
+    "main_merge": false,
+    "v2_core_edits": 0,
+    "production_prompt_edits": 0,
+    "masked_video_changes": 0,
+    "admin_treatment_key_access": 0
+  }
+}
