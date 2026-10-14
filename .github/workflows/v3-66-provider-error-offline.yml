@@ -1,0 +1,82 @@
+name: V3-66 Sanitized Provider HTTP Failure Contract (OFFLINE ONLY)
+on:
+  push:
+    branches: [chatgpt/v3-66-provider-error-observability]
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_66_provider_failure_preregister.json"
+      - "learnflow_v3/v366_provider_failure_observability.py"
+      - "scripts/run_v3_66_static_diagnostic.py"
+      - "tests/v3/test_v3_66_provider_failure_observability.py"
+      - ".github/workflows/v3-66-provider-error-offline.yml"
+  pull_request:
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_66_provider_failure_preregister.json"
+      - "learnflow_v3/v366_provider_failure_observability.py"
+      - "scripts/run_v3_66_static_diagnostic.py"
+      - "tests/v3/test_v3_66_provider_failure_observability.py"
+      - ".github/workflows/v3-66-provider-error-offline.yml"
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  v366_static_http_status_and_compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install reusable LearnFlow V3 dependencies
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -r requirements.txt "pytest>=8,<10" "jsonschema>=4,<5" \
+            "pillow>=11,<13" "numpy>=1.24,<3" pyyaml
+      - name: Run HTTP 4xx/5xx/transport and secret safety mutation suite OFFLINE
+        run: |
+          python -m compileall -q \
+            learnflow_v3/v366_provider_failure_observability.py \
+            scripts/run_v3_66_static_diagnostic.py \
+            tests/v3/test_v3_66_provider_failure_observability.py
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_66_provider_failure_observability.py
+      - name: Generate prereg locked static compatibility packet with 0 network
+        run: |
+          python scripts/run_v3_66_static_diagnostic.py \
+            --output artifacts/v366/V366_STATIC_NO_NETWORK_DIAGNOSTIC.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("artifacts/v366/V366_STATIC_NO_NETWORK_DIAGNOSTIC.json")
+          x=json.loads(p.read_text())
+          assert x["live_model_posts"]==x["live_provider_gets"]==0
+          assert x["static_diagnostic"]["historical_HTTP_error_code"]=="NOT_CAPTURED_CANNOT_RECOVER"
+          assert x["static_diagnostic"]["hard_dollar_budget_enforced"] is False
+          assert "allow_fallback" in x["static_diagnostic"]["provider_options_observed"]
+          assert "allow_fallbacks" not in x["static_diagnostic"]["provider_options_observed"]
+          assert x["production"]=="BLOCKED"
+          print("V366_STRICT_OFFLINE_NO_PROVIDER_REQUESTS_PASS")
+          PY
+      - name: Verify no provider network client or secret references in new module
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          paths=["learnflow_v3/v366_provider_failure_observability.py",
+                 "scripts/run_v3_66_static_diagnostic.py"]
+          for path in paths:
+              text=Path(path).read_text()
+              for forbidden in ("urlopen(", "requests.post(", "OPENROUTER_API_KEY",
+                                "urllib.request.Request(", "httpx.post(", "urllib.request.urlopen("):
+                  assert forbidden not in text,(path,forbidden)
+          print("V366_ZERO_INFERENCE_NO_NETWORK_ENTRYPOINT")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v366-STATIC-PROVIDER-HTTP-DIAGNOSTIC-NO-NETWORK
+          path: artifacts/v366/V366_STATIC_NO_NETWORK_DIAGNOSTIC.json
+          if-no-files-found: error
+          retention-days: 14
