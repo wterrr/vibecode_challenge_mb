@@ -80,7 +80,7 @@ jobs:
           python -m pip install --disable-pip-version-check \
             -r requirements.txt "pillow>=11,<13" "jsonschema>=4,<5" \
             "numpy>=1.24,<3" pyyaml
-      - name: Real H264 and AAC: render entire two-movie HOST TEST ONLY pair
+      - name: 'Real H264 and AAC: render entire two-movie HOST TEST ONLY pair'
         run: |
           python scripts/run_v3_64_native_preflight.py \
             --output "$RUNNER_TEMP/V364_HOST_TEST_ONLY_NATIVE"
