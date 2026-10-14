@@ -1,0 +1,51 @@
+{
+  "checkpoint": "V3-74",
+  "date": "2026-10-14",
+  "kind": "FIRST_CHILD_PREREG_BEFORE_CODE",
+  "parent": {
+    "pr": 109,
+    "sha": "0eb88ad7116637799fa662af9ebafbbff6127341"
+  },
+  "objective": "Wire V3-73 QA into actual V3-45 typed host compiler -> Docker Manim -> native H264/AAC -> decoded pixel route. Fail closed for unsupported exporters.",
+  "reuse": [
+    "scripts/run_v3_45_semantic_offline.py",
+    "learnflow_v3/semantic_scene_wire.py#process_edge_layout",
+    "learnflow_v3/generalized_temporal_visual_qa.py#validate_timeline",
+    "learnflow_v3/process_edge_visual_qa.py#inspect_first_edge"
+  ],
+  "supported_scope": "ordered_process with left-to-right horizontal arrows and unchanged synthetic host claims, NOT all production or arbitrary creative Manim scenes",
+  "integration": "Opt-in quality_gate_v374=True and process-only selection, preflight geometry before _docker_manim, postflight actual native MP4 decoded pixel gate before successful case receipt, no no-QA fallback",
+  "unsupported": [
+    "fraction_equivalence",
+    "arbitrary CreativeScene or Manim",
+    "non-horizontal or reversed paths",
+    "missing complete marker traversal export",
+    "unavailable raw native output",
+    "arbitrary visual polish"
+  ],
+  "native": "New named narrated V3-45 process actual Manim H264/AAC MP4. Historical media remain immutable. Full native decode, FFprobe/MP4 SHA, QA proof tied to actual source and output.",
+  "acceptance": [
+    "All frame indices within actual physical edge traversal intervals certified by generic temporal IR validator at 15fps",
+    "Object IDs and edge semantics continuous; marker-node clearance >=6px including radius and stroke",
+    "Negative mutants reproduce original marker penetration, unsupported family/geometry and no-QA bypass",
+    "Keep V3-45's native decoded-pixel process QA, don't conflate semantic geometry with pixel verification",
+    "One real native host/synthetic narrated MP4, H264/AAC and full decode; no fallback to toy video",
+    "CI exact-head specialized and broad checks; no main merge, no model calls",
+    "No claims of universal pixel/video QA, independent human ratings or learning outcomes"
+  ],
+  "limitations": {
+    "human_quality": "UNRATED",
+    "learning_gain": "NOT_MEASURED",
+    "model_authorship": "HOST_SYNTHETIC_NOT_MODEL",
+    "production": "BLOCKED",
+    "user_final_visual_review": "NOT_PASS"
+  },
+  "prohibitions": {
+    "merge_main": false,
+    "provider_get": 0,
+    "model_api_post": 0,
+    "v2_core_edit": false,
+    "production_prompt_edit": false,
+    "replace_frozen_study_videos": false
+  }
+}
