@@ -1,0 +1,90 @@
+name: V3-75 Creative SceneGraph Actual Manim Native Visual QA (NO MODEL API)
+on:
+  push:
+    branches: [chatgpt/v3-75-creative-scene-native-qa]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_75_creative_native_qa_preregister.json'
+      - 'learnflow_v3/v375_creative_native_gate.py'
+      - 'scripts/run_v3_54_model_candidate_quality.py'
+      - 'scripts/run_v3_75_creative_native_qa.py'
+      - 'tests/v3/test_v3_75_creative_native_qa.py'
+      - '.github/workflows/v3-75-creative-native-qa.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_75_creative_native_qa_preregister.json'
+      - 'learnflow_v3/v375_creative_native_gate.py'
+      - 'scripts/run_v3_54_model_candidate_quality.py'
+      - 'scripts/run_v3_75_creative_native_qa.py'
+      - 'tests/v3/test_v3_75_creative_native_qa.py'
+      - '.github/workflows/v3-75-creative-native-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: v375-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  creative-real-manim-geometry-and-native-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 48
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reuse FFmpeg espeak CMU fonts and no-network Docker bootstrap
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Bounded existing typed Creative SceneGraph dependencies
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Negative mutation testing and exact preregistration
+        timeout-minutes: 5
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_75_creative_native_qa.py
+      - name: Pull pinned Docker Manim image
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Render 3 frozen host mock creative SceneGraphs with strict fail-closed per-case QA
+        timeout-minutes: 27
+        run: |
+          python scripts/run_v3_75_creative_native_qa.py --output-dir "$RUNNER_TEMP/v375_creative_native"
+          python - <<'PY'
+          import json,os,pathlib,subprocess,hashlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'v375_creative_native'
+          doc=json.loads((root/'v375_final_creative_native_qa_receipt.json').read_text())
+          assert doc['checkpoint']=='V3-75'
+          assert doc['production']=='BLOCKED' and doc['model_api_calls']==0
+          assert len(doc['cases'])==3
+          assert not doc['all_renderer_pipelines_covered']
+          assert not doc['all_frame_actual_manim_glyph_collision_certified']
+          accepted=[x for x in doc['cases'] if x['status']=='TECHNICAL_BOUNDED_PASS']
+          for x in accepted:
+            file=root/x['id']/'mock_candidate_native.mp4'
+            assert file.is_file() and file.stat().st_size>40000
+            assert hashlib.sha256(file.read_bytes()).hexdigest()==x['native_video_sha256']
+            meta=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-of','json',str(file)]))
+            v=next(t for t in meta['streams'] if t['codec_type']=='video')
+            a=next(t for t in meta['streams'] if t['codec_type']=='audio')
+            assert (v['codec_name'],a['codec_name'],v['width'],v['height'],v['r_frame_rate'])==('h264','aac',1280,720,'15/1')
+            assert int(v['nb_frames'])==x['video_frames']==x['preframe_checked']
+          print('V3-75 native real creative MP4 count:',len(accepted),'explicit blocked:',len(doc['cases'])-len(accepted))
+          assert len(accepted)>=1, 'V375_NO_GO_NO_CREATIVE_NATIVE_QA_ELIGIBLE_CASE'
+          PY
+      - name: Frozen V2 and research protocol checks
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v375-real-creative-Manim-native-H264-AAC-and-strict-abstention-evidence-NO-MODEL
+          path: ${{ runner.temp }}/v375_creative_native/
+          retention-days: 7
+          if-no-files-found: warn
