@@ -14,7 +14,7 @@
     ["pacing", "Pacing — is there sufficient time to think?"]
   ]);
   const RATE = [1, 2, 3, 4, 5];
-  const BAD = /(?:^|[^A-Za-z0-9])(?:original_motion|static_end_state|causal_reveal)(?:$|[^A-Za-z0-9])/;
+  const FORBIDDEN_KEYS = /^(?:treatment|treatments|admin|assignment|unblinding_key)$/i;
   function validRater(s) { return /^[A-Za-z0-9_-]{3,40}$/.test(s); }
   function escapeCSV(value) {
     const s = String(value === undefined || value === null ? "" : value);
@@ -22,6 +22,7 @@
   }
   function validateRow(row, expected) {
     if (!validRater(row.rater_id)) return "Enter a 3–40 character pseudonym (letters/numbers/_/-).";
+    if (/^[=+@\t\r\-]/.test(String(row.timestamp_failure_notes || ""))) return "Notes cannot begin with a spreadsheet formula.";
     if (row.case_id !== expected.case_id || row.clip_id !== expected.clip_id) return "Frozen case/clip IDs changed.";
     for (const [field] of CRITERIA) {
       if (!RATE.includes(Number(row[field])) || !/^[1-5]$/.test(String(row[field]))) {
@@ -64,7 +65,7 @@
     const cfg = JSON.parse(cfgNode.textContent);
     const ids = Array.isArray(cfg.clips) ? cfg.clips : [];
     if (ids.length !== 9 || new Set(ids.map(x => x.clip_id)).size !== 9 ||
-        cfg.checkpoint !== "V3-61" || JSON.stringify(cfg).match(BAD)) {
+        cfg.checkpoint !== "V3-61" || Object.keys(cfg).some(k => FORBIDDEN_KEYS.test(k))) {
       throw new Error("Invalid or unmasked reviewer configuration.");
     }
     const $ = id => doc.getElementById(id);
