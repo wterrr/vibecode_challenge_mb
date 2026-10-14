@@ -1,0 +1,65 @@
+{
+  "checkpoint": "V3-76",
+  "date": "2026-10-14",
+  "kind": "FIRST_CHILD_PREREG_BEFORE_IMPLEMENTATION",
+  "parent": {
+    "pr": 111,
+    "sha": "612600ff1558a0e398bb19a96ac857d67a3b04a2"
+  },
+  "baseline": {
+    "pr": 111,
+    "exact_head_workflows": "48/48 SUCCESS",
+    "v375_native": "2/3 TECHNICAL_BOUNDED_PASS; mock_token_network blocked by weightright:context",
+    "visual": "Final Viewer NOT PASS; observed low-contrast s_B = 0.000 and sparse layouts"
+  },
+  "research_question": "Can runtime Manim object/glyph bounds + actual decoded H264 pixels catch defects source envelopes cannot, without falsifying all-frame claims?",
+  "scope": "V3-54 host-synthetic creative SceneGraph renderer only; new instrumented versioned outputs never overwrite original MP4s",
+  "planned_hooks": {
+    "compiler": "Host-controlled instrumentation injected after V3-51 compiler object declarations, before Manim animation loop; observer logs actual world pixel bounds, visible glyph/shape state and 15fps frame timestamps inside Docker Manim",
+    "provenance": "All telemetry saved in /output:rw Docker mount; capture exact raw render SHA and media frame count; reject missing, corrupt, partial or counterfeited telemetry",
+    "native": "Render new narrated H264/AAC via unchanged bounded creative scene compiler; decode native pixel regions for contrast/text visibility and glyph/shape occlusion; geometry telemetry cannot alone claim actual pixel segmentation"
+  },
+  "hard_acceptance": {
+    "min_text_contrast_ratio": 4.5,
+    "unreadable_text_fraction_max": 0,
+    "allow_contrast_nongo": true,
+    "object_padding_px": 4,
+    "frame_coverage": "Per-frame runtime source telemetry exact or conservatively aligned with native frames; if mismatch, NO-GO not PASS",
+    "negative_tests": [
+      "visible glyph intersect unrelated background bar",
+      "marker intersects node during frame",
+      "low text contrast on dark background",
+      "missing telemetry",
+      "duplicated/skipped timestamps",
+      "invalid NaN object extents",
+      "tampered native SHA",
+      "unsupported animation op without exporter",
+      "tracking unregistered objects",
+      "actual native pixel region not visible",
+      "partial scene/beat ledger"
+    ],
+    "evaluate": [
+      "mock_token_network",
+      "mock_score_comparison",
+      "mock_symbolic_equivalence"
+    ],
+    "outcomes": "PASS_BOUNDED only with full runtime/pixel receipts; otherwise explicit NO_GO with root cause and concrete next step"
+  },
+  "non_goals": [
+    "universal arbitrary model-authored video QA",
+    "unlimited arbitrary Manim code execution",
+    "general OCR all fonts/styles",
+    "qualitative pedagogy quality, layout design taste"
+  ],
+  "restrictions": {
+    "no_main_merge": true,
+    "no_provider_get": true,
+    "no_model_api_post": true,
+    "no_v2_core_changes": true,
+    "no_production_prompt_edit": true,
+    "no_frozen_mp4_edits": true,
+    "production": "BLOCKED",
+    "human_learning": "NOT_MEASURED",
+    "human_viewer": "NOT_PASS pending fresh human review"
+  }
+}
