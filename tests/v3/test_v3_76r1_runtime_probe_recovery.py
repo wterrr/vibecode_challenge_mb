@@ -66,3 +66,15 @@ def test_no_change_to_study_pedagogy_outcomes():
     assert r["boundaries"]["human_quality"]=="UNRATED"
     assert r["boundaries"]["learning_gain"]=="NOT_MEASURED"
     assert r["boundaries"]["no_frozen_clip_replacement"]
+
+def test_r1_actual_cmu_bounds_precached_before_frame_updater_with_conservative_envelope():
+    src=compile_smoke()
+    before=src.index("_cache_bb=_cache_obj.get_bounding_box()")
+    callback=src.index("def _v376_capture(dt):")
+    assert before<callback
+    runtime=src[callback:]
+    assert "_v376_bounds=_v376_bbox_cache.get(name)" in runtime
+    assert "bb=obj.get_bounding_box()" not in runtime
+    assert "*1.07/2" in src
+    assert "v376_stage_before_precache_bbox.marker" in src
+    assert "v376_stage_after_precache_bbox.marker" in src
