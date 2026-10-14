@@ -39,7 +39,7 @@ jobs:
       - name: Offline prereg and hostile rating mutations
         run: |
           python -m pip install --disable-pip-version-check "pytest>=8,<10"
-          python -m pytest -q tests/v3/test_v3_60_independent_review.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_60_independent_review.py
 
   verify-and-package-actual-nine-videos:
     needs: strict-mask-rater-contract
