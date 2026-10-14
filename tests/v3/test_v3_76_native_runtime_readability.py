@@ -104,7 +104,9 @@ def test_host_owned_compiler_instrumentation_actually_targets_native_object_vari
     assert out.startswith("# V3-51 GENERIC HOST COMPILED SOURCE")
     assert out.count("V3-76 HOST INJECTED ACTUAL MANIM") == 1
     assert "_v376_monitor.add_updater" in out
-    assert "get_mobject_family_members()" in out
+    assert "_v376_roots=tuple(self.mobjects)" in out
+    assert "call_updater=False" in out
+    assert "v376_probe_first_tick.marker" in out
     assert out.index("V3-76 HOST INJECTED") < out.index("self.play(")
     assert "_v376_out.write_text" in out
     assert "mock_score_comparison" not in out
