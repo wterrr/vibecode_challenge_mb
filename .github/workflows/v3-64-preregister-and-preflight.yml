@@ -8,6 +8,7 @@ on:
       - "learnflow_v3/v364_heldout_storyboard.py"
       - "learnflow_v3/v364_native_array_compiler.py"
       - "scripts/run_v3_64_one_shot_real_model.py"
+      - "scripts/run_v3_64_native_preflight.py"
       - "tests/v3/test_v3_64_one_shot_real_model.py"
       - ".github/workflows/v3-64-preregister-and-preflight.yml"
   pull_request:
@@ -45,6 +46,7 @@ jobs:
             learnflow_v3/v364_heldout_storyboard.py \
             learnflow_v3/v364_native_array_compiler.py \
             scripts/run_v3_64_one_shot_real_model.py \
+            scripts/run_v3_64_native_preflight.py \
             tests/v3/test_v3_64_one_shot_real_model.py
           python -m pytest -q --confcutdir=tests/v3 \
             tests/v3/test_v3_64_one_shot_real_model.py
