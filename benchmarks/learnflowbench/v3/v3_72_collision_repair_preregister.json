@@ -1,0 +1,96 @@
+{
+  "checkpoint": "V3-72",
+  "kind": "FIRST_CHILD_PREREG_BEFORE_REPAIR",
+  "parent": {
+    "draft_pr": 107,
+    "sha": "67738eb4ea9d007841da53ab204157972b8328c0"
+  },
+  "review": "Final Visual Review NOT PASS, two supplied screenshot proofs on 2026-10-14, comment PR#107 #6161116559",
+  "status_before": "NOT_PASS",
+  "timestamp_hints_seconds": {
+    "process_source": 11,
+    "attention_source": 12
+  },
+  "scope": "Research-only versioned renderer, no changes to V3-57/58/59 source MP4s or masked V3-60/61 evidence",
+  "original_physical_sources": {
+    "artifact_id": 11803073498,
+    "attention_reversed_query": {
+      "sha256": "",
+      "beats_s": [
+        [
+          0,
+          3.8
+        ],
+        [
+          3.8,
+          8.133
+        ],
+        [
+          8.133,
+          12.6
+        ],
+        [
+          12.6,
+          16.667
+        ],
+        [
+          16.667,
+          23.733
+        ]
+      ],
+      "video_frames_expected": 355
+    },
+    "process_heldout_unknown": {
+      "sha256": "789dbabe29433be68fdf033cbc26e88ca9254d257c908e9f8aeddf609a344127110f6c7111419f",
+      "beats_s": [
+        [
+          0,
+          3.867
+        ],
+        [
+          3.867,
+          8.2
+        ],
+        [
+          8.2,
+          13.133
+        ],
+        [
+          13.133,
+          18.267
+        ],
+        [
+          18.267,
+          22.933
+        ]
+      ],
+      "video_frames_expected": 344
+    }
+  },
+  "root_causes": {
+    "attention": "Inherited V3-57 score-A rectangle y=365..411 overlaps SCORE B title anchored at y=399; the V3-59 causal layer changes only weights and retains this layout. Existing tests check semantics/pixel differences, not measured text/shape occupancy.",
+    "process": "Inherited V3-59 marker center moves x=370..540, ACTION left boundary x=510, radius 13 with 3px outline. Actual center at 540 creates interior penetration 43px including marker radius. Tests explicitly asserted interior endpoint x=540; earlier V3-57 marker incorrectly traveled at y=426 rather than edge y=337."
+  },
+  "predeclared_bounds": {
+    "timeline": "Every frame of every beat at 15fps, including intermediate interpolation; no endpoint-only proof",
+    "attention": "All score labels measured using the actual Pillow font boxes; score A/B outline/fill rectangles, ball, normalization bar and weights must not intersect any readable score text; >=6 px separation for score labels to nearest bar.",
+    "process": "Action node rectangle x=510..770,y=283..393. Marker filled circle + stroke radius<=16, plus >=6px clearance BEFORE node border at all times; center endpoint <=488, never x>=510 and never inside rounded rectangle; START node right x=360 requires similarly >=4px gap. ACTION activates only at full arrival, UNKNOWN condition unchanged.",
+    "media": "Two new versioned H264/AAC native videos at 1280x720 15fps based on same original evidence and beat timeline, original audio AAC packet SHA equal per case, original source full video SHA unchanged; no edits of frozen 9 masked pilot files",
+    "regressions": "Negative mutations must recreate score overlap using original y=399/365 and marker penetration using original x=540; positive geometry assertions executed over all true rendered frames; physical decoded snapshots before/during/after each defect supplied as evidence",
+    "quality": "Final viewer-visible review of newly rendered frames required; CI PASS alone not sufficient; user original final NOT PASS may not be silently reversed"
+  },
+  "restrictions": {
+    "no_main_merge": true,
+    "model_post_count": 0,
+    "provider_get_count": 0,
+    "v2_core_edits": 0,
+    "production_prompt_edits": 0,
+    "frozen_study_media_mutations": 0
+  },
+  "claims": {
+    "human_quality": "UNRATED",
+    "learning_gain": "NOT_MEASURED",
+    "autonomous_creativity": "NOT_TESTED",
+    "release": "BLOCKED"
+  }
+}
