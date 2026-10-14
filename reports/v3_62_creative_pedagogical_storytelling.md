@@ -44,3 +44,21 @@ This checkpoint can test **host-renderer feasibility and geometric/temporal inte
 - **Production:** BLOCKED.
 
 **Next action after native PASS:** actually inspect decoded stills and videos for text legibility, spatial focus, meaningful invariants, pacing and false intuitions; compare to heldout control without claiming causality. Obtain a separate independently rated panel, or run a strictly limited genuine model-authored proposal test only if user explicitly authorizes provider costs. No source 3B1B media redistributed.
+
+## Exact native CI and independent artifact inspection — 2026-10-14
+
+- **Strict gates:** [GitHub run #38498843970](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38498843970), job #115640716877 **SUCCESS**, **27 tests PASS**.
+- **Native six-MP4 gate:** same run, job #115640875417 **SUCCESS**. Artifact `11865155976` named `v362-THREE-HELDOUT-SIX-NATIVE-MP4-TECHNICAL-ONLY` contains 6 MP4 files, 3 JSON receipts, 9 reference stills and summary.
+- Independent download and `ffprobe -count_frames` + byte-level SHA-256 comparison verified all six actual MP4 files against their native receipts. All clips have H.264 video and AAC audio; within each topic the paired clips share exact AAC elementary packet SHA and physical decoded frame count.
+
+| Topic | Frames each arm | Decoded pre→witness image MAD / 255 | Decoded early-control vs causal MAD / 255 |
+| --- | ---: | ---: | ---: |
+| Probability complement | 398 | 8.4306 | 6.3667 |
+| Constant speed | 401 | 5.5672 | 3.4611 |
+| Water balance | 449 | 13.7609 | 11.1917 |
+
+**Actual decoded reference-frame review:** Probability has eight stable numbered outcomes, shows three cyan outcomes, progressively distinguishes the five others, then labels the invariant `3/8 + 5/8 = 1`. Constant-speed shows the same marker moving along the distance track before the certified `4 × 3 = 12 m` conclusion; five fixed tick locations remain visible. Water balance shows two H-H groups and one O-O group transforming into two H-O-H groups while six atom IDs remain stable; on-screen text explicitly says the motion is an **atom inventory**, not a physically verified molecular reaction pathway. All cases are distinct in representation, not three variants of Attention.
+
+**Quality defects and honest limitations remaining after image inspection:** widescreen compositions remain sparse and textbook-schematic; some supporting labels/captions are relatively small; chemistry rearrangement is an explanatory bookkeeping illustration rather than physically meaningful molecular kinetics; synthetic offline espeak speech lacks human intonation and verified word-level visual cue alignment. The visual styles are two finite host-controlled emphases, not demonstrated creative model decisions; only one style per topic has a physical native MP4. No actual user queried novel topic or supplied independent assessor scores. Metrics above prove pixel change and timing separability **only**, not causal comprehension or learning.
+
+**Revised native technical verdict:** BOUNDED NATIVE TECHNICAL PASS (3 heldout topics, 6 matched MP4s); visual/creative quality **UNRATED/NO-GO**; general agent authorship **NOT TESTED**; learner effect **NOT MEASURED**; production **BLOCKED**. V3-60/61 independent reviewer panel still has **zero actual submissions**. Do not claim 3B1B parity, production readiness or significant learning improvement.
