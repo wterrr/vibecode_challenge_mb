@@ -1,0 +1,61 @@
+{
+  "checkpoint": "V3-68",
+  "registration": "FIRST_CHILD_COMMIT_BEFORE_ANY_NEW_PROVIDER_CALL",
+  "date": "2026-10-14",
+  "parent_pr": 103,
+  "parent_sha": "c0b6efe0fb1c149d0fb823e579afcf9ff5821d93",
+  "objective": "Check provider configured two-cent lifetime cap of current key using read-only endpoint; no inference or management",
+  "endpoint": "https://openrouter.ai/api/v1/key",
+  "method": "GET",
+  "max_provider_gets": 1,
+  "max_model_posts": 0,
+  "max_management_mutations": 0,
+  "retries": 0,
+  "redirects": false,
+  "budget_usd": "0.02",
+  "required_metadata": {
+    "limit": "finite_positive_usd_at_or_below_0.02",
+    "limit_remaining": "positive_and_le_limit",
+    "limit_reset": null,
+    "include_byok_in_limit": true,
+    "is_management_key": false
+  },
+  "known_evidence_limits": {
+    "current_key_metadata_does_not_prove_dedicated_key_identity": true,
+    "current_key_cap_not_funded_account_credit": true,
+    "current_key_cap_not_model_eligibility": true,
+    "V364_HTTPError_cause": "UNDETERMINED",
+    "no_actual_new_model_storyboard": true
+  },
+  "output_security": {
+    "no_raw_key": true,
+    "no_response_body": true,
+    "no_account_identifiers": true,
+    "no_exact_usd_numbers": true,
+    "no_error_url_or_reason": true,
+    "no_retry": true
+  },
+  "strict_tests_minimum": 20,
+  "first_stage": "OFFLINE_NEGATIVE_TESTS",
+  "second_stage": "ONCE_READ_ONLY_GET_AFTER_TESTS_PASS",
+  "disposition": {
+    "real_get_structural_cap_pass_does_not_authorize_post": true,
+    "dedicated_key_unverifiable_with_this_endpoint": true,
+    "model_creativity": "NOT_TESTED",
+    "human_quality": "UNRATED",
+    "learning_effect": "NOT_MEASURED",
+    "production": "BLOCKED"
+  },
+  "prohibitions": [
+    "never_change_or_create_API_key",
+    "never_GET_management_credits",
+    "never_run_model_POST",
+    "no_main_merge",
+    "no_V2_core_or_production_prompts_edit",
+    "no_retry_archived_V364"
+  ],
+  "sources": [
+    "https://openrouter.ai/docs/api/api-reference/api-keys/get-current-key",
+    "https://openrouter.ai/docs/api/api-reference/api-keys/update-keys"
+  ]
+}
