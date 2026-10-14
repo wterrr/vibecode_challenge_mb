@@ -68,7 +68,7 @@ def test_no_unaudited_source_or_replaced_kit(tmp_path, monkeypatch):
         ui.build(media, output)
     output.rmdir()
     (media/"fraction_equivalence_A.mp4").unlink()
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(ValueError, match="SOURCE_CLIP_MISSING"):
         ui.build(media, output)
     assert not output.exists()
 

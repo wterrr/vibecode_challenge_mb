@@ -132,6 +132,8 @@ def build(clips: Path, out: Path, *, full_decode: bool = False) -> dict:
     for forbidden in FORBIDDEN:
         require(forbidden not in js and forbidden not in css,
                 "TREATMENT_OR_NETWORK_LEAK_" + forbidden.replace(":", "_"))
+    require(all((clips/name).is_file() for name in reg["masked_clips_sha256"]),
+            "SOURCE_CLIP_MISSING")
     out.mkdir(parents=True)
     (out/"media").mkdir()
     (out/"v361_reviewer.js").write_text(js, encoding="utf-8")
