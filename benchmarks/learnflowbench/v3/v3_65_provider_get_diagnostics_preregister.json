@@ -1,0 +1,93 @@
+{
+  "checkpoint": "V3-65",
+  "title": "OpenRouter V3-64 Failure Triage via Zero-Inference GET Metadata",
+  "registration": "FIRST_CHILD_COMMIT_BEFORE_DIAGNOSTICS",
+  "preregistration_date": "2026-10-14",
+  "parent_pr": 100,
+  "parent_sha": "f8d4e150f2b3e9c3003d3aa6aba30261a36b92dd",
+  "historical_live_run": 38502942783,
+  "historical_artifact_id": 11866413693,
+  "historical_outcome": "PROVIDER_TRANSPORT_OR_HTTP_FAILURE_NO_RETRY",
+  "historical_attempted_model_post_count": 1,
+  "historical_error_type": "HTTPError",
+  "historical_http_status": "NOT_CAPTURED",
+  "historical_http_body": "NOT_CAPTURED",
+  "prior_one_shot_irrevocably_consumed": true,
+  "reuse": [
+    "learnflow_v3/openrouter_metadata_audit.py V3-38 GET-only _get/probe_model_endpoints/probe_current_key",
+    "learnflow_v3/provider_catalog_preflight.py V3-35",
+    "scripts/run_v3_64_one_shot_real_model.py frozen request_payload",
+    "reports/v3_64_genuine_storyboard_one_shot_no_go.md"
+  ],
+  "queries": [
+    {
+      "method": "GET",
+      "url": "https://openrouter.ai/api/v1/models/openai/gpt-6-luna/endpoints",
+      "authentication": "NONE",
+      "max_attempts": 1,
+      "max_body_bytes": 120000,
+      "sanitize": "model ID match, matching endpoint count, small allowlisted provider names, advertised supported_parameters flags"
+    },
+    {
+      "method": "GET",
+      "url": "https://openrouter.ai/api/v1/key",
+      "authentication": "EXISTING_OPENROUTER_API_KEY",
+      "max_attempts": 1,
+      "max_body_bytes": 20000,
+      "sanitize": "HTTP status, key authentication, role, free tier, positive/zero/unknown key-specific remaining limit, expiry category; NO raw account/key/credit"
+    }
+  ],
+  "disallowed_endpoints": [
+    "/api/v1/credits requires management key",
+    "/api/v1/chat/completions",
+    "/api/v1/responses",
+    "/api/v1/messages",
+    "/api/v1/generation"
+  ],
+  "disallow_methods": [
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE"
+  ],
+  "max_network_gets": 2,
+  "max_provider_inference_posts": 0,
+  "retries": 0,
+  "redirects": false,
+  "no_management_key_operations": true,
+  "no_raw_responses_saved": true,
+  "no_key_printing": true,
+  "no_exact_account_balance_saved": true,
+  "local_wire_risks": [
+    "V3-64 provider.order restricts to OpenAI; model catalog may advertise supported params but never certify exact account routing",
+    "V3-64 response_format strict=true cannot be certified by GET",
+    "V3-64 max_tokens and provider routing support must be advisory only",
+    "V3-64 uses OpenRouter API key; original HTTPError code/body not preserved, cannot recover from separate GET"
+  ],
+  "frozen_acceptance": {
+    "test_old_http_error_receipt_preserved": true,
+    "unit_mutations_min": 12,
+    "existing_V3_38_get_only_helpers_reused": true,
+    "public_catalog_metadata_get_once": true,
+    "authorized_key_metadata_get_once_if_secret_configured": true,
+    "provider_posts_zero": true,
+    "exact_v364_http_error_root_cause": "UNDETERMINED_HISTORICAL_RECEIPT",
+    "no_new_model_trial": true,
+    "no_auto_retry": true,
+    "no_main_merge": true,
+    "no_V2_Core": true,
+    "no_production_prompts": true,
+    "production": "BLOCKED"
+  },
+  "verdicts": [
+    "GET_METADATA_AUTHENTICATED_AND_CATALOG_COMPATIBILITY_ADVISORY_ONLY",
+    "KEY_AUTH_FAILURE_METADATA_ONLY",
+    "PUBLIC_MODEL_ENDPOINTS_NOT_VERIFIED",
+    "INCONCLUSIVE_NO_CREDENTIAL",
+    "INCONCLUSIVE_GET_NETWORK_FAILURE"
+  ],
+  "next_allowed": "new separately registered one-shot only if explicitly approved after diagnosis; never rerun V3-64",
+  "model_creativity": "NOT_TESTED",
+  "human_quality": "UNRATED",
+  "student_learning": "NOT_MEASURED"
+}
