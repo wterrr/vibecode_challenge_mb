@@ -38,7 +38,7 @@ def registered()->dict:
     return r
 
 
-def case_run(name:str,raw:dict,folder:Path):
+def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False):
     folder.mkdir()
     packet=mock_candidate_bytes(raw)
     accepted,diag=accept(packet)
@@ -54,6 +54,11 @@ def case_run(name:str,raw:dict,folder:Path):
     (folder/"actual_v2_scenegraphs.json").write_text(
         json.dumps([g.model_dump(mode="json") for g in graphs],indent=2)+"\n")
     voice,beats,wav=_audio(folder,audio_proxy(story))
+    v375_preflight=None
+    if strict_v375:
+        from learnflow_v3.v375_creative_native_gate import preflight
+        v375_preflight=preflight(story,facts,layout,
+                                 [int(b["frames"]) for b in beats])
     source=folder/"host_compiled_finite_manim.py"
     source.write_text(manim(story,facts,graphs,layout,voice))
     render,sandbox=_docker_manim(folder,source)
@@ -63,6 +68,12 @@ def case_run(name:str,raw:dict,folder:Path):
     if media["frames"]!=mux["output_h264_frames"] or media["frames"]!=sum(x["frames"] for x in beats):
         raise Blocked("V354_NATIVE_AUDIO_FRAME_MISMATCH")
     quality,samples=inspect_native(movie,media["frames"])
+    v375_native=None
+    if strict_v375:
+        from learnflow_v3.v375_creative_native_gate import native_gate
+        v375_native=native_gate(movie,media["frames"],v375_preflight)
+        if v375_native["native_sha256"]!=sha(movie):
+            raise Blocked("V375_VIDEO_HASH_MISMATCH")
     signature=digest({
         "scene_layouts":[s.layout for s in story.scenes],
         "scene_node_kinds":[[n.kind for n in s.nodes] for s in story.scenes],
@@ -78,6 +89,7 @@ def case_run(name:str,raw:dict,folder:Path):
        "native_mp4_sha256":sha(movie),
        "v2_scenegraph_adapter_sha256":sha(folder/"actual_v2_scenegraphs.json"),
        "structure_signature_sha256":signature,
+       **({"v375_creative_integrated_quality_gate":v375_native} if strict_v375 else {}),
        "graph_count":len(graphs),"beat_count":len(story.beats),
        "av":media,"mux":mux,"visual_quality_proxy":quality,
        "sandbox":sandbox,"visual_educational_quality":"UNRATED",
