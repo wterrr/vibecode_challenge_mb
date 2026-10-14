@@ -9,7 +9,7 @@ import io,json,math,shutil,subprocess,wave
 from hashlib import sha256
 from pathlib import Path
 from PIL import Image,ImageDraw,ImageFont,ImageChops,ImageStat
-from .v364_heldout_storyboard import accept,UNIT_IDS,TOPIC
+from .v364_heldout_storyboard import accept,UNIT_IDS,TOPIC,digest
 
 W,H,FPS=1280,720,15
 BG=(10,13,20);WHITE=(242,244,249);LIGHT=(180,192,211)
