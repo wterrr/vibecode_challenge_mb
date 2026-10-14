@@ -1,0 +1,94 @@
+name: V3-62 Creative Pedagogical Storytelling Heldout Native (NO MODEL API)
+
+on:
+  push:
+    branches: [chatgpt/v3-62-creative-pedagogical-storytelling]
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_62_creative_storytelling_preregister.json"
+      - "learnflow_v3/creative_pedagogical_director.py"
+      - "learnflow_v3/creative_pedagogical_native.py"
+      - "scripts/run_v3_62_creative_storytelling.py"
+      - "tests/v3/test_v3_62_creative_storytelling.py"
+      - ".github/workflows/v3-62-creative-storytelling.yml"
+  pull_request:
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_62_creative_storytelling_preregister.json"
+      - "learnflow_v3/creative_pedagogical_director.py"
+      - "learnflow_v3/creative_pedagogical_native.py"
+      - "scripts/run_v3_62_creative_storytelling.py"
+      - "tests/v3/test_v3_62_creative_storytelling.py"
+      - ".github/workflows/v3-62-creative-storytelling.yml"
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  v362-strict-semantic-grammar-and-heldout-proofs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Offline deps for finite visual grammar (zero inference)
+        run: python -m pip install --disable-pip-version-check "pytest>=8,<10" "pillow>=11,<13"
+      - name: Exact ledger, all five acts, three heldouts, 20+ mutation cases
+        run: |
+          python -m compileall -q learnflow_v3/creative_pedagogical_director.py learnflow_v3/creative_pedagogical_native.py scripts/run_v3_62_creative_storytelling.py tests/v3/test_v3_62_creative_storytelling.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_62_creative_storytelling.py
+
+  v362-six-native-mp4s-and-semantic-counterfactual:
+    needs: v362-strict-semantic-grammar-and-heldout-proofs
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install native FFmpeg and offline spoken audio
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng fonts-dejavu-core
+          python -m pip install --disable-pip-version-check "pillow>=11,<13"
+          command -v ffprobe
+          command -v ffmpeg
+          command -v espeak-ng
+      - name: Run preregistered three-domain six-MP4 narrative/control production
+        run: |
+          python scripts/run_v3_62_creative_storytelling.py --output-dir artifacts/v362/heldout
+          test "$(find artifacts/v362/heldout -name 'causal_timeline.mp4' | wc -l)" -eq 3
+          test "$(find artifacts/v362/heldout -name 'end_state_hold.mp4' | wc -l)" -eq 3
+          test "$(find artifacts/v362/heldout -name 'receipt.json' | wc -l)" -eq 3
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path("artifacts/v362/heldout/v362_summary.json").read_text())
+          assert x["native_movie_count"]==6
+          assert x["distinct_object_layouts"]==3
+          assert all(q["matched_audio_AAC"] and q["matched_physical_frames"] for q in x["native_cases"])
+          assert x["independent_human_pedagogical_quality"]=="UNRATED"
+          assert x["agent_genuine_freeform_creativity"]=="NOT_TESTED"
+          assert x["production"]=="BLOCKED"
+          print("V362_BOUNDED_NATIVE_ARTIFACT_GATE_PASS_ONLY")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v362-THREE-HELDOUT-SIX-NATIVE-MP4-TECHNICAL-ONLY
+          path: |
+            artifacts/v362/heldout/**/*.mp4
+            !artifacts/v362/heldout/**/*_silent.mp4
+            artifacts/v362/heldout/**/receipt.json
+            artifacts/v362/heldout/**/*.png
+            artifacts/v362/heldout/v362_summary.json
+          if-no-files-found: error
+          retention-days: 7
