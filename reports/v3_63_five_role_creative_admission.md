@@ -29,7 +29,7 @@ Tests: `tests/v3/test_v3_63_five_role_creativity.py`.
 Workflow: `.github/workflows/v3-63-five-role-creative-admission.yml`.
 
 - **Strict tests:** [push run #38500464351](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38500464351), 38 tests passed, including malformed/duplicate/oversize wire, evidence hash, all 5 role identities, early reveal, invalid referents, fake publication and nonexistent renderer capabilities.
-- **Native two-video gate:** same run, native job #115646074267. **Await final CI status and downloaded artifact**; do not conflate a queued or running job with PASS.
+- **Native two-video gate:** same run, native job #115646074267. **SUCCESS verified** on both jobs, [run #38500464351](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38500464351); artifact ID `11866095394` (`v363-FIVE-ROLE-TEST-ONLY-NATIVE-DECISION-PAIR-UNRATED`). Native batch emits two actual MP4s.
 - No prior source video SHA, audio or narrator identity is changed on disk; new native candidate video SHA is receipt-bound.
 
 ## Known science and capability boundaries
@@ -37,3 +37,12 @@ Workflow: `.github/workflows/v3-63-five-role-creative-admission.yml`.
 This checkpoint still **does not** demonstrate that an LLM chose, invented, orchestrated or reviewed a full lesson. Candidate decision space is small and enumerated, both native variants are test fixtures, and all five narration strings remain host-authored. The visual difference may be technically observable without being aesthetically or pedagogically better. Two policies differ in pacing, focus and framing simultaneously, not a clean causal experiment of a single visual factor. Physics is the only predeclared full native candidate pair; cannot claim model-style generalization or wide subject support. There are no native utterance-word alignment receipts, actual external reviewer scores or human learning gains. It is important not to claim 3Blue1Brown-like quality.
 
 **Gate interpretation:** after native CI PASS, `BOUNDED_5ROLE_ADMISSION_AND_NATIVE_EFFECT_PASS` only. Independent human quality `UNRATED`; real model-authored creativity `NOT_TESTED`; student learning `NOT_MEASURED`; production `BLOCKED`. The next scientific test, if approved, must use at least one genuinely external model-generated candidate from a new held-out user query under a preregistered single-request budget, with unchanged fact ledger and strict comparison against the deterministic fixture baseline. Otherwise retain NO-GO for true agent creative autonomy.
+
+
+## Native exact-bitstream artifact verification and frame review (2026-10-14)
+
+Independent artifact download was extracted and checked against `v363_receipt.json`. Both MP4 SHA256 digests match receipt, have H264 1280×720@15FPS + AAC, and physically decode to **401 frames each**. The AAC ADTS byte-stream SHA is identical between both candidates and the original V3-62 physics video; independently extracted from encoded audio. Candidate 1 uses `invariant` focus and continuous transformation with decoded before→witness RGB MAD **7.4059** (0..255); candidate 2 uses active-object halo and stepwise motion with decoded before→witness RGB MAD **5.9246**. Native midpoint candidate-to-candidate RGB MAD **4.3917**. Original physics 3 m/s × 4 s = 12 m ledger/claim/narration remained unchanged. Stronger than only schema acceptance: the policies generate **different physically decoded frames**, but subjective quality remains unmeasured.
+
+**Visual observations:** Candidate 1 adds a large invariant-caption band; candidate 2 adds an active-marker halo and focus frame. Both images still resemble elementary explainer diagrams with substantial empty space, support typography fairly small, simplistic fixed framing, and no independent native speech alignment. Showing a focus halo is not novel creative storytelling equivalent to 3Blue1Brown. The checkpoint should be interpreted as **five-role structured decision-to-pixel wiring**, not free-form narrative invention.
+
+**Revised exact result:** `TECHNICAL_ADMISSION_AND_NATIVE_DECISION_IMPACT_PASS` on three frozen host-verified families and one fully rendered physics pair. `ACTUAL_MODEL_GENERATED_PROPOSALS=0`; `MODEL_AUTHORSHIP_NOT_TESTED`; `HUMAN_QUALITY_UNRATED`; `LEARNING_NOT_MEASURED`; `PRODUCTION_BLOCKED`. Full movie bundle preserved as GitHub artifact #11866095394.
