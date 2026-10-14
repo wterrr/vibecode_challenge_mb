@@ -5,15 +5,17 @@ no raw token, error body, exact balance, account identifiers or HTTP POST.
 from __future__ import annotations
 import argparse
 from datetime import datetime,timezone
-import json,os
+import json,os,sys
 from pathlib import Path
 from hashlib import sha256
+
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path: sys.path.insert(0,str(ROOT))
 
 from learnflow_v3.openrouter_metadata_audit import run_audit, MODEL
 from learnflow_v3.v364_heldout_storyboard import assert_prereg as check_v364
 from scripts.run_v3_64_one_shot_real_model import request_payload
 
-ROOT=Path(__file__).resolve().parents[1]
 REG=ROOT/"benchmarks/learnflowbench/v3/v3_65_provider_get_diagnostics_preregister.json"
 OLD=ROOT/"benchmarks/learnflowbench/v3/v3_64_one_shot_genuine_storyboard_preregister.json"
 SAFE_HTTP=frozenset(("HTTP_200","HTTP_400","HTTP_401","HTTP_402","HTTP_403","HTTP_404",
