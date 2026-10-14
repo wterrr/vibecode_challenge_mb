@@ -1,0 +1,64 @@
+{
+  "checkpoint": "V3-75",
+  "date": "2026-10-14",
+  "kind": "FIRST_CHILD_BEFORE_IMPLEMENTATION",
+  "parent": {
+    "pr": 110,
+    "sha": "daace9c14ad51fc08f150e44692885da2a325fce"
+  },
+  "audited_path": "V3-54 mock_candidate_bytes→accept→creative_scene_graph.manim→_docker_manim→deterministic_mux→_codec_and_pixel_gates→creative_visual_quality_gate.inspect_native. Rendered scenes include SHAPE, CHART, MATH, TEXT, EQUATION, relations and per-beat moves, replaces, hides.",
+  "reuse": [
+    "learnflow_v3/generalized_temporal_visual_qa.py",
+    "learnflow_v3/creative_scene_graph.py#positions",
+    "learnflow_v3/creative_scene_graph.py#_edge_route",
+    "scripts/run_v3_54_model_candidate_quality.py",
+    "learnflow_v3/creative_visual_quality_gate.py",
+    "learnflow_v3/creative_candidate_acceptance.py"
+  ],
+  "objective": "Fail-closed per-visible-scene geometry + rendered H264 decoded-ROI evidence on real creative SceneGraph→Manim native runner; leave baseline runner default unaffected. Do not assert whole-frame pixel completeness.",
+  "known_failure_threats": [
+    "Overlapping score label/bar in Attention style",
+    "Relationship route crosses occupied text/SHAPE or unrelated node",
+    "Two Manim visual objects overlap after scripted Move/Replace/Indicate",
+    "False pass from metadata only, invalid or missing rendered MP4, inconsistent receipt SHA",
+    "Frame omissions in audio-framed render, muted movie, lost claims, skipped graph",
+    "Parent label containment exception abused to waive all collisions",
+    "Unsupported actions/layout/no geometry exporter silently passing QA"
+  ],
+  "frozen_cases": [
+    "mock_token_network",
+    "mock_score_comparison",
+    "mock_symbolic_equivalence"
+  ],
+  "case_rules": {
+    "source": "V3-54 existing frozen synthetic HOST fixtures only",
+    "new_narrated_mp4": true,
+    "max_case_count": 3,
+    "min_case_count": 1,
+    "allow_abstain": true,
+    "original_frozen_v354_outputs_untouched": true
+  },
+  "metrics": {
+    "required_pixel_margin_px": 6,
+    "minimum_mutations": 12,
+    "source_scene_graph_sha": true,
+    "decoded_h264_aac": true,
+    "scene_level_geometry_per_beat": true,
+    "all_animation_intermediates": "Only allowed after proven exported complete frame geometry; otherwise fail closed or label PARTIAL_NOT_CERTIFIED",
+    "independent_real_frame_inspection": true,
+    "exact_head_ci": true
+  },
+  "boundary": {
+    "no_main_merge": true,
+    "model_api_post": 0,
+    "provider_get": 0,
+    "no_v2_core_changes": true,
+    "no_production_prompt_changes": true,
+    "legacy_default_path_unchanged": true,
+    "production": "BLOCKED",
+    "learning_gain": "NOT_MEASURED",
+    "human_visual_quality": "UNRATED",
+    "genuine_model_authorship": "NOT_TESTED"
+  },
+  "acceptance": "Either valid native creative H264/AAC QA-gated outputs with strict receipts and negatives, or reproducible NO-GO with exact blockers. No faked generic all-frame QA."
+}
