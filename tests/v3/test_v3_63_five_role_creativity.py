@@ -7,7 +7,7 @@ from learnflow_v3.creative_pedagogical_director import (
     CASES,REFERENTS,LAYOUTS,receipt,witness
 )
 from learnflow_v3.five_role_creative_admission import (
-    VERSION,CATALOG,MAX_BYTES,ROLE_NAMES,admit,test_only_packet
+    VERSION,CATALOG,MAX_BYTES,ROLE_NAMES,admit,test_only_packet as fixture_packet
 )
 from learnflow_v3.five_role_creative_native import (
     render_decision_frame,bounded_progress,mean_diff
@@ -15,7 +15,7 @@ from learnflow_v3.five_role_creative_native import (
 from scripts.run_v3_63_five_role_creativity import registration
 
 def mutate(case,variant,section,key,value):
-    raw=json.loads(test_only_packet(case,variant))
+    raw=json.loads(fixture_packet(case,variant))
     if section=="root":raw[key]=value
     else:raw[section][key]=value
     return json.dumps(raw,separators=(",",":")).encode()
@@ -33,7 +33,7 @@ def test_v363_first_child_frozen_three_domain_and_zero_model_budget():
 @pytest.mark.parametrize("case",CASES)
 @pytest.mark.parametrize("variant",(0,1))
 def test_admission_all_5_roles_and_frozen_host_facts(case,variant):
-    raw=test_only_packet(case,variant)
+    raw=fixture_packet(case,variant)
     typed,plan=admit(raw)
     assert typed.protocol_version==VERSION
     assert plan["story"].case_id==case
@@ -52,8 +52,8 @@ def test_admission_all_5_roles_and_frozen_host_facts(case,variant):
 
 @pytest.mark.parametrize("case",CASES)
 def test_both_decision_policies_have_physical_pixel_effect_but_not_semantic_invention(case):
-    a=admit(test_only_packet(case,0))[1]
-    b=admit(test_only_packet(case,1))[1]
+    a=admit(fixture_packet(case,0))[1]
+    b=admit(fixture_packet(case,1))[1]
     im1=render_decision_frame(a,2,.49)
     im2=render_decision_frame(b,2,.49)
     assert im1.size==im2.size==(1280,720)
@@ -66,8 +66,8 @@ def test_both_decision_policies_have_physical_pixel_effect_but_not_semantic_inve
             "balanced_equation_visible",False) is False
 
 def test_quantized_motion_has_different_physical_temporal_profile():
-    a=admit(test_only_packet(CASES[1],0))[1]
-    b=admit(test_only_packet(CASES[1],1))[1]
+    a=admit(fixture_packet(CASES[1],0))[1]
+    b=admit(fixture_packet(CASES[1],1))[1]
     aa=[bounded_progress(a,p/20) for p in range(21)]
     bb=[bounded_progress(b,p/20) for p in range(21)]
     assert aa[0]==bb[0]==0 and aa[-1]==bb[-1]==1
@@ -121,7 +121,7 @@ def test_malformed_oversize_and_duplicate_keys_fail_closed(wire,error):
 def test_no_unauthorized_mutation_to_true_precondition_state():
     for case in CASES:
         for variant in (0,1):
-            typed,d=admit(test_only_packet(case,variant))
+            typed,d=admit(fixture_packet(case,variant))
             before=render_decision_frame(d,2,.08)
             after=render_decision_frame(d,3,.1)
             assert mean_diff(before,after)>.1
