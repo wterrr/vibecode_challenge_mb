@@ -82,7 +82,7 @@ jobs:
           test "$(find artifacts/v361/offline_review_ui/media -maxdepth 1 -name '*.mp4' | wc -l)" -eq 9
           test "$(find artifacts/v361/offline_review_ui -maxdepth 1 -name 'reviewer_*.html' | wc -l)" -eq 3
           test "$(find artifacts/v361/offline_review_ui -iname '*admin*' | wc -l)" -eq 0
-      - name: Browser smoke: local file, completeness guard and zero network
+      - name: 'Browser smoke: local file, completeness guard and zero network'
         run: |
           python tests/v3/test_v3_61_browser_smoke.py \
             --kit artifacts/v361/offline_review_ui
