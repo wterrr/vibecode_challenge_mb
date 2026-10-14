@@ -13,7 +13,12 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 from types import SimpleNamespace
+
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0,str(ROOT))
 
 from learnflow_v3.creative_manim_ablation import Blocked
 from learnflow_v3.creative_manim_runner import IMAGE,FPS
