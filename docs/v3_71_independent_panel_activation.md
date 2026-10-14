@@ -1,0 +1,13 @@
+# V3-71 — Run the existing independent masked video panel
+
+**What is provided:** original 9-video masked offline study bundle, independently read and checked for media integrity by the project team (not human-rated). Do **not** open or supply the V3-59 treatment assignment to reviewers. This is a condition-masked study, not double-blind and not a pure motion-only ablation.
+
+1. **Download the original reviewer ZIP** from [V3-61 Actions run #38496967796](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38496967796), artifact `v361-offline-assigned-masked-reviewer-ui-UNRATED` (#11863189967). At verification time it was available with expiry 2026-10-21 UTC. Save a private original archive; never swap rendered clips. The `START_HERE.txt` describes local playback.
+2. **Recruit 3 distinct external human reviewers** who voluntarily consent, can reasonably assess explanatory video and disclose conflicts. Assign the first `reviewer_01.html`, second `reviewer_02.html`, third `reviewer_03.html`; preserve the assigned order and sealed pseudonym mapping. Every reviewer gets the same nine MP4 files plus JS/CSS and watches all nine in the assigned order. No names/emails in the score CSV.
+3. **Receive 3 original CSV files**, one per reviewer, and retain original consent/eligibility/independence/conflict evidence privately. Original outputs must be unmodified and should not be uploaded to the GitHub repository/CI. Watch progress in the UI does not cryptographically prove comprehension or reviewer identity.
+4. **Lock before unblinding** using `docs/v3_70_reviewer_coordinator_handoff.md` and its private local command `scripts/run_v3_70_review_intake.py --submissions-dir ... --attestations-json ... --out-dir ...`. It reuses unchanged V3-60 validation and SHA seal. The three CSVs must each have nine rows, all five ordinal ratings and all required timestamped notes.
+5. **Manually audit actual independent consent and score custody**, then only *after SHA lock* run V3-60 `analyze` with the separate original admin key. Report all three topics and disagreements. A passing descriptive directional screen is NOT proof of learner learning, model autonomy or production/3B1B parity.
+
+**Pre-screen risk disclosure:** apparent improvements may mix motion with answer-reveal timing; several labels appear small in downscaled frame samples. Do not prime reviewers with predicted winners, original variant names or internal preflight observations.
+
+Current status: **0 actual external raters, HUMAN QUALITY UNRATED, learning NOT_MEASURED, MODEL CREATIVITY NOT_TESTED, production BLOCKED**. Technical preflight does not replace recruitment and independent human review.
