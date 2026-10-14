@@ -1,0 +1,57 @@
+name: V3-68 Current Key USD Lifetime Cap Strict Offline (ZERO PROVIDER IO)
+on:
+  push:
+    branches: [chatgpt/v3-68-readonly-key-cap-attestation]
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_68_readonly_key_cap_preregister.json"
+      - "learnflow_v3/v368_key_cap_readonly.py"
+      - "scripts/run_v3_68_readonly_cap.py"
+      - "tests/v3/test_v3_68_readonly_key_cap.py"
+      - ".github/workflows/v3-68-key-cap-offline.yml"
+  pull_request:
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_68_readonly_key_cap_preregister.json"
+      - "learnflow_v3/v368_key_cap_readonly.py"
+      - "scripts/run_v3_68_readonly_cap.py"
+      - "tests/v3/test_v3_68_readonly_key_cap.py"
+      - ".github/workflows/v3-68-key-cap-offline.yml"
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  v368_mock_bounded_GET_and_no_paid_promotion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing V3 Python contracts
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -r requirements.txt "pytest>=8,<10" "jsonschema>=4,<5" \
+            "pillow>=11,<13" "numpy>=1.24,<3" pyyaml
+      - name: Host strict GET-only fake provider tests with cap, reset, BYOK and auth cases
+        run: |
+          python -m compileall -q \
+            learnflow_v3/v368_key_cap_readonly.py \
+            scripts/run_v3_68_readonly_cap.py \
+            tests/v3/test_v3_68_readonly_key_cap.py
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_68_readonly_key_cap.py
+      - name: Validate direct script import WITHOUT any provider GET
+        run: |
+          python scripts/run_v3_68_readonly_cap.py --help
+          python - <<'PY'
+          from learnflow_v3.v368_key_cap_readonly import inspect_metadata
+          d=inspect_metadata(key=None)
+          assert d["provider_metadata_get_attempts"]==0
+          assert d["model_http_post_attempts"]==0
+          assert d["may_issue_model_http_post"] is False
+          print("V368_OFFLINE_NO_SECRET_NO_NETWORK_PASS")
+          PY
