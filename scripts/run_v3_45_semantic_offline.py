@@ -42,7 +42,8 @@ def _read_prereg(root:Path)->dict:
     return p
 
 
-def run(root:Path,out:Path,*,visual_quality:bool=False)->dict:
+def run(root:Path,out:Path,*,visual_quality:bool=False,
+        quality_gate_v374:bool=False,selected_fixtures=None)->dict:
     p=_read_prereg(root)
     if not out.is_dir() or any(out.iterdir()):
         raise Blocked("V345_NONEMPTY_OUTPUT_DIRECTORY")
@@ -52,6 +53,15 @@ def run(root:Path,out:Path,*,visual_quality:bool=False)->dict:
     cases=fixture_cases()
     if set(cases)!={x["fixture_id"] for x in p["frozen_topics"]}:
         raise Blocked("V345_FIXTURE_SELECTION_DRIFT")
+    if quality_gate_v374:
+        # V3-74's exporter covers ONLY strict horizontal Process visual ROI.
+        # Never "pass" an uninstrumented Fraction renderer or a mixed batch.
+        if visual_quality or set(selected_fixtures or ()) != {"v345-synthetic-process"}:
+            raise Blocked("V374_UNSUPPORTED_FAMILY_OR_VISUAL_MODE_NO_EXPORTER")
+    elif selected_fixtures is not None:
+        raise Blocked("V374_SELECTION_REQUIRES_STRICT_VISUAL_QA")
+    cases = ({k: v for k, v in cases.items() if k in selected_fixtures}
+             if quality_gate_v374 else cases)
     records=[]
     for fixture_id,raw in cases.items():
         dest=out/fixture_id
@@ -65,6 +75,11 @@ def run(root:Path,out:Path,*,visual_quality:bool=False)->dict:
                               if x["fixture_id"]==fixture_id):
             raise Blocked("V345_FAMILY_SELECTION_DRIFT")
         durations,beats,wav=_audio(dest,typed)
+        temporal_preflight = None
+        if quality_gate_v374:
+            from learnflow_v3.v374_native_manim_visual_gate import certify_before_render
+            temporal_preflight = certify_before_render(
+                typed,[int(b["frames"]) for b in beats])
         source=dest/"generated_host_manim.py"
         source.write_text(compile_scene(typed,durations,visual_quality=visual_quality),encoding="utf-8")
         raw_manim,sandbox=_docker_manim(dest,source)
@@ -83,6 +98,14 @@ def run(root:Path,out:Path,*,visual_quality:bool=False)->dict:
             if typed.family=="ordered_process" else
             {"status":"NOT_APPLICABLE_TO_FRACTION_FAMILY"}
         )
+        temporal_native = None
+        if quality_gate_v374:
+            from learnflow_v3.v374_native_manim_visual_gate import enforce_after_native
+            temporal_native = enforce_after_native(
+                typed,[int(b["frames"]) for b in beats],mp4,temporal_preflight)
+            # No success receipts are persisted before physical native QA.
+            if temporal_native["output_mp4_sha256"] != sha(mp4):
+                raise Blocked("V374_DECODED_MOVIE_RECEIPT_SHA_MISMATCH")
         (dest/"v3_35_ablation_receipt.json").write_text(json.dumps({
           "checkpoint":"V3-35",
           "model_plan_origin":SYNTHETIC_ORIGIN,
@@ -108,14 +131,17 @@ def run(root:Path,out:Path,*,visual_quality:bool=False)->dict:
             "output_video_sha256":sha(mp4),
             "mux":mux,"native_video":video,
             "decoded_process_edge_overlap_gate":visual_overlap,
+            **({"v374_strict_native_visual_quality_gate":temporal_native}
+               if quality_gate_v374 else {}),
             "sandbox":sandbox,"production":"BLOCKED",
             "word_alignment":"NOT_MEASURED",
             "pedagogical_learning_gain":"NOT_MEASURED",
         }
         (dest/"offline_case_receipt.json").write_text(json.dumps(item,indent=2)+"\n")
         records.append(item)
-    report={"checkpoint":"V3-45",
-            "status":"OFFLINE_TWO_FAMILY_NATIVE_PASS_NOT_REAL_MODEL_OUTPUT",
+    report={"checkpoint":"V3-74" if quality_gate_v374 else "V3-45",
+            "status":("V374_BOUNDED_REAL_PROCESS_VISUAL_QA_PASS" if quality_gate_v374
+                      else "OFFLINE_TWO_FAMILY_NATIVE_PASS_NOT_REAL_MODEL_OUTPUT"),
             "schema_version":VERSION,"schema_sha256":sha256(json.dumps(
                 schema,sort_keys=True,separators=(",",":")).encode()).hexdigest(),
             "origin":SYNTHETIC_ORIGIN,
@@ -127,7 +153,8 @@ def run(root:Path,out:Path,*,visual_quality:bool=False)->dict:
             "no_static_card_fallback":True,
             "production":"BLOCKED"}
     (out/"v3_45_protocol_receipt.json").write_text(json.dumps(report,indent=2)+"\n")
-    print("V3_45=OFFLINE_TWO_FAMILY_NATIVE_VIDEO_PASS_NOT_MODEL_PROOF")
+    print("V3_74=PROCESS_REAL_NATIVE_QA_PASS_NOT_PRODUCTION" if quality_gate_v374
+          else "V3_45=OFFLINE_TWO_FAMILY_NATIVE_VIDEO_PASS_NOT_MODEL_PROOF")
     return report
 
 

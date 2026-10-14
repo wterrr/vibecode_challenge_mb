@@ -1,0 +1,22 @@
+# V3-74 — Strict native Manim process-route visual QA integration
+
+**2026-10-14**. Research-only Draft child of V3-73 PR #109 at frozen `0eb88ad7116637799fa662af9ebafbbff6127341`. First-child prereg `5328bdda767c1750798405ce172159958c235b4a` precedes all new implementation. No merge main, paid model inference, provider GET, key mutation, V2 Core/production prompt edits or frozen V3-59/V3-61 MP4 overwrite.
+
+## Reuse-first and root cause
+
+The actual V3-45 host semantic video route already performs: strict JSON/Pydantic validation, semantic event/claim checks, compiled trusted Manim source, sandboxed Docker Manim, real offline espeak speech, deterministic FFmpeg H264/AAC, decoded native video checks, and a strict decoded pixel inspection of the **first Process edge** (`inspect_first_edge`). However, that check covers only a few frames and cannot on its own certify the rest of the cursor trajectory. V3-73 provides generic immutable Frame/Object/Edge and per-frame semantic ID/marker constraints, but until now had **only its own Pillow diagnostics**, not the actual Manim render entrypoint.
+
+V3-74 integrates the V3-73 contract into the V3-45 real render entrypoint using an **opt-in** `quality_gate_v374` control and exactly the known native `ordered_process` compiler in original non-enhanced mode, not a shadow toy renderer:
+- Before `_docker_manim`, the host exports the **two directed edge traversal windows** from validated `SceneWire`, the actual measured speech beat frame budgets and existing `process_edge_layout`. Each physical 15fps cursor frame is projected into the V3-73 typed IR with original semantic node/edge identity, source-to-node clipping, conservative 8.25px cursor radius, 6px clearance and 24px max step. Unsupported oblique/reversed geometry, missing frames/edges, fraction family or `visual_quality=True` (adds additional uninstrumented Manim `Indicate`) fail closed before render.
+- After native mux, the gate forces **full decode of physical H264**, then reuses the independently validated `process_edge_visual_qa.inspect_first_edge` to check actual decoded source-node, target-node and caption pixel diffs, and visible connector-gap pixel evidence. It requires the same MP4 SHA in both returned receipts **before** final native success receipts are persisted.
+- New `scripts/run_v3_74_native_integrated.py` invokes the real V3-45 typed JSON → Manim Docker → FFmpeg H264/AAC path but selects only the now-instrumented Process fixture. Original legacy V3-45 two-family default remains untouched in behavior, and no uninstrumented Fraction output is upgraded to certified status.
+- New hostile tests `tests/v3/test_v3_74_native_manim_visual_qa.py` cover original marker-entering-node, non-horizontal routes, orphan events, unsupported family, incomplete physical frame clock, forged geometry receipt, corrupt or missing MP4, no-QA fallback and hook order.
+- Dedicated real native CI workflow `.github/workflows/v3-74-native-manim-visual-qa.yml` reuses the V3-45 pinned Docker Manim/bootstrap and GitHub artifact publication; no model/API secrets.
+
+## Methodological limits, crucial for review
+
+This is **actual Manim pipeline integration**, but **bounded**: only the structured V3-45/45-FIX `ordered_process` left-to-right first/second edge **exported ROI geometry** is checked on all frames. The actual Manim rendering may use easing differing from the linear conservative host projection; an exact per-frame pixel segmentation/complete renderer-object export is NOT claimed. Only the first edge's native decoded pixel intrusion is checked; the second edge has per-frame certified *declared geometry*, not an independent all-frame pixel certificate. Manim Computer Modern text glyphs are **not** exactly Pillow glyphs; caption proxy is for expected safe containment, not global OCR/readability evidence. Fraction, free creative SceneGraph/Visual Director, arbitrary Manim actions, oblique/cross-axis routes and user-generated topics remain unsupported here. Never convert this into universal production QA or a full scene quality GO.
+
+## Acceptance evidence
+
+**At authoring time:** Code and CI submitted, native Docker run/negative tests pending actual exact-HEAD GitHub evidence. Passing source validation alone is not enough; require actual fresh H264/AAC, decoded pixel witness, SHA receipts and full GitHub CI. Human quality UNRATED, learning gain NOT_MEASURED, autonomous model authoring NOT TESTED, production BLOCKED; user's historic final visual NOT PASS remains unless separately re-reviewed.

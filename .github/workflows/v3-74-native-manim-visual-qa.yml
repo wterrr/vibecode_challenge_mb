@@ -1,0 +1,92 @@
+name: V3-74 Native Manim Process Visual QA Integration (NO MODEL)
+on:
+  push:
+    branches: [chatgpt/v3-74-guarded-manim-visual-qa-integration]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_74_native_manim_qa_preregister.json'
+      - 'learnflow_v3/v374_native_manim_visual_gate.py'
+      - 'scripts/run_v3_45_semantic_offline.py'
+      - 'scripts/run_v3_74_native_integrated.py'
+      - 'tests/v3/test_v3_74_native_manim_visual_qa.py'
+      - '.github/workflows/v3-74-native-manim-visual-qa.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_74_native_manim_qa_preregister.json'
+      - 'learnflow_v3/v374_native_manim_visual_gate.py'
+      - 'scripts/run_v3_45_semantic_offline.py'
+      - 'scripts/run_v3_74_native_integrated.py'
+      - 'tests/v3/test_v3_74_native_manim_visual_qa.py'
+      - '.github/workflows/v3-74-native-manim-visual-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: v374-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  validated-source-real-docker-manim-h264-aac:
+    runs-on: ubuntu-latest
+    timeout-minutes: 38
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reuse proven native espeak FFmpeg CMU font bootstrap
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Offline Python dependencies for existing strict semantic compiler
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml
+      - name: Negative and positive strict pre-Docker QA and fail-closed unsupported route tests
+        timeout-minutes: 5
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_74_native_manim_visual_qa.py
+      - name: Pull pinned Manim sandbox, no model API or untrusted Python
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Render actual narrated process Manim native MP4 with strict geometry before and pixel QA after
+        timeout-minutes: 15
+        run: |
+          python scripts/run_v3_74_native_integrated.py --output-dir "${RUNNER_TEMP}/v374_real_native"
+      - name: Real physical H264 AAC frame and fail-closed provenance evidence
+        run: |
+          python - <<'PY'
+          import json,os,pathlib,subprocess,hashlib
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v374_real_native"
+          p=json.loads((root/"v374_integrated_native_receipt.json").read_text())
+          mp4=root/"v345-synthetic-process"/"offline_host_semantic_with_audio.mp4"
+          r=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_streams","-of","json",str(mp4)]))
+          v=next(s for s in r["streams"] if s["codec_type"]=="video")
+          a=next(s for s in r["streams"] if s["codec_type"]=="audio")
+          assert p["status"]=="TECHNICAL_PASS_BOUNDED_MANIM_PROCESS_PATH"
+          assert (v["codec_name"],a["codec_name"],v["width"],v["height"],v["r_frame_rate"])==("h264","aac",1280,720,"15/1")
+          assert p["native_video_frames"]==int(v["nb_frames"])
+          assert p["generic_geometry_traversal_frames"]>10
+          assert p["output_mp4_sha256"]==hashlib.sha256(mp4.read_bytes()).hexdigest()
+          px=p["decoded_native_process_pixel_witness"]
+          assert px["new_edge_pixels_inside_source_node"]<=8
+          assert px["new_edge_pixels_inside_target_node"]<=8
+          assert px["cursor_pixels_changed_on_source_caption"]<=8
+          assert px["new_edge_pixels_in_open_gap"]>=100
+          assert p["production"]=="BLOCKED" and p["model_calls"]==0
+          print("V374 REAL V345 MANIM PROCESS: DYNAMIC GENERIC QA + DECODED H264/AAC ROI PASS; not general production")
+          PY
+      - name: Source and prior V2 protocol regression freeze
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+      - name: Publish only NEW native host-synthetic narrated Process video and sanitized receipts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v374-REAL-host-MANIM-process-H264-AAC-with-integrated-visual-QA-NOT-MODEL
+          path: ${{ runner.temp }}/v374_real_native/
+          if-no-files-found: warn
+          retention-days: 7
