@@ -175,6 +175,15 @@ def check_actual_native_samples(movie:Path,rows:list,frames:int):
 
 def evaluate(movie:Path,telemetry:Path,frames:int):
     rows=read_runtime(telemetry)
+    # The REAL renderer may not launder missing effective CMU glyph colors
+    # into a PASS using historical synthetic test-only parent RGB fixtures.
+    for row in rows:
+        for obj in row.get("objects",[]):
+            if obj.get("role")=="text":
+                require(obj.get("color_source")=="CONSTRUCT_TIME_SVG_LEAF_FILL"
+                        and isinstance(obj.get("glyph_rgbs"),list)
+                        and bool(obj["glyph_rgbs"]),
+                        "NATIVE_TEXT_GLYPH_FILL_PROVENANCE_MISSING")
     measured=validate_telemetry(rows,frames)
     samples=check_actual_native_samples(movie,rows,frames)
     require(not measured["actual_glyph_shape_intersections"],
