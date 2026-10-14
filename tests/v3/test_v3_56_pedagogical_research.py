@@ -92,7 +92,7 @@ def test_no_fabricated_timecodes_or_code_transfer():
 def test_v369_original_v356_protocol_immutable_git_blob():
     from hashlib import sha1
     raw=(ROOT / PROTOCOL).read_bytes()
-    git_blob=b"blob " + str(len(raw)).encode("ascii") + b"\\0" + raw
+    git_blob=b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw
     assert sha1(git_blob).hexdigest() == "7206371d69ec5ca3670417314314a62e16b1b31c"
 
 
