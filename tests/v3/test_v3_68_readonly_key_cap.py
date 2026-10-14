@@ -73,7 +73,7 @@ def test_lifetime_two_cent_cap_fixture_pass_is_not_provider_proof():
     assert r["scientific_verdict"]=="HOST_TEST_ONLY_NOT_PROVIDER_PROOF"
 
 @pytest.mark.parametrize("amount,expected",[
-    (None,"DENY_MISSING_PROVIDER_KEY_CAP"),
+    (None,"DENY_INVALID_PROVIDER_KEY_CAP"),
     (100,"DENY_KEY_CAP_EXCEEDS_FROZEN_USD_BUDGET"),
     (0.0200001,"DENY_KEY_CAP_EXCEEDS_FROZEN_USD_BUDGET"),
     (0,"DENY_KEY_CAP_EXCEEDS_FROZEN_USD_BUDGET"),
