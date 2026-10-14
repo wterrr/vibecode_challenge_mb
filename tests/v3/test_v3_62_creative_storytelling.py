@@ -138,7 +138,7 @@ def test_mutations_block_grounding_and_release(type_of_forgery,pattern):
 @pytest.mark.parametrize("field,value",[
     ("act","CLOSE"),("claim_id","FAKE"),("referent_id","different"),
     ("narration","I can assert a false fact."),("highlight","fabricated"),
-)
+])
 def test_mutated_beat_rejected(field,value):
     p=candidate(CASES[1])
     bad=replace(p.acts[2],**{field:value})

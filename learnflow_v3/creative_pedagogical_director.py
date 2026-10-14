@@ -38,7 +38,7 @@ WORDS={
  "Count the atoms first. We have four hydrogen atoms and two oxygen atoms, with stable identities.",
  "Rearrange those six same atoms into two groups. This is an inventory diagram, not a reaction mechanism.",
  "The two groups each contain two hydrogen atoms and one oxygen atom. None has vanished.",
- "The balanced equation is two H two plus O two gives two H two O. Atom counts match."))}
+ "The balanced equation is two H two plus O two gives two H two O. Atom counts match.")}
 HIGHLIGHTS={
  CASES[0]:("one sample space","3 highlighted outcomes","5 others emerge","3/8 + 5/8 = 1","complement"),
  CASES[1]:("3 m per second","start 0 m","four equal jumps","4 x 3 = 12 m","constant speed"),
