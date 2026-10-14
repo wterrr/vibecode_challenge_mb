@@ -76,7 +76,21 @@ def validate_telemetry(rows,actual_video_frames,*,min_coverage=.94):
             visible.append(o)
             if role=="text":
                 glyphs+=1
-                ratio=contrast_ratio(o["rgb"])
+                # V3-76R1-A3: parent Text RGB can be black even when actual
+                # Manim CE SVG leaf glyph paths have visible colored fills.
+                # Fail CLOSED if instrumented footage omits glyph fill proof;
+                # permit only legacy synthetic test fixtures with no source tag.
+                measured=o.get("glyph_rgbs")
+                provenance=o.get("color_source")
+                if provenance=="CONSTRUCT_TIME_SVG_LEAF_FILL":
+                    require(isinstance(measured,list) and 1<=len(measured)<=64,
+                            "MISSING_REAL_SVG_GLYPH_COLORS")
+                    candidates=measured
+                else:
+                    require(provenance is None and measured is None,
+                            "UNTRUSTED_TEXT_COLOR_PROVENANCE")
+                    candidates=[o["rgb"]]
+                ratio=min(contrast_ratio(color) for color in candidates)
                 contrast.append((ratio,ix,name))
         if visible:visible_rows+=1
         for i,a in enumerate(visible):
@@ -103,6 +117,7 @@ def validate_telemetry(rows,actual_video_frames,*,min_coverage=.94):
             "actual_glyph_shape_intersections":[{"frame":ix,"a":a,"b":b}
                                                 for ix,a,b in collisions],
             "telemetry_coverage":"TRACKED_NATIVE_FRAME_SAMPLES_CONSERVATIVE",
+            "bbox_provenance":"ACTUAL_MANIM_CMU_AT_CONSTRUCT_PLUS_1P07_INDICATE_ENVELOPE_NOT_DYNAMIC",
             "full_native_pixel_validation":"NOT_CLAIMED"}
 
 def read_runtime(path:Path,max_lines=4000):
@@ -160,6 +175,15 @@ def check_actual_native_samples(movie:Path,rows:list,frames:int):
 
 def evaluate(movie:Path,telemetry:Path,frames:int):
     rows=read_runtime(telemetry)
+    # The REAL renderer may not launder missing effective CMU glyph colors
+    # into a PASS using historical synthetic test-only parent RGB fixtures.
+    for row in rows:
+        for obj in row.get("objects",[]):
+            if obj.get("role")=="text":
+                require(obj.get("color_source")=="CONSTRUCT_TIME_SVG_LEAF_FILL"
+                        and isinstance(obj.get("glyph_rgbs"),list)
+                        and bool(obj["glyph_rgbs"]),
+                        "NATIVE_TEXT_GLYPH_FILL_PROVENANCE_MISSING")
     measured=validate_telemetry(rows,frames)
     samples=check_actual_native_samples(movie,rows,frames)
     require(not measured["actual_glyph_shape_intersections"],

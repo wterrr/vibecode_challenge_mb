@@ -1,0 +1,23 @@
+{
+  "checkpoint": "V3-76R1",
+  "amendment": "A2_MANIM_CE_API_COMPATIBILITY",
+  "prereg_parent_a1_commit": "78604f8b4d9823315bb807736c31e229c7295318",
+  "evidence": {
+    "run_id": 38537002232,
+    "artifact_id": 11881392295,
+    "head": "1d611a0629cf3439363c10648283f12ab346c2c1",
+    "unit_tests": "25/25 PASS",
+    "smoke": "render_returncode 1 within 45 seconds, stage markers before_precache_bbox only, 0 rows, 0 MP4",
+    "docker_stacktrace": "AttributeError: Text object has no attribute 'bounding_box' from get_bounding_box call"
+  },
+  "root_cause": "V3-76 probe used obj.get_bounding_box(), which is not an available API on Manim Community v0.19.0 Text; the implementation confused ManimGL/3b1b method with Manim Community APIs.",
+  "replacement": "Use supported Manim CE Mobject get_left/get_right/get_top/get_bottom/get_critical_point to obtain bounding rectangle of actual constructed glyph/shape. Reject non-finite/zero-area coordinates, preserve 1.07 conservative Indicate envelope. Precaching remains construct time. Do not alter margin/contrast thresholds or accept uncertified missing telemetry.",
+  "experiment": "Same <=45sec native minimal Manim smoke, then original strict three creative frozen SceneGraphs only if smoke passes.",
+  "unknowns": [
+    "actual complete runtime telemetry text identity/opacity coverage",
+    "native pixel QA and per-frame samples",
+    "whether all compiler symbols exist at instrumentation point"
+  ],
+  "no_model_calls": true,
+  "no_main_merge": true
+}
