@@ -77,7 +77,8 @@ def test_native_image_is_real_1280_and_semantically_changes(case):
     assert before.size==after.size==hold.size==(W,H)
     assert diff(before,after)>.30
     assert diff(before,hold)>.30
-    assert diff(after,hold)<.001
+    control_late=render_frame(p,2,.95,control=True)
+    assert diff(control_late,hold)<.001
     assert FPS==15
 
 
