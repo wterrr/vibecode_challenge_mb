@@ -69,11 +69,17 @@ def instrument(source:str,story)->str:
         "        for _cache_name,_cache_role,_cache_obj,_cache_parent in _v376_objects:",
         "            if _cache_name=='chrome_brand':",
         "                _V376Path('/output/v376_stage_before_precache_bbox.marker').write_text('REACHED')",
-        "            _cache_bb=_cache_obj.get_bounding_box()",
-        "            _cache_x0=min(float(v[0]) for v in _cache_bb)",
-        "            _cache_x1=max(float(v[0]) for v in _cache_bb)",
-        "            _cache_y0=min(float(v[1]) for v in _cache_bb)",
-        "            _cache_y1=max(float(v[1]) for v in _cache_bb)",
+        "            # Manim Community 0.19.0 supports get_left/right/top/bottom;",
+        "            # get_bounding_box() belongs to a DIFFERENT Manim API.",
+        "            _cache_x0=float(_cache_obj.get_left()[0])",
+        "            _cache_x1=float(_cache_obj.get_right()[0])",
+        "            _cache_y0=float(_cache_obj.get_bottom()[1])",
+        "            _cache_y1=float(_cache_obj.get_top()[1])",
+        "            if not all(_v376math.isfinite(v) for v in",
+        "                       (_cache_x0,_cache_x1,_cache_y0,_cache_y1)):",
+        "                raise RuntimeError('V376_NONFINITE_MANIM_EXTENTS')",
+        "            if _cache_x1<=_cache_x0 or _cache_y1<=_cache_y0:",
+        "                raise RuntimeError('V376_DEGENERATE_MANIM_EXTENTS')",
         "            # Reserve Indicate(scale_factor=1.07) intermediate extent.",
         "            _cache_cx=(_cache_x0+_cache_x1)/2",
         "            _cache_cy=(_cache_y0+_cache_y1)/2",
@@ -141,7 +147,7 @@ def instrument(source:str,story)->str:
     inject="\n".join(entry)+"\n"
     # do not rely on imported pathlib inside trusted core compiler.
     compiled=source.replace("from manim import *\n",
-        "from manim import *\nimport json as _v376json\nfrom pathlib import Path as _V376Path\n",1)
+        "from manim import *\nimport json as _v376json\nimport math as _v376math\nfrom pathlib import Path as _V376Path\n",1)
     compiled=compiled.replace(MARKER,inject+MARKER,1)
     if compiled==source or compiled.count("V3-76 HOST INJECTED")!=1:
         raise Blocked("V376_RUNTIME_INSTRUMENTATION_NOT_APPLIED")
