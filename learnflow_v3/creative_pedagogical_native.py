@@ -7,6 +7,7 @@ from __future__ import annotations
 import io
 import json
 import math
+from functools import lru_cache
 import shutil
 import subprocess
 import wave
@@ -26,6 +27,7 @@ STYLE_IDS={"focus_first":"F","witness_first":"W"}
 def require(ok,why):
     if not ok:raise Blocked("V362_"+why)
 
+@lru_cache(maxsize=32)
 def font(size):
     for fp in ("/usr/share/fonts/truetype/cmu/cmunrm.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
@@ -98,6 +100,12 @@ def render_frame(story,act,progress,*,control=False):
     labels=("ASK","GIVEN","CHANGE","VERIFY","TAKEAWAY")
     tx(d,(76,164),labels[act],22,AMBER)
     tx(d,(1208,164),story.acts[act].highlight,24,MINT,anchor="ra")
+    if story.visual_style=="witness_first":
+        # A second strictly bounded visual direction changes framing emphasis,
+        # never mathematical fact, referent identity, or earned reveal timing.
+        d.rounded_rectangle((60,194,1220,568),radius=24,
+                            outline=(75,92,106),width=3)
+        tx(d,(85,207),"FOLLOW THE INVARIANT",18,AMBER)
     if story.case_id==CASES[0]:
         # Eight persistent outcomes. Never make the complement disappear.
         x0=173;y=309;gap=118;size=86
