@@ -64,6 +64,10 @@ jobs:
         run: |
           python -m pytest -q --confcutdir=tests/v3 \
              tests/v3/test_v3_64_one_shot_real_model.py
+      - name: Host-only full H264/AAC smoke BEFORE any paid POST
+        run: |
+          python scripts/run_v3_64_native_preflight.py \
+            --output "$RUNNER_TEMP/V364_HOST_TEST_ONLY_NATIVE"
       - name: Make at most ONE real GPT-6 Luna inference POST then try native render
         run: |
           python scripts/run_v3_64_one_shot_real_model.py \
