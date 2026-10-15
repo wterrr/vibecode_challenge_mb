@@ -39,7 +39,8 @@ def registered()->dict:
 
 
 def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False,
-             runtime_v376:bool=False,reflow_v377:bool=False):
+             runtime_v376:bool=False,reflow_v377:bool=False,
+             hierarchy_v379:bool=False):
     folder.mkdir()
     packet=mock_candidate_bytes(raw)
     accepted,diag=accept(packet)
@@ -57,6 +58,14 @@ def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False,
         layout,reflow_receipt=refine(story,layout)
         (folder/"v377_generated_layout_receipt.json").write_text(
             json.dumps(reflow_receipt,indent=2)+"\n")
+    hierarchy_receipt=None
+    if hierarchy_v379:
+        if not (runtime_v376 and strict_v375 and reflow_v377):
+            raise Blocked("V379_REQUIRES_EXISTING_STRICT_V377_AND_V376")
+        from learnflow_v3.v379_visual_hierarchy import compact
+        layout,hierarchy_receipt=compact(story,layout)
+        (folder/"v379_composition_source_receipt.json").write_text(
+            json.dumps(hierarchy_receipt,indent=2)+"\n")
     # Store only host-normalized trusted structures, never raw 'model' text.
     (folder/"trusted_scene_graph.json").write_text(
         story.model_dump_json(indent=2)+"\n")
@@ -71,7 +80,8 @@ def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False,
         v375_preflight=preflight(story,facts,layout,
                                  [int(b["frames"]) for b in beats])
     source=folder/"host_compiled_finite_manim.py"
-    host_code=manim(story,facts,graphs,layout,voice)
+    host_code=manim(story,facts,graphs,layout,voice,
+                    hierarchy_v379=hierarchy_v379)
     if runtime_v376:
         from learnflow_v3.v376_native_manim_probe import instrument
         host_code=instrument(host_code,story)
@@ -114,6 +124,7 @@ def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False,
        **({"v375_creative_integrated_quality_gate":v375_native} if strict_v375 else {}),
        **({"v376_runtime_native_readability":v376_runtime} if runtime_v376 else {}),
        **({"v377_generated_extent_aware_comparison":reflow_receipt} if reflow_v377 else {}),
+       **({"v379_visual_hierarchy_source":hierarchy_receipt} if hierarchy_v379 else {}),
        "graph_count":len(graphs),"beat_count":len(story.beats),
        "av":media,"mux":mux,"visual_quality_proxy":quality,
        "sandbox":sandbox,"visual_educational_quality":"UNRATED",

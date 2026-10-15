@@ -1,0 +1,71 @@
+{
+  "checkpoint": "V3-79",
+  "kind": "FIRST_CHILD_PREREG_BEFORE_CODE",
+  "date": "2026-10-15",
+  "parent": {
+    "draft_pr": 115,
+    "sha": "de011bad4e76c7dd15110ac0085384fbd931e3b9"
+  },
+  "baseline": {
+    "run": 38672161761,
+    "artifact_id": 11943953684,
+    "CI": "48/48 success",
+    "negative_tests": 20,
+    "renderer_regression": 22,
+    "host_synthetic_fixtures": [
+      "mock_token_network",
+      "mock_score_comparison",
+      "mock_symbolic_equivalence"
+    ],
+    "native_frames": [
+      632,
+      623,
+      788
+    ],
+    "native_content_bbox_median_fraction": [
+      0.020898,
+      0.01978,
+      0.021619
+    ],
+    "native_content_bbox_p10_fraction": [
+      0.013254,
+      0.011242,
+      0.011242
+    ],
+    "small_text_groups_native_under_24px": [
+      0,
+      1,
+      0
+    ],
+    "known_issue": "board:caption:text 22.2px at 720p; charts visually slender; title+content much of 1280x720 unused"
+  },
+  "hypothesis": "Bounded compiler-owned hierarchy increases effective text-group heights and painted chart/bar area while conserving evidence-grounded semantic action timing/identities, and horizontal COMPARISON compression increases conceptual grouping without collisions.",
+  "interventions": [
+    "Only opt-in V3-79 compiler profile, never mutate prior source/movie",
+    "Increase node Text typography up to CMU 30 for primary Math/Equation and label types while bounding original Manim max width=2.75, chart captions max width=2.7",
+    "Increase all CHART stroke/fill bar widths equally from 0.85 to 1.2 world; keep height proportional to host-ledger bar_value; no changes to numeric facts",
+    "Tighten horizontal COMPARISON pair centers from ±3.05 to ±2.4 world only if V3-75 exact geometry and routes accept; non-COMPARISON layouts unchanged",
+    "Keep stable node/relation/beat IDs, narration/audio content, semantic claims, all original action timings, and Indicate scale=1.07",
+    "Retain mandatory V3-75 no-intersection gate, actual Manim V3-76 SVG glyph contrast >=4.5:1, native H264 AV pixel witnesses, V3-78 independent salience measurements"
+  ],
+  "gates": {
+    "native": "Exactly 3 new truly rendered H264/AAC clips at 1280x720 15fps, SHA and ffprobe, source/decoded-frame receipts versioned, no old artifact mutation",
+    "regression": "All V3-78/V3-77 negative tests PASS, plus V3-79 overlap/content budget/scene identity/font profile/semantic timing/mutation tests",
+    "comparison": "Report before/after source SHA, native content bbox occupancy, physical text group heights, nine decoded samples and chart structure; no invented direct pixel-perfect visual quality score",
+    "quality": "A better footprint/readability warning is only technical evidence; user/human review remains NOT PASS pending fresh independent assessment",
+    "no_regressions": "No low-contrast glyphs, collision or text clipping, no physical MP4 underruns; fail closed",
+    "heldout": "No topic- or node-ID-specific constants inside layout/typography implementation"
+  },
+  "restrictions": {
+    "model_api_calls": 0,
+    "provider_get_calls": 0,
+    "no_main_merge": true,
+    "no_v2_core_edits": true,
+    "no_production_prompt_edits": true,
+    "no_frozen_v3_59_v3_61_v3_77_v3_78_media_overwrites": true,
+    "production": "BLOCKED",
+    "human_visual": "NOT_PASS_PENDING_REVIEW",
+    "learning_gain": "NOT_MEASURED",
+    "real_model_authorship": "NOT_TESTED"
+  }
+}
