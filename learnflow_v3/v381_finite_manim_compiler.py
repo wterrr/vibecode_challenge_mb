@@ -74,7 +74,11 @@ def source(trace: dict, durations: list[float]) -> str:
                 f"        self.play(FadeOut(heading_{i}),FadeOut(left_{i}),FadeOut(right_{i}),FadeOut(arrow_{i}),FadeOut(answer_{i}),run_time=.6)",
             ])
             # Total: .8+.6+1.2+.8+(duration-4.0)+.6 = duration.
-    # One physically explicit two-frame end-only pad absorbs Manim's verified\n    # <=1-frame action rounding, then exact audio-frame mux trims it.\n    # Do not pad every beat: that would shift the narration/event timeline.\n    lines.append("        self.wait(2/15)")\n    result = "\n".join(lines) + "\n"
+    # One physically explicit two-frame end-only pad absorbs Manim's verified
+    # <=1-frame action rounding, then exact audio-frame mux trims it.
+    # Do not pad every beat: that would shift the narration/event timeline.
+    lines.append("        self.wait(2/15)")
+    result = "\n".join(lines) + "\n"
     for forbidden in ("__import__(", "eval(", "exec(", "subprocess", "os.system"):
         need(forbidden not in result, "UNSAFE_EMITTED_SOURCE")
     compile(result, "<trusted-host-v381>", "exec")
