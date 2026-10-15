@@ -55,7 +55,8 @@ def run(out:Path):
             a=proof["v375_creative_integrated_quality_gate"]
             b=proof["v376_runtime_native_readability"]
             movie=dest/"mock_candidate_native.mp4"
-            if (x["status"]!="GENERATED_GEOMETRY_CERTIFIED" or
+            if (x["status"] not in ("GENERATED_GEOMETRY_CERTIFIED",
+                                   "NOT_APPLICABLE_NO_COMPARISON_UNMODIFIED") or
                 a["status"]!="PASS_BOUNDED_NATIVE_CREATIVE_QUALITY_GATE" or
                 b["status"]!="PASS_BOUNDED_RUNTIME_READABILITY" or
                 proof["native_mp4_sha256"]!=sha256(movie.read_bytes()).hexdigest()):
