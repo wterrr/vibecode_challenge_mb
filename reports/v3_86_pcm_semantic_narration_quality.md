@@ -16,3 +16,6 @@ Utterance sample and frame ranges are genuinely synthesized, not guessed. A deco
 
 ## Verification status
 Await exact HEAD GitHub Actions and downloaded native artifact. Never turn absence of failures into a PASS without media proof.
+
+## First real native failure and measured source-level fix
+First GitHub Push #38706682459 finished 140+ V3-86 tests but the actual first V3-86 Math video correctly failed the stricter independent visual gate, not arithmetic or audio mux. Uploaded artifact #11958458709 was downloaded; direct ffprobe verifies real 1056-frame H264/AAC MP4. Six separately synthesized WAV budgets: 187,173,186,180,138,192 exact native frames. Decoded early/late chart-ROI pixel changes by audio phase: 4403,5919,4,4405,6988,3; early/late **answer**-ROI changes were 0,0,1199,0,0,1342. Thus INTERPRET physically revealed the result below the plot but its chart itself remained intentionally unchanged. QA was incorrectly inspecting only chart ROI for the interpretation decision. Replaced with phase-scoped ROI: ORIENT/TRANSFORM chart (minimum 850), INTERPRET answer region (minimum 500); preserves real evidence requirement rather than weakening it or faking visual change. New exact-head CI and all three native videos must rerun before Technical PASS.

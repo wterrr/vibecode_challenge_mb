@@ -52,10 +52,17 @@ def verify_native_phases(mp4,beat_rows,phases,trace,role):
                  "V386_INTERPRETATION_LOST_GRAPH_EVIDENCE")
             need(last[2]>first[2]+120,
                  "V386_INTERPRETATION_FORMULA_NOT_VISIBLE_WHEN_SPOKEN")
-        cropped_first=first[0][ROI[1]:ROI[3],ROI[0]:ROI[2]].astype("int16")
-        cropped_last=last[0][ROI[1]:ROI[3],ROI[0]:ROI[2]].astype("int16")
+        # A phase must change pixels in its *semantic action zone*, rather
+        # than assuming every teaching decision changes the plotted graph.
+        # ORIENT and TRANSFORM own the chart. INTERPRET writes the answer
+        # below it while the graph remains intentionally stable.
+        action_roi=RESULT_ROI if phase["phase_kind"]=="INTERPRET" else ROI
+        x0,y0,x1,y1=action_roi
+        cropped_first=first[0][y0:y1,x0:x1].astype("int16")
+        cropped_last=last[0][y0:y1,x0:x1].astype("int16")
         diff=int((np.max(np.abs(cropped_last-cropped_first),axis=2)>35).sum())
-        need(diff>=100,"V386_STATIC_PHASE_NO_PHYSICAL_VISUAL_DECISION")
+        need(diff >= (500 if phase["phase_kind"]=="INTERPRET" else 850),
+             "V386_STATIC_PHASE_NO_PHYSICAL_VISUAL_DECISION")
         need(phase["claim_id"]==trace["events"][i//3]["claim_id"] and
              role["claim_ids"][i//3]==phase["claim_id"],
              "V386_NATIVE_VISUAL_AND_VOICED_CLAIM_MISMATCH")
@@ -65,6 +72,7 @@ def verify_native_phases(mp4,beat_rows,phases,trace,role):
             "phase_kind":phase["phase_kind"],"claim_id":phase["claim_id"],
             "wav_derived_range":[start,start+size],
             "physical_frame_change_pixels":diff,
+            "phase_semantic_action_roi":list(action_roi),
             "native_result_text_pixels_early":first[2],
             "native_result_text_pixels_late":last[2],
             "frames":[{

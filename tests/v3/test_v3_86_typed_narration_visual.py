@@ -156,3 +156,5 @@ def test_no_topic_specific_renderer_or_bypassed_av_validation():
                   "verify_native_phases","_docker_manim","full_native_decode"):
         assert token in runner
     assert RESULT_ROI==(200,558,1080,695)
+    gate=(ROOT/"learnflow_v3/v386_native_speech_visual_gate.py").read_text()
+    assert 'action_roi=RESULT_ROI if phase["phase_kind"]=="INTERPRET" else ROI' in gate
