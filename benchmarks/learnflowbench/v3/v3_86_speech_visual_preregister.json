@@ -1,0 +1,102 @@
+{
+  "checkpoint": "V3-86",
+  "status": "FIRST_CHILD_PREREGISTRATION_BEFORE_IMPLEMENTATION",
+  "parent": {
+    "draft_pr": 122,
+    "sha": "4bc942e489576a0f8f76db118a0be493a5d19a32"
+  },
+  "fixed_case_ids": [
+    "linear_output_new",
+    "accelerating_new",
+    "counterfactual_physics_heldout",
+    "chemistry_periodic_table_unsupported",
+    "history_industrial_unsupported"
+  ],
+  "positive": 3,
+  "negative_abstain": 2,
+  "heldout_parameters": 1,
+  "baseline": {
+    "native_artifact_id": 11958076620,
+    "native_frame_counts": [
+      468,
+      477,
+      488
+    ],
+    "failure_inventory": [
+      "Original V3-82 narration is generic arithmetic and does not mention source-selected graph roles or why slope represents acceleration.",
+      "V3-85 chart is role-correct but visuals are not scheduled to individually voiced pedagogical decisions; two coarse narration beats obscure orientation, transformation and interpretation.",
+      "Evidence gate checks changed pixels at phase-agnostic offsets, not the claim-to-narration-to-visible pedagogical phase.",
+      "Word-alignment or automatically measured comprehension is unavailable; segment-level generated speech cannot be presented as independently transcribed word-level ground truth."
+    ]
+  },
+  "frozen_semantics": {
+    "supported_role_types": [
+      "input_output_line",
+      "velocity_vs_elapsed_time"
+    ],
+    "phase_types": [
+      "ORIENT",
+      "TRANSFORM",
+      "INTERPRET"
+    ],
+    "operators": [
+      "SCALE",
+      "ADD"
+    ],
+    "source_claim_ids": [
+      "C1",
+      "C2"
+    ],
+    "speech_voice": "offline eSpeak via original native audio runner; six independent PCM utterances per lesson, 3 per original operator beat",
+    "story_mode": "HOST_GENERATED_FROM_ROLE_AND_EXACT_FACTS_ONLY",
+    "true_word_alignment": "NOT_DONE",
+    "source_independent_truth_check": "NOT_DONE",
+    "human_pedagogical_review": "NOT_DONE"
+  },
+  "required_native": {
+    "videos": 3,
+    "negative_abstain": 2,
+    "phase_audio_receipts_per_video": 6,
+    "per_phase_visual_witness": true,
+    "fps": 15,
+    "codec": "h264/aac",
+    "resolution": [
+      1280,
+      720
+    ],
+    "frame_offsets": [
+      "phase_start+1",
+      "phase_start+floor(frames/2)",
+      "phase_end-10"
+    ],
+    "strict_audio_mux": true,
+    "full_h264_decode": true,
+    "claims_must_match_original": true,
+    "phase_descriptions_must_not_fabricate_physics_displacement": true,
+    "voice_segment_rms": true
+  },
+  "failure_mutations": [
+    "phase wrong claim",
+    "phase count drift",
+    "wrong rate/intercept/velocity numbers",
+    "source semantic role swapped",
+    "audio phase missing",
+    "synchronized event visibly absent",
+    "truncated native audio",
+    "unknown source family",
+    "fake ASR word timestamps",
+    "unsupported topic converts to static fallback",
+    "source URL spoof",
+    "model-origin spoof"
+  ],
+  "policy": {
+    "no_model_api": true,
+    "no_main_merge": true,
+    "no_production_prompts": true,
+    "keep_legacy_defaults": true,
+    "preserve_original_media": true,
+    "final_visual_quality": "NOT_PASS",
+    "learner_gain": "NOT_MEASURED",
+    "production": "BLOCKED"
+  }
+}
