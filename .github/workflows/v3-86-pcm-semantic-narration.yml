@@ -8,7 +8,7 @@ on:
       - 'learnflow_v3/v386_phased_affine_manim.py'
       - 'learnflow_v3/v385_affine_visual_semantics.py'
       - 'learnflow_v3/v382_query_evidence_bridge.py'
-      - 'learnflow_v3/v386_native_affine_visual_gate.py'
+      - 'learnflow_v3/v386_native_speech_visual_gate.py'
       - 'learnflow_v3/v381_finite_manim_compiler.py'
       - 'scripts/run_v3_86_pcm_grounded_pedagogy.py'
       - 'tests/v3/test_v3_86_typed_narration_visual.py'
@@ -20,7 +20,7 @@ on:
       - 'learnflow_v3/v386_phased_affine_manim.py'
       - 'learnflow_v3/v385_affine_visual_semantics.py'
       - 'learnflow_v3/v382_query_evidence_bridge.py'
-      - 'learnflow_v3/v386_native_affine_visual_gate.py'
+      - 'learnflow_v3/v386_native_speech_visual_gate.py'
       - 'learnflow_v3/v381_finite_manim_compiler.py'
       - 'scripts/run_v3_86_pcm_grounded_pedagogy.py'
       - 'tests/v3/test_v3_86_typed_narration_visual.py'
@@ -108,7 +108,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: v386-semantic-affine-native-3-mp4-2-abstain
+          name: v386-pcm-grounded-six-phases-3-native-2-abstain
           path: ${{ runner.temp }}/v386_native/
           retention-days: 7
           if-no-files-found: warn
