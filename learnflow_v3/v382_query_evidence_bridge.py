@@ -294,13 +294,21 @@ def compile_question(row, root: Path):
     need(row["role"] in ("development","heldout"),"ROLE_UNSUPPORTED")
     seed = _approved_seed(row,root)
     steps, final_id = expression_plan(row)
-    facts = row["facts"]
+    # V3-81 requires fact IDs >= 2 chars; preserve the user's expression
+    # verbatim and derive collision-safe internal aliases without case branching.
+    alias = {key:(f"var_{key}" if len(key)==1 else key)
+             for key in row["facts"]}
+    need(len(set(alias.values()))==len(alias),"INTERNAL_ALIAS_COLLISION")
+    facts = {alias[key]:value for key,value in row["facts"].items()}
+    operations = [{k:v for k,v in step.items() if k!="canonical_statement"}
+                  for step in steps]
+    for operation in operations:
+        operation["inputs"]=[alias.get(x,x) for x in operation["inputs"]]
     generated_case = {
         "id":row["id"],"domain":row["domain"],"role":row["role"],
         "title":row["title"],"facts":facts,
         "claims":{f"C{i+1}":step["canonical_statement"] for i,step in enumerate(steps)},
-        "operations":[{k:v for k,v in step.items() if k!="canonical_statement"}
-                      for step in steps]}
+        "operations":operations}
     trace = validate_case(generated_case)
     need(trace["state"][final_id] == steps[-1]["expected"],"FINAL_QUERY_PROOF_MISMATCH")
     contract = _contracts(row,seed,{"generated_steps":steps},trace)
