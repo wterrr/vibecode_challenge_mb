@@ -67,7 +67,10 @@ def test_reuse_three_frozen_stories_and_preserve_identity(case):
     doc=accepted(case)
     original=doc["layout"];story=doc["storyboard"]
     revised,receipt=refine(story,original)
-    assert len(receipt["scenes"])>=1
+    comparison_count=sum(x.layout=="COMPARISON" for x in story.scenes)
+    assert len(receipt["scenes"])==comparison_count
+    assert receipt["status"]==("GENERATED_GEOMETRY_CERTIFIED"
+        if comparison_count else "NOT_APPLICABLE_NO_COMPARISON_UNMODIFIED")
     assert set(revised)==set(original)
     for s in story.scenes:
         assert set(revised[s.id])==set(original[s.id])
