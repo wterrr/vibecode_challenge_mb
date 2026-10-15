@@ -69,6 +69,10 @@ def plan(story,facts,layout,seconds):
                         "fact_ref":node.fact_ref,"claim":meta["claim"],
                         "host_bar_value":round(value,9),
                         "physical_bar_height_world":round(max(.24,1.75*value),4),
+                        "bar_center_world":[
+                            round(layout[scene.id][node.id][0],5),
+                            round(layout[scene.id][node.id][1]+.15,5)],
+                        "bar_width_world":1.20,
                         "animation":"GrowFromEdge(DOWN)+FadeIn(caption)",
                         "slot_start_s":round(begin+elapsed,5),
                         "slot_duration_s":round(each,5),
