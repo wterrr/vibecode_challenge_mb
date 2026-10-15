@@ -5,8 +5,8 @@ on:
     paths:
       - 'benchmarks/learnflowbench/v3/v3_85_domain_visual_preregister.json'
       - 'learnflow_v3/v385_affine_visual_semantics.py'
-      - 'learnflow_v3/v383_semantic_unit_storytelling.py'
-      - 'learnflow_v3/v385_native_composition_gate.py'
+      - 'learnflow_v3/v382_query_evidence_bridge.py'
+      - 'learnflow_v3/v385_native_affine_visual_gate.py'
       - 'learnflow_v3/v381_finite_manim_compiler.py'
       - 'scripts/run_v3_85_typed_affine_visual.py'
       - 'tests/v3/test_v3_85_affine_semantics.py'
@@ -15,8 +15,8 @@ on:
     paths:
       - 'benchmarks/learnflowbench/v3/v3_85_domain_visual_preregister.json'
       - 'learnflow_v3/v385_affine_visual_semantics.py'
-      - 'learnflow_v3/v383_semantic_unit_storytelling.py'
-      - 'learnflow_v3/v385_native_composition_gate.py'
+      - 'learnflow_v3/v382_query_evidence_bridge.py'
+      - 'learnflow_v3/v385_native_affine_visual_gate.py'
       - 'learnflow_v3/v381_finite_manim_compiler.py'
       - 'scripts/run_v3_85_typed_affine_visual.py'
       - 'tests/v3/test_v3_85_affine_semantics.py'
@@ -100,7 +100,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: v385-composed-native-3-mp4-2-abstain
+          name: v385-semantic-affine-native-3-mp4-2-abstain
           path: ${{ runner.temp }}/v385_native/
           retention-days: 7
           if-no-files-found: warn
