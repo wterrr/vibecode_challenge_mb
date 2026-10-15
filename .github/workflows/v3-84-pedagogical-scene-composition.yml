@@ -6,7 +6,7 @@ on:
       - 'benchmarks/learnflowbench/v3/v3_84_scene_composition_preregister.json'
       - 'learnflow_v3/v384_pedagogical_scene_composer.py'
       - 'learnflow_v3/v383_semantic_unit_storytelling.py'
-      - 'learnflow_v3/v384_native_unit_evidence.py'
+      - 'learnflow_v3/v384_native_composition_gate.py'
       - 'learnflow_v3/v381_finite_manim_compiler.py'
       - 'scripts/run_v3_84_scene_composition.py'
       - 'tests/v3/test_v3_84_scene_composition.py'
@@ -16,7 +16,7 @@ on:
       - 'benchmarks/learnflowbench/v3/v3_84_scene_composition_preregister.json'
       - 'learnflow_v3/v384_pedagogical_scene_composer.py'
       - 'learnflow_v3/v383_semantic_unit_storytelling.py'
-      - 'learnflow_v3/v384_native_unit_evidence.py'
+      - 'learnflow_v3/v384_native_composition_gate.py'
       - 'learnflow_v3/v381_finite_manim_compiler.py'
       - 'scripts/run_v3_84_scene_composition.py'
       - 'tests/v3/test_v3_84_scene_composition.py'
@@ -98,7 +98,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: v384-query-to-native-source-evidence-and-3-MP4-plus-2-ABSTAIN
+          name: v384-composed-native-3-mp4-2-abstain
           path: ${{ runner.temp }}/v384_native/
           retention-days: 7
           if-no-files-found: warn
