@@ -17,7 +17,7 @@ from learnflow_v3.v383_semantic_unit_storytelling import certify_event
 
 # Frozen metadata from the source-grounded V3-28/V3-82 lineage, not free text
 # heuristics or model-generated code. Supporting a new source family requires
-# a separately validated semantic law, not an if topic == branch in Manim.
+# a separately validated semantic law, not an ad-hoc case-specific branch in Manim.
 AFFINE_ROLE_REGISTRY={
     "LINEAR_SLOPE":{
         "rate":"m","independent":"x","intercept":"b",
