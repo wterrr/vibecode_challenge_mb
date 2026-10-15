@@ -1,0 +1,113 @@
+name: V3-77 Extent-Aware Comparison Native Manim Visual QA (NO MODEL)
+on:
+  push:
+    branches: [chatgpt/v3-77-extent-aware-comparison-layout]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_77_extent_aware_comparison_preregister.json'
+      - 'learnflow_v3/v377_extent_aware_comparison.py'
+      - 'scripts/run_v3_54_model_candidate_quality.py'
+      - 'scripts/run_v3_77_native_comparison_layout.py'
+      - 'tests/v3/test_v3_77_extent_aware_comparison.py'
+      - '.github/workflows/v3-77-native-extent-aware-comparison.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_77_extent_aware_comparison_preregister.json'
+      - 'learnflow_v3/v377_extent_aware_comparison.py'
+      - 'scripts/run_v3_54_model_candidate_quality.py'
+      - 'scripts/run_v3_77_native_comparison_layout.py'
+      - 'tests/v3/test_v3_77_extent_aware_comparison.py'
+      - '.github/workflows/v3-77-native-extent-aware-comparison.yml'
+permissions:
+  contents: read
+concurrency:
+  group: v377-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  real-creative-comparison-native-reflow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 48
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Existing CMU fonts FFmpeg espeak native bootstrap
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Existing offline dependencies
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Exact prereg, original collision and heldout negative permutations
+        timeout-minutes: 6
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_77_extent_aware_comparison.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_76r1_runtime_probe_recovery.py
+      - name: Reuse pinned native Docker Manim sandbox
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Render EXACT three old host candidates with new generator reflow and V3-75/76 native gates
+        timeout-minutes: 27
+        run: |
+          python scripts/run_v3_77_native_comparison_layout.py --output-dir "$RUNNER_TEMP/v377_extent_aware_native"
+      - name: Independent native H264 AAC ffprobe SHA full decode plus contact sheet evidence
+        timeout-minutes: 7
+        run: |
+          python - <<'PY'
+          import json,hashlib,os,pathlib,subprocess
+          from PIL import Image,ImageOps,ImageDraw
+          out=pathlib.Path(os.environ["RUNNER_TEMP"])/"v377_extent_aware_native"
+          data=json.loads((out/"v377_native_comparison_layout_repair_receipt.json").read_text())
+          assert data["checkpoint"]=="V3-77"
+          assert data["production"]=="BLOCKED" and data["model_api_calls"]==0
+          assert data["corrected_comparison_accepted"],"V377_FORMER_TOKEN_COLLISION_STILL_NOT_FIXED"
+          assert len(data["cases"])==3
+          assert data["accepted_count"]==3,"V377_CANNOT_REGRESS_PREVIOUS_2_NATIVE_CASES"
+          for case in data["cases"]:
+              assert case["verdict"]=="BOUNDED_TECHNICAL_PASS",case
+              movie=out/case["id"]/"mock_candidate_native.mp4"
+              assert hashlib.sha256(movie.read_bytes()).hexdigest()==case["candidate_native_sha256"]
+              streams=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_streams","-of","json",str(movie)]))["streams"]
+              v=next(x for x in streams if x["codec_type"]=="video")
+              a=next(x for x in streams if x["codec_type"]=="audio")
+              assert (v["codec_name"],a["codec_name"],v["width"],v["height"],v["r_frame_rate"])==("h264","aac",1280,720,"15/1")
+              assert int(v["nb_frames"])==case["native_frames"]>100
+              assert case["runtime_rows"]>=int(v["nb_frames"])*.94
+              subprocess.run(["ffmpeg","-nostdin","-hide_banner","-loglevel","error","-xerror",
+                  "-i",str(movie),"-map","0:v:0","-f","null","-"],
+                  check=True,timeout=150,stdout=subprocess.DEVNULL)
+              # Physical H264 still images at four preregistered fractions.
+              imgdir=out/case["id"]/"review_decoded_frames"
+              imgdir.mkdir()
+              imgs=[]
+              duration=int(v["nb_frames"])/15
+              for i,fraction in enumerate((.12,.35,.62,.86)):
+                  dest=imgdir/f"fraction_{i}.png"
+                  subprocess.run(["ffmpeg","-nostdin","-hide_banner","-loglevel","error",
+                     "-ss",str(duration*fraction),"-i",str(movie),
+                     "-frames:v","1",str(dest)],check=True,timeout=30)
+                  im=Image.open(dest).convert("RGB");im.thumbnail((640,360));imgs.append(im.copy())
+              canvas=Image.new("RGB",(1280,720))
+              for i,im in enumerate(imgs):canvas.paste(im,((i%2)*640,(i//2)*360))
+              canvas.save(imgdir/"native_frame_contact_sheet.jpg",quality=85)
+              print("V377 VERIFIED_REAL_MP4",case["id"],case["native_frames"],case["candidate_native_sha256"])
+          print("V377: all three new actual creative native Manim videos survived A3 runtime geometry and contrast tests; NOT a human quality rating")
+          PY
+      - name: V2 core and frozen study protocol regression
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+      - name: Upload ONLY fresh reflow video and real decoded evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v377-native-creative-COMPARISON-reflow-H264-AAC-actual-video-and-receipts
+          path: ${{ runner.temp }}/v377_extent_aware_native/
+          if-no-files-found: warn
+          retention-days: 7
