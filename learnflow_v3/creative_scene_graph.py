@@ -355,7 +355,7 @@ def _edge_route(scene:Scene,rel:Relation,coords:dict)->list[tuple[float,float]]:
 
 
 def manim(story:Storyboard,evidence:dict,graphs:list[SceneGraph],layout:dict,
-          seconds:list[float])->str:
+          seconds:list[float],*,hierarchy_v379:bool=False)->str:
     if len(seconds)!=len(story.beats) or any(not 3<=d<=24 for d in seconds):
         raise Blocked("V351_TIMING_INVALID")
     lines=[
@@ -379,6 +379,10 @@ def manim(story:Storyboard,evidence:dict,graphs:list[SceneGraph],layout:dict,
             name=f"v351_n{index}_{i}";objnames[(s.id,n.id)]=name
             x,y=layout[s.id][n.id]
             text=_label(n,evidence);color=TONE[n.tone]
+            chart_width=".85" if not hierarchy_v379 else "1.20"
+            caption_font="22" if not hierarchy_v379 else "27"
+            node_font=(24 if n.kind in ('MATH','EQUATION') else 26)
+            if hierarchy_v379:node_font=30
             # Line breaks preserve the exact verified host facts but avoid
             # squeezing mathematical results into illegible single lines.
             display=text
@@ -389,18 +393,18 @@ def manim(story:Storyboard,evidence:dict,graphs:list[SceneGraph],layout:dict,
             if n.kind=="CHART":
                 val=evidence["facts"][n.fact_ref]["bar_value"]
                 lines.append(
-                   f"        {name}_shape=RoundedRectangle(width=.85,height={max(.24,1.75*val):.4f},"
+                   f"        {name}_shape=RoundedRectangle(width={chart_width},height={max(.24,1.75*val):.4f},"
                    f"corner_radius=.08,stroke_color={color!r},fill_color={color!r},"
                    f"fill_opacity=.65).move_to([{x:.3f},{y+.15:.3f},0])")
                 lines.append(
-                   f"        {name}_caption=Text({text!r},font='CMU Serif',font_size=22,"
+                   f"        {name}_caption=Text({text!r},font='CMU Serif',font_size={caption_font},"
                    f"color={BODY!r}).move_to([{x:.3f},{y-.82:.3f},0])")
                 lines.append(f"        if {name}_caption.width>2.7:{name}_caption.scale_to_fit_width(2.7)")
                 lines.append(f"        {name}=VGroup({name}_shape,{name}_caption)")
             else:
                 lines.append(
                    f"        {name}_label=Text({display!r},font='CMU Serif',"
-                   f"font_size={24 if n.kind in ('MATH','EQUATION') else 26},"
+                   f"font_size={node_font},"
                    f"color={color!r}).move_to([{x:.3f},{y:.3f},0])")
                 lines.append(f"        if {name}_label.width>2.75:{name}_label.scale_to_fit_width(2.75)")
                 if n.kind=="SHAPE":
