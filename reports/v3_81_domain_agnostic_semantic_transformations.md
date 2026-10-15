@@ -16,3 +16,6 @@ Negative tests must reject wrong claims/outputs, invalid fractions, types, unkno
 
 ## Evidence status
 No claim of exact-head CI PASS before a real successful Actions run. Review native MP4s and receipts and explicitly report limitations.
+
+## Real first run and bounded mux recovery
+Initial exact-head native push Actions #38678867635: 36/36 new, 21/21 V3-80 and 26/26 V3-73 regression PASS; real Attention H264/AAC 428/428 frame succeeded, but second Fraction real Manim MP4 emitted 278 frames against 279 required from physical WAV. Original V3-44 deterministic mux correctly returned V344_MANIM_VIDEO_TOO_SHORT_FOR_NARRATION. Artifact #11947282595 was downloaded and actual native ffprobe independently confirmed 278 vs 279, no concealment. Code amendment adds only two trailing physical video frames to the Manim source (not per-beat), and the unchanged exact-audio mux truncates excess encoded frames. Additional native contract rejects >3 raw extra frames. Rerun needs 4/4 genuine native MP4 and independent pixel witnesses before a Technical PASS claim.

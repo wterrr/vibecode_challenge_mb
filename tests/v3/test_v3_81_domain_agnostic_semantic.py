@@ -83,6 +83,7 @@ def test_compiler_emits_safe_source_for_four_domains(case_index):
     compile(output, "<v381-test>", "exec")
     assert output.count("GROUND_TRUTH_STEP_") == len(trace["events"])
     assert "from manim import *" in output
+    assert "self.wait(2/15)" in output  # bounded end-only mux pad
     assert "eval(" not in output and "subprocess" not in output
     if "EQUIVALENT_PARTITION" in trace["native_operator_kinds"]:
         assert "Transform(before_" in output

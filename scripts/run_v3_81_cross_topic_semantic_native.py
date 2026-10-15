@@ -92,7 +92,7 @@ def run(out: Path):
         silent_movie, sandbox = _docker_manim(folder, src)
         movie = folder / "v381_native_semantic.mp4"
         mux = deterministic_mux(silent_movie, wav, movie, beat_rows)
-        av = _codec_and_pixel_gates(movie, beat_rows)
+        need(0 <= mux["raw_manim_frames"] - mux["output_h264_frames"] <= 3,\n             "UNBOUNDED_MANIM_TO_NARRATION_FRAME_DRIFT")\n        av = _codec_and_pixel_gates(movie, beat_rows)
         need(mux["output_h264_frames"] == av["frames"] ==
              sum(int(b["frames"]) for b in beat_rows),
              "H264_AUDIO_FRAME_OR_DURATION_DRIFT")
