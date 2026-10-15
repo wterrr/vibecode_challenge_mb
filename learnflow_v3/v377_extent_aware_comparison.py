@@ -116,10 +116,14 @@ def refine(story,legacy_layout):
         receipt["old_layout"]=old
         receipt["new_layout"]=mapped
         evidence.append(receipt)
-    need(evidence,"NO_COMPARISON_SCENES")
+    # Heldout lessons without COMPARISON are a declared identity-preserving
+    # NO-OP, not a rejected visual or a falsely repaired COMPARISON scene.
+    if not evidence:
+        need(new==legacy_layout,"NOOP_CHANGED_LEGACY_LAYOUT")
     return new,{"checkpoint":"V3-77",
                 "family":"COMPARISON",
-                "status":"GENERATED_GEOMETRY_CERTIFIED",
+                "status":("GENERATED_GEOMETRY_CERTIFIED" if evidence
+                          else "NOT_APPLICABLE_NO_COMPARISON_UNMODIFIED"),
                 "scenes":evidence,
                 "source":"TRUSTED_HOST_PLACER",
                 "rendered_pixel_quality":"NOT_PROVEN_BY_LAYOUT_ALONE"}
