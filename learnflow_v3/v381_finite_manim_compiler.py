@@ -10,7 +10,7 @@ from learnflow_v3.creative_manim_ablation import Blocked
 from learnflow_v3.v381_generic_semantic_operators import need, parse_value, fmt
 
 
-def source(trace: dict, durations: list[float]) -> str:
+def source(trace: dict, durations: list[float], *, no_upscale_text: bool=False) -> str:
     events = trace["events"]
     need(len(events) == len(durations) and len(events) >= 2,
          "NARRATION_TIMELINE_DRIFT")
@@ -74,6 +74,21 @@ def source(trace: dict, durations: list[float]) -> str:
                 f"        self.play(FadeOut(heading_{i}),FadeOut(left_{i}),FadeOut(right_{i}),FadeOut(arrow_{i}),FadeOut(answer_{i}),run_time=.6)",
             ])
             # Total: .8+.6+1.2+.8+(duration-4.0)+.6 = duration.
+    # Opt-in source-level size constraint: SHORT captions keep their real
+    # Computer Modern glyph extent. Legacy V3-81 source remains byte-identical
+    # with default no_upscale_text=False; long labels still capped at 5 units.
+    if no_upscale_text:
+        fitted = []
+        for line in lines:
+            if " = Text(" in line and ".scale_to_fit_width(5.0).move_to(" in line:
+                name = line.strip().split(" = ",1)[0]
+                fitted.append(line.replace(".scale_to_fit_width(5.0).move_to(",
+                                           ".move_to("))
+                fitted.append(
+                    f"        if {name}.width > 5.0: {name}.scale_to_fit_width(5.0)")
+            else:
+                fitted.append(line)
+        lines = fitted
     # One physically explicit two-frame end-only pad absorbs Manim's verified
     # <=1-frame action rounding, then exact audio-frame mux trims it.
     # Do not pad every beat: that would shift the narration/event timeline.

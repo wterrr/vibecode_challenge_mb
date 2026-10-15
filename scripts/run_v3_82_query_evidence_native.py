@@ -48,7 +48,7 @@ def run(out:Path):
             SimpleNamespace(narration=e["narration"],claim_ids=[e["claim_id"]])
             for e in trace["events"]])
         durations,beats,wav=_audio(folder,story)
-        host_source=source(trace,durations)
+        host_source=source(trace,durations,no_upscale_text=True)
         path=folder/"generated_trusted_manim.py"
         path.write_text(host_source)
         silent,sandbox=_docker_manim(folder,path)

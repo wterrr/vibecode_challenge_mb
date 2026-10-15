@@ -54,8 +54,13 @@ def test_real_reused_source_fact_script_pedagogy_director_gates(index):
                    for text in event["operand_text"])
         assert "=" in event["result_text"]
     assert len(c["visual"]["beats"])==len(trace["events"])
-    emitted=source(trace,[10.0]*len(trace["events"]))
+    legacy=source(trace,[10.0]*len(trace["events"]))
+    emitted=source(trace,[10.0]*len(trace["events"]),no_upscale_text=True)
     compile(emitted,"<v382-source>","exec")
+    assert ".scale_to_fit_width(5.0).move_to(" in legacy
+    assert ".scale_to_fit_width(5.0).move_to(" not in emitted
+    assert "if left_0.width > 5.0:" in emitted
+    assert "if right_0.width > 5.0:" in emitted
 
 
 @pytest.mark.parametrize("index", [3,4])
