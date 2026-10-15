@@ -1,0 +1,57 @@
+{
+  "checkpoint": "V3-77",
+  "date": "2026-10-15",
+  "kind": "FIRST_CHILD_PREREG_BEFORE_IMPLEMENTATION",
+  "parent": {
+    "draft_pr": 113,
+    "sha": "06508f48299fc3098d2f81e8042c4a3a9ce1f20c"
+  },
+  "baseline": {
+    "run": 38543360636,
+    "artifact": 11884427679,
+    "ci": "48/48 SUCCESS",
+    "tests": "28/28",
+    "model_calls": 0,
+    "smoke": "20 H264 frames,23 Manim runtime rows, actual SVG glyph contrast 16.588",
+    "cases": [
+      {
+        "id": "mock_token_network",
+        "verdict": "NO_GO",
+        "root": "V375_GENERIC_V373_REJECTED:V373_VISUAL_COLLISION:weightright:context",
+        "mp4": null
+      },
+      {
+        "id": "mock_score_comparison",
+        "verdict": "TECHNICAL_BOUNDED_PASS",
+        "native_frames": 623,
+        "sha256": "74596c2b3bf02f4dae89a5debbb307d324753d27b33f675b70ccd34f5595b83d"
+      },
+      {
+        "id": "mock_symbolic_equivalence",
+        "verdict": "TECHNICAL_BOUNDED_PASS",
+        "native_frames": 788,
+        "sha256": "5f8e3574aed8d2ca64957445adc5a1b34f15492ebe7a17ce60fc37d96aeade23"
+      }
+    ]
+  },
+  "root_cause_hypothesis": "Current host positions() COMPARISON uses fixed 1.60 world-unit row spacing for 3-row scenes regardless of shape/chart heights. V3-75 reserved CHART height=1.79*1.07 with -0.14 center offset, SHAPE=1.27*1.07; adjacent weightright and context vertical envelopes intersect.",
+  "design": "Generic host geometry-aware COMPARISON reflow based on existing V3-75 SIZE and HIGHLIGHT_SCALE, including CHART vertical offset, 6px extra clearance; preserve IDs/rows/order/relations. Opt-in in V3-54 case_run and only on new V3-77 runner; historical default output and original videos unchanged. Budget content vertical band [-2.55,2.25] world and ensure no clipping; require route preflight for third-party visuals and exact geometry timeline. Fail-closed when solver cannot fit. No case-specific or topic strings inside solver.",
+  "acceptance": {
+    "before_fix": "Capture deterministic old intersection rect/IDs and original native artifact hashes before code",
+    "after_fix": "V3-75 preflight PASS all 3 original model-shaped host fixtures with strict V3-76/A3 runtime source and native decoded pixel checks, or precise NO-GO if other defects",
+    "video": "NEW narrated Docker Manim 1280x720@15fps H264/AAC for former blocked token case, full decoded frames + native quality receipt SHA + timing and Manim telemetry; independent decoded frame contact sheet",
+    "negative": "At least 12 tests including old 1.60 overlap, tall CHART permutations, impossible height budget, unknown kind, edge crossing, missing/duplicate IDs, direct physical MP4 mismatch/no instrumentation and opt-in baseline unaffected",
+    "baseline": "V3-76R1 frozen two successful native MP4 SHA receipts unchanged",
+    "scope": "Geometry generator only, no manual screenshot/overlay edits; contrast >=4.5 and runtime collision gates unmodified",
+    "quality": "Human quality UNRATED, learning NOT_MEASURED, no 3B1B parity claim, final viewer NOT PASS pending human review"
+  },
+  "boundaries": {
+    "no_merge_main": true,
+    "no_model_api": true,
+    "no_provider_get": true,
+    "no_v2_core_edit": true,
+    "no_production_prompt_edit": true,
+    "no_historical_media_overwrite": true,
+    "production": "BLOCKED"
+  }
+}
