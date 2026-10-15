@@ -1,0 +1,141 @@
+{
+  "checkpoint": "V3-82",
+  "kind": "PREREG_BEFORE_IMPLEMENTATION",
+  "parent": {
+    "pr": 118,
+    "sha": "947b05d029e2eadeee34d69ac1739a571c90ecfa"
+  },
+  "seed_policy": "SOURCE_ONLY_FROM_PREVIOUS_V3_28_PINNED_OPENSTAX_SEEDS;HOST_SYNTHETIC_QUERIES_NOT_REAL_RESEARCH",
+  "goal": "Integrate question->safe expression AST->prior sourced ResearchPack/EvidenceGraph/FactReport->host script/pedagogy/visual beat->V3-81 exact operator DAG->native Manim/AAC with honest unsupported abstention; no authored storyboard, operation list or narration in prereg cases",
+  "cases": [
+    {
+      "id": "linear_output_new",
+      "role": "development",
+      "domain": "math",
+      "source_model": "LINEAR_SLOPE",
+      "question": "What is the result of m * x + b?",
+      "title": "How a linear rule calculates its output",
+      "facts": {
+        "m": {
+          "kind": "scalar",
+          "n": 7,
+          "d": 1
+        },
+        "x": {
+          "kind": "scalar",
+          "n": 2,
+          "d": 1
+        },
+        "b": {
+          "kind": "scalar",
+          "n": 5,
+          "d": 1
+        }
+      }
+    },
+    {
+      "id": "accelerating_new",
+      "role": "development",
+      "domain": "physics",
+      "source_model": "CONSTANT_ACCELERATION_VELOCITY",
+      "question": "What is the result of initial_velocity + acceleration * elapsed?",
+      "title": "Compute a final velocity from evidence",
+      "facts": {
+        "initial_velocity": {
+          "kind": "scalar",
+          "n": 3,
+          "d": 1
+        },
+        "acceleration": {
+          "kind": "scalar",
+          "n": 4,
+          "d": 1
+        },
+        "elapsed": {
+          "kind": "scalar",
+          "n": 2,
+          "d": 1
+        }
+      }
+    },
+    {
+      "id": "counterfactual_physics_heldout",
+      "role": "heldout",
+      "domain": "physics",
+      "source_model": "CONSTANT_ACCELERATION_VELOCITY",
+      "question": "What is the result of initial_velocity + acceleration * elapsed?",
+      "title": "A different velocity example with new input",
+      "facts": {
+        "initial_velocity": {
+          "kind": "scalar",
+          "n": 7,
+          "d": 1
+        },
+        "acceleration": {
+          "kind": "scalar",
+          "n": 2,
+          "d": 1
+        },
+        "elapsed": {
+          "kind": "scalar",
+          "n": 5,
+          "d": 1
+        }
+      }
+    },
+    {
+      "id": "chemistry_periodic_table_unsupported",
+      "role": "negative",
+      "domain": "chemistry",
+      "source_model": null,
+      "question": "Explain why the periodic table has groups and periods.",
+      "title": "Why the elements form periodic groups",
+      "facts": {}
+    },
+    {
+      "id": "history_industrial_unsupported",
+      "role": "negative",
+      "domain": "history",
+      "source_model": null,
+      "question": "Why did the Industrial Revolution begin in Britain?",
+      "title": "Evidence for early industrialization",
+      "facts": {}
+    }
+  ],
+  "acceptance": {
+    "native_positive_exact": 3,
+    "negative_abstain_exact": 2,
+    "heldout_positive_exact": 1,
+    "operators": [
+      "ADD",
+      "SCALE"
+    ],
+    "test_invalid": [
+      "source tamper",
+      "unregistered model",
+      "unsupported expression",
+      "wrong arithmetic",
+      "unsupported question",
+      "LLM model provenance spoof",
+      "missing evidence",
+      "source URL mismatch",
+      "unsafe AST expression",
+      "script beat claim mismatch",
+      "duplicate source id"
+    ],
+    "real_model_calls": 0,
+    "main_merge": false,
+    "full_h264_decode": true,
+    "physical_before_after": true,
+    "prior_v381_regressions": true,
+    "source_claim_semantic_independent": "NOT_VERIFIED",
+    "video_qa_final": "NOT_PASS",
+    "production": "BLOCKED"
+  },
+  "notes": [
+    "Positive tasks share TWO historic author-curated OpenStax source families; does NOT prove six-domain transfer.",
+    "Heldout is unseen input/values, not a new semantic family. Failures must never be swapped.",
+    "Question format intentionally constrained to one explicit arithmetic expression; unsupported free-form questions ABSTAIN.",
+    "Per-case facts are input parameters, not operations, narration, scene composition or storyboard."
+  ]
+}
