@@ -113,7 +113,7 @@ def _scale_animation(i,geom):
         lines.append(_tile_at(f"seed_piece_{i}_{k}",p,PALETTE["cyan"]))
         lines.append(f"        seed_{i}.add(seed_piece_{i}_{k})")
     lines.extend([
-        f"        self.play(FadeIn(seed_{i},shift=UP*.12),run_time=.55)",
+        f"        self.play(FadeIn(seed_{i},shift=UP*.12),run_time=8/15)",
         f"        group_frames_{i}=VGroup()",
         f"        target_groups_{i}=VGroup()",
     ])
@@ -130,8 +130,8 @@ def _scale_animation(i,geom):
     # Source unit-relative ordering and count are identical in every clone.
     lines.extend([
         f"        self.play(LaggedStart(*[TransformFromCopy(seed_{i},g) "
-        f"for g in target_groups_{i}],lag_ratio=.12),run_time=1.75)",
-        f"        self.play(FadeIn(group_frames_{i}),FadeOut(seed_{i}),run_time=.45)",
+        f"for g in target_groups_{i}],lag_ratio=.12),run_time=26/15)",
+        f"        self.play(FadeIn(group_frames_{i}),FadeOut(seed_{i}),run_time=7/15)",
     ])
     return lines,[f"target_groups_{i}",f"group_frames_{i}"]
 
@@ -149,13 +149,13 @@ def _add_animation(i,geom):
         lines.append(f"        {right}.add(right_piece_{i}_{k})")
     lines.extend([
         f"        self.play(FadeIn({left},shift=UP*.1),"
-        f"FadeIn({right},shift=UP*.1),run_time=.55)",
+        f"FadeIn({right},shift=UP*.1),run_time=8/15)",
         f"        moving_{i}=list({left})+list({right})",
         f"        merged_target_{i}={geom['unit_targets']!r}",
         f"        self.play(*[piece.animate.move_to([loc[0],loc[1],0]) "
-        f"for piece,loc in zip(moving_{i},merged_target_{i},strict=True)],run_time=1.75)",
+        f"for piece,loc in zip(moving_{i},merged_target_{i},strict=True)],run_time=26/15)",
         f"        self.play(Circumscribe(VGroup({left},{right}),"
-        f"color={_str(PALETTE['gold'])},run_time=.45))",
+        f"color={_str(PALETTE['gold'])},run_time=7/15))",
     ])
     return lines,[left,right]
 
@@ -180,25 +180,32 @@ def emit_step(i,event,duration,total):
         f"        answer_{i}=Text({_str(event['result_text'])},font='CMU Serif',"
         f"font_size=40,color={_str(PALETTE['ink'])}).move_to([0,{RESULT_Y:.5f},0])",
         f"        if answer_{i}.width > 8.6: answer_{i}.scale_to_fit_width(8.6)",
-        f"        self.play(FadeIn(step_badge_{i}),FadeIn(step_label_{i}),run_time=.50)",
-        f"        self.play(FadeIn(operands_{i}),run_time=.55)",
-        f"        self.play(Create(rule_{i}),run_time=.35)",
+        f"        self.play(FadeIn(step_badge_{i}),FadeIn(step_label_{i}),run_time=8/15)",
+        f"        self.play(FadeIn(operands_{i}),run_time=8/15)",
+        f"        self.play(Create(rule_{i}),run_time=5/15)",
     ]
     if geom["operator"]=="SCALE":
         middle,objects=_scale_animation(i,geom)
     else:
         middle,objects=_add_animation(i,geom)
-    # Total fixed 0.50+0.55+0.35+0.55+1.75+0.45+0.70+0.35+0.60=5.80 s.
-    # Hold extends naturally to the original TTS beat; no per-beat added time.
+    # All 9 animation phases use integer-frame durations at 15 fps.
+    # Previously Manim ceil-rounded each fractional .50/.55/.35/... play
+    # independently: observed native 479 frames vs 468 exact WAV frames.
+    # Fixed visual phases: 8+8+5+8+26+7+10+5+9 = 86 frames per beat.
+    # Allocate every remaining speech frame to a single exact-frame hold.
+    exact_frames=int(round(duration*15))
+    fixed_frames=86
+    require(exact_frames>=fixed_frames+12,"NO_EXACT_FRAME_HOLD_BUDGET")
+    hold_frames=exact_frames-fixed_frames
     lines.extend(middle)
     lines.extend([
-        f"        self.play(Write(answer_{i}),run_time=.70)",
+        f"        self.play(Write(answer_{i}),run_time=10/15)",
         f"        self.play(Indicate(answer_{i},color={_str(PALETTE['gold'])},"
-        f"scale_factor=1.04),run_time=.35)",
-        f"        self.wait({duration-5.80:.8f})",
+        f"scale_factor=1.04),run_time=5/15)",
+        f"        self.wait({hold_frames}/15)",
         f"        self.play(FadeOut(step_badge_{i}),FadeOut(step_label_{i}),"
         f"FadeOut(operands_{i}),FadeOut(rule_{i}),FadeOut(answer_{i}),"
         +",".join(f"FadeOut({item})" for item in objects)+
-        ",run_time=.60)",
+        ",run_time=9/15)",
     ])
     return lines
