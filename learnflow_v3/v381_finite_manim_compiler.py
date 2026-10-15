@@ -11,7 +11,8 @@ from learnflow_v3.v381_generic_semantic_operators import need, parse_value, fmt
 
 
 def source(trace: dict, durations: list[float], *, no_upscale_text: bool=False,
-           pedagogical_units: bool=False) -> str:
+           pedagogical_units: bool=False,
+           pedagogical_composition: bool=False) -> str:
     events = trace["events"]
     need(len(events) == len(durations) and len(events) >= 2,
          "NARRATION_TIMELINE_DRIFT")
@@ -20,6 +21,9 @@ def source(trace: dict, durations: list[float], *, no_upscale_text: bool=False,
     if pedagogical_units:
         from learnflow_v3.v383_semantic_unit_storytelling import receipts, emit_beat
         receipts(trace)  # certify all beats before any source generation
+    if pedagogical_composition:
+        from learnflow_v3.v384_pedagogical_scene_composer import plan, emit_step
+        plan(trace)  # entire host-generated story, not only sampled beats
     lines = [
         "# V3-81 trusted host-only compiled source, no provider Python",
         "from manim import *",
@@ -31,6 +35,9 @@ def source(trace: dict, durations: list[float], *, no_upscale_text: bool=False,
     ]
     for i, (event, duration) in enumerate(zip(events, durations, strict=True)):
         op = event["kind"]
+        if pedagogical_composition:
+            lines.extend(emit_step(i,event,duration,len(events)))
+            continue
         # Both operands and the result are independently host-derived.
         x, y = event["operand_text"]
         result = event["result_text"]
