@@ -1,0 +1,103 @@
+name: V3-78 Native Creative Visual Salience Evidence (NO MODEL)
+on:
+  push:
+    branches: [chatgpt/v3-78-native-visual-salience-benchmark]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_78_native_salience_preregister.json'
+      - 'learnflow_v3/v378_native_visual_salience.py'
+      - 'scripts/run_v3_78_native_salience_benchmark.py'
+      - 'tests/v3/test_v3_78_native_visual_salience.py'
+      - '.github/workflows/v3-78-native-visual-salience.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_78_native_salience_preregister.json'
+      - 'learnflow_v3/v378_native_visual_salience.py'
+      - 'scripts/run_v3_78_native_salience_benchmark.py'
+      - 'tests/v3/test_v3_78_native_visual_salience.py'
+      - '.github/workflows/v3-78-native-visual-salience.yml'
+permissions:
+  contents: read
+concurrency:
+  group: v378-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  actual-native-creative-salience-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 47
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reuse CMU fonts FFmpeg espeak native bootstrap
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Reuse strictly offline renderer requirements
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Preregistered salience and native evidence mutation tests
+        timeout-minutes: 5
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_78_native_visual_salience.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_77_extent_aware_comparison.py
+      - name: Reuse pinned offline Manim sandbox
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Rerender frozen 3 synthetic host examples through genuine Manim and publish native salience
+        timeout-minutes: 26
+        run: |
+          python scripts/run_v3_78_native_salience_benchmark.py --output-dir "$RUNNER_TEMP/v378_native_salience"
+      - name: Independently check hashes, native H264/AAC, pixel samples, metric provenance
+        timeout-minutes: 6
+        run: |
+          python - <<'PY'
+          import hashlib,json,os,pathlib,subprocess
+          out=pathlib.Path(os.environ['RUNNER_TEMP'])/'v378_native_salience'
+          doc=json.loads((out/'v378_final_native_salience_scorecard.json').read_text())
+          assert doc['checkpoint']=='V3-78'
+          assert doc['actual_new_Manim_native_mp4_count']==3
+          assert doc['native_h264_pixel_sample_count_total']==27
+          assert doc['production']=='BLOCKED' and doc['model_api_calls']==0
+          assert doc['human_visual_quality']=='NOT_PASS_PENDING_REVIEW'
+          assert {c['id'] for c in doc['cases']}=={
+            'mock_token_network','mock_score_comparison','mock_symbolic_equivalence'}
+          for c in doc['cases']:
+            movie=out/c['id']/'mock_candidate_native.mp4'
+            raw=out/c['id']/'manim_output'/'v376_runtime_geometry.jsonl'
+            detailed=json.loads((out/c['id']/'v378_native_visual_salience_receipt.json').read_text())
+            assert movie.is_file() and raw.is_file()
+            assert hashlib.sha256(movie.read_bytes()).hexdigest()==c['mp4_sha256']==detailed['native_movie_sha256']
+            assert hashlib.sha256(raw.read_bytes()).hexdigest()==c['telemetry_sha256']==detailed['runtime_telemetry_sha256']
+            info=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-of','json',str(movie)]))
+            v=next(x for x in info['streams'] if x['codec_type']=='video')
+            a=next(x for x in info['streams'] if x['codec_type']=='audio')
+            assert (v['codec_name'],a['codec_name'],v['width'],v['height'],v['r_frame_rate'])==('h264','aac',1280,720,'15/1')
+            assert int(v['nb_frames'])==c['native_h264_frames']>100
+            assert c['verified_native_pixel_samples']==9
+            m=detailed['visual_salience_measurements']
+            assert 0<=m['bbox_union_area_fraction_p10']<=m['bbox_union_area_fraction_median']<=m['bbox_union_area_fraction_p90']<=1
+            assert m['visual_density_is_learning_quality']=='NO'
+            assert detailed['native']['per_object_pixel_segmentation']=='NOT_CERTIFIED'
+            print('V378 PHYSICAL REVIEW METRICS',c['id'],
+                 'median_bbox_fraction',m['bbox_union_area_fraction_median'],
+                 'p10',m['bbox_union_area_fraction_p10'],
+                 'small_text_groups',m['text_groups_below_24px_native'])
+          PY
+      - name: Frozen V2 and research protocol gates
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v378-actual-native-Manim-H264-visual-salience-and-readable-scene-receipts
+          path: ${{ runner.temp }}/v378_native_salience/
+          if-no-files-found: warn
+          retention-days: 7
