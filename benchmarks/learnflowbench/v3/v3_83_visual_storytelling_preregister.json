@@ -1,0 +1,99 @@
+{
+  "checkpoint": "V3-83",
+  "kind": "INDEPENDENT_VISUAL_FAILURE_PREREG_BEFORE_IMPLEMENTATION",
+  "baseline": {
+    "parent": {
+      "pr": 119,
+      "head": "e9d7c502f25c6e9f9b8931a7a7c0df9a939c524b",
+      "ci_push": "https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38682929858",
+      "ci_pr": "https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38682935878",
+      "artifact_id": 11948967651
+    },
+    "videos": [
+      {
+        "id": "linear_output_new",
+        "frames": 468
+      },
+      {
+        "id": "accelerating_new",
+        "frames": 477
+      },
+      {
+        "id": "counterfactual_physics_heldout",
+        "frames": 488
+      }
+    ],
+    "blocked": [
+      {
+        "id": "chemistry_periodic_table_unsupported"
+      },
+      {
+        "id": "history_industrial_unsupported"
+      }
+    ]
+  },
+  "scope": "Opt-in exact integer positive scalar SCALE/ADD pictorial token transformation on original V3-82 query cases; source comments/headers and legacy V3-81/V3-82 defaults unaffected; cannot claim free-form creative scene storyboarding.",
+  "frozen_failures": [
+    {
+      "id": "equation_only",
+      "description": "Final reviewed 1280x1146 contact sheet shows 3 videos with only title, small input labels, arrow and large numeric equation; no physical unit quantity/continuity."
+    },
+    {
+      "id": "no_mathematical_action",
+      "description": "Arrow/text reveal conveys result but does not show repeated equal groups or sum of two disjoint quantities."
+    },
+    {
+      "id": "no_temporal_visual_semantic_witness",
+      "description": "Existing before/after pixel change attests text, not conserved units."
+    }
+  ],
+  "locked_cases": [
+    "linear_output_new",
+    "accelerating_new",
+    "counterfactual_physics_heldout",
+    "chemistry_periodic_table_unsupported",
+    "history_industrial_unsupported"
+  ],
+  "witness": {
+    "fps": 15,
+    "video_format": "native Manim H264/AAC 1280x720",
+    "late_elapsed_frames": 88,
+    "pictorial_roi_xyxy": [
+      140,
+      335,
+      1140,
+      550
+    ],
+    "min_new_saturated_semantic_pixels": 900,
+    "require_new_vs_old_control_at_same_operator": true,
+    "require_exact_color_partitions": true,
+    "require_early_to_late_native_change": true,
+    "strict_full_video_decode": true
+  },
+  "operator_semantics": {
+    "SCALE": "Show b-unit seed once, create a distinct verified repeated groups of b tokens for a×b; group identity persists until end of beat.",
+    "ADD": "Show two disjoint colored groups of a and b tokens and move each existing token into a combined collection of a+b tokens; no cloning and no loss.",
+    "negative": [
+      "zero or negative quantities",
+      "fractional output",
+      "over 24 units",
+      "unknown operator",
+      "trace expected tamper",
+      "missing or duplicate object",
+      "source content injection"
+    ]
+  },
+  "acceptance": {
+    "preserve_original_regression": true,
+    "no_model_api": true,
+    "merge_main": false,
+    "native_three_required": 3,
+    "negative_abstains_required": 2,
+    "heldout_native_required": 1,
+    "older_mp4_hashes_untouched": true,
+    "learner_understanding": "NOT_MEASURED",
+    "professional_visual_review": "NOT_PASS_UNTIL_INDEPENDENT_RUBRIC",
+    "production": "BLOCKED"
+  },
+  "model_semantics": "HOST_ONLY_NOT_REAL_AUTONOMOUS_LLM"
+}
