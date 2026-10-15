@@ -1,0 +1,73 @@
+{
+  "checkpoint": "V3-80",
+  "date": "2026-10-15",
+  "kind": "FIRST_CHILD_PREREG_BEFORE_CODE",
+  "parent": {
+    "pr": 116,
+    "sha": "2f98efaeabb21440aafdafa9d5bfb31e98d4e9f2",
+    "ci": "51/51 SUCCESS"
+  },
+  "baseline": {
+    "run": 38673645100,
+    "artifact": 11945282706,
+    "existing_renderer": "V3-79 opt-in CMU hierarchy + V3-77 compact comparisons",
+    "native_fixtures": [
+      {
+        "id": "mock_token_network",
+        "h264_frames": 632,
+        "sha256": "4bc44e64c547e6072b00cfbd69d1d7bc305d75032ff84966e3f58afe41b381ec"
+      },
+      {
+        "id": "mock_score_comparison",
+        "h264_frames": 623,
+        "sha256": "d8077a1c4c0d4cd9803456ccbbd7922c32dba20832a2e0f3eb43347d04233091"
+      },
+      {
+        "id": "mock_symbolic_equivalence",
+        "h264_frames": 788,
+        "sha256": "d7dfe9cff29c152350b61a04260e3ce16f9db83d5ee6cc431903d1a05c442de3"
+      }
+    ],
+    "quality_gaps": [
+      "Existing chart reveals use FadeIn for fully sized scalar bar: no value formation shown",
+      "FLOW and TRANSFORMS_INTO relation connects are Create only: target/source semantic causal progression lacks explicit lead/lag within same beat",
+      "No independent host receipt binding animation semantics to host verified numeric fact and relation or inspecting directional progression",
+      "3B1B pedagogical/learning parity and user final visual rating NOT PASS/UNRATED"
+    ]
+  },
+  "reused": [
+    "V3-47 semantic transformation grammar, when compatible; do not introduce new action schema",
+    "V3-51 host evidence ledger and V2 SceneGraph validated relations",
+    "V3-75 source all-frame conservative geometry/route gate and >=6px clearance",
+    "V3-76R1 SVG leaf 4.5:1 contrast native telemetry and 9-frame decoded H264 witnesses",
+    "V3-77/79 placement hierarchy, real pinned Manim Docker H264/AAC compiler",
+    "V3-78 native content footprint/MP4 pixel witness"
+  ],
+  "intervention": "Opt-in compiler-owned semantic transform playback for existing, strictly verified actions: CHART reveal animates host-ledger proportional bar from zero via GrowFromEdge(DOWN) while caption becomes visible; FLOW and TRANSFORMS_INTO relations animate source Indicate -> progressive Create arrow at host-computed outside-node route -> destination Indicate within the ORIGINAL single action budget. Other relations/actions unchanged. No markers entering a node, no source value invented. Identity/claims/narration/source graph and exact per-beat seconds unchanged. No new semantic contract IDs or LLM-generated Python.",
+  "provenance": "Preregister a host-ledger event receipt with scene, beat, source/target/fact_refs, verified relation kind and contract claim, bar_value, symbolic animation phases and physical action duration. Reject missing referenced endpoint visibility, unverified fact claim, non-positive or nonfinite bar proportion, wrong action target type, fake relation direction, unsupported movement and unresolved geometry before rendering.",
+  "scope_limits": [
+    "This is explicit partial-shape growth and directional route tracing, not general symbolic algebra or attention matrix recomputation",
+    "V3-76R1 caches final CMU bounding boxes; these upper-bound interpolated bars and Indicate but DO NOT prove exact moving pixels each frame",
+    "No per-object transient dot or graphic whose motion is outside V3-75 exported geometry; route only existing source/target edges",
+    "No change to normalized weight values/labels, speech/word-level alignment claims, timestamps or original videos",
+    "Do not retrofit arbitrary causal relation: only host ledger approved FLOW/TRANSFORMS_INTO actions"
+  ],
+  "acceptance": {
+    "negative": ">=16 tests: grounded numbers/ref, relation reversals and unshown endpoints rejected; generate identical legacy source by default; no implicit absolute time growth; per-phase summed durations exactly original action budget; held-out three fixtures and mutation fail closed",
+    "native": "Exactly three new H264/AAC 1280x720 15fps host-only synthetic clips with SHA, ffprobe and full decoded frame check and V3-75/76/78 native receipts; original video SHA not changed",
+    "semantic_evidence": "At least one CHART growth and at least one causal relation three-phase progression on the original three fixtures, with host event timeline receipts. No model API.",
+    "viewer": "Compare actual before/after MP4 visual sequences, check charts visibly form proportionally and directional arrows never enter node region; user independent final remains NOT PASS unless separately reviewed",
+    "CI": "Exact-head dedicated and broad CI PASS or report blocker; no merge main"
+  },
+  "restrictions": {
+    "model_api_calls": 0,
+    "provider_calls": 0,
+    "no_main_merge": true,
+    "no_v2_core_change": true,
+    "no_production_prompts_change": true,
+    "no_frozen_video_overwrites": true,
+    "production": "BLOCKED",
+    "learning_gain": "NOT_MEASURED",
+    "human_quality": "UNRATED"
+  }
+}
