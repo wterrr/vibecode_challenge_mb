@@ -1,0 +1,108 @@
+name: V3-80 Grounded Semantic Transformations Native Manim (NO MODEL)
+on:
+  push:
+    branches: [chatgpt/v3-80-grounded-semantic-transformations]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_80_semantic_transformations_preregister.json'
+      - 'learnflow_v3/v380_semantic_transformations.py'
+      - 'learnflow_v3/v380_native_semantic_witness.py'
+      - 'learnflow_v3/creative_scene_graph.py'
+      - 'scripts/run_v3_54_model_candidate_quality.py'
+      - 'scripts/run_v3_80_native_semantic_transformations.py'
+      - 'tests/v3/test_v3_80_semantic_transformations.py'
+      - '.github/workflows/v3-80-grounded-semantic-transformations.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_80_semantic_transformations_preregister.json'
+      - 'learnflow_v3/v380_semantic_transformations.py'
+      - 'learnflow_v3/v380_native_semantic_witness.py'
+      - 'learnflow_v3/creative_scene_graph.py'
+      - 'scripts/run_v3_54_model_candidate_quality.py'
+      - 'scripts/run_v3_80_native_semantic_transformations.py'
+      - 'tests/v3/test_v3_80_semantic_transformations.py'
+      - '.github/workflows/v3-80-grounded-semantic-transformations.yml'
+permissions:
+  contents: read
+concurrency:
+  group: v380-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  actual-evidence-grounded-semantic-manim:
+    runs-on: ubuntu-latest
+    timeout-minutes: 48
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Existing pinned CMU fonts and FFmpeg/eSpeak bootstrap
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Offline dependencies only
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Mutation tests — verified scalar and causal provenance; legacy semantics unchanged
+        timeout-minutes: 6
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_80_semantic_transformations.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_79_pedagogical_visual_hierarchy.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_78_native_visual_salience.py
+      - name: Pull the existing pinned network-isolated Manim container
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Render three NEW real H264 semantic videos and independently check pixel growth
+        timeout-minutes: 26
+        run: |
+          python scripts/run_v3_80_native_semantic_transformations.py --output-dir "$RUNNER_TEMP/v380_semantic_native"
+      - name: Independent actual H264/AAC native and host-grounded event receipts
+        timeout-minutes: 7
+        run: |
+          python - <<'PY'
+          import hashlib,json,os,pathlib,subprocess
+          p=pathlib.Path(os.environ["RUNNER_TEMP"])/"v380_semantic_native"
+          r=json.loads((p/"v380_final_host_semantic_video_report.json").read_text())
+          assert r["checkpoint"]=="V3-80" and r["native_mp4_count"]==3
+          assert r["scalar_growth_events"]>=3 and r["host_ledger_causal_routes"]>=3
+          assert r["independent_physical_growth_witnesses"]>=3
+          assert r["decoded_h264_visual_pixel_witnesses"]==27
+          assert r["moving_marker_may_enter_node"] is False
+          assert r["visual_quality"]=="NOT_PASS_UNTIL_INDEPENDENT_HUMAN_REVIEW"
+          for case in r["cases"]:
+            base=p/case["id"]
+            movie=base/"mock_candidate_native.mp4"
+            man=json.loads((base/"native_quality_receipt.json").read_text())
+            event=json.loads((base/"v380_host_verified_semantic_events.json").read_text())
+            proof=json.loads((base/"v380_independent_semantic_pixel_receipt.json").read_text())
+            assert hashlib.sha256(movie.read_bytes()).hexdigest()==case["native_video_sha256"]==man["native_mp4_sha256"]
+            assert event["verified_bar_growth_count"]>=1 and event["verified_causal_route_count"]>=1
+            assert proof["growth_witness"]["status"]=="DECODABLE_GROWTH_ATTESTED"
+            info=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_streams","-of","json",str(movie)]))
+            v=next(s for s in info["streams"] if s["codec_type"]=="video")
+            a=next(s for s in info["streams"] if s["codec_type"]=="audio")
+            assert (v["codec_name"],a["codec_name"],v["width"],v["height"],v["r_frame_rate"])==("h264","aac",1280,720,"15/1")
+            assert int(v["nb_frames"])==case["encoded_h264_frames"]>100
+            subprocess.run(["ffmpeg","-nostdin","-v","error","-xerror","-i",str(movie),
+                            "-map","0:v:0","-f","null","-"],
+                            stdout=subprocess.DEVNULL,check=True,timeout=130)
+            print("V380 VERIFIED GROUNDED VIDEO",case["id"],v["nb_frames"],
+                  case["verified_chart_growth_events"],case["verified_causal_routes"],
+                  case["decoded_real_growth_witnesses"])
+          PY
+      - name: V2 Core freeze and V3 benchmark pre-registered continuity
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v380-native-Manim-causal-semantic-transform-H264-AAC-SVG-and-growth-evidence
+          path: ${{ runner.temp }}/v380_semantic_native/
+          if-no-files-found: warn
+          retention-days: 7

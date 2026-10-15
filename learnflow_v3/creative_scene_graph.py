@@ -355,9 +355,15 @@ def _edge_route(scene:Scene,rel:Relation,coords:dict)->list[tuple[float,float]]:
 
 
 def manim(story:Storyboard,evidence:dict,graphs:list[SceneGraph],layout:dict,
-          seconds:list[float],*,hierarchy_v379:bool=False)->str:
+          seconds:list[float],*,hierarchy_v379:bool=False,
+          semantic_v380:bool=False)->str:
     if len(seconds)!=len(story.beats) or any(not 3<=d<=24 for d in seconds):
         raise Blocked("V351_TIMING_INVALID")
+    if semantic_v380:
+        # Validation and event provenance happen in the trusted host, before
+        # the finite Manim script is compiled, never inside model-supplied code.
+        from learnflow_v3.v380_semantic_transformations import plan
+        plan(story,evidence,layout,seconds)
     lines=[
       "# V3-51 GENERIC HOST COMPILED SOURCE NEVER MODEL PYTHON",
       "from manim import *","class GeneratedLesson(Scene):",
@@ -450,10 +456,38 @@ def manim(story:Storyboard,evidence:dict,graphs:list[SceneGraph],layout:dict,
         for a in actions:
             name=(relname if a.kind=="connect" else objnames)[(b.scene_id,a.target)]
             if a.kind=="reveal":
-                lines.append(f"        self.play(FadeIn({name}),run_time={each:.3f})")
+                node=node_by_scene[b.scene_id][a.target]
+                if semantic_v380 and node.kind=="CHART":
+                    # Source graph's CHART height is host-verified against
+                    # the ledger in V3-80 plan(). Grow only the final bar
+                    # INSIDE its original V3-75 reserved shape envelope.
+                    lines.append(
+                      f"        self.play(AnimationGroup(GrowFromEdge({name}_shape,DOWN),"
+                      f"FadeIn({name}_caption),lag_ratio=0),run_time={each:.3f})")
+                else:
+                    lines.append(f"        self.play(FadeIn({name}),run_time={each:.3f})")
                 visible.append(name)
             elif a.kind=="connect":
-                lines.append(f"        self.play(Create({name}),run_time={each:.3f})")
+                relation=next(r for scene in story.scenes if scene.id==b.scene_id
+                              for r in scene.relations if r.id==a.target)
+                if semantic_v380 and relation.kind in ("FLOW","TRANSFORMS_INTO"):
+                    source_name=objnames[(b.scene_id,relation.source)]
+                    target_name=objnames[(b.scene_id,relation.target)]
+                    # Host-event protocol enforces source and destination
+                    # are already revealed and relation approved by ledger.
+                    # Arrow is drawn along original OUTSIDE-node route;
+                    # no moving dot/marker crosses into a target shape.
+                    lines.append(
+                      f"        self.play(Indicate({source_name},color={ACCENT!r},"
+                      f"scale_factor=1.07),run_time={each*.20:.6f})")
+                    lines.append(
+                      f"        self.play(Create({name},rate_func=linear),"
+                      f"run_time={each*.58:.6f})")
+                    lines.append(
+                      f"        self.play(Indicate({target_name},color={ACCENT!r},"
+                      f"scale_factor=1.07),run_time={each*.22:.6f})")
+                else:
+                    lines.append(f"        self.play(Create({name}),run_time={each:.3f})")
                 visible.append(name)
             elif a.kind=="emphasize":
                 lines.append(f"        self.play(Indicate({name},color={ACCENT!r},scale_factor=1.07),run_time={each:.3f})")
