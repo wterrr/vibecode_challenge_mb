@@ -1,0 +1,124 @@
+{
+  "checkpoint": "V3-85",
+  "kind": "FIRST_COMMIT_PREREG_BEFORE_CODE",
+  "parent": {
+    "draft_pr": 121,
+    "head_sha": "727200532b763b8badb7a0ad55af7c6db47f5296"
+  },
+  "baseline": {
+    "artifact_id": 11956009636,
+    "math_frames": 468,
+    "physics_frames": 477,
+    "physics_heldout_frames": 488,
+    "visual_issue": "All three videos show generic arithmetic square-unit groups, including physics velocity; no explicit velocity-time axes/slope interpretation or coordinate meaning."
+  },
+  "locked_original_case_ids": [
+    "linear_output_new",
+    "accelerating_new",
+    "counterfactual_physics_heldout",
+    "chemistry_periodic_table_unsupported",
+    "history_industrial_unsupported"
+  ],
+  "selection": {
+    "positive": 3,
+    "negative_abstain": 2,
+    "heldout_parameters": 1,
+    "source_families": 2,
+    "real_autonomous_model_storyboarding": 0
+  },
+  "formal_scope": "bounded positive rational affine scalar law y = y0 + slope*x only, from already vetted V3-82 source family, not general physics visual support",
+  "operator_semantics": {
+    "SCALE": "Show the rate × independent-variable coordinate as exact rise on a source-origin graph. The point moves from (0,0) to (x,rate*x).",
+    "ADD": "Show y0 as an initial vertical offset, then shift the same affine graph values to (0,y0) and (x,y0+rate*x). No displacement distance/body-travel interpretation on v-t chart."
+  },
+  "representation_contracts": [
+    {
+      "evidence_model_kind": "LINEAR_SLOPE",
+      "representation": "AFFINE_GRAPH",
+      "independent_role": "input",
+      "independent_label": "x (input)",
+      "dependent_role": "output",
+      "dependent_label": "y (output)",
+      "intercept_role": "b",
+      "slope_role": "m",
+      "x_role": "x",
+      "epistemic_note": "Host-curated y=m*x+b used as illustrative affine rule, not comprehensive verification of any theorem."
+    },
+    {
+      "evidence_model_kind": "CONSTANT_ACCELERATION_VELOCITY",
+      "representation": "AFFINE_GRAPH",
+      "independent_role": "elapsed_time",
+      "independent_label": "t (elapsed time)",
+      "dependent_role": "velocity",
+      "dependent_label": "v (velocity)",
+      "intercept_role": "initial_velocity",
+      "slope_role": "acceleration",
+      "x_role": "elapsed",
+      "epistemic_note": "Plot velocity versus elapsed time for constant acceleration; moving marker denotes graph state, NOT the real object's physical displacement."
+    }
+  ],
+  "geometry_gate": {
+    "world_bounds": {
+      "left": -5.4,
+      "right": 5.4,
+      "bottom": -1.8,
+      "top": 0.75
+    },
+    "x_axis_must_monotone": true,
+    "y_axis_must_monotone": true,
+    "points_must_match_host_fraction": true,
+    "visible_line_and_end_point": true
+  },
+  "native_evidence": {
+    "codec": "H264/AAC",
+    "size": [
+      1280,
+      720
+    ],
+    "fps": 15,
+    "per_beat_offsets": [
+      1,
+      35,
+      90
+    ],
+    "graph_roi": [
+      160,
+      270,
+      1120,
+      565
+    ],
+    "native_event_pixel_delta_min": 850,
+    "at_least_one_axis_and_path_per_beat": true,
+    "verify_frame_shas": true,
+    "full_decode": true,
+    "strict_audio_mux": true
+  },
+  "mutation_cases": [
+    "unknown evidence model",
+    "mismatched fact roles",
+    "negative or zero x",
+    "non-numeric value",
+    "wrong result",
+    "dimension swap",
+    "unsupported source claim",
+    "unknown topic abstain",
+    "duplicate coordinate",
+    "source graph geometry overflow",
+    "fake physical displacement interpretation",
+    "invalid story beat count",
+    "render only static numbers"
+  ],
+  "constraints": {
+    "no_llm_api": true,
+    "no_merge_main": true,
+    "legacy_renderer_defaults_unchanged": true,
+    "old_media_hashes_untouched": true,
+    "no_fallback_concept_card": true,
+    "preexisting_query_words_unchanged": true,
+    "manim_python_host_only": true,
+    "final_visual_quality": "NOT_PASS_UNTIL_INDEPENDENT_REVIEW",
+    "learner_gain": "NOT_MEASURED",
+    "autonomy": "NOT_PROVEN",
+    "production": "BLOCKED"
+  }
+}
