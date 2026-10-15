@@ -40,7 +40,7 @@ def registered()->dict:
 
 def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False,
              runtime_v376:bool=False,reflow_v377:bool=False,
-             hierarchy_v379:bool=False):
+             hierarchy_v379:bool=False,semantic_v380:bool=False):
     folder.mkdir()
     packet=mock_candidate_bytes(raw)
     accepted,diag=accept(packet)
@@ -79,9 +79,18 @@ def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False,
         from learnflow_v3.v375_creative_native_gate import preflight
         v375_preflight=preflight(story,facts,layout,
                                  [int(b["frames"]) for b in beats])
+    semantic_receipt=None
+    if semantic_v380:
+        if not (hierarchy_v379 and reflow_v377 and strict_v375 and runtime_v376):
+            raise Blocked("V380_REQUIRES_FULL_V377_79_AND_NATIVE_A3_QA")
+        from learnflow_v3.v380_semantic_transformations import plan
+        semantic_receipt=plan(story,facts,layout,voice)
+        (folder/"v380_host_verified_semantic_events.json").write_text(
+            json.dumps(semantic_receipt,indent=2)+"\n")
     source=folder/"host_compiled_finite_manim.py"
     host_code=manim(story,facts,graphs,layout,voice,
-                    hierarchy_v379=hierarchy_v379)
+                    hierarchy_v379=hierarchy_v379,
+                    semantic_v380=semantic_v380)
     if runtime_v376:
         from learnflow_v3.v376_native_manim_probe import instrument
         host_code=instrument(host_code,story)
@@ -125,6 +134,7 @@ def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False,
        **({"v376_runtime_native_readability":v376_runtime} if runtime_v376 else {}),
        **({"v377_generated_extent_aware_comparison":reflow_receipt} if reflow_v377 else {}),
        **({"v379_visual_hierarchy_source":hierarchy_receipt} if hierarchy_v379 else {}),
+       **({"v380_semantic_transformations":semantic_receipt} if semantic_v380 else {}),
        "graph_count":len(graphs),"beat_count":len(story.beats),
        "av":media,"mux":mux,"visual_quality_proxy":quality,
        "sandbox":sandbox,"visual_educational_quality":"UNRATED",
