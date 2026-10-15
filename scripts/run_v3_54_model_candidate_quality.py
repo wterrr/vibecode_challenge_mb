@@ -39,7 +39,7 @@ def registered()->dict:
 
 
 def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False,
-             runtime_v376:bool=False):
+             runtime_v376:bool=False,reflow_v377:bool=False):
     folder.mkdir()
     packet=mock_candidate_bytes(raw)
     accepted,diag=accept(packet)
@@ -49,6 +49,14 @@ def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False,
         raise Blocked("V354_MOCK_CANDIDATE_DID_NOT_PASS_OFFLINE_CONTRACT")
     story,facts,graphs,layout=(accepted[k] for k in
                               ("storyboard","facts","graphs","layout"))
+    reflow_receipt=None
+    if reflow_v377:
+        if not (runtime_v376 and strict_v375):
+            raise Blocked("V377_NEEDS_BOTH_STRICT_NATIVE_QUALITY_GATES")
+        from learnflow_v3.v377_extent_aware_comparison import refine
+        layout,reflow_receipt=refine(story,layout)
+        (folder/"v377_generated_layout_receipt.json").write_text(
+            json.dumps(reflow_receipt,indent=2)+"\n")
     # Store only host-normalized trusted structures, never raw 'model' text.
     (folder/"trusted_scene_graph.json").write_text(
         story.model_dump_json(indent=2)+"\n")
@@ -105,6 +113,7 @@ def case_run(name:str,raw:dict,folder:Path,*,strict_v375:bool=False,
        "structure_signature_sha256":signature,
        **({"v375_creative_integrated_quality_gate":v375_native} if strict_v375 else {}),
        **({"v376_runtime_native_readability":v376_runtime} if runtime_v376 else {}),
+       **({"v377_generated_extent_aware_comparison":reflow_receipt} if reflow_v377 else {}),
        "graph_count":len(graphs),"beat_count":len(story.beats),
        "av":media,"mux":mux,"visual_quality_proxy":quality,
        "sandbox":sandbox,"visual_educational_quality":"UNRATED",
