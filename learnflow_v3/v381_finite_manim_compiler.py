@@ -10,12 +10,16 @@ from learnflow_v3.creative_manim_ablation import Blocked
 from learnflow_v3.v381_generic_semantic_operators import need, parse_value, fmt
 
 
-def source(trace: dict, durations: list[float], *, no_upscale_text: bool=False) -> str:
+def source(trace: dict, durations: list[float], *, no_upscale_text: bool=False,
+           pedagogical_units: bool=False) -> str:
     events = trace["events"]
     need(len(events) == len(durations) and len(events) >= 2,
          "NARRATION_TIMELINE_DRIFT")
     need(all(type(t) is float and 5 <= t <= 30 for t in durations),
          "AUDIO_BUDGET_OUT_OF_BOUNDS")
+    if pedagogical_units:
+        from learnflow_v3.v383_semantic_unit_storytelling import receipts, emit_beat
+        receipts(trace)  # certify all beats before any source generation
     lines = [
         "# V3-81 trusted host-only compiled source, no provider Python",
         "from manim import *",
@@ -38,10 +42,16 @@ def source(trace: dict, durations: list[float], *, no_upscale_text: bool=False) 
             f"        left_{i} = Text({x!r},font='CMU Serif',font_size=25,color='#42D9CD').scale_to_fit_width(5.0).move_to([-3.0,1.06,0])",
             f"        right_{i} = Text({y!r},font='CMU Serif',font_size=25,color='#FFAC71').scale_to_fit_width(5.0).move_to([3.0,1.06,0])",
             f"        arrow_{i} = Arrow([-1.7,.45,0],[1.7,.45,0],buff=0,stroke_width=5,color='#F0D969')",
-            f"        answer_{i} = Text({result!r},font='CMU Serif',font_size=34,color='#F4F1E8').scale_to_fit_width(9.0).move_to([0,-1.68,0])",
+            (f"        answer_{i} = Text({result!r},font='CMU Serif',font_size=36,"
+             "color='#F4F1E8').move_to([0,-2.38,0])"
+             if pedagogical_units else
+             f"        answer_{i} = Text({result!r},font='CMU Serif',font_size=34,color='#F4F1E8').scale_to_fit_width(9.0).move_to([0,-1.68,0])"),
             f"        self.play(FadeIn(heading_{i}),FadeIn(left_{i}),FadeIn(right_{i}),run_time=.8)",
             f"        self.play(Create(arrow_{i}),run_time=.6)",
         ])
+        if pedagogical_units:
+            lines.extend(emit_beat(i,event,duration))
+            continue
         if op == "EQUIVALENT_PARTITION":
             first = parse_value(event["operands"][0])
             last = parse_value(event["actual"])
@@ -89,6 +99,15 @@ def source(trace: dict, durations: list[float], *, no_upscale_text: bool=False) 
             else:
                 fitted.append(line)
         lines = fitted
+    if pedagogical_units:
+        # Exact host-verified formulas, never unbounded dynamic text resize.
+        extra=[]
+        for line in lines:
+            extra.append(line)
+            if " = Text(" in line and ".move_to([0,-2.38,0])" in line:
+                name=line.strip().split(" = ",1)[0]
+                extra.append(f"        if {name}.width > 8.0: {name}.scale_to_fit_width(8.0)")
+        lines=extra
     # One physically explicit two-frame end-only pad absorbs Manim's verified
     # <=1-frame action rounding, then exact audio-frame mux trims it.
     # Do not pad every beat: that would shift the narration/event timeline.
