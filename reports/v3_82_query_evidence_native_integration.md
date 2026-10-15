@@ -15,3 +15,6 @@ Parent Draft PR #118 HEAD 947b05d029e2eadeee34d69ac1739a571c90ecfa with all 49 w
 
 ## Latest verification
 Do not claim exact-head CI or artifact PASS before real GitHub Actions evidence.
+
+## Direct native MP4 review, generator-level readability correction (V3-82)
+First corrected input-ID bridge push run #38681950334 SUCCESS, native artifact #11948606821 independently downloaded and SHA/FFprobe-checked. Math 468 H264 frames, Physics 477, heldout Physics 488; all H264/AAC and 3 positive/2 ABSTAIN. Physical changed lower-canvas pixels are ~13,000–14,000 per beat, but this proves only changing frames. Actual sampled 5×3 contact sheet shows narrow text-and-arrow presentation, no contextual visual metaphor, and internal var_m/step_01 names leaked to the visual frame. Therefore human Final Visual Quality NOT PASS and 3B1B parity NOT PROVEN. Current correction rewrites only learner-facing caption labels from V3-81 exact values, while keeping original facts, source citations and operation trace provenance unchanged. This is a generator-level change, not a post-encode text overlay. Re-run exact-head MP4/CI required. Broader pedagogical scene richness remains for a separate independent quality checkpoint.

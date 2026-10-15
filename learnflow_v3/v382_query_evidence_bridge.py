@@ -311,6 +311,22 @@ def compile_question(row, root: Path):
         "operations":operations}
     trace = validate_case(generated_case)
     need(trace["state"][final_id] == steps[-1]["expected"],"FINAL_QUERY_PROOF_MISMATCH")
+    # Presentation is computed ONLY from exact V3-81 attested arithmetic.
+    # Internal IDs remain in the signed provenance graph, but do not leak
+    # into learner-facing Manim captions (var_m / step_01 are not pedagogy).
+    public = {internal:original for original,internal in alias.items()}
+    for event in trace["events"]:
+        left,right=[parse_value(v) for v in event["operands"]]
+        actual=parse_value(event["actual"])
+        need(encode(calculate(event["kind"],[left,right])) == encode(actual),
+             "DISPLAY_MATH_DIFFERENT_FROM_HOST_PROOF")
+        event["operand_text"]=[
+            f"{public.get(ref, 'previous result')} = {fmt(value)}"
+            for ref,value in zip(event["refs"],(left,right),strict=True)]
+        op_symbol="+" if event["kind"]=="ADD" else "×"
+        event["result_text"]=f"{fmt(left)} {op_symbol} {fmt(right)} = {fmt(actual)}"
+        public[event["id"]]="previous result"
+    trace["presentation_provenance"]="VERIFIED_OPERATOR_OUTPUT_REPLAY_NO_MODEL"
     contract = _contracts(row,seed,{"generated_steps":steps},trace)
     return {
         "id":row["id"],"status":"READY_FOR_NATIVE_RESEARCH_ONLY",

@@ -47,6 +47,12 @@ def test_real_reused_source_fact_script_pedagogy_director_gates(index):
     assert c["visual_director_gate"]=="CORE_READY"
     assert c["source_status"]=="CURATED_HISTORICAL_REFERENCE_NOT_INDEPENDENT_SEMANTIC_PROOF"
     assert len(c["script"]["segments"])==len(trace["events"])
+    assert trace["presentation_provenance"]=="VERIFIED_OPERATOR_OUTPUT_REPLAY_NO_MODEL"
+    for event in trace["events"]:
+        assert "var_" not in event["result_text"] and "step_" not in event["result_text"]
+        assert all("var_" not in text and "step_" not in text
+                   for text in event["operand_text"])
+        assert "=" in event["result_text"]
     assert len(c["visual"]["beats"])==len(trace["events"])
     emitted=source(trace,[10.0]*len(trace["events"]))
     compile(emitted,"<v382-source>","exec")
