@@ -64,7 +64,7 @@ def run(out:Path):
         av=_codec_and_pixel_gates(video,beats)
         need(av["frames"]==mux["output_h264_frames"]==sum(x["frames"] for x in beats),
              "H264_AAC_AUDIO_FRAME_IDENTITY")
-                # Real H264 quality requires all six PCM-phase witnesses plus
+        # Real H264 quality requires all six PCM-phase witnesses plus
         # explicit readable callout and translated C2 line evidence.
         review=verify(video,beats,phases,trace,visual_role)
         pixels=review["original_pcm_phases"]
