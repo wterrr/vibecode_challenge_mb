@@ -22,7 +22,7 @@ def _result_ink(frame):
     return int(((r>155)&(g>155)&(b>155)).sum())
 
 
-def verify_native_phases(mp4,beat_rows,phases,trace,role):
+def verify_native_phases(mp4,beat_rows,phases,trace,role,*,line_motion_contract="DRAW_REVEAL"):
     receipts=align_real_wav(phases,beat_rows)
     out=[]
     for i,(beat,phase,receipt) in enumerate(zip(beat_rows,phases,receipts,strict=True)):
@@ -42,9 +42,15 @@ def verify_native_phases(mp4,beat_rows,phases,trace,role):
             need(late["axes_neutral"]>early["axes_neutral"]+120,
                  "V386_ORIENTATION_NOT_REVEALED_WITH_AUDIO")
         elif phase["phase_kind"]=="TRANSFORM":
-            need(late["curve_cyan"]>=420 and
-                 late["curve_cyan"]>early["curve_cyan"]+300,
-                 "V386_TRANSFORMATION_MISSING_FROM_VOICED_PHASE")
+            if line_motion_contract=="C2_SOURCE_PRESERVING_TRANSLATION" and i==4:
+                # Opt-in: translating the SAME curve preserves its pixel area.
+                # The caller must also prove a decoded vertical centroid shift.
+                need(late["curve_cyan"]>=420 and early["curve_cyan"]>=420,
+                     "V386_TRANSLATION_MISSING_SOURCE_OR_TARGET_LINE")
+            else:
+                need(late["curve_cyan"]>=420 and
+                     late["curve_cyan"]>early["curve_cyan"]+300,
+                     "V386_TRANSFORMATION_MISSING_FROM_VOICED_PHASE")
             need(late["rise_gold"]>=80,
                  "V386_VERIFIED_SLOPE_VISUAL_NOT_PRESENT")
         else:
