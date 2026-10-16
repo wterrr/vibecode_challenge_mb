@@ -161,3 +161,12 @@ def test_source_layout_cannot_claim_word_level_alignment():
     _,_,_,phases=get(0)
     assert all(p["word_timestamps"]=="NOT_AVAILABLE_NOT_FABRICATED" for p in phases)
     assert not any("per-word-alignment-pass" in p["narration"] for p in phases)
+
+
+def test_v386_default_draw_gate_remains_frozen_with_explicit_opt_in_only():
+    old=(ROOT/"learnflow_v3/v386_native_speech_visual_gate.py").read_text()
+    new=(ROOT/"learnflow_v3/v387_native_readability_gate.py").read_text()
+    assert 'line_motion_contract="DRAW_REVEAL"' in old
+    assert 'late["curve_cyan"]>early["curve_cyan"]+300' in old
+    assert 'line_motion_contract="C2_SOURCE_PRESERVING_TRANSLATION"' in new
+    assert "real_curve_centroid_rise_px" in new

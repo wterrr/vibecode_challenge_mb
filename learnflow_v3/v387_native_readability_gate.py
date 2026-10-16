@@ -40,7 +40,8 @@ def _curve_mean_y(frame):
 
 
 def verify(movie,beat_rows,phases,trace,role):
-    base=verify_native_phases(movie,beat_rows,phases,trace,role)
+    base=verify_native_phases(movie,beat_rows,phases,trace,role,
+                              line_motion_contract="C2_SOURCE_PRESERVING_TRANSLATION")
     l=layout(role)
     need(len(base)==6 and len(beat_rows)==6,"V387_VOICE_SEGMENT_COUNT_DRIFT")
     witnesses=[]
