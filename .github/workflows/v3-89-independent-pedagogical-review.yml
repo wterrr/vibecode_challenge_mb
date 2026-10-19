@@ -36,6 +36,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Reuse original pinned V3-30 native FFmpeg fonts bootstrap
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
       - name: Install only original offline video/test dependencies
         timeout-minutes: 7
         run: |
