@@ -11,7 +11,7 @@ ARTIFACT.mkdir(exist_ok=True)
 
 def run():
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
+        browser = p.chromium.launch(channel="chrome", headless=True, args=["--no-sandbox"])
         ctx = browser.new_context(viewport={"width": 1440, "height": 900})
         ctx.add_init_script("sessionStorage.setItem('learnflow-opening-seen-v2', '1')")
         page = ctx.new_page()
@@ -20,7 +20,15 @@ def run():
         home = page.goto(HOST + "/", wait_until="domcontentloaded")
         assert home and home.status == 200, "React index not served by FastAPI"
         page.locator("#learning-prompt").wait_for(timeout=25000)
-        assert page.locator(".hero-motion-video").count() == 1, "Gemini film missing"
+        # Diagnose codec and media loading instead of assuming a missing asset.
+        page.wait_for_timeout(900)
+        if page.locator(".hero-motion-video").count() != 1:
+            page.screenshot(path=str(ARTIFACT / "v397-browser-video-diagnostic.png"), full_page=True)
+            fallback = page.locator(".hero-video-fallback").count()
+            raise AssertionError(
+                f"Real Chrome did not retain Gemini video (fallback={fallback}); "
+                "inspect artifact, codec and server Range responses"
+            )
         for path in (
             "mascots/creator.png", "mascots/insight.png",
             "mascots/learner.png", "mascots/research.png",
