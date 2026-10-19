@@ -1,0 +1,108 @@
+name: V3-95 Product GPT Prompt to Video Developer Preview Offline QA
+on:
+  push:
+    branches: [chatgpt/v3-95-live-prompt-to-gpt-video-preview]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_95_product_gpt_bridge_preregister.json'
+      - 'learnflow_v3/v395_prompt_to_video.py'
+      - 'app/config.py'
+      - 'app/pipeline/factory.py'
+      - 'app/pipeline/v3_preview.py'
+      - 'app/api/v3_ai.py'
+      - 'app/main.py'
+      - 'app/web/routes.py'
+      - 'app/templates/create.html'
+      - 'app/static/js/app.js'
+      - 'tests/v3/test_v3_95_live_gpt_prompt_bridge.py'
+      - 'scripts/run_v3_95_offline_product_smoke.py'
+      - '.github/workflows/v3-95-product-gpt-preview-offline.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_95_product_gpt_bridge_preregister.json'
+      - 'learnflow_v3/v395_prompt_to_video.py'
+      - 'app/config.py'
+      - 'app/pipeline/factory.py'
+      - 'app/pipeline/v3_preview.py'
+      - 'app/api/v3_ai.py'
+      - 'app/main.py'
+      - 'app/web/routes.py'
+      - 'app/templates/create.html'
+      - 'app/static/js/app.js'
+      - 'tests/v3/test_v3_95_live_gpt_prompt_bridge.py'
+      - 'scripts/run_v3_95_offline_product_smoke.py'
+      - '.github/workflows/v3-95-product-gpt-preview-offline.yml'
+permissions:
+  contents: read
+jobs:
+  new_prompt_api_and_host_integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install app and offline semantic dependencies, NO paid API key
+        run: |
+          python -m pip install --disable-pip-version-check --retries 2 --timeout 30 -r requirements.txt pytest pytest-asyncio
+      - name: New prompt/unsupported topic/consent/price API tests, offline only
+        run: |
+          python -m compileall -q app/api/v3_ai.py app/pipeline/v3_preview.py learnflow_v3/v395_prompt_to_video.py tests/v3/test_v3_95_live_gpt_prompt_bridge.py scripts/run_v3_95_offline_product_smoke.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_95_live_gpt_prompt_bridge.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_94_gpt_timeline_layout.py tests/v3/test_v3_93_paid_gpt6_authoring.py tests/v3/test_v3_92_free_ai_authoring.py tests/v3/test_v3_91_single_free_ai_pilot.py tests/v3/test_v3_64_one_shot_real_model.py
+      - name: Core Freeze and immutable source benchmark
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+      - name: Inspect JS syntax without browser account or network
+        run: |
+          node --check app/static/js/app.js
+  full_dynamic_mock_to_actual_h264_aac:
+    needs: new_prompt_api_and_host_integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install real offline native media tools, no model key
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng fonts-dejavu-core
+          python -m pip install --disable-pip-version-check --retries 2 --timeout 30 -r requirements.txt
+      - name: New query passed from HTTP-format wire, MOCK model response, real native video
+        run: |
+          python scripts/run_v3_95_offline_product_smoke.py --output "$RUNNER_TEMP/v395_MOCK_PROVIDER_REAL_MP4"
+      - name: Assert no fake real-model or production claims and complete media decode
+        run: |
+          python - <<'PY'
+          import os,json,pathlib
+          from learnflow_v3.v364_native_array_compiler import probe,file_sha,decode_movie
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v395_MOCK_PROVIDER_REAL_MP4"
+          r=json.loads((root/"v395_preview_receipt.json").read_text())
+          assert r["result"]=="MOCK_TO_NATIVE_TECHNICAL_PASS_NOT_REAL_AI"
+          assert r["storyboard_origin"]=="MOCK_SENDER_UNATTRIBUTED"
+          assert r["production"]=="BLOCKED"
+          assert r["human_review"]=="UNRATED"
+          assert r["provider_posts"]==1 and r["retry_count"]==0
+          assert r["final_video"]=="VERIFIED_PRIVATE_DEVELOPER_PREVIEW"
+          old=json.loads((root/"native_pair/v364_native_receipt.json").read_text())
+          assert old["matched_video_frame_counts"]
+          for x in old["native_mp4s"]:
+              v=root/"native_pair"/x["name"]
+              assert file_sha(v)==x["sha256"] and probe(v)==x["native_frames"]
+              decode_movie(v)
+          print("V395_OFFLINE_PRODUCT_GPT_WIRE_MOCKED_VIDEO_REAL_NOT_NEW_AI_SUCCESS")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: V395-DYNAMIC-PROMPT-MOCK-JSON-REAL-MP4-NOT-AI-EVIDENCE
+          path: ${{ runner.temp }}/v395_MOCK_PROVIDER_REAL_MP4/
+          retention-days: 5
+          if-no-files-found: warn
