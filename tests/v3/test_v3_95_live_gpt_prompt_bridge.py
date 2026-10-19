@@ -221,3 +221,5 @@ def test_production_flag_forbidden_and_regular_v2_not_replaced():
     with pytest.raises(RuntimeError,match="preview forbidden"):
         _attach_v3_preview(settings=settings,pipeline=DummyLegacy(),
                            artifact_store=LocalArtifactStore("/tmp/v395_unpublished_prod"))
+
+# V3-96 runner bridge: unchanged V3-95 source tests; browser preflight uses pinned child source.
