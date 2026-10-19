@@ -75,3 +75,14 @@ def test_no_network_on_mixed_topic(question):
     from learnflow_v3.v395_prompt_to_video import PreviewRejected
     with pytest.raises(PreviewRejected):
         supported_query(question)
+
+
+def test_host_preserves_sanitized_failed_paid_receipt_never_leaks_unverified_video():
+    wrapper=Path("app/pipeline/v3_preview.py").read_text()
+    assert 'get_job_dir("v395safeaudit",create=True)' in wrapper
+    assert 'shutil.copyfile(source_receipt,audit/(preview_id+".json"))' in wrapper
+    assert 'shutil.rmtree(base,ignore_errors=True)' in wrapper
+    assert 'preview_id not in self._gpt_successful_previews' in wrapper
+    driver=Path("scripts/run_v3_96_real_browser_ui_one_gpt.py").read_text()
+    assert 'v396_sanitized_failed_provider_receipt.json' in driver
+    assert 'private_video_http_get_sha_verified' in driver
