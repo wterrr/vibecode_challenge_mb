@@ -1,0 +1,61 @@
+name: V3-91 Free Model Offline Prereg and Native Host Preflight
+on:
+  push:
+    branches: [chatgpt/v3-91-free-real-model-storyboard-pilot]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_91_live_free_model_preregister.json'
+      - 'scripts/run_v3_91_single_free_ai_pilot.py'
+      - 'tests/v3/test_v3_91_single_free_ai_pilot.py'
+      - '.github/workflows/v3-91-free-ai-offline.yml'
+      - '.github/workflows/v3-91-free-ai-one-shot-live.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_91_live_free_model_preregister.json'
+      - 'scripts/run_v3_91_single_free_ai_pilot.py'
+      - 'tests/v3/test_v3_91_single_free_ai_pilot.py'
+      - '.github/workflows/v3-91-free-ai-offline.yml'
+permissions:
+  contents: read
+jobs:
+  strict-zero-price-source-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install existing offline dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --retries 2 --timeout 30 -r requirements.txt 'Pillow>=11,<13' 'jsonschema>=4,<5' 'numpy>=1.24,<3' pytest pyyaml
+      - name: Real-free provenance hostile tests and historical V3-64 regressions
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_91_single_free_ai_pilot.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_64_one_shot_real_model.py
+      - name: Freeze and benchmark
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+  native-host-only-control:
+    needs: strict-zero-price-source-preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Existing native H264 AAC tooling
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng fonts-dejavu-core
+          python -m pip install --disable-pip-version-check --retries 2 --timeout 30 -r requirements.txt 'Pillow>=11,<13' 'jsonschema>=4,<5' 'numpy>=1.24,<3' pyyaml
+      - name: Frozen host control native pair only NO MODEL EVIDENCE
+        run: |
+          python scripts/run_v3_64_native_preflight.py --output "$RUNNER_TEMP/v391_HOST_CONTROL"
+          test -f "$RUNNER_TEMP/v391_HOST_CONTROL/host_TEST_ONLY.mp4"
+          test -f "$RUNNER_TEMP/v391_HOST_CONTROL/model_unverified.mp4"
