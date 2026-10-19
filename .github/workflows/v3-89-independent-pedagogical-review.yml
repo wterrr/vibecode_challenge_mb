@@ -21,7 +21,7 @@ permissions:
   contents: read
   actions: read
 concurrency:
-  group: v389-\${{ github.event.pull_request.number || github.ref }}
+  group: v389-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
 jobs:
   external-film-audit-and-masked-review-pack:
@@ -54,7 +54,7 @@ jobs:
       - name: Retrieve exact immutable historical GitHub-native artifacts (read only)
         timeout-minutes: 8
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/12020402722/zip" > "$RUNNER_TEMP/v387_exact_source.zip"
@@ -101,13 +101,13 @@ jobs:
         if: success()
         with:
           name: v389-public-six-clips-and-blank-human-rubric
-          path: \${{ runner.temp }}/v389_acceptance/reviewer_packet/
+          path: ${{ runner.temp }}/v389_acceptance/reviewer_packet/
           retention-days: 7
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: success()
         with:
           name: v389-admin-source-reveal-key-and-unrated-gate
-          path: \${{ runner.temp }}/v389_acceptance/admin_only/
+          path: ${{ runner.temp }}/v389_acceptance/admin_only/
           retention-days: 7
           if-no-files-found: error
