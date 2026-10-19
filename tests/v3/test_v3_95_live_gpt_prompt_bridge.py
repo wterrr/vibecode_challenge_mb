@@ -24,6 +24,10 @@ from learnflow_v3.v395_prompt_to_video import (
 
 NEW_QUERY="Why do 3 by 4 rows of squares hold the same count as 4 by 3 after rearrangement?"
 PARA_QUERY="Can a grid of squares measuring 3x4 be rotated to 4x3 and preserve all 12 pieces?"
+def supported_fixture():
+    p=pilot_case()
+    p["motion_method"]="smooth_morph"
+    return p
 KEY="x"*28
 
 class HttpMemory(io.BytesIO):
@@ -44,7 +48,7 @@ def answer(*,json_body=None,model="openai/gpt-6-luna",finish="stop",cost=".0004"
     return {"id":"gen-v395-injected-test-no-provider","model":model,
             "usage":{"cost":cost,"prompt_tokens":620,"completion_tokens":410},
             "choices":[{"finish_reason":finish,
-                "message":{"content":json.dumps(json_body or pilot_case())}}]}
+                "message":{"content":json.dumps(json_body if json_body is not None else supported_fixture())}}]}
 def mock_run(tmp,name,query=NEW_QUERY,result=None,native=False):
     requests=[]
     receipt=run_dev_preview(
