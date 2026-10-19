@@ -1,0 +1,93 @@
+{
+  "checkpoint": "V3-92",
+  "registered": "FIRST_CHILD_BEFORE_IMPLEMENTATION",
+  "parent_pr": 128,
+  "parent_sha": "0c8c179caa610443b6a1dbaa384403a18a9f8a75",
+  "freeze_utc_date": "2026-10-19",
+  "deadline": "2026-10-21",
+  "scientific_question": "Does one independent FREE OpenRouter model complete a compact pedagogical storyboard with real narration and visual decisions, followed by a host-verified H264/AAC lesson?",
+  "historical_no_go": {
+    "checkpoint": "V3-91",
+    "live_run": 39193382761,
+    "observed_posts": 1,
+    "reason": "finish_reason != stop; exact reason and model/usage not captured",
+    "avoid_root_cause_claim": true
+  },
+  "query": "Why does a 3-by-4 array have the same number of objects as a 4-by-3 array?",
+  "reuse_topic": "array_commutativity_three_by_four",
+  "topic_is_novel": false,
+  "fixed_host_ledger_sha256": "8ea108abef60738268892c74b9013da33e9d09064fb2e9de19f234ca4f6fee76",
+  "design": {
+    "bounded_model_authored_fields": [
+      "opening_strategy",
+      "closure_strategy",
+      "composition",
+      "motion_method",
+      "focus",
+      "five_original_narration_captions",
+      "five_scene_focus_directives"
+    ],
+    "host_derived_never_model_trusted": [
+      "12_object_ids",
+      "per_beat_column_count",
+      "numerical_reveal_gate",
+      "true_source_ledger_hash",
+      "Manim_or_PIL_executable_code"
+    ],
+    "stage_order": [
+      "QUESTION",
+      "SETUP",
+      "TRANSFORM",
+      "WITNESS",
+      "CLOSE"
+    ],
+    "one_json_object_only": true,
+    "max_wire_bytes": 6500,
+    "text_mode_without_provider_strict_json_schema": true,
+    "reason": "Avoid oversized provider JSON-schema footprint; fail closed with host schema and model-facing compact contract. Not a claim that V3-91 finish reason was definitely length.",
+    "no_auto_repair": true,
+    "no_fixture_substitution": true
+  },
+  "provider": {
+    "router": "openrouter/free",
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "public_catalog": "https://openrouter.ai/api/v1/models",
+    "require_verified_zero_prompt_completion_pricing": true,
+    "max_posts": 1,
+    "max_retries": 0,
+    "paid_fallback": false,
+    "network_timeout_seconds": 130,
+    "max_completion_tokens": 2500,
+    "provider_auto_router_free_only": true,
+    "no_provider_side_premium_selection": true,
+    "require_openrouter_key": true,
+    "one_use_trigger": "research/V392_SINGLE_FREE_MODEL_TRIGGER.txt",
+    "trigger_exact_text": "V392_ONE_FREE_AUTHORING_POST_2026_10_19_FROZEN_PREREG",
+    "old_V391_trigger_must_remain_unchanged": true
+  },
+  "gate": {
+    "independent_offline_host_tests_and_native_control_pass_first": true,
+    "actual_model_response_id_before_candidate": true,
+    "provider_finish_reason_record_enum_always": true,
+    "provider_actual_model_record_before_finish_validation": true,
+    "token_usage_record_before_finish_validation": true,
+    "no_raw_non_accepted_provider_response_in_artifacts": true,
+    "reject_any_nonzero_reported_cost": true,
+    "returned_model_free_identifier_required": true,
+    "only_finished_stop_can_be_accepted": true,
+    "no_paid_model_or_retry": true,
+    "five_distinct_original_captions": true,
+    "host_semantics_12_objects_and_equality": true,
+    "output_video_h264_aac_full_decode_and_sha": true,
+    "native_model_vs_host_visual_difference_observed": true,
+    "human_quality": "UNRATED",
+    "pedagogical_gain": "NOT_MEASURED",
+    "visual_parity_3b1b": "NOT_PROVEN",
+    "production": "BLOCKED",
+    "main_merge": false
+  },
+  "acceptance_if_free_model_fails": "NO_GO with safe exact finish reason and model/usage, no second inference.",
+  "no_new_production_prompts": true,
+  "no_v2_core_modifications": true,
+  "no_main_merge": true
+}
