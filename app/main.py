@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.routes import router as api_router
 from app.api.v3_offline import router as v3_offline_router
+from app.api.v3_ai import router as v3_ai_router
 from app.config import Settings, get_settings
 from app.pipeline.base import LearningVideoPipeline
 from app.pipeline.factory import create_pipeline
