@@ -145,7 +145,7 @@ def create_app(
 
     if production:
         app.add_middleware(TrustedHostMiddleware,
-            allowed_hosts=[urlsplit(app_settings.public_origin).hostname], www_redirect=False)
+            allowed_hosts=[urlsplit(app_settings.public_origin).hostname, "127.0.0.1", "localhost"], www_redirect=False)
     if app_auth_store is not None:
         app.add_middleware(AdminGuard, key=app_settings.auth_secret_key,
             origin=app_settings.public_origin, store=app_auth_store,
