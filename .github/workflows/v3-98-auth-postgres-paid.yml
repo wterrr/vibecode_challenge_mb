@@ -1,0 +1,87 @@
+name: V3-98 Private Production Auth + PostgreSQL (no paid API)
+on:
+  push:
+    branches: [chatgpt/v3-98-private-production-auth-postgres-paid-ai]
+  pull_request:
+    paths:
+      - 'app/auth/**'
+      - 'app/main.py'
+      - 'app/config.py'
+      - 'app/providers/llm/openrouter_paid.py'
+      - 'app/pipeline/factory.py'
+      - 'frontend/**'
+      - 'tests/test_v3_98_auth_production.py'
+      - 'Dockerfile'
+      - 'compose.production.yml'
+      - '.github/workflows/v3-98-auth-postgres-paid.yml'
+jobs:
+  auth-postgres-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: learnflow
+          POSTGRES_PASSWORD: ci-test-only
+          POSTGRES_DB: learnflow_auth_ci
+        ports: [ "5432:5432" ]
+        options: >-
+          --health-cmd "pg_isready -U learnflow -d learnflow_auth_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      V398_PG_TEST_URL: postgresql://learnflow:ci-test-only@127.0.0.1:5432/learnflow_auth_ci
+      OPENROUTER_API_KEY: ''
+      GEMINI_API_KEY: ''
+      ENVIRONMENT: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: python -m pip install -r requirements.txt
+      - name: Private security and real PostgreSQL tests
+        run: python -m pytest -q tests/test_v3_98_auth_production.py
+      - name: FE auth contract and actual Vite production build
+        working-directory: frontend/learnflow-landing
+        run: |
+          npm install --no-audit --no-fund
+          npm run test:contract
+          npm run build
+          test -f dist/index.html
+      - name: Exact preserved media
+        working-directory: frontend/learnflow-landing
+        run: sha256sum --check asset-manifest.sha256
+      - name: Reject production without admin secrets
+        run: |
+          python - <<'PY'
+          from app.config import Settings
+          from app.main import validate_production_settings
+          try:
+              validate_production_settings(Settings(
+                _env_file=None,environment='production',pipeline_mode='real',
+                database_url='postgresql://example:x@localhost/db',auth_enabled=False))
+          except RuntimeError as exc:
+              assert 'AUTH_ENABLED' in str(exc)
+          else:
+              raise AssertionError('Production unexpectedly launched without auth')
+          PY
+      - name: Build release image with original React source
+        run: docker build -t learnflow-v398:ci .
+      - name: Production Postgres bootstrap without paid API requests
+        run: |
+          docker run --rm --network host \
+            -e ENVIRONMENT=production \
+            -e DATABASE_URL="$V398_PG_TEST_URL" \
+            -e LEARNFLOW_PIPELINE_MODE=real \
+            -e AUTH_ENABLED=true \
+            -e ADMIN_USERNAME=admin \
+            -e ADMIN_PASSWORD=long-ci-admin-password-000 \
+            -e AUTH_SECRET_KEY=ci-only-48-characters-aaaaaaaaaaaaaaaaaaaaaaaaaaaa \
+            -e PUBLIC_ORIGIN=https://learnflow-ci.example \
+            -e PLANNER_PROVIDER=gemini \
+            -e GEMINI_API_KEY=ci-unusable-fake-paid-provider-key \
+            learnflow-v398:ci python -c "from app.main import app; assert app.state.auth_store is not None; print('PROD_POSTGRES_AUTH_BOOT_PASS_NO_PAID_API')"

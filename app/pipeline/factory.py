@@ -105,6 +105,13 @@ def create_pipeline(
     # 1. Lesson Planner
     if mode == "demo":
         planner: LessonPlanner = DemoPlanner(strict=True)
+    elif mode == "real" and settings.planner_provider == "openrouter":
+        from app.providers.llm.openrouter_paid import OpenRouterPaidLessonPlanner
+        planner = OpenRouterPaidLessonPlanner(
+            api_key=settings.openrouter_api_key,
+            model=settings.openrouter_planner_model,
+            tokens=settings.paid_planner_max_tokens,
+        )
     elif mode == "real":
         if not is_real_gemini_key(settings.gemini_api_key):
             logger.warning("GEMINI_API_KEY is not configured with a valid key; using UnconfiguredPlanner.")

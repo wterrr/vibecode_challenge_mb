@@ -76,7 +76,16 @@ class Settings(BaseSettings):
     gemini_image_model: str = "gemini-3.1-flash-image"
     gemini_tts_model: str = "gemini-3.1-flash-tts-preview"
 
-    planner_provider: Literal["gemini"] = "gemini"
+    planner_provider: Literal["gemini", "openrouter"] = "gemini"
+    openrouter_planner_model: str = "openai/gpt-6-luna"
+    paid_planner_max_tokens: int = Field(default=12000, ge=3000, le=16000)
+    auth_enabled: bool = False
+    admin_username: str = "admin"
+    admin_password: str = Field(default="", repr=False)
+    auth_secret_key: str = Field(default="", repr=False)
+    public_origin: str = ""
+    daily_paid_job_limit: int = Field(default=10, ge=1, le=100)
+
     speech_provider: Literal["edge", "gemini"] = "edge"
     image_provider: Literal["none", "gemini"] = "none"
 
@@ -120,6 +129,10 @@ class Settings(BaseSettings):
 
     def __repr__(self) -> str:
         data = self.model_dump()
+        if data.get("admin_password"):
+            data["admin_password"] = "***REDACTED***"
+        if data.get("auth_secret_key"):
+            data["auth_secret_key"] = "***REDACTED***"
         if data.get("gemini_api_key"):
             data["gemini_api_key"] = "***REDACTED***"
         if data.get("openrouter_api_key"):

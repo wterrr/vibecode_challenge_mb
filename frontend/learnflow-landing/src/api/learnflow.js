@@ -4,6 +4,27 @@
  */
 const ROOT = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
+let authCsrf = '';
+export async function getAuthSession() {
+  const response = await fetch(`${ROOT}/api/auth/session`, {
+    method:'GET', credentials:'same-origin', cache:'no-store', headers:{'Accept':'application/json'}
+  });
+  if (response.status===401) {
+    window.location.replace('/login');
+    throw new ApiError('Vui lòng đăng nhập trước khi sử dụng LearnFlow.',401);
+  }
+  if (!response.ok) throw new ApiError('Không thể xác minh phiên đăng nhập.',response.status);
+  const data=await response.json();
+  authCsrf=data?.csrf_token||'';
+  return data;
+}
+export async function logoutAdmin() {
+  const result=await json('/api/auth/logout',{method:'POST'});
+  authCsrf='';
+  window.location.replace('/login');
+  return result;
+}
+
 export class ApiError extends Error {
   constructor(message, status = 0) {
     super(message);
@@ -41,11 +62,19 @@ async function json(path, {method = 'GET', body, signal, timeout = 15000} = {}) 
       method,
       credentials: 'same-origin',
       cache: 'no-store',
-      headers: body === undefined ? {'Accept':'application/json'} : {'Content-Type':'application/json','Accept':'application/json'},
+      headers: {
+        'Accept':'application/json',
+        ...(body === undefined ? {} : {'Content-Type':'application/json'}),
+        ...(method !== 'GET' && authCsrf ? {'X-CSRF-Token':authCsrf} : {}),
+      },
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: controller.signal,
     });
     const data = response.status === 204 ? null : await response.json().catch(() => null);
+    if (response.status===401) {
+      window.location.replace('/login');
+      throw new ApiError('Phiên đăng nhập đã hết hạn.',401);
+    }
     if (!response.ok) throw new ApiError(detailMessage(data, response.status), response.status);
     return data;
   } catch (error) {

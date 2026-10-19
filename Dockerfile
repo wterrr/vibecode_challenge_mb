@@ -1,3 +1,11 @@
+FROM node:22-bookworm-slim AS frontend
+WORKDIR /frontend
+COPY frontend/learnflow-landing/package*.json ./
+RUN npm install --no-audit --no-fund
+COPY frontend/learnflow-landing/ ./
+ENV VITE_ENABLE_LOCAL_GPT_PREVIEW=false
+RUN npm run build && test -f dist/index.html
+
 FROM python:3.12-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -28,6 +36,7 @@ RUN npm ci --omit=dev --ignore-scripts \
     && npm cache clean --force
 
 COPY . .
+COPY --from=frontend /frontend/dist /app/app/static/landing
 
 RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin learnflow \
     && mkdir -p /app/artifacts \
