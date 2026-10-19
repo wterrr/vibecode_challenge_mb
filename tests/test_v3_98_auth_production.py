@@ -197,3 +197,25 @@ def test_paid_openrouter_wire_schema_and_fail_closed(monkeypatch):
     assert len(seen)==2   # exactly one POST per call, never hidden retries
     with pytest.raises(ValueError):
         OpenRouterPaidLessonPlanner(api_key="ci-fake-provider-key-012345",model="openrouter/free")
+
+
+def test_openrouter_default_strict_schema_contract():
+    """This test runs inside the V3-98 gated production CI job."""
+    from jsonschema import Draft202012Validator
+    from app.providers.llm.openrouter_paid import build_strict_lesson_plan_schema
+    from app.domain.lesson import LessonPlan
+
+    assert Settings(_env_file=None).planner_provider == "openrouter"
+    assert Settings(_env_file=None, planner_provider="gemini").planner_provider == "gemini"
+
+    original = LessonPlan.model_json_schema()
+    schema = build_strict_lesson_plan_schema()
+    Draft202012Validator.check_schema(schema)
+    assert "schema_version" not in original["required"]
+    assert "schema_version" in schema["required"]
+    assert schema["additionalProperties"] is False
+    assert schema["$defs"]["ScenePlan"]["properties"]["visual_spec"].get("anyOf")
+    for item in schema["$defs"].values():
+        if item.get("type") == "object":
+            assert item["additionalProperties"] is False
+            assert set(item["required"]) == set(item["properties"])

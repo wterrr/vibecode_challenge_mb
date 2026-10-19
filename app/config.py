@@ -76,7 +76,9 @@ class Settings(BaseSettings):
     gemini_image_model: str = "gemini-3.1-flash-image"
     gemini_tts_model: str = "gemini-3.1-flash-tts-preview"
 
-    planner_provider: Literal["gemini", "openrouter"] = "gemini"
+    # Private production planning defaults to the pinned, paid OpenRouter model.
+    # Explicit PLANNER_PROVIDER=gemini remains available for non-production uses.
+    planner_provider: Literal["gemini", "openrouter"] = "openrouter"
     openrouter_planner_model: str = "openai/gpt-6-luna"
     paid_planner_max_tokens: int = Field(default=12000, ge=3000, le=16000)
     auth_enabled: bool = False
