@@ -26,8 +26,8 @@ STAGE_BOTTOM=565
 SUBTITLE_DIVIDER=571
 MIN_BOX_GAP=1
 LABELS={
-    "before":"BEFORE  /  3 ROWS x 4 COLUMNS",
-    "after":"AFTER  /  4 ROWS x 3 COLUMNS",
+    "before":"BEFORE  /  3 x 4",
+    "after":"AFTER  /  4 x 3",
     "identity":"Every object retains its own identity",
 }
 class Collision(ValueError):
@@ -93,9 +93,9 @@ def fixed_label_boxes(candidate,beat,draw):
     if beat>=3:
         text="3 x 4 = 4 x 3 = 12"
     elif beat==2:
-        text="THE SAME SQUARES ARE MOVING"
+        text="ROTATE THE SAME SQUARES"
     else:
-        text="PREDICT FIRST  /  NO NEW SQUARES"
+        text="PREDICT FIRST"
     out["center_note"]=draw.textbbox((640,210),text,font=old.font(21),anchor="mm")
     return out
 
@@ -116,6 +116,17 @@ def audit_frame(candidate,beat,progress):
     labels=fixed_label_boxes(candidate,beat,draw)
     _,subtitle_boxes=subtitles(candidate,beat,draw)
     labels.update({"narration_"+str(i):b for i,b in enumerate(subtitle_boxes)})
+    # The actual V3-94 native image audit exposed a gap in the first gate:
+    # panel headings and the central teaching annotation could collide with
+    # each other despite not colliding with any square. Preregister-style
+    # semantic check now compares all simultaneously visible upper labels.
+    upper={k:v for k,v in labels.items()
+           if k in ("before_heading","after_heading","center_note")}
+    names=list(upper)
+    for i,name in enumerate(names):
+        for other in names[i+1:]:
+            _need(not overlap(upper[name],upper[other],margin=16),
+                  "TEXT_TEXT_COLLISION_"+name+"_"+other)
     boxes={uid:box(*p) for uid,p in positions.items()}
     for uid,b in boxes.items():
         _need(b[0]>=60 and b[2]<=1220 and b[1]>=STAGE_TOP and
@@ -209,9 +220,9 @@ def render_corrected(candidate,beat,progress):
     if beat>=3:
         note="3 x 4 = 4 x 3 = 12"
     elif beat==2:
-        note="THE SAME SQUARES ARE MOVING"
+        note="ROTATE THE SAME SQUARES"
     else:
-        note="PREDICT FIRST  /  NO NEW SQUARES"
+        note="PREDICT FIRST"
     old.tx(d,(640,210),note,21,old.GOLD if beat>=3 else old.LIGHT,anchor="mm")
     focus=candidate["beats"][beat]["visual_focus"]
     for i,uid in enumerate(UNIT_IDS):
