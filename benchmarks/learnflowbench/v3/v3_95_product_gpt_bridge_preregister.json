@@ -1,0 +1,48 @@
+{
+  "checkpoint": "V3-95",
+  "parent_pr": 131,
+  "parent_sha": "f738946cb97fdbc3930eb0a1eca6ebe255a0df4f",
+  "first_child_preregistered_before_code": true,
+  "date": "2026-10-19",
+  "scope": "Product-wired opt-in local developer preview, not blanket replacement of legacy V2 jobs",
+  "topic_family": "3x4↔4x3 same twelve squares only",
+  "supported_language": "English only",
+  "interface": "POST /api/v3/ai/array-preview and GET /api/v3/ai/array-preview/{preview_id}/video, same existing application pipeline wrapper and artifact store",
+  "behavior": [
+    "Receive fresh bounded user text and explicitly verify supported semantic topic before any network access",
+    "Use real GPT-6 Luna strict JSON prompt authored anew each request, never load V3-93 frozen JSON as result",
+    "OpenRouter current price/key read-only preflight, user-paid-consent per request, hard max 1 paid inference attempt per running local process; no retry/fallback",
+    "Host accepts exact compact format and grounded 12-identity invariance or fail-closed",
+    "Use corrected V3-94 source geometry renderer and native FFmpeg/TTS pipeline, verify full decode, source semantic hashes, file SHA, 12 persistent IDs and temporal geometry across all frames",
+    "Expose preview MP4 only to localhost via unguessable preview id if verified, never final.mp4 or production publication; no separate durable job queue",
+    "No automatic provider API calls during CI; injected offline mock proves plumbing but must remain labeled TEST_SENDER_NOT_REAL"
+  ],
+  "constraints": {
+    "model": "openai/gpt-6-luna",
+    "completion_tokens": 16000,
+    "reasoning_effort": "low",
+    "provider": "OpenAI pinned",
+    "fallback": false,
+    "paid_post_cap_per_local_process": 1,
+    "price_estimated_one_call_usd_max": "0.01",
+    "must_require_explicit_http_paid_consent": true,
+    "disabled_by_default": true,
+    "forbidden_production": true,
+    "no_main_merge": true,
+    "no_v2_core_edit": true,
+    "no_new_paid_live_in_ci": true,
+    "no_cache_as_model_proxy": true
+  },
+  "acceptance": {
+    "unit_hostile_cases": true,
+    "existing_V3_94_renderer_semantic_tests": true,
+    "dev_route_disabled_tests": true,
+    "offtopic_abstain_without_provider": true,
+    "source_and_model_identity_verification": true,
+    "native_smoke_real_mp4_with_mock_json_true_but_unattributed": true,
+    "prod_blocked": true,
+    "human_quality": "UNRATED",
+    "generalization": "LIMITED_ONE_SEMANTIC_FAMILY"
+  },
+  "deadline": "2026-10-21"
+}
