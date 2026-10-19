@@ -1,0 +1,1527 @@
+{
+  "version": "v3-56-deep-read-sequence-audit-v1",
+  "scope": "18 Read lesson pedagogical beats + negative case per lesson. NO playback timeline or verified motion frame-PTS.",
+  "source_documentation": "Official 3blue1brown.com/lessons/ first-party Read; visual descriptors based on prose and embedded image/video indicators",
+  "totals": {
+    "first_party_read_pages": 18,
+    "read_pedagogical_beats": 113,
+    "native_video_frame_attestations": 0,
+    "voice_aligned_attestations": 0
+  },
+  "domain_scope": "Read-level evidence of sequencing with source class corroboration; does not satisfy request of 15 direct encoded video inspections",
+  "rows": [
+    {
+      "lesson_id": "la_span",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/span/",
+      "read_anchor": "end by contrasting 2-D span against collinear line",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Reinterpret vector coordinates as scalar multipliers",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Hold two basis vectors fixed and vary two coefficients",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Pose reachable-set question before naming span",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Contrast independent directions with collinear dependent vectors",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Switch from arrows to points to reduce clutter",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Formalize span and test a degenerate example",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "No automatically mandated camera movement or continuous animation; require proof a motion improves the specific explanation.",
+      "negative_case_strategy": "STATIC_NEGATIVE_CONTROL",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "la_linear",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/linear-transformations/",
+      "read_anchor": "linear-transformations Read: Transformations Are Functions → What makes a transformation linear? → Matrices",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Show one input vector moving to one output",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Reduce visual overload from infinitely many arrows to representative points",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Move an entire grid while retaining background reference grid",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Contrast curved lines and displaced origin as negative cases",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Track only transformed basis arrows",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Derive the matrix from where basis vectors land and ask prediction",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "A static reference grid is deliberately preserved behind the animated grid; freezing the reference is a causal aid.",
+      "negative_case_strategy": "BACKGROUND_REFERENCE_STATIC",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "la_matrix",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/matrix-multiplication/",
+      "read_anchor": "same point endpoint under equivalent groupings",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Recap columns as transformed basis arrows",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Rotate a persistent grid and then shear it",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Show composition as one overall transformation",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Derive matrix product by following basis arrows",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Reverse the order to demonstrate non-commutativity",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Group three transformations to motivate associativity",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "No automatically mandated camera movement or continuous animation; require proof a motion improves the specific explanation.",
+      "negative_case_strategy": "STATIC_NEGATIVE_CONTROL",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "la_det",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/determinant/",
+      "read_anchor": "why determinant zero kills area",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Ask how strongly a space transform scales area",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Transform a unit square and measure new area",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Subdivide an arbitrary region into tiny squares",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Link area ratio to determinant symbol",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Collapse a region to a line as determinant zero",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Compare orientation reversal and extend to 3-D volume",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "No automatically mandated camera movement or continuous animation; require proof a motion improves the specific explanation.",
+      "negative_case_strategy": "STATIC_NEGATIVE_CONTROL",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "la_eigen",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/eigenvalues/",
+      "read_anchor": "interpret eigenvalue as directional scale",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Begin with many transformed arrows that change direction",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Find one arrow remaining on its original span",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Ask about direction-preserving scalar including negative value",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Define eigenvector and eigenvalue only after invariant direction",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Use rotation counterexample without real eigenvector",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Reframe repeated matrix products in an eigenbasis",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "No automatically mandated camera movement or continuous animation; require proof a motion improves the specific explanation.",
+      "negative_case_strategy": "STATIC_NEGATIVE_CONTROL",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "la_dot",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/dot-products/",
+      "read_anchor": "dot-products Read: geometric projection → linear transformation / duality",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Recall computational dot-product formula",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Use geometric projection and signed length as intuition",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Discuss symmetrical geometric formula as a question",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Construct map 2D vector to 1D number line",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Project basis vectors to derive row-matrix representation",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Reconcile geometric projection with symbolic duality",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "Formal definitions temporarily omitted to focus on geometric meaning, not proof that narration must always be accompanied by motion.",
+      "negative_case_strategy": "SYMBOLIC_STATIC_ALLOWED",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "la_cross",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/cross-products/",
+      "read_anchor": "connect cross product to oriented area",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Introduce an initially obscure determinant-style expression",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Recap relevant dot product duality idea",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Map parallelogram area and orientation to signed volume",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Let one vector vary against a fixed plane",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Introduce perpendicular vector as representer of oriented area",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Connect cross product to determinant and triple-product calculation",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "No automatically mandated camera movement or continuous animation; require proof a motion improves the specific explanation.",
+      "negative_case_strategy": "STATIC_NEGATIVE_CONTROL",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "calc_essence",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/essence-of-calculus/",
+      "read_anchor": "essence-of-calculus Read: Questions of area → Unraveling rings → Think to Graph → Integrals",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Start with why a circle area has the familiar formula",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Choose concentric rings, not arbitrary pieces",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Ask learner to estimate the area of one ring",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Unravel ring into near rectangle and explicitly note approximation error",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Place many ring rectangles under the 2πr graph",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Shrink dr and turn approximate sums into an exact triangular area",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 7,
+          "description": "Return to circle-area formula then generalize integral reasoning",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "Early approximation is intentionally imperfect, and the discrepancy must remain visible rather than being replaced with magically exact equivalence.",
+      "negative_case_strategy": "APPROXIMATION_DISCLOSURE",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "calc_deriv",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/derivatives/",
+      "read_anchor": "resolve paradox without dividing by literal zero",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Ask whether instant speed makes literal sense",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Animate a car along position-time curve",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Compare two distinct instants using average velocity",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Shrink interval and secant toward tangent",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Discuss dt approaching zero without setting dt to zero",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Revisit paradox with a formal derivative and probe",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "No automatically mandated camera movement or continuous animation; require proof a motion improves the specific explanation.",
+      "negative_case_strategy": "STATIC_NEGATIVE_CONTROL",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "calc_integration",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/integration/",
+      "read_anchor": "why accumulating infinitely many contributions reduces to two endpoint values",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Contrast distance-time graph and velocity-time graph",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Choose constant velocity and rectangle area",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Combine piecewise-constant velocity with area strips",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Approximate continuously changing velocity with finer intervals",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Connect accumulated area to an antiderivative",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Use endpoints for the fundamental theorem and handle negative signed area",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "No automatically mandated camera movement or continuous animation; require proof a motion improves the specific explanation.",
+      "negative_case_strategy": "STATIC_NEGATIVE_CONTROL",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "calc_exp",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/eulers-number/",
+      "read_anchor": "eulers-number Read: Population Mass → Finding the Derivative → Different Exponentials → Euler's Number",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Build continuous population-mass mental model instead of discrete babies",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Compute full-day doubling and ask if this equals instantaneous rate",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Explicitly warn that daily difference is not the instantaneous derivative",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Switch to numerical/calculus symbolic manipulation where a geometric visual is not obvious",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Reveal base-dependent proportionality constant",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Ask which base has proportionality constant exactly 1 and introduce e",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 7,
+          "description": "Reinterpret derivative via graph slope and logarithm",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "Direct Read explicitly says there is no clear geometric visual and switches to numerical pattern finding; animation should not be compulsory.",
+      "negative_case_strategy": "STATIC_SYMBOLIC_ALLOWED",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "prob_bayes",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/bayes-theorem/",
+      "read_anchor": "bayes-theorem Read: Steve → Thinking about a sample → area model",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Show formula only as a distant target, not immediate plug-and-chug",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Start with Steve occupation story and viewer judgment",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Reveal neglected base-rate contrast farmers vs librarians",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Draw representative population sample and filter by description",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Translate surviving group counts into conditional probability",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Derive Bayes numerator/denominator using area/proportions",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 7,
+          "description": "Return to when to apply Bayes rather than memorize formula",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "Representative population and counts are informative even as static visuals; motion is optional if conditional groups remain explicit.",
+      "negative_case_strategy": "STATIC_COMPARE_ALLOWED",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "compo_fourier",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/fourier-series/",
+      "read_anchor": "fourier-series Read: Intro formula teaser → heat equation recap → Fourier series → rotating arrows",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Show elaborate path traced by many simple rotating arrows",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Preview a compact Fourier formula before deriving its symbols",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Return to heat-flow motivation and decaying cosine modes",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Ask whether a step-function profile can be expressed in sinusoidal pieces",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Grow finite partial sums to motivate an infinite-series limit",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Compose tip-to-tail rotating vectors at different frequencies",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 7,
+          "description": "Resolve opening mystery: simple continuous rotations sum to complex contour",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "Fourier formula appears early as a teaser before its meaning is taught; rigid formula-after-intuition is not universal.",
+      "negative_case_strategy": "FORMULA_TEASER_ALLOWED",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "nn_intro",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/neural-networks/",
+      "read_anchor": "neural-networks Read: layered units and learned weights",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Show handwritten digit recognition task and raw pixel representation",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Introduce neurons and activations one layer at a time",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Hypothesize intermediate edge and shape detectors with caveat",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Highlight weighted sums into one neuron and introduce bias",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Add nonlinearity and generalize matrix form",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Show untrained/failure cases and ask how to learn weights",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "Illustrated edge detectors are pedagogical hypotheses, not host-certified actual interpretation of every trained network.",
+      "negative_case_strategy": "MODEL_INTERPRETATION_UNCERTAINTY",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "nn_gradient",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/gradient-descent/",
+      "read_anchor": "reduced cost, no claim of global optimum",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Connect prior digit classifier to training-data examples",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Introduce a differentiable cost based on errors",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Use one-dimensional downhill movement as starter intuition",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Extend to two-dimensional surface and gradient",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Step through updates and distinguish local from global minimum",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Return to high-dimensional network weight updates and evaluation limits",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "No automatically mandated camera movement or continuous animation; require proof a motion improves the specific explanation.",
+      "negative_case_strategy": "STATIC_NEGATIVE_CONTROL",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "nn_gpt",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/gpt/",
+      "read_anchor": "distinguish architecture from actual understanding",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Frame next-token prediction problem",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Convert text input into token sequence then vector embeddings",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Distinguish generic embeddings from contextualized vectors",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Reveal attention and MLP as repeated transformer blocks",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Show projection to vocabulary scores and sampling",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Feed generated token back into context for another prediction",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "No automatically mandated camera movement or continuous animation; require proof a motion improves the specific explanation.",
+      "negative_case_strategy": "STATIC_NEGATIVE_CONTROL",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "nn_attention",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/attention/",
+      "read_anchor": "same token behaves differently given context",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Recap each token's initially context-independent embedding",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Present ambiguous word mole in three different contexts",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Explain why surrounding tokens must adjust embedding",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Identify queries/keys as relevance matching from verified ledger",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Normalize scores to attention weights",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Move weighted value contributions into a context update",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 7,
+          "description": "Return to example to test whether mechanism explains contextual meaning",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "No automatically mandated camera movement or continuous animation; require proof a motion improves the specific explanation.",
+      "negative_case_strategy": "STATIC_NEGATIVE_CONTROL",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    },
+    {
+      "lesson_id": "nn_mlp",
+      "first_party_read_url": "https://www.3blue1brown.com/lessons/mlp/",
+      "read_anchor": "mlp Read: MLP computation and features",
+      "read_sequence_evidence_level": "ORDER_RECONSTRUCTED_FROM_READ_PROSE_AND_SECTION_LOGIC_NOT_VIDEO_EDIT",
+      "pedagogical_beats": [
+        {
+          "read_order": 1,
+          "description": "Start with question of factual associations in language models",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 2,
+          "description": "Distinguish attention information routing from MLP computation",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 3,
+          "description": "Expand a token representation into higher-dimensional hidden features",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 4,
+          "description": "Apply nonlinearity then project back",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 5,
+          "description": "Use empirical examples to discuss possible stored associations",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        },
+        {
+          "read_order": 6,
+          "description": "Avoid asserting one-to-one neuron→fact or proof of internal semantics",
+          "grounding": "READ_ORIGINAL_TEXT_PLUS_INTERPRETIVE_PARAPHRASE",
+          "actual_video_time_start_sec": null,
+          "actual_video_time_end_sec": null,
+          "encoded_frame_observed": false,
+          "speech_synced": false,
+          "on_screen_object_IDs": "NOT_IDENTIFIED_IN_ENCODED_VIDEO",
+          "expected_causal_witness": "RESEARCH_HYPOTHESIS_NOT_NATIVE_RECEIPT"
+        }
+      ],
+      "static_vs_motion_negative_case": "A specific fact-to-neuron story is not certified as universally true; avoid anthropomorphic proof by animation.",
+      "negative_case_strategy": "MODEL_INTERPRETATION_UNCERTAINTY",
+      "scene_file_reference": "research/v3_56_source_scene_corpus.json",
+      "complete_native_video_inspected": false,
+      "real_video_timeline_certified": false,
+      "word_level_narration_alignment_certified": false,
+      "reliability_warning": "Source Scene class existence and Read described pedagogy do NOT determine final edited shot order, voice timing or learning effect."
+    }
+  ]
+}

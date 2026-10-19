@@ -5,6 +5,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   initCreateForm();
+  initV395GPTPreview();
   initDemoChips();
   initDeleteDialog();
 });
@@ -266,4 +267,52 @@ function initDeleteDialog() {
       errorBox.style.display = "block";
     }
   }
+}
+
+
+/** Opt-in local-only GPT preview, separate from regular /api/jobs and job runner. */
+function initV395GPTPreview() {
+  const form = document.getElementById("v395-ai-preview-form");
+  if (!form) return;
+  const status = document.getElementById("v395-result");
+  const video = document.getElementById("v395-video");
+  const button = document.getElementById("v395-submit");
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const query = document.getElementById("v395-query")?.value.trim() || "";
+    const paidConsent = document.getElementById("v395-paid-consent")?.checked === true;
+    if (video) {
+      video.style.display = "none";
+      video.removeAttribute("src");
+      video.load();
+    }
+    if (!paidConsent || query.length < 35) {
+      status.textContent = "Cần câu hỏi tiếng Anh hợp lệ và sự đồng ý dùng một request GPT trả phí.";
+      return;
+    }
+    button.disabled = true;
+    status.textContent = "Đang tạo storyboard thật, kiểm chứng nguồn và render video. Không tự gửi request thứ hai.";
+    try {
+      const response = await fetch("/api/v3/ai/array-preview", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({query, language:"en", paid_consent:true})
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok || !result || result.status !== "REAL_GPT_NATIVE_TECHNICAL_PREVIEW_NOT_PRODUCTION") {
+        status.textContent = typeof result?.detail === "string"
+          ? result.detail : "Preview không vượt qua QA. Không có video được phát hành.";
+        return;
+      }
+      status.textContent = "Đã tạo video thật và kiểm tra " + result.frame_count +
+        " frame. Chưa có đánh giá sư phạm độc lập.";
+      video.src = result.video_url;
+      video.style.display = "block";
+      video.load();
+    } catch (e) {
+      status.textContent = "Lỗi kết nối hoặc quá thời gian; không tự retry để tránh phát sinh chi phí.";
+    } finally {
+      button.disabled = false;
+    }
+  });
 }

@@ -1,0 +1,130 @@
+{
+  "checkpoint": "V3-56",
+  "id": "V356_A_B_C_PREREG_NOT_EXECUTED",
+  "status": "DESIGNED_ONLY_NO_MODEL_CALLS_OR_HUMAN_RESULTS",
+  "research_question": "Does pedagogy-specific prompt architecture improve explanatory clarity beyond a frozen baseline, and what incremental benefit is attributable to expressive V3 visuals?",
+  "variants": [
+    {
+      "id": "A",
+      "label": "frozen LearnFlow prompts + frozen V2 Core",
+      "prompt": "unmodified HEAD 42dd591 V2 pipeline",
+      "renderer": "frozen V2 Core",
+      "contract": "existing no sidecar"
+    },
+    {
+      "id": "B",
+      "label": "V3 pedagogical prompts + same frozen V2 Core",
+      "prompt": "V3 research agent sidecar prompt (after future approval)",
+      "renderer": "SAME frozen V2 Core as A",
+      "contract": "adapter must map only supported V2 contract fields; unsupported visual intent is recorded as structural failure not erased"
+    },
+    {
+      "id": "C",
+      "label": "same V3 pedagogical prompts + separately validated expressive V3 renderer",
+      "prompt": "identical to B",
+      "renderer": "V3 checked finite operations guarded by evidence and object identity",
+      "contract": "pre-specified capabilities only; unsupported paths are failures"
+    }
+  ],
+  "dataset": {
+    "frozen_preregistered_heldout_topics": [
+      {
+        "id": "heldout_geometric_basis_change",
+        "family": "geometry",
+        "must_have": "matrix/vector explicit transformation and invariant axes"
+      },
+      {
+        "id": "heldout_probability_conditional_sampling",
+        "family": "probability",
+        "must_have": "valid contingency counts or host exact fractions; prevent base-rate inversion"
+      },
+      {
+        "id": "heldout_physics_damped_oscillator",
+        "family": "physical dynamics",
+        "must_have": "simulator or analytic host-truth trajectory and continuous object identity"
+      },
+      {
+        "id": "heldout_cs_graph_search",
+        "family": "computer science",
+        "must_have": "host-derived visited frontier and topological state each step"
+      }
+    ],
+    "exclusion_rule": "None of these four exact topic IDs or their specific visual solution templates may be used as in-context exemplars during prompt authoring. Four topics are a feasibility PILOT not enough for statistical claims.",
+    "scale_up_rule": "Before any efficacy claim, preregister a disjoint domain-stratified minimum 24 topic inputs (at least 6 per domain) and at least 3 independent human assessors per output. Same inputs across A/B/C; paired order/labels randomized."
+  },
+  "inference": {
+    "model_source": "ONE_IDENTICAL_APPROVED_PROVIDER_PER_ARM_PER_TOPIC_IF_FUTURE_PERMISSION",
+    "max_requests_per_topic_arm": 1,
+    "retry_budget": 0,
+    "temperature": "fixed and provider-supported; never add unsupported argument",
+    "max_generation_tokens": "same across A/B/C",
+    "data_source": "identical verified source/evidence ledger per topic",
+    "narration": "same target audience, duration window, voice renderer, aspect ratio, fps and resolution",
+    "computation": "identical budget per A/B/C except changes isolated by arm; if compatibility requires retries, count as failures for all arms or stop",
+    "seed_and_randomness": "record effective seed when supported; if unsupported, record as uncontrolled source of variance",
+    "selection": "intention-to-treat all runs, including schema rejections, unsupported operation, CI failures and zero-video outputs. No cherry picking."
+  },
+  "measurement": {
+    "hard_safety": "100% verified claims, object identity, no unsupported results, no executing generated Python, no 3b1b borrowed scenes",
+    "engineering_primary": [
+      "valid full MP4 per planned assignment",
+      "actual encoded scene Semantic witness visible at registered frame window",
+      "voice-sync beat boundaries",
+      "no overlap or below-size typography"
+    ],
+    "independent_human_primary": [
+      "explanatory clarity of mechanism 1-5",
+      "mental-model change inferable 1-5",
+      "causal motion directly visible 1-5",
+      "typography/layout legibility 1-5",
+      "object identity continuity 1-5",
+      "narration timing and cognitive pacing 1-5"
+    ],
+    "rubric_details": "Each rating must include one video timestamp + factual reason; do not infer learner gains from expert preference. Separate learner quizzes only with independent ethics/protocol and participant consent.",
+    "evaluators": "at least 3 independent blinded reviewers per output, balance arm order and opaque IDs, measure agreement; no author/self-rating used as confirmatory result",
+    "statistical_plan": "paired per-topic B-A and C-B differences on preregistered primary clarity axis; bootstrap 95% CI at TOPIC level, including failures as zero-completion with separate quality missingness. Do not use individual video frames as independent samples. Correct for two confirmatory comparisons.",
+    "practical_min_delta": "pre-register >=0.5 / 5-point mean paired clarity improvement and 95% CI lower bound >0 on scaled 24+ topics. Four feasibility cases cannot establish success.",
+    "negative_controls": [
+      "one forged claim",
+      "one swapped claim hash",
+      "one broken object continuity",
+      "one unsupported camera transform",
+      "one narrative beat preceding visual evidence",
+      "one false condition result",
+      "one silent fallback to CONCEPT_CARD",
+      "one scene rendering but no semantic visible before/after"
+    ],
+    "failure_coding": [
+      "MODEL_OUTPUT_SCHEMA_REJECTED",
+      "CLAIM_MISMATCH",
+      "UNSUPPORTED_RENDERER",
+      "NO_VISUAL_WITNESS",
+      "FRAME_AUDIO_MISMATCH",
+      "VISUAL_COLLISION",
+      "INCOMPREHENSIBLE",
+      "UNRATED"
+    ],
+    "fairness": "B vs A isolates prompt given unchanged renderer; C vs B isolates expressive renderer given same prompts. No claim of prompt benefit if B's output is rejected by same frozen adapter."
+  },
+  "gate": {
+    "V356_research_go": "18 direct Read texts, explicit inability to certify full film timelines, sampled matched scene source paths, typed V3 sidecar fields and host validation, no broken V2, unbiased A/B/C protocol, no provider calls",
+    "V356_model_or_product_go": "NOT_ALLOWED",
+    "V356_visual_quality_claim": "NOT_ALLOWED",
+    "next_checkpoint": "V3-57 (proposal) sidecar adapter + frozen B-vs-A feasibility test; paid inference only with separately approved budget. Do not auto-launch.",
+    "fail_if": [
+      "any unseen video timestamp fabricated",
+      "literary/scene code copied into product",
+      "V2 Core or production prompt mutated",
+      "any model/provider network call",
+      "scope silently moves source claims into unrestricted transform semantics",
+      "A/B/C heldout leak or different provider allowance"
+    ]
+  },
+  "ethics_and_rights": {
+    "record_rater_consent": true,
+    "protect_blind_mapping": true,
+    "license_check": "3b1b/videos CC BY-NC-SA 4.0; conceptual high-level analysis only; no reused scene code or assets"
+  },
+  "materialized_video_reviews": "NONE_UNTIL_LATER_EXPERIMENT",
+  "human_evaluation_results": null
+}

@@ -1,0 +1,65 @@
+name: V3-13 Artifact Critic Offline
+
+on:
+  push:
+    branches:
+      - chatgpt/v3-13-artifact-critic
+  pull_request:
+    paths:
+      - "learnflow_v3/**"
+      - "tests/v3/**"
+      - "scripts/verify_v3_artifact_critic.py"
+      - ".github/workflows/v3-artifact-critic.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  critic-contract-and-source-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned CPU-only source/media verification prerequisites
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fontconfig fonts-cmu
+          python -m pip install "pydantic>=2" pyyaml pytest "pillow==12.3.0" "kiwisolver==1.5.1"
+      - name: Artifact Critic strict schema, adversarial faults, ancestor regression
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_artifact_critic.py tests/v3/test_publish_gate.py \
+            tests/v3/test_temporal_geometry.py tests/v3/test_beat_grounding.py \
+            tests/v3/test_contracts.py tests/v3/test_signal_preservation.py \
+            tests/v3/test_pattern_router.py tests/v3/test_binary_search_trace.py \
+            tests/v3/test_pedagogy_planning.py
+      - name: Frozen V2 and Hermes compatibility with prereg/Bench/Core Freeze
+        run: |
+          python -m pytest -q --confcutdir=tests/v2 \
+            tests/v2/test_concept_registry.py tests/v2/test_scenegraph_validation.py \
+            tests/v2/test_repair_v2_13_contracts.py
+          python -m pytest -q --confcutdir=tests/hermes \
+            tests/hermes/test_visual_director.py tests/hermes/test_final_v2_semantic_consistency.py \
+            tests/hermes/test_pedagogy_agent.py tests/hermes/test_script_agent.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Actual H264 exact-frame critic evidence without API/model calls
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_13_evidence"
+          python scripts/verify_v3_artifact_critic.py --output-dir "$RUNNER_TEMP/v3_13_evidence"
+          ffprobe -v error -show_entries stream=codec_name,width,height,nb_frames \
+            -of default=noprint_wrappers=1 "$RUNNER_TEMP/v3_13_evidence/grounded_duplicate.mp4"
+          ffprobe -v error -show_entries stream=codec_name,width,height,nb_frames \
+            -of default=noprint_wrappers=1 "$RUNNER_TEMP/v3_13_evidence/critic_temporal_geometry.mp4"
+      - name: Upload actual sampled videos and typed offline findings
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-13-source-grounded-critic-evidence
+          path: ${{ runner.temp }}/v3_13_evidence/
+          if-no-files-found: error
+          retention-days: 30

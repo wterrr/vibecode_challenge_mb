@@ -1,0 +1,82 @@
+name: V3-68 One-Time Current Key USD Cap GET (ZERO INFERENCE)
+on:
+  push:
+    branches: [chatgpt/v3-68-readonly-key-cap-attestation]
+    paths:
+      - "research/V368_ONCE_KEY_CAP_GET_TRIGGER.txt"
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: V368-CURRENT-KEY-CAP-METADATA-GET-ONLY
+  cancel-in-progress: false
+jobs:
+  single_safe_authenticated_current_key_get:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GH_TOKEN: ${{ github.token }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      CURRENT_RUN_ID: ${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate first-and-only scoped metadata trigger
+        run: |
+          set -euo pipefail
+          test "$(cat research/V368_ONCE_KEY_CAP_GET_TRIGGER.txt)" = "V368_ONCE_READONLY_KEY_CAP_2026_10_14_NO_MODEL_OR_MANAGEMENT"
+          python - <<'PY'
+          import os,json,urllib.request
+          root="https://api.github.com/repos/wterrr/vibecode_challenge_mb/"
+          req=urllib.request.Request(
+            root+"actions/runs?branch=chatgpt%2Fv3-68-readonly-key-cap-attestation&event=push&per_page=100",
+            headers={"Authorization":"Bearer "+os.environ["GH_TOKEN"],
+                     "Accept":"application/vnd.github+json"})
+          with urllib.request.urlopen(req,timeout=22) as response:
+              jobs=json.load(response)["workflow_runs"]
+          previous=[j["id"] for j in jobs
+             if j["id"]!=int(os.environ["CURRENT_RUN_ID"])
+             and str(j.get("path","")).endswith("/v3-68-one-time-key-cap-get.yml")]
+          assert not previous,"V368_GET_ALREADY_ATTEMPTED_DO_NOT_REPEAT"
+          print("V368_UNIQUE_METADATA_TRIGGER_CONFIRMED")
+          PY
+      - name: Install tested frozen dependencies
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -r requirements.txt "pytest>=8,<10" "jsonschema>=4,<5" \
+            "pillow>=11,<13" "numpy>=1.24,<3" pyyaml
+      - name: Offline fake key metadata tests must PASS before real GET
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_68_readonly_key_cap.py
+          python scripts/run_v3_68_readonly_cap.py --help
+      - name: Perform at most ONE GET to /api/v1/key, redacted categories only
+        run: |
+          python scripts/run_v3_68_readonly_cap.py \
+            --output artifacts/v368/V368_SANITIZED_CURRENT_KEY_CAP.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path("artifacts/v368/V368_SANITIZED_CURRENT_KEY_CAP.json").read_text())
+          assert r["checkpoint"]=="V3-68"
+          assert r["model_http_post_attempts"]==0
+          assert r["provider_metadata_get_attempts"]<=1
+          assert r["management_key_mutations"]==0
+          assert r["dedicated_key_identity_established"] is False
+          assert r["may_issue_model_http_post"] is False
+          assert r["production"]=="BLOCKED"
+          assert r["raw_account_or_key_identifiers_persisted"] is False
+          assert r["exact_key_cap_or_balance_persisted"] is False
+          print("V368_READONLY_META_ONLY_NO_INFERENCE_OR_KEY_MUTATION")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v368-SANITIZED-CURRENT-KEY-CAP-READONLY-NO-PAID-POST
+          path: artifacts/v368/V368_SANITIZED_CURRENT_KEY_CAP.json
+          if-no-files-found: warn
+          retention-days: 14

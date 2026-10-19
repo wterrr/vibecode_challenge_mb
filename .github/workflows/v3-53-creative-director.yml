@@ -1,0 +1,99 @@
+name: V3-53 Composable Creative Director OFFLINE Three Native Scene Plans
+
+on:
+  push:
+    branches: [chatgpt/v3-53-evidence-grounded-creative-director]
+  pull_request:
+    paths:
+      - "learnflow_v3/creative_motion_director.py"
+      - "scripts/run_v3_53_creative_director.py"
+      - "tests/v3/test_v3_53_creative_director.py"
+      - "benchmarks/learnflowbench/v3/v3_53_creative_director_preregister.json"
+      - ".github/workflows/v3-53-creative-director.yml"
+      - "reports/v3_53_creative_director.md"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+
+jobs:
+  compose-and-prove-grounded-motion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 48
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing CMU, Manim, speech and FFmpeg dependencies
+        timeout-minutes: 11
+        run: |
+          bash scripts/bootstrap_v3_30_native.sh
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Author freedom, negative scope and frozen regression suite
+        timeout-minutes: 8
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_53_creative_director.py \
+            tests/v3/test_v3_52_semantic_motion.py \
+            tests/v3/test_v3_51_creative_scene_graph.py \
+            tests/v3/test_v3_50_one_query_attention.py \
+            tests/v3/test_v3_49_grounded_claims.py \
+            tests/v3/test_v3_48_pedagogical_quality.py \
+            tests/v3/test_v3_47_pedagogical_grammar.py \
+            tests/v3/test_v3_45_semantic_scene_wire.py \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py
+      - name: Safety and frozen V2/V3 benchmark
+        timeout-minutes: 6
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Pull pinned no-network Docker Manim
+        timeout-minutes: 11
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Render three host-authored causally distinct Attention videos
+        timeout-minutes: 23
+        run: |
+          python scripts/run_v3_53_creative_director.py --output-dir "$RUNNER_TEMP/v353_director"
+      - name: Check real decoded context pixels and no model attribution
+        timeout-minutes: 3
+        run: |
+          python - <<'PY'
+          import json,os,pathlib
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v353_director"
+          d=json.loads((root/"v353_final_creative_director_receipt.json").read_text())
+          assert d["checkpoint"]=="V3-53"
+          assert d["status"]=="THREE_COMPOSED_NATIVE_HOST_DIRECTOR_PLANS_OFFLINE_TECHNICAL_PASS"
+          assert d["native_video_count"]==3
+          assert d["model_http_posts"]==0 and not d["real_model_plan_validated"]
+          assert d["production"]=="BLOCKED" and d["human_learning"]=="UNRATED"
+          assert d["counterfactual_pixel_fraction_delta"]>.30
+          assert len({tuple(x["stages"]) for x in d["cases"]})==3
+          assert len({x["style"] for x in d["cases"]})==3
+          for c in d["cases"]:
+              assert c["origin"]=="HOST_SYNTHETIC_DIRECTOR_NOT_MODEL"
+              assert c["native_media"]["codec"]=="h264+aac"
+              assert c["native_media"]["frames"]==c["mux"]["output_h264_frames"]
+              assert c["causal_pixel_evidence"]["before"]["total_causal_pixels"]<=65
+              assert min(c["causal_pixel_evidence"]["after"]["teal_pixels"],
+                         c["causal_pixel_evidence"]["after"]["amber_pixels"])>200
+              assert abs(c["causal_pixel_evidence"]["observed_teal_fraction"]-
+                         c["weights"][0])<.13
+              assert (root/c["case"]/"composed_attention_native.mp4").stat().st_size>40000
+          print("V3_53=THREE_NATIVE_COMPOSED_HOST_MOTION_PLANS_PASS_NO_MODEL_NO_HUMAN")
+          PY
+      - name: Upload actual H264, plans, graph, host math, native receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-53-THREE-CREATIVE-DIRECTOR-CAUSAL-H264-HOST-ONLY
+          path: ${{ runner.temp }}/v353_director/
+          retention-days: 14
+          if-no-files-found: error
+  # Zero model provider POST and no V3-50 budget reuse.

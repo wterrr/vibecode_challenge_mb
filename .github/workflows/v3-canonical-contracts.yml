@@ -1,0 +1,38 @@
+name: V3-02 Canonical Semantic Contracts Offline
+
+on:
+  push:
+    branches:
+      - chatgpt/v3-02-canonical-semantic-contracts
+  pull_request:
+    paths:
+      - "learnflow_v3/**"
+      - "tests/v3/**"
+      - ".github/workflows/v3-canonical-contracts.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  semantic-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing contract dependencies
+        run: python -m pip install "pydantic>=2" pyyaml pytest pillow "kiwisolver==1.5.1"
+      - name: New V3 schema and cross-artifact mutation regressions
+        run: python -m pytest -q --confcutdir=tests/v3 tests/v3/test_contracts.py
+      - name: Existing V2 concept, SceneGraph and Visual Director tests
+        run: python -m pytest -q --confcutdir=tests/v2 tests/v2/test_concept_registry.py tests/v2/test_scenegraph_schema.py tests/v2/test_scenegraph_validation.py
+      - name: Existing agent/semantic drift tests
+        run: python -m pytest -q --confcutdir=tests/hermes tests/hermes/test_agent_contracts.py tests/hermes/test_visual_director.py tests/hermes/test_final_v2_semantic_consistency.py
+      - name: V3-01 preregistration remains frozen
+        run: python scripts/verify_v3_benchmark_protocol.py
+      - name: Original LearnFlowBench contract
+        run: python scripts/verify_learnflow_bench.py
+      - name: V2 Core Freeze
+        run: python scripts/verify_v2_core_freeze.py

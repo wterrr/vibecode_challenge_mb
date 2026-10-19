@@ -1,0 +1,174 @@
+"""V3-98 security contracts: fail-closed production and same-origin session guard."""
+from types import SimpleNamespace
+
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+from fastapi.responses import JSONResponse
+import pytest
+
+from app.auth.single_admin import AdminGuard, csrf_token, password_hash, router
+from app.config import Settings
+from app.main import validate_production_settings
+
+SECRET="A"*48
+ORIGIN="http://testserver"
+
+
+def production_config(**changes):
+    values=dict(environment="production",pipeline_mode="real",
+        database_url="postgresql://u:p@localhost:5432/learnflow",
+        auth_enabled=True,admin_username="admin",
+        admin_password="long-secret-password-test",
+        auth_secret_key=SECRET,public_origin="https://learnflow.example",
+        planner_provider="openrouter",openrouter_api_key="test-key-not-a-real-key-0001",
+        openrouter_planner_model="openai/gpt-6-luna")
+    values.update(changes)
+    return Settings(_env_file=None,**values)
+
+
+@pytest.mark.parametrize("patch",[
+    {"database_url":""},{"database_url":"sqlite:///db.sqlite"},
+    {"pipeline_mode":"demo"},{"pipeline_mode":"fake"},{"auth_enabled":False},
+    {"admin_password":"short"},{"auth_secret_key":"short"},{"public_origin":"http://learnflow.example"},
+    {"openrouter_api_key":""},{"openrouter_planner_model":"openrouter/free"},
+])
+def test_production_fails_closed(patch):
+    with pytest.raises((RuntimeError,ValueError)):
+        validate_production_settings(production_config(**patch))
+
+
+def test_production_with_paid_provider_and_pg_contract():
+    validate_production_settings(production_config())
+    validate_production_settings(production_config(
+        planner_provider="gemini",gemini_api_key="test-paid-gemini-key-aaaa"))
+
+
+def test_password_salted_and_csrf_bound_to_session():
+    assert password_hash("password",b"a"*16)!=password_hash("password",b"b"*16)
+    assert csrf_token("one-session",SECRET)!=csrf_token("other-session",SECRET)
+
+
+class FakeStore:
+    def __init__(self):
+        self.token="test-valid-admin-session-token-"+"X"*35
+        self.allowed=2
+        self.rejected=False
+        self.revoked=False
+    def authenticate(self,username,password):
+        if username=="admin" and password=="correct-secret":
+            return self.token
+        return None
+    def verify(self,token):
+        return token==self.token and not self.revoked
+    def revoke(self,token):
+        self.revoked=True
+    def reserve_paid_job(self,limit):
+        if self.allowed<=0:return False
+        self.allowed-=1
+        return True
+
+
+def build_client():
+    store=FakeStore()
+    app=FastAPI()
+    app.state.auth_store=store
+    app.state.auth_key=SECRET
+    app.state.auth_secure=False
+    app.state.settings=SimpleNamespace(admin_username="admin")
+    app.include_router(router)
+    @app.get("/")
+    def home():return {"private":"yes"}
+    @app.get("/api/jobs")
+    def jobs():return {"jobs":[]}
+    @app.post("/api/jobs")
+    def make():return JSONResponse({"id":"created"},status_code=202)
+    @app.get("/api/jobs/private-id/video")
+    def video():return JSONResponse({"video":"private"})
+    app.add_middleware(AdminGuard,key=SECRET,origin=ORIGIN,store=store,secure=False,daily_limit=2)
+    return TestClient(app,base_url=ORIGIN),store
+
+
+def test_auth_login_middleware_cookie_csrf_video_and_quota():
+    client,store=build_client()
+    assert client.get("/api/jobs").status_code==401
+    assert client.get("/api/jobs/private-id/video").status_code==401
+    assert client.post("/api/auth/login",json={"username":"admin","password":"correct-secret"}).status_code==403
+    denied=client.post("/api/auth/login",headers={"Origin":ORIGIN},
+                       json={"username":"admin","password":"wrong-secret"})
+    assert denied.status_code==401
+    okay=client.post("/api/auth/login",headers={"Origin":ORIGIN},
+                    json={"username":"admin","password":"correct-secret"})
+    assert okay.status_code==200
+    assert "httponly" in okay.headers["set-cookie"].lower()
+    me=client.get("/api/auth/session")
+    assert me.status_code==200
+    token=me.json()["csrf_token"]
+    assert len(token)==64
+    assert client.get("/api/jobs/private-id/video").status_code==200
+    assert client.post("/api/jobs",headers={"Origin":ORIGIN}).status_code==403
+    assert client.post("/api/jobs",headers={"Origin":"https://evil.example",
+         "X-CSRF-Token":token}).status_code==403
+    headers={"Origin":ORIGIN,"X-CSRF-Token":token}
+    assert client.post("/api/jobs",headers=headers).status_code==202
+    assert client.post("/api/jobs",headers=headers).status_code==202
+    assert client.post("/api/jobs",headers=headers).status_code==429
+    assert client.post("/api/auth/logout",headers=headers).status_code==200
+    assert client.get("/api/jobs").status_code==401
+
+
+def test_pg_admin_real_database_when_ci_service_available():
+    import os
+    url=os.getenv("V398_PG_TEST_URL")
+    if not url:
+        pytest.skip("External PostgreSQL service needed; never fall back to SQLite")
+    from app.auth.single_admin import PostgresSingleAdmin
+    store=PostgresSingleAdmin(url,"admin","long-ci-admin-password-000")
+    assert store.authenticate("admin","incorrect") is None
+    first=store.authenticate("admin","long-ci-admin-password-000")
+    assert first and store.verify(first)
+    assert store.reserve_paid_job(100)
+    store.revoke(first)
+    assert not store.verify(first)
+
+
+def test_paid_openrouter_wire_schema_and_fail_closed(monkeypatch):
+    """No network calls: capture one pinned OpenRouter request and reject fallback."""
+    import asyncio
+    import httpx
+    from app.providers.llm.openrouter_paid import OpenRouterPaidLessonPlanner
+    from app.domain.lesson import LessonPlan
+    from app.providers.llm.base import PlannerProviderError
+
+    seen = []
+    returned = {"model":"openai/gpt-6-luna","choices":[
+        {"finish_reason":"stop","message":{"content":"{}"}}]}
+    class MockResponse:
+        def raise_for_status(self):pass
+        def json(self):return returned
+    class FakeClient:
+        def __init__(self,**kwargs):pass
+        async def __aenter__(self):return self
+        async def __aexit__(self,*args):pass
+        async def post(self,url,headers,json):
+            seen.append((url,headers,json))
+            return MockResponse()
+    monkeypatch.setattr(httpx,"AsyncClient",FakeClient)
+    sentinel=object()
+    monkeypatch.setattr(LessonPlan,"model_validate_json",staticmethod(lambda raw:sentinel))
+    planner=OpenRouterPaidLessonPlanner(api_key="ci-fake-provider-key-012345",tokens=4000)
+    assert asyncio.run(planner._complete("A safe prompt")) is sentinel
+    assert len(seen)==1
+    url,headers,body=seen[0]
+    assert url=="https://openrouter.ai/api/v1/chat/completions"
+    assert body["model"]=="openai/gpt-6-luna"
+    assert body["provider"]["allow_fallbacks"] is False
+    assert body["provider"]["require_parameters"] is True
+    assert body["response_format"]["type"]=="json_schema"
+    assert body["max_tokens"]==4000
+    assert body["stream"] is False
+    returned["model"]="openrouter/free"
+    with pytest.raises(PlannerProviderError):
+        asyncio.run(planner._complete("A safe prompt"))
+    assert len(seen)==2   # exactly one POST per call, never hidden retries
+    with pytest.raises(ValueError):
+        OpenRouterPaidLessonPlanner(api_key="ci-fake-provider-key-012345",model="openrouter/free")

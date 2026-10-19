@@ -1,0 +1,59 @@
+{
+  "checkpoint": "V3-70",
+  "title": "Offline Independent Human Review Intake and Evidence Integrity",
+  "date_utc": "2026-10-14",
+  "parent": {
+    "draft_pr": 105,
+    "sha": "0af94a9da619caaffd0c43959d5109fd0058bf48",
+    "branch": "chatgpt/v3-69-research-ab-contrast-ci-repair"
+  },
+  "registration_kind": "FIRST_CHILD_COMMIT_BEFORE_IMPLEMENTATION",
+  "scientific_question": "Can coordinator securely intake original condition-masked 9-clip CSV submissions from three distinct consenting external humans without creating synthetic data, leaking treatment keys or changing V3-60 criteria/estimands?",
+  "frozen_inputs": {
+    "v360_registration": "benchmarks/learnflowbench/v3/v3_60_independent_review_preregister.json",
+    "v360_prereg_blob_sha": "dbf16ee2bbf1e338cab73c8e521551637044c952",
+    "v361_registration": "benchmarks/learnflowbench/v3/v3_61_offline_review_ui_preregister.json",
+    "v361_prereg_blob_sha": "d2ced41d097f9b691ae5fec538aaa149c6169543",
+    "source_clips": 9,
+    "source_review_form_count": 3,
+    "expected_raters": 3,
+    "reviewer_ui_artifact_id": 11863189967,
+    "masked_kit_artifact_id": 11863660782,
+    "admin_mapping": "SEPARATE_NOT_ACCESSED"
+  },
+  "acceptance": [
+    "Every original CSV has exactly V3-60 schema, 9 complete rows, 9 distinct frozen masked clip IDs and one non-test-only reviewer pseudonym.",
+    "Exactly 3 separate CSV files are required for the initial three-person counterbalanced panel; assign one unique V3-61 form order each.",
+    "Reject changed order, missing clips, duplicate IDs, forged/TEST_ONLY reviewer names, low-score without timestamp, non-ordinal scores and dangerous/unknown metadata.",
+    "Require a coordinator-signed-in-process pseudonymous consent/eligibility/conflict/independence checklist per rater, retaining actual evidence privately; booleans are not independent proof.",
+    "Reject partial intake and reject pre-existing output path. Never access admin assignment key or accept it among submitted files.",
+    "Combine scores and invoke the UNMODIFIED V3-60 seal in a single local offline step before the coordinator can manually unblind. Emit only local private raw CSV and lock JSON, never uploaded to GitHub Actions.",
+    "All mocks and fake scores are explicitly TEST_ONLY and cannot pass production-facing intake. No fabricated independent rating, no automatic product GO.",
+    "Dedicated no-secret/no-network CI tests positive and hostile negative paths, including incomplete/no inputs.",
+    "Preserve V3-60/61 preregistered estimands, existing 9 MP4 SHA-256, untouched V2 Core and production prompts."
+  ],
+  "limitations": {
+    "real_reviewers": 0,
+    "human_pedagogy": "UNRATED_NO_REVIEWERS",
+    "learning_gain": "NOT_MEASURED",
+    "model_creativity": "NOT_TESTED",
+    "production": "BLOCKED",
+    "study_confounds": "Static condition also has early answer reveal; this is not a pure motion-only comparison"
+  },
+  "safety": {
+    "model_posts": 0,
+    "provider_gets": 0,
+    "management_mutations": 0,
+    "main_merge": false,
+    "production_prompt_edits": 0,
+    "v2_core_edits": 0,
+    "video_edits": 0,
+    "masking": "NEVER_UNBLIND_IN_CI"
+  },
+  "stop_conditions": [
+    "No original independent human reviews or consent evidence",
+    "Missing/malformed/untrusted/test-only submissions",
+    "Treatments/administrator files present in intake",
+    "Study protocol or core altered"
+  ]
+}

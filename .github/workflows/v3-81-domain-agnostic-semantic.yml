@@ -1,0 +1,91 @@
+name: V3-81 Four Topic Host Grounded Semantic Transformations Native (NO MODEL)
+on:
+  push:
+    branches: [chatgpt/v3-81-domain-agnostic-semantic-transfer]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_81_domain_agnostic_preregister.json'
+      - 'learnflow_v3/v381_generic_semantic_operators.py'
+      - 'learnflow_v3/v381_finite_manim_compiler.py'
+      - 'scripts/run_v3_81_cross_topic_semantic_native.py'
+      - 'tests/v3/test_v3_81_domain_agnostic_semantic.py'
+      - '.github/workflows/v3-81-domain-agnostic-semantic.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_81_domain_agnostic_preregister.json'
+      - 'learnflow_v3/v381_generic_semantic_operators.py'
+      - 'learnflow_v3/v381_finite_manim_compiler.py'
+      - 'scripts/run_v3_81_cross_topic_semantic_native.py'
+      - 'tests/v3/test_v3_81_domain_agnostic_semantic.py'
+      - '.github/workflows/v3-81-domain-agnostic-semantic.yml'
+permissions:
+  contents: read
+concurrency:
+  group: v381-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  four-topic-native-arithmetic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reuse pinned CMU FFmpeg and offline eSpeak bootstrap
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Offline dependencies with no model provider
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Hostile exact arithmetic provenance topic transfer and V3-80 regression
+        timeout-minutes: 7
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_81_domain_agnostic_semantic.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_80_semantic_transformations.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_73_generalized_temporal_visual_qa.py
+      - name: Pull original pinned network isolated Manim sandbox
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Render all four frozen topic cases as actual native Manim H264 AAC
+        timeout-minutes: 29
+        run: python scripts/run_v3_81_cross_topic_semantic_native.py --output-dir "$RUNNER_TEMP/v381_native"
+      - name: Independently assert native arithmetic evidence
+        timeout-minutes: 4
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          p = Path(os.environ["RUNNER_TEMP"])/"v381_native"
+          r = json.loads((p/"v381_final_receipt.json").read_text())
+          assert r["native_mp4_count"] == 4 and len(r["domains"]) == 4
+          assert r["operator_families"] == ["ADD", "EQUIVALENT_PARTITION", "SCALE"]
+          assert r["all_operator_beats_have_decoded_before_after"] is True
+          assert r["model_api_requests"] == 0 and r["final_visual_quality"] == "NOT_PASS"
+          assert r["production"] == "BLOCKED"
+          assert set(r["domains"]) == {"attention","mathematics","physics","computer_science"}
+          for row in r["cases"]:
+              src = p / row["id"] / "v381_native_semantic.mp4"
+              assert src.is_file() and src.stat().st_size > 40000
+              assert row["complete_ffmpeg_decode"] == "PASS"
+              assert row["operator_count"] == len(row["physical_result_reveals"])
+              assert row["native_frames"] > 120
+              print("V381 NATIVE HOST TRACE",row["id"],row["native_frames"],row["native_h264_aac_sha256"])
+          PY
+      - name: Existing V2 Core and V3 frozen benchmark protocol
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v381-four-topic-host-native-MP4-exact-math-and-pixel-receipts
+          path: ${{ runner.temp }}/v381_native/
+          if-no-files-found: warn
+          retention-days: 7

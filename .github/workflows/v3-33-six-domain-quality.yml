@@ -1,0 +1,61 @@
+name: V3-33 Unseen Six-Domain Coverage and Separate Education Gate
+on:
+  push:
+    branches: [chatgpt/v3-33-cross-domain-quality-gate]
+  pull_request:
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_33_locked_unseen_topics.json"
+      - "learnflow_v3/unseen_domain_quality_audit.py"
+      - "scripts/verify_v3_33_generalization.py"
+      - "tests/v3/test_v3_33_generalization.py"
+      - ".github/workflows/v3-33-six-domain-quality.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preregistered-unseen-six-domain-and-prior-native-controls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Shared bounded codecs speech and Computer Modern
+        timeout-minutes: 8
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Existing dependencies only bounded
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --retries 2 --timeout 30 \
+            -r requirements.txt pytest-asyncio pyyaml
+      - name: Mutation tests and anti-overclaim before any rendering
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_33_generalization.py -k 'not real_old_controls'
+      - name: Render existing certified Math and Physics controls separate from new denominator
+        run: |
+          python scripts/verify_v3_33_generalization.py \
+            --output-dir "$RUNNER_TEMP/v3_33"
+      - name: Audit decoded real controls, V3-32/31/30/07 regression and frozen gates
+        env:
+          V3_33_EVIDENCE_ROOT: ${{ runner.temp }}/v3_33
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_33_generalization.py \
+            tests/v3/test_v3_32_grounded_lesson.py \
+            tests/v3/test_v3_31_code_state_lesson.py \
+            tests/v3/test_v3_30_paid_cs_lesson.py \
+            tests/v3/test_code_process_renderer.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-33-preregistered-abstain-and-two-real-prior-controls
+          path: ${{ runner.temp }}/v3_33/
+          retention-days: 14
+          if-no-files-found: warn

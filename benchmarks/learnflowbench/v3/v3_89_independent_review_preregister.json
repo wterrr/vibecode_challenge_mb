@@ -1,0 +1,141 @@
+{
+  "checkpoint": "V3-89",
+  "kind": "FIRST_CHILD_PREREG_BEFORE_IMPLEMENTATION",
+  "parent": {
+    "draft_pr": 125,
+    "head_sha": "f6f66334bf4a40fae95af97667d43bf5e18453b5"
+  },
+  "goals": [
+    "Reconcile V3-82 through V3-88 technical receipts and boundaries",
+    "Produce a reviewer-facing, label-masked, six-clip packet assembled ONLY from exact SHA verified MP4 artifacts",
+    "Define falsifiable 5-axis human pedagogical acceptance requiring actual human ratings",
+    "Keep automated source QA separated from educational outcomes"
+  ],
+  "selection_rule": "Exactly two frozen real native MP4s per semantic family: affine Math development and Physics heldout; both V3-88 Fraction cases; both V3-88 Binary Search cases. Phys dev V3-87 excluded to retain balanced 2 per family, not because of score. No substitution or clips generated anew.",
+  "clips": [
+    {
+      "case_id": "linear_output_new",
+      "family": "AFFINE",
+      "role": "development",
+      "src_checkpoint": "V3-87",
+      "src_run": 38839044966,
+      "src_artifact_id": 12020402722,
+      "mp4_path": "linear_output_new/v387_readable_continuous_native.mp4",
+      "sha256": "1e310a9315b9f5e3b17c492528113d83fc709ab3b8614cde12a9ad980b2cc43c",
+      "frames": 1056
+    },
+    {
+      "case_id": "counterfactual_physics_heldout",
+      "family": "AFFINE",
+      "role": "heldout",
+      "src_checkpoint": "V3-87",
+      "src_run": 38839044966,
+      "src_artifact_id": 12020402722,
+      "mp4_path": "counterfactual_physics_heldout/v387_readable_continuous_native.mp4",
+      "sha256": "df404e0f12bdf21a6542fc9bbdb3d7af3ab0311e4974c73df0ae53e776a69720",
+      "frames": 1106
+    },
+    {
+      "case_id": "fraction_refinement_development",
+      "family": "FRACTION_EQUIVALENCE",
+      "role": "development",
+      "src_checkpoint": "V3-88",
+      "src_run": 39184943574,
+      "src_artifact_id": 12157931417,
+      "mp4_path": "fraction_refinement_development/v388_native_cross_family.mp4",
+      "sha256": "dff7b916d767e714c534d1c439f5c34de087741f432d84df8f6ebae1b6606478",
+      "frames": 425
+    },
+    {
+      "case_id": "fraction_refinement_heldout",
+      "family": "FRACTION_EQUIVALENCE",
+      "role": "heldout",
+      "src_checkpoint": "V3-88",
+      "src_run": 39184943574,
+      "src_artifact_id": 12157931417,
+      "mp4_path": "fraction_refinement_heldout/v388_native_cross_family.mp4",
+      "sha256": "f6eb6709efefd10c424b80c7443355843cbca21d81383737c72c14b545fbc9b8",
+      "frames": 430
+    },
+    {
+      "case_id": "binary_search_development",
+      "family": "ORDERED_SEARCH",
+      "role": "development",
+      "src_checkpoint": "V3-88",
+      "src_run": 39184943574,
+      "src_artifact_id": 12157931417,
+      "mp4_path": "binary_search_development/v388_native_cross_family.mp4",
+      "sha256": "ace47f36b70b7c5aec5654fb2bc846d960911acab9d74f2fb1328ba5a1ac84f5",
+      "frames": 712
+    },
+    {
+      "case_id": "binary_search_heldout",
+      "family": "ORDERED_SEARCH",
+      "role": "heldout",
+      "src_checkpoint": "V3-88",
+      "src_run": 39184943574,
+      "src_artifact_id": 12157931417,
+      "mp4_path": "binary_search_heldout/v388_native_cross_family.mp4",
+      "sha256": "3a08e5775bebd5211561bb7fd111fcc9a1c4bf4fdd6a95563b8adbee08b30f27",
+      "frames": 926
+    }
+  ],
+  "masked_order": [
+    "CLIP_04",
+    "CLIP_01",
+    "CLIP_06",
+    "CLIP_02",
+    "CLIP_05",
+    "CLIP_03"
+  ],
+  "pairing_rule": "Mapping hidden from reviewer packet, but known to project administrators; footage reveals topic so this is not content-blind, double-blind or randomized controlled design.",
+  "reviewer_protocol": {
+    "rater_count_min_per_clip": 2,
+    "reviewer_distinct_ids_per_clip": true,
+    "clip_ids": [
+      "CLIP_01",
+      "CLIP_02",
+      "CLIP_03",
+      "CLIP_04",
+      "CLIP_05",
+      "CLIP_06"
+    ],
+    "rating_dimensions": [
+      "semantic_correctness",
+      "causal_continuity",
+      "readable_layout",
+      "narration_visual_timing",
+      "pedagogical_usefulness"
+    ],
+    "rating_scale": "INTEGER_1_TO_5",
+    "all_axes_complete": true,
+    "unscored_notes_optional": true,
+    "accepting_threshold": "Each clip has two distinct valid reviewer records; every clip per-axis median >=3; every clip overall mean >=4; no clip with any reviewer semantic_correctness<=2; at least 2 reviewers provide an identifiable reviewer_id (pseudonyms, not emails). Gate MUST remain PENDING until real ratings entered; an unfinished review is NOT FAIL, not PASS.",
+    "do_not_pretend_independence": "Two accounts can be asserted distinct but not proven independent by code; actual recruitment and consent are manual.",
+    "input_format": "human_reviews.csv outside reviewer packet, only created upon human submission",
+    "incomplete_result": "PENDING_HUMAN_REVIEW",
+    "success_result": "HUMAN_RUBRIC_THRESHOLD_MET_ONLY",
+    "disagreement_result": "NOT_ACCEPTED",
+    "model_quality_scoring_prohibited": true
+  },
+  "machine_controls": {
+    "source_files": "ZIP archives downloaded from exact historical GitHub workflow artifact IDs, no generated replacement media",
+    "check_each": "original bytes SHA-256, exact 15fps 1280x720 H264/AAC, frame count, full H264 decode, original V3-88 source negative ABSTAIN receipts, samples 15/50/85 percent per clip",
+    "no_video_edits": true,
+    "export": "six renamed copied MP4s plus 3-frame review contact sheets per clip and blank scoring form",
+    "separate_admin_key": true,
+    "reviewer_packet_has_no_family_or_checkpoint_label": true,
+    "frozen_denominator": 6
+  },
+  "constraints": {
+    "no_model_api": true,
+    "no_main_merge": true,
+    "no_production_prompt_changes": true,
+    "no_v2_core_changes": true,
+    "no_legacy_mp4_overwrite": true,
+    "no_fabricated_human_scores": true,
+    "final_visual_quality": "NOT_PASS_UNTIL_VALID_HUMAN_REVIEW",
+    "learner_gain": "NOT_MEASURED",
+    "production": "BLOCKED"
+  }
+}

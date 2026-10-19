@@ -1,0 +1,87 @@
+name: V3-60 Independent Masked Pedagogical Review Kit (NO MODEL API)
+
+on:
+  push:
+    branches: [chatgpt/v3-60-independent-pedagogical-review]
+    paths:
+      - "scripts/run_v3_60_independent_review.py"
+      - "tests/v3/test_v3_60_independent_review.py"
+      - "benchmarks/learnflowbench/v3/v3_60_independent_review_preregister.json"
+      - ".github/workflows/v3-60-independent-review.yml"
+      - "docs/v3_60_independent_reviewer_protocol.md"
+  pull_request:
+    paths:
+      - "scripts/run_v3_60_independent_review.py"
+      - "tests/v3/test_v3_60_independent_review.py"
+      - "benchmarks/learnflowbench/v3/v3_60_independent_review_preregister.json"
+      - ".github/workflows/v3-60-independent-review.yml"
+      - "docs/v3_60_independent_reviewer_protocol.md"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  strict-mask-rater-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Offline prereg and hostile rating mutations
+        run: |
+          python -m pip install --disable-pip-version-check "pytest>=8,<10"
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_60_independent_review.py
+
+  verify-and-package-actual-nine-videos:
+    needs: strict-mask-rater-contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install native media probe and decoder
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          ffprobe -version | head -n 1
+          ffmpeg -version | head -n 1
+      - name: Recover EXACT V3-59 native movie artifact (no model calls)
+        run: |
+          mkdir -p /tmp/v360-clips
+          curl --fail --show-error --silent --location --retry 3 --max-time 180 \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/wterrr/vibecode_challenge_mb/actions/artifacts/11803826367/zip" \
+            -o /tmp/v360-clips.zip
+          unzip -t /tmp/v360-clips.zip
+          unzip -q /tmp/v360-clips.zip -d /tmp/v360-clips
+      - name: SHA freeze, H264/AAC, all decoded frames, frame/audio per-topic parity
+        run: python scripts/run_v3_60_independent_review.py verify --clips-dir /tmp/v360-clips --full-decode
+      - name: Create MASKED public reviewer packet with truly blank rating templates
+        run: |
+          python scripts/run_v3_60_independent_review.py prepare \
+            --clips-dir /tmp/v360-clips --output artifacts/v360/masked_reviewer_kit
+          test "$(find artifacts/v360/masked_reviewer_kit -maxdepth 1 -name '*.mp4' | wc -l)" -eq 9
+          test "$(find artifacts/v360/masked_reviewer_kit -maxdepth 1 -name 'reviewer_form_template_*.csv' | wc -l)" -eq 3
+          test "$(find artifacts/v360/masked_reviewer_kit -iname '*admin*' | wc -l)" -eq 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v360-9-native-masked-reviewer-kit-UNRATED
+          path: artifacts/v360/masked_reviewer_kit/
+          if-no-files-found: error
+          retention-days: 7

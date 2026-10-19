@@ -1,0 +1,90 @@
+name: V3-27 Six Domain Honest Offline Coverage and Real Partial AV
+
+on:
+  push:
+    branches: [chatgpt/v3-27-six-domain-coverage-audit]
+  pull_request:
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_27_locked_development_topics.json"
+      - "learnflow_v3/**"
+      - "scripts/verify_v3_27_six_domain_coverage.py"
+      - "tests/v3/**"
+      - ".github/workflows/v3-six-domain-coverage.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  six-source-attempts-no-cherry-pick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing native offline renderer and real local voice
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng fonts-cmu fontconfig
+          python -m pip install -r requirements.txt pytest-asyncio pyyaml
+      - name: Validate V3-01 immutable 12-topic protocol BEFORE new development attempts
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Run all six frozen development topics with NO silent topic replacement or card fallback
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_27_coverage"
+          python scripts/verify_v3_27_six_domain_coverage.py \
+            --output-dir "$RUNNER_TEMP/v3_27_coverage"
+      - name: Confirm real H264 AAC, Computer Modern, mathematical source and honest NO-GO
+        env:
+          V3_27_MEDIA_DIR: ${{ runner.temp }}/v3_27_coverage
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_multidomain_coverage.py
+          ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate,nb_frames \
+            -of default=noprint_wrappers=1 \
+            "$RUNNER_TEMP/v3_27_coverage/lfb-020-math/bounded_math_slope_narrated_720p.mp4"
+          python - <<'PY'
+          import json,os,pathlib
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v3_27_coverage"
+          x=json.loads((root/"v3_27_six_domain_coverage.json").read_text())
+          issues=json.loads((root/"v3_27_issue_inventory.json").read_text())
+          assert x["denominator"]==6 and len(issues["issues"])==6
+          assert x["real_video_count"]==1 and x["abstain_count"]==5
+          assert x["failed_attempts"]==0 and x["full_end_to_end_count"]==0
+          assert x["full_end_to_end_gate"]=="NO_GO_MULTI_DOMAIN"
+          assert x["production"]=="BLOCKED"
+          PY
+      - name: Preserve frozen regression and source/prereg guards
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_math_patterns.py tests/v3/test_code_process_renderer.py \
+            tests/v3/test_pattern_coverage.py tests/v3/test_pedagogy_planning.py \
+            tests/v3/test_narrated_full_lesson.py
+          python -m pytest -q --confcutdir=tests/v2 tests/v2/test_concept_registry.py \
+            tests/v2/test_scenegraph_validation.py tests/v2/test_repair_v2_13_contracts.py
+          python -m pytest -q --confcutdir=tests/hermes \
+            tests/hermes/test_visual_director.py tests/hermes/test_final_v2_semantic_consistency.py \
+            tests/hermes/test_pedagogy_agent.py tests/hermes/test_script_agent.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Upload ALL denominator, real MP4, actual decoded contact sheet and gaps
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-27-six-domain-evidence-including-ABSTAIN-and-partial-narrated-math
+          path: |
+            ${{ runner.temp }}/v3_27_coverage/v3_27_coverage_matrix.md
+            ${{ runner.temp }}/v3_27_coverage/v3_27_six_domain_coverage.json
+            ${{ runner.temp }}/v3_27_coverage/v3_27_issue_inventory.json
+            ${{ runner.temp }}/v3_27_coverage/lfb-020-math/*.mp4
+            ${{ runner.temp }}/v3_27_coverage/lfb-020-math/*.json
+            ${{ runner.temp }}/v3_27_coverage/lfb-020-math/*.srt
+            ${{ runner.temp }}/v3_27_coverage/lfb-020-math/*.jpg
+          retention-days: 30
+          if-no-files-found: warn

@@ -1,0 +1,161 @@
+{
+  "checkpoint": "V3-62",
+  "registration": "FIRST_CHILD_COMMIT",
+  "registered_before_implementation": true,
+  "reference_parent_pr": 97,
+  "reference_parent_sha": "a9473bef73f0dbf63a921bdbdb9bcacf2f1321f2",
+  "branch": "chatgpt/v3-62-creative-pedagogical-storytelling",
+  "scientific_scope": "HOST_SIDE_CONTROLLED_CREATIVE_STORYBOARD_RESEARCH_NOT_MODEL_AUTHORED_NOT_PRODUCTION",
+  "hypothesis": "A finite, claim-grounded expressive timeline can show visible precondition, transformation, invariant and earned conclusion rather than static answer-first illustrations; this is structural/technical evidence, not human learning benefit",
+  "research_lineage": [
+    "V3-47 typed transformation grammar",
+    "V3-51 SceneGraph evidence-bounded finite compiler",
+    "V3-53 director/style choices",
+    "V3-56 18 lesson Read + source research and 1 native Attention video, native phrase alignment NO-GO",
+    "V3-57-59 native semantic-reveal pilot",
+    "V3-60-61 masked independent reviewer intake still 0 actual humans"
+  ],
+  "frozen_heldout_topics": [
+    {
+      "id": "probability_complement_3_of_8",
+      "domain": "Mathematics / Probability",
+      "exact_facts": {
+        "favorable": 3,
+        "total": 8,
+        "complement": 5,
+        "denominator": 8
+      },
+      "claim_ids": [
+        "PROB_TOTAL",
+        "PROB_PARTITION",
+        "PROB_COMPLEMENT",
+        "PROB_SUM_ONE"
+      ],
+      "constraint": "3/8 + 5/8 = 1; preserve eight tokens; no early result",
+      "novel_vs_prior": "not a 2/3->4/6 fraction-equivalence scene"
+    },
+    {
+      "id": "constant_speed_distance",
+      "domain": "Physics",
+      "exact_facts": {
+        "speed_units_per_second": 3,
+        "elapsed_seconds": 4,
+        "displacement_units": 12
+      },
+      "claim_ids": [
+        "PHY_RATE",
+        "PHY_TICKS",
+        "PHY_DISTANCE",
+        "PHY_END"
+      ],
+      "constraint": "distance=3*4=12, elapsed time increases monotonically; no premature final marker",
+      "novel_vs_prior": "not an Attention, Fraction, or Process sample"
+    },
+    {
+      "id": "water_reaction_balance",
+      "domain": "Chemistry",
+      "exact_facts": {
+        "reactants": {
+          "H": 4,
+          "O": 2
+        },
+        "products": {
+          "H": 4,
+          "O": 2
+        },
+        "balanced_coefficients": [
+          2,
+          1,
+          2
+        ]
+      },
+      "claim_ids": [
+        "CHEM_REACTANTS",
+        "CHEM_REARRANGE",
+        "CHEM_CONSERVE",
+        "CHEM_BALANCE"
+      ],
+      "constraint": "2 H2 + O2 -> 2 H2O; preserve 4 H and 2 O identities, never assert reaction rates or mechanism",
+      "novel_vs_prior": "no atom-conserving animation previously in V3-57..59"
+    }
+  ],
+  "style_conditions": [
+    "causal_timeline",
+    "end_state_hold"
+  ],
+  "frozen_candidate_variation": [
+    "focus_first",
+    "witness_first"
+  ],
+  "time_alignment": "NARRATION_SEGMENT_ONLY; no native word-alignment or ASR assertions",
+  "design_contract": {
+    "narrative_motifs": [
+      "question",
+      "misconception",
+      "show_preconditions",
+      "transform",
+      "witness",
+      "earned_conclusion"
+    ],
+    "semantics": [
+      "maintain_referent_identity",
+      "host_calculated_facts",
+      "dependency_order",
+      "hold_before_reveal",
+      "no_unsourced_conclusion"
+    ],
+    "expression": [
+      "variable object counts",
+      "semantic camera focus",
+      "persistent object tracking",
+      "relative positions",
+      "semantic signal accents"
+    ],
+    "cannot_generate": [
+      "Python supplied by model",
+      "unapproved equation values",
+      "LLM-synthesized facts",
+      "publication permission",
+      "non-specified proof"
+    ]
+  },
+  "physical_frozen_acceptance": {
+    "video_cases": 3,
+    "matched_control_pairs": 3,
+    "physical_mp4_count": 6,
+    "resolution": [
+      1280,
+      720
+    ],
+    "fps": 15,
+    "video_codec": "h264",
+    "audio_codec": "aac",
+    "per_pair_exact_AAC_packet_sha": true,
+    "per_pair_decoded_frame_count_equal": true,
+    "case_witness_correctness": true,
+    "precondition_first_no_early_answer": true,
+    "semantic_motion_visible_on_decoded_frames": true,
+    "hold_baseline_reveals_result_early_by_design": true,
+    "min_distinct_visual_layouts": 3,
+    "negative_mutations": [
+      "incorrect_probability_complement",
+      "incorrect_velocity_product",
+      "atom_conservation_break",
+      "forged_claim",
+      "early_reveal",
+      "illegal_op",
+      "referent_swapping",
+      "disallowed_model_code"
+    ],
+    "CI_tests_without_model_API": true,
+    "allowed_renderer": "host-authored finite primitives",
+    "external_human_reviewers": 0,
+    "human_visual_quality": "UNRATED",
+    "human_learning_effect": "NOT_MEASURED",
+    "model_authorship": "NOT_TESTED",
+    "production": "BLOCKED",
+    "no_main_merge": true,
+    "no_V2_core_or_production_prompt_change": true
+  },
+  "success_decision": "TECHNICAL_NATIVE_BOUNDED_ONLY if strict tests and actual native frame/audio/ROI receipts pass; pedagogical creative quality still NO-GO until real independent human ratings on a future trial"
+}

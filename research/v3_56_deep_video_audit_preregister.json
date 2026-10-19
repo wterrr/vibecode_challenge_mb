@@ -1,0 +1,64 @@
+{
+  "checkpoint": "V3-56",
+  "addendum": "DEPTH_AUDIT_PRECOMMITTED_BEFORE_DEEP_EVIDENCE_EXTRACTION",
+  "parent_pr": 90,
+  "base_sha": "ff8858d960596cb6a33c60852865c2356b382fef",
+  "scope": "Deepen within same draft PR; do not modify original 18-Read prereg, frozen V2, production prompts or paid-model APIs",
+  "all_video_required_count": 15,
+  "video_attestation_requirements": {
+    "has_actual_encoded_media": true,
+    "has_observed_frames_at_real_pts": true,
+    "has_audio_or_sync_evidence": true,
+    "has_recorded_provenance_and_sha256": true,
+    "has_validated_lesson_title_link": true,
+    "has_scene_to_animation_matched_source_where_possible": true
+  },
+  "read_sequence_secondary_protocol": "Extract pedagogical order from official Read headings, exemplar, motion descriptions and question markers; DO NOT convert section position to video timestamp, real-frame state or narrator quotes.",
+  "scene_source_protocol": "Match first-party 3b1b/videos paths from official Read links or the repository with explicit inference qualification; read scene class names and specific self.play/wait/Transform mechanism; source order not proven final video edit order.",
+  "negative_cases": [
+    "static diagram is adequate when time evolution irrelevant",
+    "long pauses/question prompts may be useful",
+    "not every dense explanation needs motion",
+    "not every transformation should preserve visual identity without mathematical meaning",
+    "camera movement can obscure invariants"
+  ],
+  "candidate_files": {
+    "la_span": "_2016/eola/chapter2.py",
+    "la_linear": "_2016/eola/chapter3.py",
+    "la_matrix": "_2016/eola/chapter4.py",
+    "la_det": "_2016/eola/chapter5.py",
+    "la_eigen": "_2016/eola/chapter10.py",
+    "la_dot": "_2016/eola/chapter7.py",
+    "la_cross": "_2016/eola/chapter8p2.py",
+    "calc_essence": "_2017/eoc/chapter1.py",
+    "calc_deriv": "_2017/eoc/chapter2.py",
+    "calc_integration": "_2017/eoc/chapter8.py",
+    "prob_bayes": "_2019/bayes/bayes.py",
+    "compo_fourier": "_2019/diffyq/part4/fourier_series_scenes.py",
+    "nn_intro": "_2017/nn/part1.py",
+    "nn_gradient": "_2017/nn/part2.py",
+    "nn_gpt": "_2024/transformers/generation.py",
+    "nn_attention": "_2024/transformers/attention.py",
+    "nn_mlp": "_2024/transformers/mlp.py"
+  },
+  "rigor": {
+    "read_only_does_not_count_as_video": true,
+    "video_thumbnail_does_not_count_as_video": true,
+    "source_code_without_runtime_does_not_count_as_encoded_video": true,
+    "read_sequence_does_not_count_as_seconds": true,
+    "unknowns_are_hard_failure_not_empty_string": true,
+    "do_not_claim_at_least_15_full_video_audits_without_15_native_media_receipts": true
+  },
+  "intended_outputs": [
+    "research/v3_56_deep_pedagogical_beats.json",
+    "research/v3_56_source_scene_corpus.json",
+    "reports/v3_56_deep_video_audit_addendum.md",
+    "scripts/verify_v3_56_deep_video_audit.py",
+    "tests/v3/test_v3_56_deep_video_audit.py"
+  ],
+  "publication_gate": "If 15 verified video-audio/frame records impossible, report VIDEO_AUDIT_NO_GO with precise blocker and submit source/Read-only bounded research without inflated claims.",
+  "ethics": {
+    "no_3b1b_media_republication": true,
+    "no_scene_code_import": true
+  }
+}

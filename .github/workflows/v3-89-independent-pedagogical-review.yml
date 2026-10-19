@@ -1,0 +1,113 @@
+name: V3-89 Independent Pedagogical Quality Instrument (NO MODEL)
+on:
+  push:
+    branches: [chatgpt/v3-89-independent-pedagogical-acceptance]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_89_independent_review_preregister.json'
+      - 'scripts/run_v3_89_independent_review.py'
+      - 'tests/v3/test_v3_89_independent_review.py'
+      - 'PLAN_V3.md'
+      - 'LEARNFLOW_V3_RESEARCH_NOTES.md'
+      - '.github/workflows/v3-89-independent-pedagogical-review.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_89_independent_review_preregister.json'
+      - 'scripts/run_v3_89_independent_review.py'
+      - 'tests/v3/test_v3_89_independent_review.py'
+      - 'PLAN_V3.md'
+      - 'LEARNFLOW_V3_RESEARCH_NOTES.md'
+      - '.github/workflows/v3-89-independent-pedagogical-review.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: v389-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  external-film-audit-and-masked-review-pack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reuse original pinned V3-30 native FFmpeg fonts bootstrap
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Install only original offline video/test dependencies
+        timeout-minutes: 7
+        run: |
+          command -v ffmpeg
+          command -v ffprobe
+          python -m pip install --disable-pip-version-check --retries 2 --timeout 30 -r requirements.txt 'numpy>=1.24,<3' Pillow pytest pyyaml
+      - name: Strict hostile synthetic reviewer tests and prior family regressions
+        timeout-minutes: 7
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_89_independent_review.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_88_cross_family_generalization.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_87_affine_readability.py
+      - name: Retrieve exact immutable historical GitHub-native artifacts (read only)
+        timeout-minutes: 8
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/12020402722/zip" > "$RUNNER_TEMP/v387_exact_source.zip"
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/12157931417/zip" > "$RUNNER_TEMP/v388_exact_source.zip"
+          unzip -tq "$RUNNER_TEMP/v387_exact_source.zip"
+          unzip -tq "$RUNNER_TEMP/v388_exact_source.zip"
+      - name: Copy unchanged six H264 AAC MP4 to reviewer packet; full decode; human quality pending
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          python scripts/run_v3_89_independent_review.py \
+            --v387-archive "$RUNNER_TEMP/v387_exact_source.zip" \
+            --v388-archive "$RUNNER_TEMP/v388_exact_source.zip" \
+            --output-dir "$RUNNER_TEMP/v389_acceptance"
+          python - <<'PY'
+          import pathlib,json,csv,os
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v389_acceptance"
+          packet=root/"reviewer_packet"
+          admin=root/"admin_only"
+          state=json.loads((admin/"v389_acceptance_status.json").read_text())
+          assert state["checkpoint"]=="V3-89"
+          assert state["verified_actual_native_clip_count"]==6
+          assert state["family_balance"]=={"AFFINE":2,"FRACTION_EQUIVALENCE":2,"ORDERED_SEARCH":2}
+          assert state["machine_native_evidence"]=="PASS"
+          assert state["real_human_acceptance"]["state"]=="PENDING_HUMAN_REVIEW"
+          assert state["real_human_acceptance"]["count_human_ratings"]==0
+          assert state["final_visual_quality"]=="NOT_PASS_UNTIL_VALID_HUMAN_REVIEW"
+          assert state["production"]=="BLOCKED"
+          assert len(list(packet.glob("CLIP_*.mp4")))==6
+          assert len(list(packet.glob("CLIP_*_3frames.jpg")))==6
+          assert not (packet/"clip_reveal_key_AND_SHA_RECEIPTS.json").exists()
+          with (packet/"BLANK_human_review_scores.csv").open() as f:
+              rows=list(csv.DictReader(f))
+          assert len(rows)==12
+          assert all(x["reviewer_id"]=="" and x["pedagogical_usefulness"]=="" for x in rows)
+          print("V389 VERIFIED 6 ORIGINAL NATIVE MP4 / 3 FAMILIES / 0 HUMAN RATINGS / RELEASE BLOCKED")
+          PY
+      - name: Historical Core and benchmark invariant checks
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: v389-public-six-clips-and-blank-human-rubric
+          path: ${{ runner.temp }}/v389_acceptance/reviewer_packet/
+          retention-days: 7
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: v389-admin-source-reveal-key-and-unrated-gate
+          path: ${{ runner.temp }}/v389_acceptance/admin_only/
+          retention-days: 7
+          if-no-files-found: error

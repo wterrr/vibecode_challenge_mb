@@ -1,0 +1,45 @@
+{
+  "checkpoint": "V3-36",
+  "name": "Provider Compatibility and Genuine Creative Scene Readiness",
+  "parent_pr": 69,
+  "parent_head_sha": "c9752e2af516693330d437a59190b7412b0fc5bf",
+  "topic_id": "lfb-018-math",
+  "model": "openai/gpt-6-luna",
+  "prior_live_receipt": {
+    "checkpoint": "V3-35",
+    "github_run": 37911556743,
+    "http_error": 404,
+    "http_requests": 1,
+    "model_response": false
+  },
+  "hypotheses": [
+    "H1: V3-35 HTTP 404 is not causally attributable from public catalog metadata; do not assert a definitive provider root cause.",
+    "H2: a successful future live-structured scene must carry REAL model provenance rather than synthetic-host fixture provenance.",
+    "H3: no model-created video shall pass if the receipt, model SHA, scene hash, or actual MP4/AV evidence is missing or inconsistent."
+  ],
+  "allowed_current_actions": [
+    "public unauthenticated metadata GET (no provider POST)",
+    "offline synthetic tests and actual Manim fixture reuse",
+    "negative/mutation evidence tests",
+    "source audit/documentation"
+  ],
+  "forbidden_current_actions": [
+    "new paid inference or model POST",
+    "automatic fallback or retry",
+    "alter frozen six unseen V3-33 denominator",
+    "merge main",
+    "production release",
+    "human score fabrication"
+  ],
+  "authorized_inference_requests": 0,
+  "possible_future_inference": "A separate explicit user authorization and new preregistered experiment are required. V3-35 one-shot tag is consumed; no new GPT-6 Luna request under V3-36.",
+  "prior_synthetic_artifact_not_real_model": true,
+  "pass_policy": {
+    "offline": "All new and inherited adversarial tests pass on exact HEAD; no inference job executes.",
+    "genuine_scene": "Requires a separately authorized future model-origin plan, claim-consistent semantics, isolated Manim render, decoded H264/AAC/SRT and matching hashes; presently NOT_TESTED.",
+    "educational_quality": "NOT_ASSESSED without independent evaluation.",
+    "production": "BLOCKED"
+  },
+  "source_grounding": "Local exact Fraction arithmetic only; publisher-source and teaching-quality claims not proven",
+  "register_before_implementation": true
+}

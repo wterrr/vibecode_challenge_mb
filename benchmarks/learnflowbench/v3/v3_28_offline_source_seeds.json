@@ -1,0 +1,49 @@
+{
+  "schema_version": "v3-28-curated-source-input-v1",
+  "status": "AUTHOR_SEEDED_NOT_AUTONOMOUS_RESEARCH",
+  "selection_from": "benchmarks/learnflowbench/v3/v3_27_locked_development_topics.json",
+  "cases": [
+    {
+      "domain": "math",
+      "topic_id": "lfb-020-math",
+      "model_kind": "LINEAR_SLOPE",
+      "slope": 1,
+      "intercept": 1,
+      "x_domain": [
+        -2,
+        2
+      ],
+      "source_url": "https://openstax.org/books/intermediate-algebra-2e/pages/3-2-slope-of-a-line",
+      "source_title": "OpenStax Intermediate Algebra 2e §3.2 Slope of a Line",
+      "source_statement": "For a line, slope is the change in y divided by the change in x.",
+      "subject": "a linear function",
+      "x_name": "x",
+      "y_name": "y",
+      "unit_x": "units",
+      "unit_y": "units"
+    },
+    {
+      "domain": "physics",
+      "topic_id": "lfb-036-physics",
+      "model_kind": "CONSTANT_ACCELERATION_VELOCITY",
+      "slope": 1,
+      "intercept": 1,
+      "x_domain": [
+        0,
+        4
+      ],
+      "source_url": "https://openstax.org/books/college-physics-2e/pages/2-5-motion-equations-for-constant-acceleration-in-one-dimension",
+      "source_title": "OpenStax College Physics 2e §2.5 Constant Acceleration",
+      "source_statement": "For motion with constant acceleration, velocity equals initial velocity plus acceleration times elapsed time.",
+      "subject": "constant acceleration motion",
+      "x_name": "time",
+      "y_name": "velocity",
+      "unit_x": "seconds",
+      "unit_y": "meters per second"
+    }
+  ],
+  "not_real_agent_generated": true,
+  "not_independent_fact_approval": true,
+  "human_learner_quality": "UNMEASURED",
+  "production": "BLOCKED"
+}

@@ -1,0 +1,94 @@
+{
+  "checkpoint": "V3-49",
+  "title": "Versioned Semantic Claim Grounding and Out-of-Fixture Fraction Lessons",
+  "registration_kind": "PREREGISTRATION_BEFORE_IMPLEMENTATION",
+  "parent_pr": 82,
+  "parent_sha": "ed201a4cd31c429a6a979e3b857716c8afe0fa0d",
+  "source_failure": "V3-48 fixed F1/F2/F3 semantics cannot substantiate novel fractions; preserve legacy guard unchanged.",
+  "spec": {
+    "version": "v3-49-host-grounded-fractions-v1",
+    "origin": "HOST_VERIFIED_EXACT_RATIONAL_ARITHMETIC_NOT_LLM_CLAIM",
+    "constraints": [
+      "integer 1<=numerator<denominator<=6",
+      "factor 2..3 integer",
+      "target denominator<=12",
+      "targets derive strictly from numerator*factor,denominator*factor",
+      "source/target whole area equal and subdivided cells preserve shade mapping",
+      "all claims F1/F2/F3 are per-topic evidence-hashed not old global F1/2/3",
+      "host synthesis only, never provider-authored Python or model completion"
+    ],
+    "negative": [
+      "zero denominator",
+      "fraction>=1",
+      "wrong proof",
+      "wrong shade colors",
+      "wrong event claim",
+      "evidence SHA substitution",
+      "wrong ratio despite valid static graphic",
+      "synthetic provenance laundering",
+      "unknown condition rendered as PASS"
+    ]
+  },
+  "cases": [
+    {
+      "id": "dev_two_thirds",
+      "role": "development",
+      "source": [
+        2,
+        3
+      ],
+      "factor": 2,
+      "target": [
+        4,
+        6
+      ]
+    },
+    {
+      "id": "heldout_one_third",
+      "role": "heldout_new_topic",
+      "source": [
+        1,
+        3
+      ],
+      "factor": 3,
+      "target": [
+        3,
+        9
+      ]
+    },
+    {
+      "id": "heldout_three_quarters",
+      "role": "heldout_new_topic",
+      "source": [
+        3,
+        4
+      ],
+      "factor": 3,
+      "target": [
+        9,
+        12
+      ]
+    }
+  ],
+  "acceptance": {
+    "three_real_native_H264_AAC": 3,
+    "full_physical_audio": true,
+    "decoded_semantic_subdivision": true,
+    "source_sha_provenance": true,
+    "new_claim_coverage": true,
+    "legacy_V3_48_fail_closed_preserved": true,
+    "prior_v2_v3_benchmark_gates": true,
+    "zero_provider_requests": true,
+    "no_main_merge": true,
+    "human_pedagogy": "UNRATED",
+    "provider_compatibility": "UNTESTED",
+    "six_domain_generalization": "NOT_CERTIFIED",
+    "production": "BLOCKED"
+  },
+  "limitations": [
+    "Heldouts are different unseen ratios in same fraction-equivalence family, not unbiased cross-domain samples.",
+    "Human learning gain is unmeasured.",
+    "Use existing V3-44 typed SemanticLesson and V3-47 compiler/grammar; no forked Manim renderer.",
+    "No re-authorization of V3-39/V3-42 requests."
+  ]
+}

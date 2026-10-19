@@ -76,7 +76,16 @@ class Settings(BaseSettings):
     gemini_image_model: str = "gemini-3.1-flash-image"
     gemini_tts_model: str = "gemini-3.1-flash-tts-preview"
 
-    planner_provider: Literal["gemini"] = "gemini"
+    planner_provider: Literal["gemini", "openrouter"] = "gemini"
+    openrouter_planner_model: str = "openai/gpt-6-luna"
+    paid_planner_max_tokens: int = Field(default=12000, ge=3000, le=16000)
+    auth_enabled: bool = False
+    admin_username: str = "admin"
+    admin_password: str = Field(default="", repr=False)
+    auth_secret_key: str = Field(default="", repr=False)
+    public_origin: str = ""
+    daily_paid_job_limit: int = Field(default=10, ge=1, le=100)
+
     speech_provider: Literal["edge", "gemini"] = "edge"
     image_provider: Literal["none", "gemini"] = "none"
 
@@ -85,11 +94,49 @@ class Settings(BaseSettings):
 
     render_profile: Literal["production", "test"] = "production"
     enable_image_generation: bool = False
+    # V3-18: local, non-publishing developer preview only; DEFAULT OFF.
+    # Explicit second gate for locally narrated V3 lessons; default OFF.
+    # V3-20: separately pronounced/physically measured semantic event preview.
+    v3_event_alignment_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices(
+            "LEARNFLOW_V3_EVENT_ALIGNMENT", "v3_event_alignment_enabled"
+        ),
+    )
+    v3_narrated_lesson_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices(
+            "LEARNFLOW_V3_NARRATED_LESSON", "v3_narrated_lesson_enabled"
+        ),
+    )
+    v3_binary_preview_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices(
+            "LEARNFLOW_V3_BINARY_PREVIEW", "v3_binary_preview_enabled"
+        ),
+    )
+    # V3-95: isolated, explicitly consented local paid GPT preview; default OFF.
+    v3_gpt_array_preview_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices(
+            "LEARNFLOW_V3_GPT_ARRAY_PREVIEW", "v3_gpt_array_preview_enabled"
+        ),
+    )
+    openrouter_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("OPENROUTER_API_KEY", "openrouter_api_key"),
+    )
 
     def __repr__(self) -> str:
         data = self.model_dump()
+        if data.get("admin_password"):
+            data["admin_password"] = "***REDACTED***"
+        if data.get("auth_secret_key"):
+            data["auth_secret_key"] = "***REDACTED***"
         if data.get("gemini_api_key"):
             data["gemini_api_key"] = "***REDACTED***"
+        if data.get("openrouter_api_key"):
+            data["openrouter_api_key"] = "***REDACTED***"
         if data.get("database_url"):
             data["database_url"] = "***REDACTED***"
         return f"Settings({data})"

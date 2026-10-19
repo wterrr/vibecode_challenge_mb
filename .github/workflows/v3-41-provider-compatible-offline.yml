@@ -1,0 +1,75 @@
+name: V3-41 Provider-Compatible Structured Scene Offline Recovery
+
+on:
+  push:
+    branches: [chatgpt/v3-41-provider-compatible-scene-protocol]
+  pull_request:
+    paths:
+      - "learnflow_v3/compatible_scene_protocol.py"
+      - "learnflow_v3/creative_manim_runner.py"
+      - "learnflow_v3/creative_evidence_gate.py"
+      - "tests/v3/test_v3_41_compatible_scene_protocol.py"
+      - "scripts/run_v3_41_offline_compatibility.py"
+      - ".github/workflows/v3-41-provider-compatible-offline.yml"
+      - "benchmarks/learnflowbench/v3/v3_41_provider_compatible_protocol_preregister.json"
+      - "requirements.txt"
+
+permissions:
+  contents: read
+
+jobs:
+  offline-compatible-schema-and-native-synthetic-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install bounded Python dependencies including local JSON Schema validation
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt pyyaml
+      - name: Bootstrap actual Computer Modern fonts/FFmpeg before frozen tests
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Portable schema, V3-41 hostile mutations and V3-34..40 regression
+        timeout-minutes: 8
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py \
+            tests/v3/test_v3_39_compatible_creative_trial.py \
+            tests/v3/test_v3_38_openrouter_metadata_audit.py \
+            tests/v3/test_v3_37_genuine_creative_trial.py \
+            tests/v3/test_v3_36_creative_readiness.py \
+            tests/v3/test_v3_35_public_provider_catalog.py \
+            tests/v3/test_v3_35_structured_scene.py \
+            tests/v3/test_v3_34_generative_ablation.py
+      - name: Frozen V3-33 unseen, V2 Core and benchmark protocol
+        timeout-minutes: 8
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_33_generalization.py \
+            tests/v3/test_v3_32_grounded_lesson.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Docker Manim H264/AAC real rendering, synthetic origin must REJECT
+        timeout-minutes: 16
+        run: |
+          timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+          python scripts/run_v3_41_offline_compatibility.py \
+            --output-dir "$RUNNER_TEMP/v3_41_offline_compatible"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-41-provider-portable-native-synthetic-NOT-MODEL
+          path: ${{ runner.temp }}/v3_41_offline_compatible/
+          retention-days: 14
+          if-no-files-found: warn
+
+  # No inference job, key-bearing GET, credentials, retry or opt-in trial here.

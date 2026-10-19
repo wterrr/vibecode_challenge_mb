@@ -1,0 +1,12 @@
+name: V3-96 Standalone Live Trigger Disabled (moved into registered offline workflow)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  harmless_notice:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Legacy duplicate paid trigger deliberately disabled
+        run: |
+          echo "V396_STANDALONE_DISABLED_NO_MODEL_POST"

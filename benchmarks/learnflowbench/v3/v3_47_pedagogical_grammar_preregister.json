@@ -1,0 +1,85 @@
+{
+  "checkpoint": "V3-47",
+  "title": "Pedagogical Visual Storytelling & Semantic Transformation Grammar",
+  "registered_before_implementation": true,
+  "parent_pr": 80,
+  "parent_sha": "6a3a980258c52bd9b83b58b6eaf042cb3f908694",
+  "baseline": {
+    "run_id": 38200776147,
+    "artifact_id": 11725751836,
+    "fraction_sha256": "d14e7bb6e2cff98ee7296a21eb9183a59e20fcbc20c25a87eef923cd90a777e1",
+    "process_sha256": "348bfdcaa9043a25a0dc7b491500164d0980d6c1d9c3b89d1d16373962e50b91"
+  },
+  "failure_inventory": [
+    "Fraction diagrams show equivalence and proof but do not visibly construct the subdivision of each source cell.",
+    "Process arrows and cursor move across Start Verify Finish but predicate, evidence and evaluation outcome are absent from sourced lesson.",
+    "Existing pixel/activity CI validates geometry, not educational meaning; two scenes are synthetic and sparse."
+  ],
+  "grammar_version": "v3-47-host-validated-transformation-v1",
+  "action_vocabulary": [
+    "subdivide",
+    "equivalence_link",
+    "condition_probe",
+    "state_transition",
+    "causal_emphasis"
+  ],
+  "truth_policy": "P2 process checking is unspecified. Show only an unresolved CHECK ? cue, never PASS/FAIL or an invented condition/result.",
+  "claims": "Every action references a frozen SceneWire claim ID, existing beat and object/event identity. Strict host grammar rejects unknown refs or arbitrary Python.",
+  "frozen_cases": [
+    {
+      "id": "fraction",
+      "wire": "v345-synthetic-fractions",
+      "family": "fraction_equivalence",
+      "target": "subdivision followed by equivalence within morph and proof beats"
+    },
+    {
+      "id": "process",
+      "wire": "v345-synthetic-process",
+      "family": "ordered_process",
+      "target": "unresolved checking and causal traversal without invented outcome"
+    },
+    {
+      "id": "heldout_process",
+      "wire": "v345-synthetic-process derived with deterministic node/edge rename and safe geometry perturbation",
+      "family": "ordered_process",
+      "target": "same grammar works on changed ids and positions",
+      "heldout_limitation": "Geometric variation only, not an unseen domain or reasoning topic"
+    }
+  ],
+  "acceptance": {
+    "three_native_videos": true,
+    "h264_1280x720_15fps": true,
+    "full_aac": true,
+    "exact_frame_budget": true,
+    "no_extra_beat_duration": true,
+    "no_word_timestamp_fabrication": true,
+    "preserve_math_graph_provenance": true,
+    "fail_closed_no_static_card": true,
+    "decoded_frame_event_window_evidence": true,
+    "three_storyboards_and_timeline": true,
+    "rubric": "six independent human-review criteria empty pending real reviewer",
+    "negative": [
+      "unverified PASS or FAIL",
+      "bogus predicate/outcome",
+      "unbound object/claim",
+      "wrong beat",
+      "wrong factor",
+      "unsafe code",
+      "unsupported action",
+      "broken held-out graph",
+      "silent WAV",
+      "synthetic model-origin laundering"
+    ],
+    "model_http_posts": 0,
+    "model_authenticated_gets": 0,
+    "main_merge": false,
+    "production": "BLOCKED"
+  },
+  "research_nonclaims": [
+    "No verified predicate for conditional branch or binary outcome",
+    "No actual LLM-generated semantic grammar plan in this checkpoint",
+    "No six-domain generality inferred from two families plus one geometry-perturbed held-out",
+    "No human learning, visual preference or 3Blue1Brown quality certification without independent evidence"
+  ],
+  "scope": "Only V3-47 on a Draft PR stacked from #80. Reuse V3-44..46 strict scene, Docker Manim, native audio mux and pixel QA; no modification to live provider interface."
+}

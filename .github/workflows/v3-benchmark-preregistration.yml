@@ -1,0 +1,37 @@
+name: V3-01 Benchmark Preregistration Offline
+
+on:
+  push:
+    branches:
+      - chatgpt/v3-01-benchmark-preregistration
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "benchmarks/learnflowbench/v3/**"
+      - "scripts/verify_v3_benchmark_protocol.py"
+      - "tests/hermes/test_v3_benchmark_preregistration.py"
+      - ".github/workflows/v3-benchmark-preregistration.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  preregistration-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing LearnFlowBench test dependencies only
+        run: python -m pip install "pydantic>=2" pyyaml pytest pillow
+      - name: Verify frozen V3 protocol
+        run: python scripts/verify_v3_benchmark_protocol.py
+      - name: Mutation/regression coverage
+        run: pytest -q --confcutdir=tests/hermes tests/hermes/test_v3_benchmark_preregistration.py
+      - name: Original frozen LearnFlowBench contract
+        run: python scripts/verify_learnflow_bench.py
+      - name: Core Freeze guard
+        run: python scripts/verify_v2_core_freeze.py

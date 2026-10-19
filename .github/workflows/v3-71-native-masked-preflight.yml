@@ -1,0 +1,65 @@
+name: V3-71 Physical Masked Reviewer Kit Preflight (NO MODEL)
+on:
+  push:
+    branches: [chatgpt/v3-71-masked-review-native-preflight]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_71_native_preflight_preregister.json'
+      - 'scripts/run_v3_71_masked_native_preflight.py'
+      - 'tests/v3/test_v3_71_masked_native_preflight.py'
+      - '.github/workflows/v3-71-native-masked-preflight.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_71_native_preflight_preregister.json'
+      - 'scripts/run_v3_71_masked_native_preflight.py'
+      - 'tests/v3/test_v3_71_masked_native_preflight.py'
+      - '.github/workflows/v3-71-native-masked-preflight.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: v371-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  physically-verify-unchanged-masked-video-kit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      V371_KIT_ZIP: /tmp/v371-original-v361-masked-kit.zip
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Offline prerequisites
+        run: |
+          python -m pip install --disable-pip-version-check 'pytest>=8,<10'
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+      - name: Fetch original frozen V3-61 masked-only artifact, no admin source
+        run: |
+          curl --fail --show-error --silent --location --retry 2 --max-time 180 \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/wterrr/vibecode_challenge_mb/actions/artifacts/11863189967/zip' \
+            -o "${V371_KIT_ZIP}"
+          unzip -t "${V371_KIT_ZIP}"
+      - name: Frozen native SHA, full decode, three masked forms and zero mapping
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          mkdir -p artifacts/v371
+          python scripts/run_v3_71_masked_native_preflight.py \
+            --kit-zip "${V371_KIT_ZIP}" --full-decode \
+            --receipt artifacts/v371/v371_sanitized_physical_receipt.json
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_71_masked_native_preflight.py
+          test ! -d private_review_submissions
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v371-original-masked-native-preflight-NO-HUMAN-RATINGS
+          path: artifacts/v371/v371_sanitized_physical_receipt.json
+          if-no-files-found: error
+          retention-days: 7

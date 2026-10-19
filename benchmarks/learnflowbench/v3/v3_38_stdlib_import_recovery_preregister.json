@@ -1,0 +1,39 @@
+{
+  "checkpoint": "V3-38",
+  "name": "Final isolated stdlib metadata GET recovery after two skipped key jobs",
+  "scope": "Read-only authentication metadata GET only; no inference API",
+  "previous_key_tag_run_ids": [
+    38018269731,
+    38018493840
+  ],
+  "previous_key_job_conclusions": [
+    "SKIPPED",
+    "SKIPPED"
+  ],
+  "previous_key_http_get_attempts": 0,
+  "previous_model_http_post_attempts_this_checkpoint": 0,
+  "previous_failure_codes": [
+    "ModuleNotFoundError:pydantic",
+    "ModuleNotFoundError:kiwisolver"
+  ],
+  "root_issue": "Python -m learnflow_v3.openrouter_metadata_audit imports all learnflow_v3.__init__ and V2 renderer dependencies before metadata code",
+  "correction": "Standalone file-based Python execution and importlib.spec_from_file_location in tests; Python -S no-site regression; only stdlib + pytest for tests",
+  "new_tag": "[v3-38-stdlib-isolated-key-check]",
+  "must_have_offline_green": "The exact tagged commit offline-adversarial-and-public-get success is required before authenticated job; previous untagged code tests must also PASS before opt-in",
+  "allowed_auth_network": "HTTPS GET https://openrouter.ai/api/v1/key only with existing GitHub Secret",
+  "allowed_anon_network": "HTTPS GET https://openrouter.ai/api/v1/models/openai/gpt-6-luna/endpoints",
+  "maximum_key_metadata_gets_across_v3_38": 1,
+  "maximum_inference_posts": 0,
+  "retry": 0,
+  "allow_redirect": false,
+  "forbidden": [
+    "model POST",
+    "management API",
+    "secret/label/user ID/logging",
+    "implicit second tagged commit or rerun"
+  ],
+  "model": "openai/gpt-6-luna",
+  "limitations": "GET key metadata can establish key auth but not exact model route, billing entitlement, or cause of old HTTP404",
+  "release": "BLOCKED",
+  "created_before_opt_in": true
+}

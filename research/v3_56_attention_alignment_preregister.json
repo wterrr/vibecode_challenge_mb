@@ -1,0 +1,90 @@
+{
+  "checkpoint": "V3-56",
+  "work_package": "ATTENTION_NATIVE_CAPTION_TO_VISUAL_ALIGNMENT",
+  "scope": "RESEARCH_ONLY_EXISTING_DRAFT_PR_90",
+  "parent_head_sha": "97cbcc0868ff4d6d3b8a6d7278140f4969d812f0",
+  "input": {
+    "sha256": "439e154fffbb8696a37753d765c4f64bc06d25fbb17cb3d98bcc842045d85cb9",
+    "filename": "Attention in transformers, step-by-step _ Deep Learning Chapter 6.mp4",
+    "duration_s": 1569.191429,
+    "original_frames": 47076,
+    "fps": 30,
+    "aac_stream_present": true
+  },
+  "transcript_sources": [
+    {
+      "url": "https://2outube.com/watch?v=eMlx5fFNoYc",
+      "type": "THIRD_PARTY_YOUTUBE_CAPTION_MIRROR",
+      "reliability": "EXTERNAL_CAPTION_TIMESTAMP_PROXY_NOT_NATIVE_AUDIO_ASR"
+    },
+    {
+      "url": "https://www.3blue1brown.com/lessons/attention/",
+      "type": "FIRST_PARTY_TEXT_ADAPTATION",
+      "reliability": "LESSON_SEMANTIC_CONTENT_NOT_TIMED_AUDIO"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=eMlx5fFNoYc",
+      "type": "CREATOR_YOUTUBE_CHAPTER_MARKERS",
+      "reliability": "COARSE_VIDEO_CHAPTERS"
+    }
+  ],
+  "native_procedure": "OpenCV seek/decoded physical native frames, 12 preselected caption-bearing segments x 5 frame timestamps and SHA256 320x180 grayscale; ffmpeg decode entire AAC to mono 8k PCM for 1s RMS. Preserve exact MP4 hash, no stored copyrighted frames in GitHub.",
+  "anchor_ids": [
+    "mole",
+    "running_sentence",
+    "query_motivating",
+    "query_to_key",
+    "score_matrix",
+    "softmax",
+    "mask",
+    "values",
+    "weighting",
+    "multihead",
+    "output",
+    "return_context"
+  ],
+  "required_fields": [
+    "transcript_proxy_start_s",
+    "transcript_claim_paraphrase",
+    "native_frame_seconds",
+    "native_frame_first_sha256",
+    "native_frame_description",
+    "cross_modal_relation",
+    "audio_rms_sample_points",
+    "verified_scope",
+    "unverified_scope"
+  ],
+  "attestation_levels": [
+    "FIRST_PARTY_READ",
+    "EXTERNAL_CAPTION_PROXY",
+    "ACTUAL_MP4_FRAME",
+    "ACTUAL_MP4_AUDIO_WAVEFORM",
+    "NATIVE_WORD_ALIGN_UNVERIFIED"
+  ],
+  "negative_controls": [
+    "silence inferred from low RMS even though music may exist",
+    "voice-to-frame verified inferred from external timestamp only",
+    "same video source coded scene automatically equals final cut",
+    "high pixel change implies pedagogical improvement",
+    "static frame necessarily means teaching pause",
+    "caption time magically equals frame-exact cut time"
+  ],
+  "acceptance": {
+    "visual_alignment_gate": "at least 10 independently sampled native frame witnesses paired with external transcript timestamp cues, all explicitly bounded to proxy",
+    "native_audio_gate": "AAC PCM 1569s decoded successfully and RMS independently characterized; no phoneme/speech words inferred",
+    "human_spoken_word_accuracy": "NOT_CERTIFIED_WITHOUT_NATIVE_ASR_OR_MANUAL_LISTEN",
+    "real_effectiveness": "NOT_TESTED",
+    "full_15_videos": "STILL_NO_GO",
+    "model_provider_calls": 0,
+    "production": "BLOCKED",
+    "core_mutations": 0,
+    "no_main_merge": true
+  },
+  "artifacts": [
+    "research/v3_56_attention_native_caption_alignment.json",
+    "reports/v3_56_attention_narration_visual_alignment.md",
+    "scripts/verify_v3_56_attention_alignment.py",
+    "tests/v3/test_v3_56_attention_alignment.py"
+  ],
+  "no_original_video_or_frames_to_git": true
+}

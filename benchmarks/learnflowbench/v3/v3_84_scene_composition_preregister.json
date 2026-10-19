@@ -1,0 +1,97 @@
+{
+  "checkpoint": "V3-84",
+  "protocol": "PREREGISTER_BEFORE_IMPLEMENTATION",
+  "parent": {
+    "draft_pr": 120,
+    "sha": "5ffa3b18e2c433696f7de3d3716b953ed38486fc"
+  },
+  "baseline": {
+    "native_artifact_id": 11955117286,
+    "native_counts": {
+      "linear_output_new": 468,
+      "accelerating_new": 477,
+      "counterfactual_physics_heldout": 488
+    },
+    "review": "Native V3-83 contact-sheet: formula and squares are semantically connected but squares are small and spatial narrative has no stage hierarchy; human visual NOT PASS"
+  },
+  "fixed_cases": [
+    "linear_output_new",
+    "accelerating_new",
+    "counterfactual_physics_heldout",
+    "chemistry_periodic_table_unsupported",
+    "history_industrial_unsupported"
+  ],
+  "denominators": {
+    "new_native_positive": 3,
+    "unsupported_abstain": 2,
+    "heldout_new_native": 1
+  },
+  "research_question": "Do generic pedagogical stages, larger stable unit formations, and physically continuous collections materially improve the spatial readability of V3-83 while preserving exact arithmetic, claim links and audio-frame sync?",
+  "failure_inventory": [
+    "Scale repeated groups too small to count at 720p; group boundaries missing",
+    "Add merging tiles physically grounded but lacks a clear two-source vs single-result spatial stage",
+    "Visual hierarchy between inputs, physical action and equation is weak",
+    "No independent timed-frame layout/readability audit; current CI certifies color changes but not stage separation"
+  ],
+  "design_freeze": {
+    "font": "CMU Serif",
+    "background": "#080b11",
+    "render": "Manim H264/AAC 1280x720 15fps",
+    "op_scope": [
+      "SCALE",
+      "ADD"
+    ],
+    "max_units": 24,
+    "grouped_unit_count": "verified exact host scalar integer",
+    "layout": "generic stage-header / operands / physical diagram / equation; content-derived geometries; no topic switches",
+    "strict_abstain": "unknown operations, non-positive or non-integer inputs, oversized geometry, unsupported source subject",
+    "narration": "same V3-82 host script/WAV text; no API regeneration",
+    "legacy_defaults": "V3-81/V3-82/V3-83 remain untouched by default"
+  },
+  "temporal_witness": {
+    "sample_frames_relative": [
+      1,
+      35,
+      90
+    ],
+    "roi_xyxy": [
+      120,
+      295,
+      1160,
+      555
+    ],
+    "minimum_late_semantic_pixels": 3000,
+    "minimum_early_to_late_change": 1200,
+    "late_must_show_both_colors_for_add": true,
+    "check_before_after_on_decoded_H264": true,
+    "full_ffmpeg_decode": true,
+    "video_probe": true,
+    "source_geometry_collision_gate": true
+  },
+  "negative_mutations": [
+    "unit mismatch",
+    "fraction input",
+    "zero or negative count",
+    "group overflow",
+    "malformed operator",
+    "source alias output drift",
+    "geometry region intrusion",
+    "output reusing initial count incorrectly",
+    "wrong model origin"
+  ],
+  "acceptance": {
+    "native_three_of_three": true,
+    "negative_two_of_two": true,
+    "same_locked_inputs": true,
+    "no_paid_or_free_model_requests": true,
+    "no_merge_main": true,
+    "old_mp4_hashes_unchanged": true,
+    "positive_case_zero_substitution": true,
+    "raw_script_and_source_trace_hash_preserved": true,
+    "topic_independent_compiler": true,
+    "visual_human_final": "NOT_PASS_UNTIL_INDEPENDENT_REVIEW",
+    "learner_gain": "NOT_MEASURED",
+    "autonomous_storyboarding": "NOT_TESTED",
+    "production": "BLOCKED"
+  }
+}

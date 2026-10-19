@@ -1,0 +1,80 @@
+{
+  "checkpoint": "V3-54",
+  "name": "Model-Authored Creative SceneGraph Acceptance & Visual Quality Gate",
+  "parent_pr": 87,
+  "parent_sha": "f5556e89199dc95fc00c4f7b82d17b8f19850e65",
+  "first_commit_rule": "Freeze prompts, canonical fixtures, metrics, thresholds, negative control cases and STOP before code",
+  "scope": "OFFLINE MOCK MODEL RESPONSES ONLY; NO real model API, model authoring not proven",
+  "research_questions": [
+    "Can a model-shaped candidate JSON be strictly accepted, validated by existing V2/V3 SceneGraph and grounded evidence, without rendering untrusted Python?",
+    "Can a native decoded-video visual QA gate detect sparse/static/copy-identical candidates and report objective measurements separately from teaching quality?",
+    "Can versioned rejection receipts differentiate wire, schema, evidence, topology and physical QA failures without storing provider output?"
+  ],
+  "source": "V3-51 three previously constructed HOST fixture storyboards wrapped as simulated untrusted JSON model responses; intentionally not independent genuine model samples",
+  "case_ids": [
+    "mock_token_network",
+    "mock_score_comparison",
+    "mock_symbolic_equivalence"
+  ],
+  "frozen_topic": "Attention scaled-dot-product two-token example Q=(1,0), host QKV math, EXACT V3-51 ledger sha256",
+  "required_contract": {
+    "data_envelope": "strict versioned model-candidate JSON packet, scene dict with V3-51 semantic and schema validation, mock provenance only",
+    "claim_scope": "A1,A2,A3,A4 existing host ledger; no extra model-created math/code or unsupported relations",
+    "allowed_animation": "existing V3-51 finite graph/action IR only; V3-53 live provider compatibility NOT TESTED",
+    "test_negative": [
+      "malformed JSON",
+      "too large payload",
+      "extra fields",
+      "spoofed real model provenance",
+      "evidence SHA tamper",
+      "numeric hallucination",
+      "unbound claim",
+      "unknown edge",
+      "missing scene",
+      "invalid stage action",
+      "inject Python as free text",
+      "different topic origin",
+      "misplaced model code"
+    ],
+    "diagnostic_receipts": "sanitized validation_stage,error_code,error_paths/types, hashes only; never raw provider data"
+  },
+  "physical_quality": {
+    "native_video_count": 3,
+    "video": "actual H264+AAC 1280x720 15fps with exact beat-frame mux",
+    "decoded_frames_per_video": 5,
+    "normalized_times": [
+      0.14,
+      0.31,
+      0.49,
+      0.7,
+      0.87
+    ],
+    "frame_occupancy_nonbackground_fraction_min": 0.002,
+    "frame_occupancy_nonbackground_fraction_max": 0.7,
+    "per_video_nonempty_samples_at_least": 3,
+    "temporal_mean_absolute_pixel_difference_min": 1.5,
+    "pairwise_multiframe_difference_min": 2.5,
+    "per_pair_structural_graph_signature_must_differ": true,
+    "counterexample_quality_failures": [
+      "black static video",
+      "identical frames copied across variants",
+      "unreadable/empty scene proxies"
+    ],
+    "meaning": "This is a pixel/structural proxy, NOT readability by humans, not visual storytelling quality, not educational effect."
+  },
+  "historical_regressions": [
+    "V3-50",
+    "V3-51",
+    "V3-52",
+    "V3-53",
+    "V2 Core",
+    "V3 Bench"
+  ],
+  "safety": {
+    "max_model_provider_posts": 0,
+    "no_main_merge": true,
+    "production": "BLOCKED",
+    "no_paid_retrial_v350": true
+  },
+  "go_no_go": "TECHNICAL OFFLINE PASS only if three physical MP4 and native receipts, full tests, both CI exact HEAD and visual QA; human quality UNRATED"
+}

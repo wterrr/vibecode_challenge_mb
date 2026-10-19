@@ -1,0 +1,43 @@
+{
+  "checkpoint": "V3-35",
+  "title": "Schema-Constrained Generative Scene Repair / One Shot",
+  "preregistered_before_implementation": true,
+  "source_parent_pr": 68,
+  "parent_head": "5d524753ea4c7cab544055b527961069c6bfb321",
+  "reason_for_new_attempt": "V3-34 one genuine GPT-6 Luna model response failed CreativeScene validation; original response unavailable. This is a SEPARATELY AUTHORIZED, one-shot iteration; no adaptive retries.",
+  "topic_id": "lfb-018-math",
+  "topic_query_sha256": "376a06049a51990ddb7fe7a340ef42222b8d89ed601fa8a22dfe971524cf113d",
+  "immutable_model": "openai/gpt-6-luna",
+  "max_model_http_requests": 1,
+  "provider_fallback": false,
+  "provider_retries": 0,
+  "strict_output_format": "OpenRouter response_format json_schema strict=true, provider.require_parameters=true",
+  "strict_schema_policy": "No optional object keys and additionalProperties=false at every nested node; simple provider schema + separate semantic validation and narrow normalizer.",
+  "arms": {
+    "A": "same prior V3-33 unsupported typed route ABSTAIN",
+    "B": "same model-authored creative plan attempted on OLD fixed renderer; ABSTAIN if no semantic adapter",
+    "C": "single real GPT-6 Luna schema-constrained JSON → validated finite primitives → HOST-compiled Manim sandbox → decoded MP4"
+  },
+  "offline_prerequisites": [
+    "test schema introspection and adversarial errors",
+    "test fake exact-schema model response and normalized Pydantic plan",
+    "render actual native Manim MP4 via the existing no-network Docker sandbox",
+    "frozen V3-16 benchmark, V3-33/V3-34 tests"
+  ],
+  "paid_condition": "Unique tagged one-shot push only after the exact-head offline gate PASS",
+  "paid_tag": "[v3-35-one-shot]",
+  "never_retry_or_fallback": true,
+  "strict_evidence": [
+    "save only sanitized JSON schema errors paths/types and SHA256 of model response",
+    "record provider request attempt even if schema error/transport fails",
+    "preserve provenance and actual decoded AV if any",
+    "no educational scores without human assessments"
+  ],
+  "scientific_limits": [
+    "One topic, one model, no statistical quality comparison",
+    "A/B have no MP4; C does not establish a better visual than Code2Video",
+    "source grounding for this topic based only on local Fraction arithmetic, not independently sourced facts",
+    "No automated prompt healing or hidden format regeneration"
+  ],
+  "production": "BLOCKED"
+}

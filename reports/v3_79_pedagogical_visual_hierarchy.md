@@ -1,0 +1,19 @@
+# V3-79 — Bounded Pedagogical Visual Hierarchy & Scene Composition A/B
+
+Research-only branch stacked from Draft PR #115 exact frozen HEAD `de011bad4e76c7dd15110ac0085384fbd931e3b9`, preregistration committed FIRST at `d7659b61175468b279ae05f003cd9ec2cca1da5d` BEFORE implementation. No model/provider API, main merge, V2 Core/production prompts or frozen V3-59/61/77/78 video overwrites.
+
+## Viewer-visible issue from actual native evidence
+
+[V3-78 exact-head CI #38672161761](https://github.com/wterrr/vibecode_challenge_mb/actions/runs/38672161761) succeeded with 20/20 new hostile tests, 22/22 V3-77 regression and three real narrated Manim H264/AAC with 27 decoded frame witnesses; all 48 PR-wide workflows passed. Actual measured **scene-owned content AABB union** (not pixel fill): token **2.0898%**, score **1.9780%**, symbolic **2.1619%** median of 1280×720 canvas; V3-78 detected score board:caption:text native bbox height near **22.2 px**, risky on smaller players. These are *review warnings*, not a numeric proof of failed pedagogy. Original V3-78 MP4s and audio immutable, no selection of easier fixtures.
+
+## Intervention: actual compiler-owned changes, not overlays
+
+- `learnflow_v3/v379_visual_hierarchy.py`: generic opt-in semantic grouping of *only V3-77 extent-aware COMPARISON* layouts. Tighten columns from ±3.05 to ±2.40 world units; keep original y positions, node identities, relations and graph/claim/beat order. Reuse exact V3-75 >=6px margin and original compiler edge-route segment/obstacle checks; if a source visual collides, fail closed. All other layouts remain bit-for-bit unchanged.
+- `learnflow_v3/creative_scene_graph.py` host Manim compiler gains `hierarchy_v379=False`: **default output stays unchanged**, but opt-in raises CMU educational text sizes to font 30, chart captions to 27 (from 22), and equal-width CHART bars to 1.20 world units (from 0.85), keeping each bar height proportional to the SAME host-ledger math value. Width constraints remain 2.75 / 2.70 world units to prevent overflows. No narration, object semantics, edge identity, action timing or animations added/removed; Indicate stays 1.07.
+- `scripts/run_v3_54_model_candidate_quality.py` opts into this ONLY with **V3-77 reflow + V3-75 preflight + V3-76R1 actual Manim SVG-leaf color/contrast 4.5:1 and native pixel QA all enabled**; original V3-54 defaults unaffected.
+- `scripts/run_v3_79_pedagogical_hierarchy.py`: EXACT SAME three original offline host-synthetic creative fixtures (no model authorship), new versioned real Manim H264/AAC clips, SHA provenance, actual per-case V3-78 native salience scorecards and baseline vs new median footprint/text group size. We measure before/after rather than imposing an invented aesthetic GO threshold. Video/audio may differ in rendering due to new composition, but script, semantic claims and beat allocation remain unchanged.
+- `tests/v3/test_v3_79_pedagogical_visual_hierarchy.py`: reproduces semantics and geometry for three frozen + held-out cases, corrupt layout/NaN/missing IDs, opt-in only/font preflight, default compiler identical. Dedicated CI `.github/workflows/v3-79-native-pedagogical-hierarchy.yml` demands three actual H264/AAC, 27 FFmpeg-decoded pixel witnesses, full video decode and exact SHA, V3-78/77 regression, freeze checks.
+
+## Acceptance and scientific honesty
+
+At implementation, **CI and actual new MP4s are PENDING**. Technical PASS only if all three existing strict native/geometry gates and reproducibility checks pass; any collision/text contrast/loss of native evidence is explicit NO-GO, not waved away as artistic. **Final viewer review remains NOT PASS/UNRATED**, human educational benefit and 3B1B parity NOT MEASURED. A 2% source AABB union is not universally 'bad': deliberate white space can have pedagogical purpose. No model API requests. Production BLOCKED.

@@ -1,0 +1,125 @@
+name: V3-63 Five-role Creative Proposal Admission and Native Difference (NO MODEL API)
+
+on:
+  push:
+    branches: [chatgpt/v3-63-five-role-creative-storyboard-admission]
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_63_five_role_creativity_preregister.json"
+      - "learnflow_v3/five_role_creative_admission.py"
+      - "learnflow_v3/five_role_creative_native.py"
+      - "scripts/run_v3_63_five_role_creativity.py"
+      - "tests/v3/test_v3_63_five_role_creativity.py"
+      - ".github/workflows/v3-63-five-role-creative-admission.yml"
+  pull_request:
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_63_five_role_creativity_preregister.json"
+      - "learnflow_v3/five_role_creative_admission.py"
+      - "learnflow_v3/five_role_creative_native.py"
+      - "scripts/run_v3_63_five_role_creativity.py"
+      - "tests/v3/test_v3_63_five_role_creativity.py"
+      - ".github/workflows/v3-63-five-role-creative-admission.yml"
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  five-role-strict-wire-and-semantic-admission:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install already-approved LearnFlow V3 dependencies
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -r requirements.txt 'pytest>=8,<10' 'pillow>=11,<13' 'numpy>=1.24,<3' pyyaml
+      - name: Validate strict five-role typed candidate, mutations, host-native visual effects
+        run: |
+          python -m compileall -q \
+            learnflow_v3/five_role_creative_admission.py \
+            learnflow_v3/five_role_creative_native.py \
+            scripts/run_v3_63_five_role_creativity.py \
+            tests/v3/test_v3_63_five_role_creativity.py
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_63_five_role_creativity.py
+      - name: Assert no provider network, model Python, or production integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for path in ('learnflow_v3/five_role_creative_admission.py',
+                       'learnflow_v3/five_role_creative_native.py',
+                       'scripts/run_v3_63_five_role_creativity.py'):
+              text=Path(path).read_text()
+              for forbidden in ('chat.completions.create(', 'requests.post(',
+                                'urllib.request.urlopen(', 'subprocess.run(["python",',
+                                'eval(', 'exec('):
+                  assert forbidden not in text,(path,forbidden)
+          print('V363_HOST_ONLY_NO_PROVIDER_CALL_OR_DYNAMIC_EVAL')
+          PY
+
+  two-real-native-videos-with-preserved-parent-aac:
+    if: github.event_name == 'push'
+    needs: five-role-strict-wire-and-semantic-admission
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install native decoder and approved visual dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+          python -m pip install --disable-pip-version-check \
+            -r requirements.txt 'pillow>=11,<13' 'numpy>=1.24,<3' pyyaml
+          ffmpeg -version | head -n 1
+      - name: Fetch exact frozen native V3-62 artifact, not its model/provider output
+        run: |
+          mkdir -p /tmp/v363-source
+          curl --fail --show-error --silent --location --retry 3 --max-time 180 \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/wterrr/vibecode_challenge_mb/actions/artifacts/11865155976/zip" \
+            -o /tmp/v363-v362-native.zip
+          unzip -t /tmp/v363-v362-native.zip
+          unzip -q /tmp/v363-v362-native.zip -d /tmp/v363-source
+      - name: Render and compare two different five-role host-test candidates as real MP4
+        run: |
+          python scripts/run_v3_63_five_role_creativity.py \
+            --frozen-v362-artifact /tmp/v363-source \
+            --output artifacts/v363/native_decision_pair
+          test "$(find artifacts/v363/native_decision_pair -maxdepth 1 -name 'candidate_*.mp4' | wc -l)" -eq 2
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          r=json.loads(Path('artifacts/v363/native_decision_pair/v363_receipt.json').read_text())
+          assert r['native_candidate_count']==2
+          assert r['cross_candidate_frame_MAD_at_transform']>0.2
+          assert len(r['five_role_cases_admitted'])==3
+          assert r['actual_model_generated_proposals']==0
+          assert r['model_provider_calls']==0
+          assert r['genuine_model_authorship']=='NOT_TESTED_NO_PROVIDER_RESPONSE'
+          assert r['production']=='BLOCKED'
+          print('V363_HOST_TEST_ONLY_NATIVE_VISUAL_DECISION_GATE_PASS')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v363-FIVE-ROLE-TEST-ONLY-NATIVE-DECISION-PAIR-UNRATED
+          path: |
+            artifacts/v363/native_decision_pair/*.mp4
+            artifacts/v363/native_decision_pair/*_decoded_transform_frame.png
+            artifacts/v363/native_decision_pair/v363_receipt.json
+          if-no-files-found: error
+          retention-days: 7

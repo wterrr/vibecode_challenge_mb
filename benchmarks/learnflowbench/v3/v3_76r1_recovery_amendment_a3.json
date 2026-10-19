@@ -1,0 +1,38 @@
+{
+  "checkpoint": "V3-76R1",
+  "amendment": "A3_SVG_GLYPH_COLOR_PROVENANCE",
+  "date": "2026-10-14",
+  "preceding_a2_sha": "449cedf70ddb783d97aa687ced3d5fbe3acc1740",
+  "evidence": {
+    "run": 38541169374,
+    "artifact": 11882608398,
+    "head": "a6ede436c721b668c232f08a95fbe1e7411cbb77",
+    "unit": "25/25 PASS",
+    "smoke": "20-frame physical H264; 23 nonempty runtime rows",
+    "cases": [
+      "mock_token_network NO_GO V375_SOURCE_COLLISION",
+      "mock_score_comparison NO_GO V376_TEXT_COLOR_CONTRAST_LT_4P5",
+      "mock_symbolic_equivalence NO_GO V376_TEXT_COLOR_CONTRAST_LT_4P5"
+    ],
+    "observed_bug": "all 3458 stable Text observations in Score Comparison and 4305 in Symbolic Equivalence report root rgb [0,0,0] in JSONL, although decoded native MP4 screenshots visibly show light-colored text; Text group-level get_color() is not the effective visible SVG glyph fill color."
+  },
+  "objective": "Replace invalid root Text color getter with measured Manim CE SVG leaf path fill RGB and opacity, without altering WCAG >=4.5 threshold or patching rendered pixels.",
+  "method": [
+    "At construct time, inspect actual Text SVG leaf VMobjects with points, deduplicate fill-color candidates and fail closed if no visible valid glyph color can be measured",
+    "Serialize provenance and all distinct glyph fill RGB candidates; validator checks WORST-CASE contrast of every candidate, no averaging/hiding low-contrast glyphs",
+    "Keep construct-time 1.07 geometry envelope, no claim of exact animated style tracking",
+    "Smoke must demonstrate measured bright Text glyph contrast >=4.5 against real dark background and 15+ telemetry rows",
+    "Rerun 3 frozen host-synthetic fixtures; retain V375 object collision blocking, permit genuine color failures based on glyph values",
+    "Native MP4 decoded-pixel proxy and no visual-quality GO until full evidence"
+  ],
+  "acceptance": "CI exact-head PASS for offline negatives, smoke H264 and actual SVG glyph RGB, correct per-case outcomes with telemetry hashes, at least one physically rendered creative candidate. Zero claims of complete dynamic glyph/pixel correctness.",
+  "non_goals": [
+    "changing original text colors",
+    "changing source creative storyboards or native MP4 artifacts",
+    "lowering 4.5 contrast cutoff",
+    "faking manual human scores",
+    "model provider requests",
+    "merging main"
+  ],
+  "source_classification": "This is an instrument measurement bug; low readability of individual glyphs may still be real and must remain NO_GO when witnessed."
+}

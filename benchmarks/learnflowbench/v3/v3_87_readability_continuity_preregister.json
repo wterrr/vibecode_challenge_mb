@@ -1,0 +1,110 @@
+{
+  "checkpoint": "V3-87",
+  "kind": "PREREG_FIRST_CHILD_BEFORE_IMPLEMENTATION",
+  "parent": {
+    "pr": 123,
+    "head_sha": "9701b493c6dd561035c68e6b6e7451988072b57a",
+    "verified_suite": "32/32 SUCCESS",
+    "native_artifact_id": 11959482571
+  },
+  "baseline": {
+    "videos": [
+      {
+        "id": "linear_output_new",
+        "frames": 1056
+      },
+      {
+        "id": "accelerating_new",
+        "frames": 1087
+      },
+      {
+        "id": "counterfactual_physics_heldout",
+        "frames": 1106
+      }
+    ],
+    "fixed_question_set": [
+      "linear_output_new",
+      "accelerating_new",
+      "counterfactual_physics_heldout",
+      "chemistry_periodic_table_unsupported",
+      "history_industrial_unsupported"
+    ],
+    "independent_direct_observation": "Decoded full-resolution V3-86 Physics video and inspected frames 25,135,265,352,435,525,625,697,775,858,933,1021 from genuine CI artifact; graph occupies narrow strip, labels are small, right-side 'final value = 11' crosses plotted terminal dot, first and second curves are separated by a reset without an explicit translation.",
+    "defects": [
+      {
+        "id": "readability",
+        "effect": "Small Computer Modern title, axes, graph semantics and result at 1280x720, weak hierarchy."
+      },
+      {
+        "id": "endpoint_label_overlap",
+        "effect": "Final result explanatory label visually collides with graph line and plotted point."
+      },
+      {
+        "id": "broken_causal_line_continuity",
+        "effect": "Second-phase intercept addition redraws a line instead of showing displacement of the same slope from the reference origin."
+      }
+    ]
+  },
+  "scope": {
+    "three_positive": 3,
+    "two_abstain": 2,
+    "heldout_parameters": 1,
+    "source_roles": 2,
+    "original_utterances_per_lesson": 6,
+    "legacy_source_compilers_unchanged": true,
+    "model_api_calls": 0
+  },
+  "geometry_rules": {
+    "camera_world": [
+      -7.11,
+      7.11,
+      -4,
+      4
+    ],
+    "chart": "left graph region with axes and line, right numeric callout gutter, above chart pedagogical heading, below chart exact expression",
+    "numeric_labels": "font sizes increase over V3-86; minimum key text font_size=28 and computed text width restrictions",
+    "chart_needs": "clearance bounds for line endpoint/callout and all caption/axis labels; exact slope parallelism between C1 and C2; no hidden topic switches",
+    "continuity": "C2 transform must be vertical translation of a previously observed slope line, with source reference ghost drawn from C1 mathematical data; start/end graph coordinates and translated slopes certified by host Fraction arithmetic",
+    "time": "same 6 real WAV utterances, integer 15fps frame budget, strictly PCM-grounded phase timelines and no word-level timestamps"
+  },
+  "witness": {
+    "fps": 15,
+    "dimensions": [
+      1280,
+      720
+    ],
+    "phase_count_per_lesson": 6,
+    "phases": [
+      "ORIENT",
+      "TRANSFORM",
+      "INTERPRET"
+    ],
+    "phase_sample_policy": "native frames at phase+1, phase+floor(n/2), phase+n-10; plus phase-specific layout masks",
+    "visual_tests": [
+      "independent decoded chart+label occupancy; visible C2 reference/translated line separation",
+      "no overlap in host-defined rectangles including the annotation gutter and graph endpoint",
+      "all six original semantic speech-visual claim phases maintain decoding evidence"
+    ],
+    "min_changed_native_pixels": 700
+  },
+  "negative_mutations": [
+    "source role mismatch",
+    "wrong slope",
+    "changed intercept",
+    "y final not translated delta",
+    "graph pixel missing",
+    "text callout overlaps curve safe area",
+    "long label beyond safe width",
+    "narration claim mismatch",
+    "six utterance count mismatch",
+    "bad H264 frame duration",
+    "unknown chemistry/history fallback"
+  ],
+  "release": {
+    "technical": "CONDITIONAL_CI_AND_ARTIFACT",
+    "human_visual_final": "NOT_PASS_UNTIL_INDEPENDENT_REVIEW",
+    "real_llm_creativity": "NOT_TESTED",
+    "learner_gain": "NOT_MEASURED",
+    "production": "BLOCKED"
+  }
+}

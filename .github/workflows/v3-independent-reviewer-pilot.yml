@@ -1,0 +1,111 @@
+name: V3-25 Masked-Label Human Review Pilot Kit Offline
+
+on:
+  push:
+    branches: [chatgpt/v3-25-independent-reviewer-pilot]
+  pull_request:
+    paths:
+      - "learnflow_v3/**"
+      - "tests/v3/**"
+      - "scripts/verify_v3_independent_pilot.py"
+      - "scripts/aggregate_v3_25_quality_responses.py"
+      - ".github/workflows/v3-independent-reviewer-pilot.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  exact-source-matched-two-video-packets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned-compatible local TTS and video dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fontconfig fonts-cmu espeak-ng
+          python -m pip install -r requirements.txt pytest-asyncio pyyaml
+      - name: Render actual V3-20, V3-22 and V3-24 source-matched MP4s
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_25_media" "$RUNNER_TEMP/v3_25_packets"
+          python scripts/verify_v3_teaching_storyboard.py \
+            --output-dir "$RUNNER_TEMP/v3_25_media"
+      - name: Produce playable A/B masked-label reviewer packets without ratings
+        run: |
+          python scripts/verify_v3_independent_pilot.py \
+            --source-dir "$RUNNER_TEMP/v3_25_media" \
+            --output-dir "$RUNNER_TEMP/v3_25_packets"
+          mkdir -p "$RUNNER_TEMP/v3_25_empty_responses"
+          python scripts/aggregate_v3_25_quality_responses.py \
+            --admin-manifest "$RUNNER_TEMP/v3_25_packets/ADMIN_NOT_FOR_RATERS/assignment_AND_SOURCE_DO_NOT_SHARE.json" \
+            --responses-dir "$RUNNER_TEMP/v3_25_empty_responses" \
+            --source-dir "$RUNNER_TEMP/v3_25_media" \
+            --output "$RUNNER_TEMP/v3_25_packets/zero_import_report.json"
+      - name: Validate source binding, counterbalancing, real reviewer HTML and fraud mutations
+        env:
+          V3_25_MEDIA_DIR: ${{ runner.temp }}/v3_25_media
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_independent_quality_pilot.py
+      - name: Frozen source, visuals, benchmark protocol and V2/Hermes regressions
+        env:
+          V3_24_MEDIA_DIR: ${{ runner.temp }}/v3_25_media
+          V3_22_OUTPUT_DIR: ${{ runner.temp }}/v3_25_media
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_teaching_storyboard.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_native_hd_lesson.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_event_alignment_quality.py
+          python -m pytest -q --confcutdir=tests/v2 tests/v2/test_concept_registry.py tests/v2/test_scenegraph_validation.py tests/v2/test_repair_v2_13_contracts.py
+          python -m pytest -q --confcutdir=tests/hermes tests/hermes/test_visual_director.py tests/hermes/test_final_v2_semantic_consistency.py tests/hermes/test_pedagogy_agent.py tests/hermes/test_script_agent.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Upload PRIVATE assignment key and unscored status for admin only
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-25-ADMIN-only-not-for-raters
+          path: |
+            ${{ runner.temp }}/v3_25_packets/ADMIN_NOT_FOR_RATERS/*
+            ${{ runner.temp }}/v3_25_packets/engineering_receipt.json
+            ${{ runner.temp }}/v3_25_packets/zero_response_gate.json
+            ${{ runner.temp }}/v3_25_packets/zero_import_report.json
+          retention-days: 30
+          if-no-files-found: error
+      - name: Upload reviewer R01 ONLY (no mapping or other rater data)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-25-REVIEWER-R01-offline-player-no-admin-key
+          path: |
+            ${{ runner.temp }}/v3_25_packets/REVIEWER_R01/*
+          retention-days: 30
+          if-no-files-found: error
+      - name: Upload reviewer R02 ONLY (no mapping or other rater data)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-25-REVIEWER-R02-offline-player-no-admin-key
+          path: |
+            ${{ runner.temp }}/v3_25_packets/REVIEWER_R02/*
+          retention-days: 30
+          if-no-files-found: error
+      - name: Upload factual actual media evidence separately
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-25-source-matched-real-720p-mp4-and-evidence
+          path: |
+            ${{ runner.temp }}/v3_25_media/source_v3_20/*.srt
+            ${{ runner.temp }}/v3_25_media/source_v3_20/*.json
+            ${{ runner.temp }}/v3_25_media/native_hd/*.mp4
+            ${{ runner.temp }}/v3_25_media/native_hd/*.json
+            ${{ runner.temp }}/v3_25_media/native_pedagogical/*.mp4
+            ${{ runner.temp }}/v3_25_media/native_pedagogical/*.json
+            ${{ runner.temp }}/v3_25_media/*.json
+          retention-days: 30
+          if-no-files-found: error

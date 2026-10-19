@@ -1,0 +1,91 @@
+{
+  "checkpoint": "V3-50-ONE-QUERY-ATTENTION",
+  "preregistered_before_implementation": true,
+  "parent_pr": 83,
+  "parent_sha": "bdc4d6a21fb1e58a50f96b4722f81585e511aee2",
+  "user_query": "Explain scaled dot-product self-attention in a Transformer for one query over two tokens: create a meaningful animated blackboard explanation of how Q compares with K, scores are divided by sqrt(d_k), softmax yields attention weights, and those weights mix V. Include a tiny numeric example, not static slides.",
+  "topic": "scaled_dot_product_self_attention",
+  "model": "openai/gpt-6-luna",
+  "api": "openrouter_chat_completions",
+  "one_shot_budget": {
+    "max_new_http_posts": 1,
+    "max_tokens": 2800,
+    "retries": 0,
+    "fallback": false,
+    "temperature_parameter_present": false,
+    "provider_require_parameters": true
+  },
+  "activation_marker": "[v3-50-single-attention-model-post]",
+  "live_activation": "AFTER_EXACT_HEAD_OFFLINE_CI_SUCCESS_ONLY",
+  "research_scope": "ONE_APPROVED_QUERY_NOT_GENERALIZATION",
+  "source": {
+    "title": "Attention Is All You Need",
+    "year": 2017,
+    "source_url": "https://arxiv.org/abs/1706.03762",
+    "formula": "softmax(Q K^T / sqrt(d_k)) V"
+  },
+  "grounded_example": {
+    "query": [
+      1,
+      0
+    ],
+    "keys": [
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "values": [
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "key_dim": 2,
+    "expected_scores": [
+      0.7071067811865475,
+      0
+    ],
+    "expected_weights_rounded": [
+      0.67,
+      0.33
+    ],
+    "expected_context_rounded": [
+      0.67,
+      0.33
+    ]
+  },
+  "model_scope": "model authors explanation, one title and 4 narration beats, focus and motion selections in strict JSON; host computes mathematical values and compiles finite Manim",
+  "offline_gates": [
+    "immutable user query, prompt and schema SHA",
+    "4 mandatory claim-anchored beats, bounded strings and semantic checks",
+    "fake provider one-call transport tests; no real request in offline CI",
+    "negative hallucinated numeric, wrong claims and unknown schema",
+    "native Manim fixture & decoded pixels/AV synthetic proof",
+    "frozen V2/V3 benchmark contracts",
+    "zero untagged model posts"
+  ],
+  "live_gates": [
+    "one unique tagged push; first attempt; offline needs gate",
+    "one POST only, no retry/fallback",
+    "actual model response content SHA & validated storyboard SHA",
+    "native H264/AAC frame and audio evidence; no fake source claim",
+    "failure consumes trial, no retry"
+  ],
+  "nonclaims": [
+    "AI does not author Manim Python",
+    "A success only proves one limited scene not genuine general lesson generalization",
+    "No human educational quality claims",
+    "If one provider POST fails schema, no auto repair/second POST"
+  ],
+  "production": "BLOCKED",
+  "merge_main": false
+}

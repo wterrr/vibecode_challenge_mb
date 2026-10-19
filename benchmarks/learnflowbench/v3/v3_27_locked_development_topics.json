@@ -1,0 +1,61 @@
+{
+  "schema_version": "v3-27-locked-six-domain-dev-v1",
+  "selection_rule": "For each frozen corpus domain, sort eligible topics by topic_id and choose index 1 (zero-based), excluding V3-16's 12 frozen IDs plus known Binary Search diagnostic lfb-005-cs. Apply the SAME ordinal to all domains before any render.",
+  "source_corpus": "benchmarks/learnflowbench/corpus_v1.json",
+  "source_corpus_sha256": "4f0e0fc81dee7580df93a1d912b9485de7e5eb1c9fdda699576b48729bf4ab8f",
+  "excluded_prereg": "benchmarks/learnflowbench/v3/preregistered_pilot_v1.json",
+  "immutable_selection": true,
+  "require_all_six_attempts": true,
+  "counts": {
+    "total": 6,
+    "one_per_domain": true
+  },
+  "cases": [
+    {
+      "domain": "cs",
+      "topic_id": "lfb-002-cs",
+      "query_sha256": "5f4569564d4511fccd194ac81ffb1d8d91ba07165e60535d7e29e6ca508aa756",
+      "planned_attempt": "GENERIC_COVERAGE_DISPATCH_NO_PER_TOPIC_SCRIPT",
+      "outcome": "NOT_RUN"
+    },
+    {
+      "domain": "math",
+      "topic_id": "lfb-020-math",
+      "query_sha256": "984634edd2813c85526cc331e64f3f58a846554d9e9b9e418fb7af352846e1d5",
+      "planned_attempt": "GENERIC_COVERAGE_DISPATCH_NO_PER_TOPIC_SCRIPT",
+      "outcome": "NOT_RUN"
+    },
+    {
+      "domain": "physics",
+      "topic_id": "lfb-036-physics",
+      "query_sha256": "ec1233a98559018b58b674b5c8c10fb19beab059a6017b475294d2a30444ff4c",
+      "planned_attempt": "GENERIC_COVERAGE_DISPATCH_NO_PER_TOPIC_SCRIPT",
+      "outcome": "NOT_RUN"
+    },
+    {
+      "domain": "biology",
+      "topic_id": "lfb-054-biology",
+      "query_sha256": "643eac5486c8996edc6a4c826570e23019064fef2a636c0eb4e6e2a8ff8723fc",
+      "planned_attempt": "GENERIC_COVERAGE_DISPATCH_NO_PER_TOPIC_SCRIPT",
+      "outcome": "NOT_RUN"
+    },
+    {
+      "domain": "chemistry",
+      "topic_id": "lfb-071-chemistry",
+      "query_sha256": "98555b183a84dc716a45d7e5cb0b61e60526cc13d068ed03d09cda17cece373f",
+      "planned_attempt": "GENERIC_COVERAGE_DISPATCH_NO_PER_TOPIC_SCRIPT",
+      "outcome": "NOT_RUN"
+    },
+    {
+      "domain": "history_general",
+      "topic_id": "lfb-086-history-general",
+      "query_sha256": "754338de3cc1e44b2f45d6f13eee29d54603233cad6bc86e32307ba9d4b90d41",
+      "planned_attempt": "GENERIC_COVERAGE_DISPATCH_NO_PER_TOPIC_SCRIPT",
+      "outcome": "NOT_RUN"
+    }
+  ],
+  "use_locked_v3_16_for_training": false,
+  "allow_substitution": false,
+  "production_release": "BLOCKED",
+  "no_paid_api": true
+}

@@ -1,0 +1,69 @@
+{
+  "checkpoint": "V3-37",
+  "name": "First genuine GPT-6 Luna creative Manim storyboard to MP4",
+  "parent_pr": 70,
+  "parent_sha": "6d4625e91c286d71a9ed72ca197e9aed55d35eb9",
+  "protocol_frozen_before_implementation": true,
+  "topic_id": "lfb-018-math",
+  "topic_query_sha256": "376a06049a51990ddb7fe7a340ef42222b8d89ed601fa8a22dfe971524cf113d",
+  "reused_heldout_topic_note": "V3-34 and V3-35 already exposed this topic; this is an engineering recovery trial, never an independent unseen generalization test.",
+  "exact_model": "openai/gpt-6-luna",
+  "api": "https://openrouter.ai/api/v1/chat/completions",
+  "response_format": "json_schema_strict",
+  "provider_require_parameters": true,
+  "provider_fallback": false,
+  "retries": 0,
+  "maximum_inference_http_posts": 1,
+  "prior_trials_consumed": [
+    {
+      "checkpoint": "V3-34",
+      "run": 37907978564,
+      "observed": "Pydantic ValidationError"
+    },
+    {
+      "checkpoint": "V3-35",
+      "run": 37911556743,
+      "observed": "Provider HTTP 404 before storyboard"
+    }
+  ],
+  "public_catalog_preflight": "No-key metadata GET required; at least one advertised structured-output endpoint, but this never proves authenticated compatibility; don't attribute root cause of V3-35 404",
+  "live_authorization": "User's explicit 'thực hiện đi' following proposal to perform V3-37, after V3-36 technical closeout; unique opt-in HEAD commit [v3-37-one-shot] only after same-HEAD offline gate PASS",
+  "paid_eligibility": "Exact-head V3-36 and V3-37 offline CI PASS; run real pinned Docker Manim synthetic fixture; mandatory synthetic rejection; frozen benchmarks PASS. If provider metadata unverified, do not POST.",
+  "live_artifacts": [
+    "sanitized provider attempt receipt",
+    "exact validated scene_plan.json and SHA",
+    "trusted-host generated Manim source SHA",
+    "H264/AAC 1280x720 MP4 and SHA",
+    "SRT",
+    "decoded pixel/motion/audio gates",
+    "V3-36 real provenance attestation",
+    "timestamped visual issue inventory when actual media exists"
+  ],
+  "no_raw_provider_text_logging": true,
+  "no_arbitrary_model_python": true,
+  "validation": "Reuse V3-35 CreativeScene strict schema, host-only Manim compilation, V3-36 exact source replay and AV/provenance gate",
+  "model_creative_rights": [
+    "layout",
+    "shapes",
+    "positions",
+    "color",
+    "four-beat narration",
+    "animation timing/sequence within safe bounded primitives"
+  ],
+  "scientific_limits": {
+    "independent_source_grounding": "NOT_CERTIFIED; only exact rational arithmetic certified",
+    "six_domain_generalization": "NO_GO; V3-33 0/6 remains frozen",
+    "compare_three_arms": "A/B ABSTAIN; no fair video superiority comparison",
+    "human_educational_quality": "NOT_ASSESSED",
+    "rights": "NOT_CLEARED",
+    "production": "BLOCKED"
+  },
+  "stop_rules": [
+    "zero fallback/retry",
+    "stop after exactly one failed or successful POST",
+    "do not change provider/schema/topic after observing output",
+    "no silent content repairs",
+    "do not retrigger tagged commit",
+    "don't merge main"
+  ]
+}

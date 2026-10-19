@@ -1,0 +1,74 @@
+name: V3-19 Narrated Multi-Scene Offline Lesson
+
+on:
+  push:
+    branches: [chatgpt/v3-19-narration-full-lesson]
+  pull_request:
+    paths:
+      - "app/**"
+      - "learnflow_v3/**"
+      - "tests/v3/**"
+      - "scripts/verify_v3_narrated_lesson.py"
+      - ".github/workflows/v3-narrated-multiscene.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  real-spoken-source-aligned-lesson:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install original application dependencies and redistributable local TTS
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fontconfig fonts-cmu espeak-ng
+          python -m pip install -r requirements.txt pytest-asyncio pyyaml
+          espeak-ng --version
+      - name: Genuine narration/scene/audio/subtitle HTTP tests and adversarial negatives
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_narrated_full_lesson.py
+      - name: Replay preceding V3 stages, product HTTP, legacy app and frozen V2/Hermes
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_product_pipeline_integration.py \
+            tests/v3/test_integration_closure.py tests/v3/test_release_gate.py \
+            tests/v3/test_evaluation_manifest.py tests/v3/test_pattern_coverage.py \
+            tests/v3/test_artifact_refine.py tests/v3/test_artifact_critic.py \
+            tests/v3/test_publish_gate.py tests/v3/test_temporal_geometry.py \
+            tests/v3/test_beat_grounding.py tests/v3/test_contracts.py \
+            tests/v3/test_signal_preservation.py tests/v3/test_pattern_router.py \
+            tests/v3/test_binary_search_trace.py tests/v3/test_pedagogy_planning.py \
+            tests/v3/test_stateful_sequence_renderer.py tests/v3/test_code_process_renderer.py \
+            tests/v3/test_math_patterns.py
+          python -m pytest -q tests/test_api_crud.py tests/test_pipeline_fake.py \
+            tests/test_pipeline_real_smoke.py
+          python -m pytest -q --confcutdir=tests/v2 \
+            tests/v2/test_concept_registry.py tests/v2/test_scenegraph_validation.py \
+            tests/v2/test_repair_v2_13_contracts.py
+          python -m pytest -q --confcutdir=tests/hermes \
+            tests/hermes/test_visual_director.py tests/hermes/test_final_v2_semantic_consistency.py \
+            tests/hermes/test_pedagogy_agent.py tests/hermes/test_script_agent.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Actual independent FastAPI request to multi-scene H264/AAC/SRT and audio QA
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_19_evidence"
+          python scripts/verify_v3_narrated_lesson.py --output-dir "$RUNNER_TEMP/v3_19_evidence"
+          ffprobe -v error -show_entries stream=codec_name,codec_type,width,height,nb_frames,duration \
+            -of default=noprint_wrappers=1 "$RUNNER_TEMP/v3_19_evidence/v3_19_real_spoken_full_lesson.mp4"
+      - name: Save human-reviewable real audio/video, SRT, bounded provenance only
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-19-measured-offline-spoken-multiscene-h264-aac-srt
+          path: ${{ runner.temp }}/v3_19_evidence/
+          if-no-files-found: error
+          retention-days: 30

@@ -1,0 +1,59 @@
+{
+  "schema_version": "v3-33-preimplementation-immutable-six-domain-selection-v1",
+  "selection_rule": "For each ORDER domain, take lexicographically smallest topic_id in frozen LearnFlowBench corpus excluding V3-16 registered + excluded diagnostic topic IDs, all V3-27 six selected IDs, and Binary Search lfb-005-cs; no replacement, even if renderer unsupported.",
+  "source_corpus": "benchmarks/learnflowbench/corpus_v1.json",
+  "exclude_manifest": "benchmarks/learnflowbench/v3/preregistered_pilot_v1.json",
+  "prior_development_manifest": "benchmarks/learnflowbench/v3/v3_27_locked_development_topics.json",
+  "selections_frozen_before_implementation": true,
+  "allow_substitution": false,
+  "forbidden_topics": [
+    "lfb-005-cs",
+    "lfb-002-cs"
+  ],
+  "domains": [
+    "math",
+    "physics",
+    "chemistry",
+    "biology",
+    "cs",
+    "history_general"
+  ],
+  "cases": [
+    {
+      "domain": "math",
+      "topic_id": "lfb-018-math",
+      "query_sha256": "376a06049a51990ddb7fe7a340ef42222b8d89ed601fa8a22dfe971524cf113d",
+      "query": "Teach me fractions and ratios with a clear explanation, one worked example, and a short knowledge check."
+    },
+    {
+      "domain": "physics",
+      "topic_id": "lfb-035-physics",
+      "query_sha256": "db9ae242a3743d4192886745cd90b49bbc0ce38691873a190e542dff02563d8a",
+      "query": "Teach me Newton's three laws with a clear explanation, one worked example, and a short knowledge check."
+    },
+    {
+      "domain": "chemistry",
+      "topic_id": "lfb-070-chemistry",
+      "query_sha256": "c54209c5d23e8b4374e1a4346d273cdfad7fabf67cb2b912a6af18e8b8f5b880",
+      "query": "Teach me periodic table trends with a clear explanation, one worked example, and a short knowledge check."
+    },
+    {
+      "domain": "biology",
+      "topic_id": "lfb-053-biology",
+      "query_sha256": "17a66c0b9105f09fb100df5383a2effd3ad5b2d66ff07fcbad63378c0b0e494c",
+      "query": "Teach me DNA versus RNA with a clear explanation, one worked example, and a short knowledge check."
+    },
+    {
+      "domain": "cs",
+      "topic_id": "lfb-001-cs",
+      "query_sha256": "0c3bcb5132b4ebc199e6519d930d54e2bc947928570d17d2f41cb62c02f02d3d",
+      "query": "Teach me variables and data types with a clear explanation, one worked example, and a short knowledge check."
+    },
+    {
+      "domain": "history_general",
+      "topic_id": "lfb-085-history-general",
+      "query_sha256": "7f350923fc7e25b9d8b2468ca47ae3ede6d87d9de568eff1fec99d702319bdbe",
+      "query": "Teach me the Industrial Revolution with a clear explanation, one worked example, and a short knowledge check."
+    }
+  ]
+}

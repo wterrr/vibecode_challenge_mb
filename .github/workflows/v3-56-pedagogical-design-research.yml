@@ -1,0 +1,99 @@
+name: V3-56 Pedagogical Design Research Audit — NO MODEL API
+
+on:
+  push:
+    branches: [chatgpt/v3-56-evidence-pedagogical-agent-research]
+  pull_request:
+    paths:
+      - "research/v3_56_3b1b_lesson_evidence.json"
+      - "research/v3_56_agent_prompt_architecture.json"
+      - "research/v3_56_agent_prompt_templates.md"
+      - "research/v3_56_deep_video_audit_preregister.json"
+      - "research/v3_56_source_scene_corpus.json"
+      - "research/v3_56_deep_pedagogical_beats.json"
+      - "research/v3_56_attention_ch6_native_video_receipt.json"
+      - "research/v3_56_attention_alignment_preregister.json"
+      - "research/v3_56_attention_native_caption_alignment.json"
+      - "research/v3_56_native_speech_grounding_preregister.json"
+      - "research/v3_56_native_speech_visual_grounding.json"
+      - "tests/v3/test_v3_56_user_timestamped_transcript.py"
+      - "scripts/verify_v3_56_user_timestamped_transcript.py"
+      - "reports/v3_56_user_transcript_native_frame_audit.md"
+      - "research/v3_56_user_timestamped_transcript_receipt.json"
+      - "scripts/run_v3_56_local_asr_candidates.py"
+      - "tests/v3/test_v3_56_local_asr_candidates.py"
+      - "reports/v3_56_native_speech_visual_grounding.md"
+      - "scripts/verify_v3_56_native_speech_grounding.py"
+      - "tests/v3/test_v3_56_native_speech_grounding.py"
+      - "reports/v3_56_attention_narration_visual_alignment.md"
+      - "scripts/verify_v3_56_attention_alignment.py"
+      - "tests/v3/test_v3_56_attention_alignment.py"
+      - "reports/v3_56_attention_ch6_native_video_audit.md"
+      - "tests/v3/test_v3_56_attention_ch6_native_receipt.py"
+      - "reports/v3_56_deep_video_audit_addendum.md"
+      - "scripts/verify_v3_56_deep_video_audit.py"
+      - "tests/v3/test_v3_56_deep_video_audit.py"
+      - "research/v3_56_abc_evaluation_protocol.json"
+      - "benchmarks/learnflowbench/v3/v3_56_pedagogical_agent_research_preregister.json"
+      - "scripts/verify_v3_56_research.py"
+      - "tests/v3/test_v3_56_pedagogical_research.py"
+      - ".github/workflows/v3-56-pedagogical-design-research.yml"
+      - "reports/v3_56_pedagogical_prompt_architecture.md"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+
+jobs:
+  frozen-offline-evidence-research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing lightweight research/schema verification requirements
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: V3-56 exact contract/research honesty and adversarial tests
+        timeout-minutes: 4
+        run: |
+          python scripts/verify_v3_56_research.py
+          python scripts/verify_v3_56_deep_video_audit.py
+          python scripts/verify_v3_56_attention_alignment.py
+          python scripts/verify_v3_56_native_speech_grounding.py
+          python scripts/verify_v3_56_user_timestamped_transcript.py
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_56_pedagogical_research.py \
+            tests/v3/test_v3_56_deep_video_audit.py \
+            tests/v3/test_v3_56_attention_ch6_native_receipt.py \
+            tests/v3/test_v3_56_attention_alignment.py \
+            tests/v3/test_v3_56_native_speech_grounding.py \
+            tests/v3/test_v3_56_user_timestamped_transcript.py \
+            tests/v3/test_v3_56_local_asr_candidates.py \
+            tests/v3/test_v3_55_independent_pedagogical_quality.py \
+            tests/v3/test_v3_54_model_candidate_quality.py
+      - name: Recheck frozen V2, V3 and LearnFlowBench protocol
+        timeout-minutes: 3
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+      - name: Assert no model credential passed to research workflow
+        timeout-minutes: 1
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          f=Path(".github/workflows/v3-56-pedagogical-design-research.yml").read_text()
+          # Compose forbidden patterns so the check does not match its own source.
+          banned = ("se" + "crets.", "OPEN" + "ROUTER_API_KEY",
+                    "GEM" + "INI_API_KEY", "run_" + "v3_56_research.py")
+          assert all(value not in f for value in banned)
+          print("V356=OFFLINE_SPEC_AUDIT_ONLY_NO_PROVIDER_OR_PRODUCTION_EDIT")
+          PY

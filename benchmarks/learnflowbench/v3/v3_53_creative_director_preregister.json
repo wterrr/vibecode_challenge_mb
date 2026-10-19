@@ -1,0 +1,121 @@
+{
+  "checkpoint": "V3-53",
+  "title": "Evidence-Grounded Creative Director and Composable Semantic Motion",
+  "preregistration": "BEFORE_IMPLEMENTATION",
+  "parent_pr": 86,
+  "parent_sha": "2be42bdfe4d0c242b67e8bfed3bae4f4e19ec9ff",
+  "problem": "V3-52 renders a fixed 4-stage attention template; V3-51 can vary layouts without true causal motion. Allow an authoring plan to choose optional narrative beats, semantic action composition, visual staging and object emphasis without authoring Python.",
+  "research_hypothesis": "One finite compositional compiler with a host-grounded QKV ledger and typed actions can render 3 materially different native attention stories from independently authored plan JSON, rather than dispatch by fixture name.",
+  "scope": "OFFLINE_HOST_SYNTHETIC_ONLY; 0 provider calls; no retry of V3-50 single-use request; fixed teaching family two-token scaled dot product attention.",
+  "preselected_fixtures": [
+    {
+      "id": "network_causality",
+      "role": "development",
+      "query": [
+        1,
+        0
+      ],
+      "stages": [
+        "intro",
+        "compare",
+        "normalize",
+        "transport",
+        "compose"
+      ],
+      "emphasis": "network"
+    },
+    {
+      "id": "bar_first",
+      "role": "heldout_composition",
+      "query": [
+        1,
+        0
+      ],
+      "stages": [
+        "compare",
+        "normalize",
+        "inspect",
+        "transport",
+        "compose"
+      ],
+      "emphasis": "weighted_bars"
+    },
+    {
+      "id": "counterfactual_b",
+      "role": "counterfactual",
+      "query": [
+        0,
+        1
+      ],
+      "stages": [
+        "intro",
+        "compare",
+        "normalize",
+        "transport",
+        "compose",
+        "inspect"
+      ],
+      "emphasis": "value_mixture"
+    }
+  ],
+  "typed_stage_grammar": {
+    "required": [
+      "compare",
+      "normalize",
+      "transport",
+      "compose"
+    ],
+    "optional": [
+      "intro",
+      "inspect"
+    ],
+    "constraints": [
+      "compare < normalize < transport < compose",
+      "inspect after normalize",
+      "intro before compare",
+      "all host-derived facts have same SHA256",
+      "all reused visual IDs have stable meaning; no model Python",
+      "no unrelated numeric labels or user-authored equations"
+    ],
+    "stage_count_min": 4,
+    "stage_count_max": 6,
+    "beat_duration_source": "native WAV-exact voice durations, not estimated words",
+    "style_options": [
+      "network",
+      "weighted_bars",
+      "value_mixture"
+    ]
+  },
+  "acceptance": {
+    "one_common_compiler_for_all_variants": true,
+    "three_real_h264_aac": true,
+    "correct_v2_scenegraph_identity": true,
+    "real_pixel_context_absent_before_transport": true,
+    "area_fraction_matches_host_softmax_tolerance": 0.13,
+    "counterfactual_real_area_difference_at_least": 0.3,
+    "physical_pairwise_video_difference": true,
+    "negative_cases": [
+      "wrong causal stage order",
+      "missing required stage",
+      "inspect before normalize",
+      "duplicate unique stage",
+      "rebound evidence SHA",
+      "false math numeric",
+      "injected code field",
+      "forged model origin",
+      "wrong referent",
+      "missing value contribution"
+    ],
+    "frozen_tests": "V3-50,51,52 and V2 core plus V3 benchmark protocol",
+    "no_provider_requests": true,
+    "production": "BLOCKED",
+    "nonclaims": [
+      "NO_GENUINE_AI_CREATIVITY_TEST",
+      "NO_GENERAL_DOMAIN",
+      "HUMAN_PEDAGOGY_UNRATED",
+      "VISUAL_POLISH_NOT_GUARANTEED",
+      "ONE_TOPIC_FAMILY_ONLY"
+    ]
+  },
+  "audit": "Physical decoded frames at stage boundaries and per-ratio causal colors; inspect actual MP4 not only CI receipt"
+}

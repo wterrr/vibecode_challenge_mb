@@ -1,0 +1,72 @@
+name: V3-23 Independent Lesson Readability Review Preflight Offline
+
+on:
+  push:
+    branches: [chatgpt/v3-23-readability-teaching-review]
+  pull_request:
+    paths:
+      - "learnflow_v3/**"
+      - "tests/v3/**"
+      - "scripts/verify_v3_review_preflight.py"
+      - ".github/workflows/v3-review-preflight.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  source-bound-review-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing offline TTS, CPU video stack and native CMU
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fontconfig fonts-cmu espeak-ng
+          python -m pip install -r requirements.txt pytest-asyncio pyyaml
+      - name: Render real matched original V3-20 and certified native V3-22 videos
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_23_media" "$RUNNER_TEMP/v3_23_review"
+          python scripts/verify_v3_native_hd_lesson.py --output-dir "$RUNNER_TEMP/v3_23_media"
+      - name: Produce actual decoded-frame and font/pacing issue inventory plus EMPTY review packet
+        run: |
+          python scripts/verify_v3_review_preflight.py \
+            --source-dir "$RUNNER_TEMP/v3_23_media" \
+            --output-dir "$RUNNER_TEMP/v3_23_review"
+      - name: Mutation tests deny invented human grades, altered evidence or output overwrite
+        env:
+          V3_23_VIDEO_FOLDER: ${{ runner.temp }}/v3_23_media
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_review_preflight.py
+      - name: Protected HD/V3-20 tests, frozen V2, Hermes and prereg benchmarks
+        env:
+          V3_22_OUTPUT_DIR: ${{ runner.temp }}/v3_23_media
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_native_hd_lesson.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_event_alignment_quality.py
+          python -m pytest -q --confcutdir=tests/v2 tests/v2/test_concept_registry.py tests/v2/test_scenegraph_validation.py tests/v2/test_repair_v2_13_contracts.py
+          python -m pytest -q --confcutdir=tests/hermes tests/hermes/test_visual_director.py tests/hermes/test_final_v2_semantic_consistency.py tests/hermes/test_pedagogy_agent.py tests/hermes/test_script_agent.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Retain actual H264/AAC plus unscored reviewer packet and issue audit
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-23-real-video-readability-preflight-NOT-human-study
+          path: |
+            ${{ runner.temp }}/v3_23_media/source_v3_20/*.mp4
+            ${{ runner.temp }}/v3_23_media/source_v3_20/*.srt
+            ${{ runner.temp }}/v3_23_media/source_v3_20/*.json
+            ${{ runner.temp }}/v3_23_media/native_hd/*.mp4
+            ${{ runner.temp }}/v3_23_media/native_hd/*.json
+            ${{ runner.temp }}/v3_23_media/*.json
+            ${{ runner.temp }}/v3_23_media/*.jpg
+            ${{ runner.temp }}/v3_23_review/*
+          retention-days: 30
+          if-no-files-found: error

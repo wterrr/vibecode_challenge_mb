@@ -1,0 +1,100 @@
+name: V3-94 Genuine GPT Layout Collision Repair - Full Native Offline QA
+on:
+  push:
+    branches: [chatgpt/v3-94-gpt-authored-layout-timeline-repair]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_94_gpt_layout_repair_preregister.json'
+      - 'research/v393_accepted_gpt6_luna_storyboard_frozen.json'
+      - 'learnflow_v3/v394_timeline_layout.py'
+      - 'learnflow_v3/v364_native_array_compiler.py'
+      - 'scripts/run_v3_94_gpt_native_layout_repair.py'
+      - 'tests/v3/test_v3_94_gpt_timeline_layout.py'
+      - '.github/workflows/v3-94-gpt-timeline-layout-repair.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_94_gpt_layout_repair_preregister.json'
+      - 'research/v393_accepted_gpt6_luna_storyboard_frozen.json'
+      - 'learnflow_v3/v394_timeline_layout.py'
+      - 'learnflow_v3/v364_native_array_compiler.py'
+      - 'scripts/run_v3_94_gpt_native_layout_repair.py'
+      - 'tests/v3/test_v3_94_gpt_timeline_layout.py'
+      - '.github/workflows/v3-94-gpt-timeline-layout-repair.yml'
+permissions:
+  contents: read
+jobs:
+  frozen-original-gpt-source-and-timeline-adversarial-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install local host source verification dependencies only; NO AI secret
+        run: |
+          python -m pip install --disable-pip-version-check --retries 2 --timeout 30 -r requirements.txt 'Pillow>=11,<13' 'jsonschema>=4,<5' 'numpy>=1.24,<3' pytest pyyaml
+      - name: Python import, pristine actual GPT JSON, 441 timeline collision and negative motion tests
+        run: |
+          python -m compileall -q learnflow_v3/v394_timeline_layout.py scripts/run_v3_94_gpt_native_layout_repair.py tests/v3/test_v3_94_gpt_timeline_layout.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_94_gpt_timeline_layout.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_93_paid_gpt6_authoring.py tests/v3/test_v3_92_free_ai_authoring.py tests/v3/test_v3_91_single_free_ai_pilot.py tests/v3/test_v3_64_one_shot_real_model.py
+      - name: Verify V2 Core Freeze and source benchmark unchanged
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+  full_gpt_native_replay_and_decoded_frame_receipts:
+    needs: frozen-original-gpt-source-and-timeline-adversarial-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 27
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install only ffmpeg offline narration and Pillow; NO provider secret
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng fonts-dejavu-core
+          python -m pip install --disable-pip-version-check --retries 2 --timeout 30 -r requirements.txt 'Pillow>=11,<13' 'jsonschema>=4,<5' 'numpy>=1.24,<3' pyyaml
+      - name: Render original GPT narrative using corrected renderer only (no AI calls)
+        run: |
+          python scripts/run_v3_94_gpt_native_layout_repair.py --output "$RUNNER_TEMP/V394_REPAIRED_NATIVE"
+      - name: Verify source, two decoded H264/AAC native videos and exact preregistered frames
+        run: |
+          python - <<'PY'
+          import os,json,pathlib
+          from hashlib import sha256
+          from learnflow_v3.v364_native_array_compiler import probe,file_sha,decode_movie
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"V394_REPAIRED_NATIVE"
+          r=json.loads((root/"v394_layout_receipt.json").read_text())
+          assert r["new_model_requests"]==0 and r["genuine_prior_model_requests"]==1
+          assert r["original_model_storyboard_sha256"]=="1060c980edf45213642606c04beb80d3f115ae7dafd920580a778c226238f96a"
+          assert r["original_model_video_sha256"]=="fcc26242ce903e48c80ffb95015a7fe666bc9e894aa8f4b7d10caec63331a3a6"
+          assert r["candidate_geometry"]["timeline_frames_audited"]==441
+          assert r["candidate_geometry"]["tile_tile_collisions"]==0
+          assert r["candidate_geometry"]["subtitle_band_collisions"]==0
+          assert r["candidate_geometry"]["label_tile_collisions"]==0
+          assert r["outcome"]=="NATIVE_REPAIRED_SOURCE_VIDEO_TECHNICAL_AND_GEOMETRY_PASS"
+          assert r["production"]=="BLOCKED" and r["human_review"]=="UNRATED"
+          assert r["native_441_frames"] is True
+          assert len(r["native_mp4s"])==2 and len(r["repaired_frame_snapshots"])==2
+          for clip in r["native_mp4s"]:
+              media=root/"native_pair"/clip["name"]
+              assert file_sha(media)==clip["sha256"]
+              assert probe(media)==441
+              decode_movie(media)
+          for name in r["repaired_frame_snapshots"]:
+              assert (root/name).stat().st_size>10_000
+          print("V394_ORIGINAL_GPT_STORYBOARD_REPAIRED_NATIVE_MP4S_AND_441_FRAMES_PASS")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v394-FROZEN-GPT6-REPAIRED-NATIVE-MP4-OR-TRUTHFUL-RECEIPT
+          path: ${{ runner.temp }}/V394_REPAIRED_NATIVE/
+          retention-days: 6
+          if-no-files-found: warn

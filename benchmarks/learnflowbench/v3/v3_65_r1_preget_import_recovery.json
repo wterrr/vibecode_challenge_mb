@@ -1,0 +1,33 @@
+{
+  "checkpoint": "V3-65R1",
+  "kind": "PRE_REGISTERED_CLI_ENTRYPOINT_RECOVERY_NOT_NETWORK_RETRY",
+  "base_checkpoint": "V3-65",
+  "initial_prereg_first_child": "91b42a2436fb6de24f2c03d9d4fe6df54bb9929a",
+  "original_get_run": 38504156707,
+  "original_get_head": "e42eaa3fa6bfebc6701c9607a89ba217f55b4f2e",
+  "original_get_job": 115657671565,
+  "original_failure": "ModuleNotFoundError: No module named 'learnflow_v3' at import line before diagnostic() invocation",
+  "original_code_path": "scripts/run_v3_65_provider_get_diagnostics.py",
+  "original_external_GET_count": "ZERO_CONFIRMED_BY_IMPORT_FAILURE_BEFORE_DIAGNOSTIC",
+  "original_provider_inference_POST_count": 0,
+  "recovery_scope": "Only sys.path import bootstrap and direct-cli smoke; all remaining GET-only endpoints and sanitizers frozen",
+  "recovery_max_requests": {
+    "public_endpoint_metadata_GET": 1,
+    "current_key_metadata_GET": 1,
+    "provider_inference_POST": 0
+  },
+  "repeat_previous_trigger": false,
+  "untrusted_output_not_logged": true,
+  "acceptance": {
+    "new_strict_tests_pass": true,
+    "direct_script_cli_import_pass": true,
+    "previous_run_failure_proven": true,
+    "only_one_recovery_trigger": true,
+    "only_allowlisted_GET_urls": true,
+    "secret_never_printed": true,
+    "original_V3_64_historical_HTTPError_still_undetermined": true,
+    "all_results_metadata_advisory": true,
+    "production": "BLOCKED"
+  },
+  "not_a_new_model_trial": true
+}

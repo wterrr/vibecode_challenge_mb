@@ -87,5 +87,27 @@
       <a href="/" class="btn btn-secondary btn-lg" id="btn-cancel">Hủy</a>
     </div>
   </form>
+  {% if v3_ai_enabled %}
+  <section class="form-container" id="v395-live-ai-preview" aria-labelledby="v395-heading"
+           style="margin-top:36px;padding-top:20px;border-top:1px solid #ddd;">
+    <h2 id="v395-heading">Thử nghiệm GPT → video thật (chỉ local)</h2>
+    <p>V3-95 hiện chỉ hỗ trợ câu hỏi tiếng Anh về 3 × 4 và 4 × 3 ô vuông.
+       Đây là preview nghiên cứu dùng GPT-6 Luna trả phí, không thay thế tính năng tạo bài học chung.
+       Tối đa một lượt API GPT cho mỗi lần khởi chạy server; video chỉ hiển thị sau khi QA thành công.</p>
+    <form id="v395-ai-preview-form">
+      <label for="v395-query" class="form-label">Câu hỏi toán học được hỗ trợ (English)</label>
+      <textarea id="v395-query" class="form-control form-textarea" rows="3"
+                minlength="35" maxlength="300" required>Why does a 3 by 4 array have as many squares as a 4 by 3 array?</textarea>
+      <label style="display:flex;align-items:center;gap:10px;margin:15px 0;">
+        <input id="v395-paid-consent" type="checkbox" required>
+        Tôi đồng ý thực hiện tối đa một request GPT-6 Luna có tính phí (trần chi phí token ước tính $0.01).
+      </label>
+      <button class="btn btn-primary" id="v395-submit" type="submit">Tạo preview bằng GPT thật</button>
+      <p id="v395-result" role="status" aria-live="polite"></p>
+      <video id="v395-video" controls playsinline style="display:none;width:100%;max-width:850px;margin-top:15px;"
+             aria-label="LearnFlow local GPT developer preview"></video>
+    </form>
+  </section>
+  {% endif %}
 </div>
 {% endblock %}

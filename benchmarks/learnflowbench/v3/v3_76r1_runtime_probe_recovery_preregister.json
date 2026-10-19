@@ -1,0 +1,58 @@
+{
+  "checkpoint": "V3-76R1",
+  "date": "2026-10-14",
+  "kind": "FIRST_CHILD_PREREG_BEFORE_CODE",
+  "parent": {
+    "pr": 112,
+    "sha": "33293e63ded8318537197d133f51b0cf36e1aa60"
+  },
+  "locked_failures": [
+    {
+      "run": 38529881345,
+      "job": 115738946842,
+      "artifact": 11878370723,
+      "result": "V334_SANDBOX_RENDER_TIMEOUT at 340s; runtime JSONL zero bytes"
+    },
+    {
+      "run": 38531652288,
+      "job": 115744692890,
+      "artifact": 11878514832,
+      "result": "V334_SANDBOX_RENDER_TIMEOUT at 340s; initialized and first_tick markers present; runtime JSONL zero bytes"
+    }
+  ],
+  "objective": "Bisect first Manim frame observer callback in small offline bounded Docker scene before rerunning frozen 3 creative fixtures",
+  "hypotheses": [
+    "Scene tree membership root/child traversal blocks first tick",
+    "Manim get_bounding_box() blocks for actual Text/glpyhs during updater",
+    "get_color()/get_fill_opacity blocks or recurses in updater",
+    "JSONL serialization/file buffering or observer reentrancy blocks",
+    "Instrumentation itself or pinned Docker has broken update lifecycle"
+  ],
+  "locked_diagnostics": [
+    "WRITE stage markers before and after family enumeration",
+    "WRITE stage markers before and after bbox/color/opacity for first registered object",
+    "WRITE marker before/after JSON serialization",
+    "WRITE first JSONL row and flush on first tick",
+    "Minimal 1x Text,1x RoundedRectangle Manim 1-2s clip, fail in <=45s independently, with no network/host secrets",
+    "Do not run 340s full creative if minimal probe fails",
+    "Diagnose abnormal runtime frame-update recursion or infinite updater work before spending on full suite"
+  ],
+  "acceptance": {
+    "smoke": "actual pinned Docker minimal Manim H264 1280x720@15fps and >=15 nonempty telemetry rows; bounded 45s timeout and immutable stage receipts",
+    "main": "all three original V3-76 fixtures individually report PASS_BOUNDED or NO_GO with QA details; nonrecoverable emitter error fails loud, not skipped",
+    "native": "at least one actual versioned H264/AAC and telemetry aligned to full video for technical demonstration OR explicit NO_GO if findings indicate gate unsuitable",
+    "strict": "never disable geometric/contrast conditions (4.5:1 text/background) or fake frame-to-pixel 1:1 alignment; reject missing telemetry",
+    "CI": "exact-head GitHub CI and actual native decoded samples; if fail, no PASS claim"
+  },
+  "boundaries": {
+    "no_main_merge": true,
+    "no_provider_get": true,
+    "no_model_api": true,
+    "no_v2_core_edits": true,
+    "no_production_prompt_edits": true,
+    "no_frozen_clip_replacement": true,
+    "production": "BLOCKED",
+    "human_quality": "UNRATED",
+    "learning_gain": "NOT_MEASURED"
+  }
+}

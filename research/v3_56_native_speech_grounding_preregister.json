@@ -1,0 +1,67 @@
+{
+  "checkpoint": "V3-56",
+  "package": "NATIVE_SPEECH_VISUAL_GROUNDING",
+  "research_only": true,
+  "parent_pr": 90,
+  "parent_head": "b684ec498ac84dbf08fbd9a9bde3ddd0e8500ab3",
+  "video": {
+    "filename": "Attention in transformers, step-by-step _ Deep Learning Chapter 6.mp4",
+    "sha256": "439e154fffbb8696a37753d765c4f64bc06d25fbb17cb3d98bcc842045d85cb9",
+    "duration_s": 1569.191429
+  },
+  "locked_anchor_order": [
+    "mole",
+    "running_sentence",
+    "query_motivating",
+    "query_to_key",
+    "score_matrix",
+    "softmax",
+    "mask",
+    "values",
+    "weighting",
+    "multihead",
+    "output",
+    "return_context"
+  ],
+  "evidence_tiers": {
+    "NATIVE_VIDEO_PTS": "decoded frame timestamp and hash",
+    "NATIVE_AUDIO_PCM": "waveform energy/temporal events only",
+    "EXTERNAL_CAPTION": "third-party transcript time cue, unvalidated words",
+    "ASR_CANDIDATE": "offline ASR hypothesis if installed licensed model is available",
+    "NATIVE_SPEECH_REVIEWED": "human listener checks original speech word phrase and timestamps",
+    "NATIVE_WORD_ALIGNED": "phoneme model/forced aligner with spot-verification and uncertainty"
+  },
+  "nonpromotion_rules": [
+    "No local model weights means zero ASR candidates; never call model API",
+    "caption proxy may not be relabeled as native speech",
+    "acoustic energy does not identify words or pauses when music present",
+    "native visual PTS vs caption cue is cue-to-visual, not actual speech-to-visual lag",
+    "visual transitions sampled at finite intervals produce bounded change windows, not exact edit cut",
+    "V3-55 63.8s video cannot be used for a fair 26m original outcome comparison",
+    "all model or learning gain claims forbidden"
+  ],
+  "offline_candidate_due_diligence": [
+    "openai/whisper MIT both code and released weights, needs checkpoint",
+    "SYSTRAN/faster-whisper MIT runtime, needs CTranslate2 and model weights",
+    "ggml-org/whisper.cpp MIT implementation, still needs weights",
+    "m-bain/whisperX BSD-2-Clause wrapper, forced aligner dependent weight/license review"
+  ],
+  "success_gate": {
+    "native_audio_phrases": "At least 8 of 12 anchors with independently verified uttered words + error bounds; otherwise NO_GO",
+    "video_visual": "12 anchors have native visual PTS/witness",
+    "architecture": "exact mapping to existing V3 finite compilers, host checks, opt-in contract, no production changes",
+    "frozen_checks": "existing V2/V3/Bench and new offline negatives exact-head",
+    "status_without_weights": "NO_GO_NATIVE_SPEECH"
+  },
+  "test_only_no_media_repo": true,
+  "zero_provider_requests": true,
+  "no_main_merge": true,
+  "no_v2_core_change": true,
+  "no_production_prompt_change": true,
+  "outputs": [
+    "research/v3_56_native_speech_visual_grounding.json",
+    "reports/v3_56_native_speech_visual_grounding.md",
+    "scripts/verify_v3_56_native_speech_grounding.py",
+    "tests/v3/test_v3_56_native_speech_grounding.py"
+  ]
+}

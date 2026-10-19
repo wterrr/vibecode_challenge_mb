@@ -1,0 +1,63 @@
+name: V3-93 Paid GPT-6 Luna One-Shot Offline Preflight (no inference)
+on:
+  push:
+    branches: [chatgpt/v3-93-paid-gpt6-luna-authoring-one-shot]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_93_paid_gpt6_authoring_preregister.json'
+      - 'scripts/run_v3_93_paid_gpt6_authoring.py'
+      - 'tests/v3/test_v3_93_paid_gpt6_authoring.py'
+      - '.github/workflows/v3-93-paid-gpt-offline.yml'
+      - '.github/workflows/v3-93-paid-gpt-one-shot.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_93_paid_gpt6_authoring_preregister.json'
+      - 'scripts/run_v3_93_paid_gpt6_authoring.py'
+      - 'tests/v3/test_v3_93_paid_gpt6_authoring.py'
+      - '.github/workflows/v3-93-paid-gpt-offline.yml'
+permissions:
+  contents: read
+jobs:
+  offline-real-paid-gpt-safety-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install host tests without OpenRouter key or paid model
+        run: |
+          python -m pip install --disable-pip-version-check --retries 2 --timeout 30 -r requirements.txt 'Pillow>=11,<13' 'jsonschema>=4,<5' 'numpy>=1.24,<3' pytest pyyaml
+      - name: Preregistered pricing source wire and fake-attribution hostile tests
+        run: |
+          python -m compileall -q scripts/run_v3_93_paid_gpt6_authoring.py tests/v3/test_v3_93_paid_gpt6_authoring.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_93_paid_gpt6_authoring.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_92_free_ai_authoring.py tests/v3/test_v3_91_single_free_ai_pilot.py tests/v3/test_v3_64_one_shot_real_model.py
+      - name: V2 Core and source benchmark frozen
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+  frozen-identity-control-two-native-movies:
+    needs: offline-real-paid-gpt-safety-gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install host-only native media renderer, no provider key
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng fonts-dejavu-core
+          python -m pip install --disable-pip-version-check --retries 2 --timeout 30 -r requirements.txt 'Pillow>=11,<13' 'jsonschema>=4,<5' 'numpy>=1.24,<3' pyyaml
+      - name: Source-only native media smoke, must never count as GPT output
+        run: |
+          python scripts/run_v3_64_native_preflight.py --output "$RUNNER_TEMP/V393_HOST_ONLY"
+          test -f "$RUNNER_TEMP/V393_HOST_ONLY/host_TEST_ONLY.mp4"
+          test -f "$RUNNER_TEMP/V393_HOST_ONLY/model_unverified.mp4"
+          ffprobe -v error -show_entries stream=codec_name -of compact "$RUNNER_TEMP/V393_HOST_ONLY/host_TEST_ONLY.mp4"

@@ -1,0 +1,108 @@
+name: V3-34 Creative Scene A-B-C Ablation Sandbox Manim
+
+on:
+  push:
+    branches: [chatgpt/v3-34-generative-scene-ablation]
+  pull_request:
+    paths:
+      - "learnflow_v3/creative_manim_ablation.py"
+      - "learnflow_v3/creative_manim_runner.py"
+      - "tests/v3/test_v3_34_generative_ablation.py"
+      - "scripts/run_v3_34_ablation.py"
+      - "benchmarks/learnflowbench/v3/v3_34_scene_ablation_preregister.json"
+      - ".github/workflows/v3-34-generate-manim-ablation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  zero-paid-schema-and-real-sandboxed-manim-fixture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Native speech codecs and CMU
+        timeout-minutes: 8
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Install existing pinned dependencies
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt pytest-asyncio pyyaml
+      - name: Source arithmetic, model freedoms, unsafe-object mutation tests
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_34_generative_ablation.py
+      - name: Prior V3-33 and V3-32 quality-gate regressions
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_33_generalization.py \
+            tests/v3/test_v3_32_grounded_lesson.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Fetch immutable Manim v0.19.0 Docker image with deadline
+        timeout-minutes: 12
+        run: |
+          timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+          docker image inspect manimcommunity/manim:v0.19.0 --format '{{.Id}}'
+      - name: OFFLINE synthetic fixture must make actual H264/AAC MP4
+        timeout-minutes: 9
+        run: |
+          python scripts/run_v3_34_ablation.py --mode offline-smoke \
+            --output-dir "$RUNNER_TEMP/v3_34_offline"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-34-offline-synthetic-fixture-not-LLM-evidence
+          path: ${{ runner.temp }}/v3_34_offline/
+          retention-days: 14
+          if-no-files-found: warn
+
+  opt-in-one-real-gpt6-luna-creative-scene:
+    needs: zero-paid-schema-and-real-sandboxed-manim-fixture
+    if: >-
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'push' &&
+        contains(github.event.head_commit.message, '[v3-34-one-shot]'))) &&
+      github.ref == 'refs/heads/chatgpt/v3-34-generative-scene-ablation'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Native speech codecs and CMU
+        timeout-minutes: 8
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Install existing pinned dependencies
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt
+      - name: Pull same immutable Manim image
+        timeout-minutes: 12
+        run: |
+          timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: EXACT GPT-6 Luna one JSON storyboard call, no fallback or retry
+        timeout-minutes: 10
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python scripts/run_v3_34_ablation.py --mode live-model \
+            --output-dir "$RUNNER_TEMP/v3_34_live"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-34-one-real-model-creative-manim-or-BLOCKED
+          path: ${{ runner.temp }}/v3_34_live/
+          retention-days: 14
+          if-no-files-found: warn

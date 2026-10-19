@@ -1,0 +1,110 @@
+name: V3-59 Causal Semantic Reveal Audit (NO MODEL API)
+
+on:
+  push:
+    branches: [chatgpt/v3-59-semantic-reveal-causality]
+  pull_request:
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_59_causal_reveal_preregister.json"
+      - "learnflow_v3/causal_reveal.py"
+      - "scripts/run_v3_59_causal_reveal.py"
+      - "tests/v3/test_v3_59_causal_reveal.py"
+      - ".github/workflows/v3-59-causal-reveal.yml"
+      - "reports/v3_59_causal_reveal_audit.md"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+
+jobs:
+  v359-host-semantic-timing-negative:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install offline dependencies
+        timeout-minutes: 12
+        run: |
+          timeout -k 10s 420s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Frozen semantic / adversarial checks
+        timeout-minutes: 9
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_59_causal_reveal.py \
+            tests/v3/test_v3_58_matched_review.py \
+            tests/v3/test_v3_57_pedagogical_slice.py
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+      - name: Refuse model API and publication shortcuts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          paths=("learnflow_v3/causal_reveal.py",
+                 "scripts/run_v3_59_causal_reveal.py")
+          # Build forbidden calls rather than embedding them intact in a scanned file.
+          banned=("requests."+"post","open"+"router.ai","url"+"open(",
+                  "chat"+"completions","model"+"_authored_python")
+          for p in paths:
+              content=Path(p).read_text()
+              assert all(x not in content for x in banned),p
+          print("V359=RESEARCH_ONLY_ZERO_PROVIDER_CALLS")
+          PY
+
+  v359-physical-three-arm-native-reproduction:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    needs: [v359-host-semantic-timing-negative]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Offline native setup
+        timeout-minutes: 12
+        run: |
+          bash scripts/bootstrap_v3_30_native.sh
+          timeout -k 10s 420s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Reproduce FROZEN V3-57 original motion source (3 videos)
+        timeout-minutes: 22
+        run: |
+          python scripts/run_v3_57_pedagogical_slice.py --output-dir artifacts/v357
+      - name: Reproduce FROZEN V3-58 static end-state controls (3 videos)
+        timeout-minutes: 22
+        run: |
+          python scripts/run_v3_58_matched_review.py \
+            --v357-dir artifacts/v357 --output-dir artifacts/v358
+      - name: Render repaired semantic causal reveals (3 videos) and verify all 9
+        timeout-minutes: 25
+        run: |
+          python scripts/run_v3_59_causal_reveal.py \
+            --v357-dir artifacts/v357 --v358-dir artifacts/v358 \
+            --output-dir artifacts/v359
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v359-masked-9-clips-three-arm-independent-review
+          path: artifacts/v359/reviewer_blinded/
+          retention-days: 7
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v359-native-semantic-receipts-ADMIN-NOT-FOR-REVIEWERS
+          path: |
+            artifacts/v359/v359_results.json
+            artifacts/v359/admin_treatment_key.json
+            artifacts/v359/*/receipt.json
+          retention-days: 7
+          if-no-files-found: warn

@@ -1,0 +1,29 @@
+{
+  "checkpoint": "V3-76R1",
+  "amendment": "A1",
+  "created_after_first_bounded_smoke": true,
+  "original_first_child_prereg_sha": "4ba5e6a7645e6babb7df4e714dfcc99b6cb4115a",
+  "evidence": {
+    "run": 38535990980,
+    "artifact": 11880116822,
+    "exact_head": "250b57540e3ae0eae6ae12e530632143ebb1a0a8",
+    "unit": "24/24 PASS",
+    "smoke": "45s timeout, 0 JSONL rows, no MP4; stage markers entered,before_membership,after_membership,before_bbox; no after_bbox",
+    "diagnosis": "the first obj.get_bounding_box() inside the Manim updater is blocking; cause of bounding_box internals unknown"
+  },
+  "registered_next_test": "Move actual CMU object bounding-box sampling to one-time construct stage before the first animation, with per-object before/after precache markers; use 1.07 conservative envelope for supported non-moving animations. Never label this exact dynamic Manim bbox per frame. Keep color/opacity telemetry in updater and both negative gates. First rerun minimal <=45s; only rerun frozen creative when that passes.",
+  "scope_limits": [
+    "static sampled Manim objects from actual CMU glyphs, not framewise updated glyph bounds",
+    "V3-75 only reveal/connect/emphasize; no move/hide/replace",
+    "Indicate conservatively inflated by 1.07",
+    "not all-frame pixel OCR",
+    "if cache itself hangs fail closed"
+  ],
+  "unchanged": [
+    "minimum 4.5:1 contrast",
+    "no native artifact without telemetry",
+    "no loosening collision detection",
+    "no provider/model API",
+    "no main merge or prior frozen media overwrite"
+  ]
+}

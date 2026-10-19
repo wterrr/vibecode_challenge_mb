@@ -1,0 +1,84 @@
+name: V3-67 Corrected Provider Wire and Dollar Budget Deny-by-Default (OFFLINE)
+on:
+  push:
+    branches: [chatgpt/v3-67-provider-wire-budget-preflight]
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_67_corrected_provider_budget_preregister.json"
+      - "learnflow_v3/v367_corrected_wire_budget.py"
+      - "scripts/run_v3_67_budget_preflight.py"
+      - "tests/v3/test_v3_67_corrected_wire_budget.py"
+      - ".github/workflows/v3-67-provider-budget-offline.yml"
+  pull_request:
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_67_corrected_provider_budget_preregister.json"
+      - "learnflow_v3/v367_corrected_wire_budget.py"
+      - "scripts/run_v3_67_budget_preflight.py"
+      - "tests/v3/test_v3_67_corrected_wire_budget.py"
+      - ".github/workflows/v3-67-provider-budget-offline.yml"
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  v367_corrected_wire_and_provider_hard_cap_safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install inherited LearnFlow V3 source dependency chain
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -r requirements.txt "pytest>=8,<10" "jsonschema>=4,<5" \
+            "pillow>=11,<13" "numpy>=1.24,<3" pyyaml
+      - name: Strict legacy SHA, fallback field, and provider budget negative tests
+        run: |
+          python -m compileall -q \
+            learnflow_v3/v367_corrected_wire_budget.py \
+            scripts/run_v3_67_budget_preflight.py \
+            tests/v3/test_v3_67_corrected_wire_budget.py
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_67_corrected_wire_budget.py
+      - name: Generate redacted budget-blocked request preview, NO provider access
+        run: |
+          python scripts/run_v3_67_budget_preflight.py \
+            --output artifacts/v367/V367_DENY_BY_DEFAULT_REQUEST_PREVIEW.json
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path("artifacts/v367/V367_DENY_BY_DEFAULT_REQUEST_PREVIEW.json")
+          x=json.loads(p.read_text())
+          assert x["preflight_result"]=="DENY_NO_AUTHENTICATED_KEY_SNAPSHOT"
+          assert x["can_authorize_paid_POST"] is False
+          assert x["new_model_inference_posts"]==0
+          assert x["new_provider_gets"]==0
+          assert x["new_management_key_actions"]==0
+          assert x["provider_allow_fallbacks"] is False
+          assert x["usd_budget_frozen"]=="0.02"
+          assert x["production"]=="BLOCKED"
+          print("V367_UNVERIFIED_PROVIDER_BUDGET_CAP_BLOCKS_PAID_REQUEST")
+          PY
+      - name: Reject any new network client, management key action, or paid request
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for path in ("learnflow_v3/v367_corrected_wire_budget.py",
+                       "scripts/run_v3_67_budget_preflight.py"):
+              s=Path(path).read_text()
+              for forbidden in ('OPENROUTER_API_KEY', 'urllib.request.urlopen(',
+                  'urllib.request.Request(', 'requests.post(', 'httpx.post(',
+                  'mcp__', 'GenUI.openUrl('):
+                  assert forbidden not in s,(path,forbidden)
+          print("V367_OFFLINE_ZERO_POST_GET_OR_MANAGEMENT_ACCESS")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v367-CORRECTED-WIRE-PROVIDER-DOLLAR-CAP-BLOCKED-OFFLINE
+          path: artifacts/v367/V367_DENY_BY_DEFAULT_REQUEST_PREVIEW.json
+          if-no-files-found: error
+          retention-days: 14

@@ -33,3 +33,6 @@ artifacts/*
 
 # OS/editor
 .DS_Store
+
+.env.production
+.env.production.local

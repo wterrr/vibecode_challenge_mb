@@ -1,0 +1,50 @@
+name: V3-31 Offline Grounded Code-State Real Media
+on:
+  push:
+    branches: [chatgpt/v3-31-semantic-code-state-lesson]
+  pull_request:
+    paths:
+      - "learnflow_v3/cs_code_state_lesson.py"
+      - "learnflow_v3/paid_cs_lesson.py"
+      - "tests/v3/test_v3_31_code_state_lesson.py"
+      - "scripts/run_v3_31_code_state.py"
+      - ".github/workflows/v3-31-code-state-offline.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-code-state-and-regression-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Existing bounded native dependencies
+        timeout-minutes: 8
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Install existing Python requirements only
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --retries 2 --timeout 30 \
+            -r requirements.txt pytest-asyncio pyyaml
+      - name: V3-31 actual receipt audit AST mutation and semantic pixel checks
+        run: python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_31_code_state_lesson.py
+      - name: V3-30 and V3-07 regression plus frozen guard
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_30_paid_cs_lesson.py tests/v3/test_code_process_renderer.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Render real 720p H264/AAC with ZERO LLM API calls
+        run: python scripts/run_v3_31_code_state.py --output-dir "$RUNNER_TEMP/v3_31"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-31-offline-code-state-real-h264-aac-evidence
+          path: ${{ runner.temp }}/v3_31/
+          retention-days: 14
+          if-no-files-found: warn

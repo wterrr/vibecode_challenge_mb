@@ -1,0 +1,41 @@
+name: V3-70 Human Review Intake Integrity (OFFLINE, NO MODEL)
+on:
+  push:
+    branches: [chatgpt/v3-70-human-review-intake-integrity]
+    paths:
+      - 'scripts/run_v3_70_review_intake.py'
+      - 'tests/v3/test_v3_70_review_intake.py'
+      - 'benchmarks/learnflowbench/v3/v3_70_review_intake_preregister.json'
+      - '.github/workflows/v3-70-offline-intake.yml'
+  pull_request:
+    paths:
+      - 'scripts/run_v3_70_review_intake.py'
+      - 'tests/v3/test_v3_70_review_intake.py'
+      - 'benchmarks/learnflowbench/v3/v3_70_review_intake_preregister.json'
+      - '.github/workflows/v3-70-offline-intake.yml'
+permissions:
+  contents: read
+jobs:
+  original-protocol-and-hostile-offline-intake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install only pytest offline
+        run: python -m pip install --disable-pip-version-check 'pytest>=8,<10'
+      - name: Verify prereg, original contract, TEST_ONLY mock and negative controls
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python -m compileall -q scripts/run_v3_70_review_intake.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_70_review_intake.py tests/v3/test_v3_60_independent_review.py
+      - name: No private scores or data uploads
+        run: |
+          test ! -d private_review_submissions
+          test ! -d artifacts/v370
+          git diff --exit-code

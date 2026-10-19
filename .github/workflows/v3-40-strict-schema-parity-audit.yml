@@ -1,0 +1,80 @@
+name: V3-40 Offline Strict Schema Contract Parity Audit
+
+on:
+  push:
+    branches: [chatgpt/v3-40-strict-schema-contract-parity]
+  pull_request:
+    paths:
+      - "learnflow_v3/strict_schema_parity_audit.py"
+      - "learnflow_v3/structured_scene_authoring.py"
+      - "learnflow_v3/creative_manim_ablation.py"
+      - "tests/v3/test_v3_40_strict_schema_parity.py"
+      - ".github/workflows/v3-40-strict-schema-parity-audit.yml"
+      - "benchmarks/learnflowbench/v3/v3_40_strict_schema_parity_preregister.json"
+
+permissions:
+  contents: read
+
+jobs:
+  offline-schema-and-frozen-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 32
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies for local JSON Schema validation
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt "jsonschema>=4.21,<5"
+      - name: Bootstrap actual Computer Modern fonts and AV tools before frozen render tests
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Full offline candidate-schema parity and no-repair regressions
+        timeout-minutes: 7
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_40_strict_schema_parity.py \
+            tests/v3/test_v3_39_compatible_creative_trial.py \
+            tests/v3/test_v3_38_openrouter_metadata_audit.py \
+            tests/v3/test_v3_37_genuine_creative_trial.py \
+            tests/v3/test_v3_36_creative_readiness.py \
+            tests/v3/test_v3_35_public_provider_catalog.py \
+            tests/v3/test_v3_35_structured_scene.py \
+            tests/v3/test_v3_34_generative_ablation.py
+      - name: Frozen V3-33 six-unseen and V2 Core audits
+        timeout-minutes: 8
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_33_generalization.py \
+            tests/v3/test_v3_32_grounded_lesson.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Emit candidate and limitations, no provider credentials or inference
+        run: |
+          python -m learnflow_v3.strict_schema_parity_audit \
+            --output-dir "$RUNNER_TEMP/v3_40_schema_audit"
+      - name: Verify model provenance remains host-only in synthetic media
+        timeout-minutes: 16
+        run: |
+          timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+          python scripts/run_v3_34_ablation.py --mode offline-smoke \
+            --output-dir "$RUNNER_TEMP/v3_40_host_only_fixture"
+          python -m learnflow_v3.creative_evidence_gate \
+            --artifact-dir "$RUNNER_TEMP/v3_40_host_only_fixture" \
+            --output "$RUNNER_TEMP/v3_40_schema_audit/host_fixture_rejection.json" \
+            --expect-synthetic-rejection
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-40-offline-schema-contract-audit-NOT-MODEL
+          path: ${{ runner.temp }}/v3_40_schema_audit/
+          retention-days: 14
+          if-no-files-found: warn
+
+  # NO paid provider job. No secrets, authenticated GET, inference POST or live trial.

@@ -1,0 +1,106 @@
+name: V3-79 Pedagogical Visual Hierarchy Native A-B (NO MODEL)
+on:
+  push:
+    branches: [chatgpt/v3-79-pedagogical-visual-hierarchy-composition]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_79_visual_hierarchy_preregister.json'
+      - 'learnflow_v3/v379_visual_hierarchy.py'
+      - 'learnflow_v3/creative_scene_graph.py'
+      - 'scripts/run_v3_54_model_candidate_quality.py'
+      - 'scripts/run_v3_79_pedagogical_hierarchy.py'
+      - 'tests/v3/test_v3_79_pedagogical_visual_hierarchy.py'
+      - '.github/workflows/v3-79-native-pedagogical-hierarchy.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_79_visual_hierarchy_preregister.json'
+      - 'learnflow_v3/v379_visual_hierarchy.py'
+      - 'learnflow_v3/creative_scene_graph.py'
+      - 'scripts/run_v3_54_model_candidate_quality.py'
+      - 'scripts/run_v3_79_pedagogical_hierarchy.py'
+      - 'tests/v3/test_v3_79_pedagogical_visual_hierarchy.py'
+      - '.github/workflows/v3-79-native-pedagogical-hierarchy.yml'
+permissions:
+  contents: read
+concurrency:
+  group: v379-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  actual-manim-hierarchy-a-b:
+    runs-on: ubuntu-latest
+    timeout-minutes: 47
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reuse existing CMU fonts, FFmpeg and espeak
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Reuse offline native Manim/Pillow packages
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Frozen semantic stability and hostile geometry/font regression tests
+        timeout-minutes: 6
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_79_pedagogical_visual_hierarchy.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_78_native_visual_salience.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_77_extent_aware_comparison.py
+      - name: Reuse pinned network-isolated Manim container
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Render 3 new A-B Manim candidate MP4 and source/pixel hierarchy metrics
+        timeout-minutes: 26
+        run: |
+          python scripts/run_v3_79_pedagogical_hierarchy.py --output-dir "$RUNNER_TEMP/v379_native_composition"
+      - name: Independently check physical codecs, scene metrics and full H264 decode
+        timeout-minutes: 7
+        run: |
+          python - <<'PY'
+          import hashlib,json,os,pathlib,subprocess
+          path=pathlib.Path(os.environ['RUNNER_TEMP'])/'v379_native_composition'
+          doc=json.loads((path/'v379_native_pedagogical_hierarchy_comparison.json').read_text())
+          assert doc['checkpoint']=='V3-79'
+          assert doc['accepted_native_video_count']==3
+          assert doc['new_physical_decoded_frame_witnesses']==27
+          assert doc['production']=='BLOCKED'
+          assert doc['final_visual_quality']=='NOT_PASS_PENDING_HUMAN_REVIEW'
+          for case in doc['cases']:
+            movie=path/case['id']/'mock_candidate_native.mp4'
+            assert movie.is_file()
+            assert hashlib.sha256(movie.read_bytes()).hexdigest()==case['native_mp4_sha256']
+            stream=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-of','json',str(movie)]))['streams']
+            v=next(s for s in stream if s['codec_type']=='video')
+            a=next(s for s in stream if s['codec_type']=='audio')
+            assert (v['codec_name'],a['codec_name'],v['r_frame_rate'],v['width'],v['height'])==('h264','aac','15/1',1280,720)
+            assert int(v['nb_frames'])==case['native_h264_frames']>100
+            assert case['physical_pixel_samples']==9
+            final=json.loads((path/case['id']/'v379_native_visual_hierarchy_receipt.json').read_text())
+            assert final['native_movie_sha256']==case['native_mp4_sha256']
+            assert final['visual_salience_measurements']['visual_density_is_learning_quality']=='NO'
+            assert final['native']['per_object_pixel_segmentation']=='NOT_CERTIFIED'
+            subprocess.run(['ffmpeg','-nostdin','-v','error','-xerror','-i',str(movie),'-map','0:v:0','-f','null','-'],
+                           stdout=subprocess.DEVNULL,check=True,timeout=120)
+            print('V379 A-B REAL MANIM',case['id'],
+                  'baseline_content_fraction',case['v3_78_old_median_bbox_fraction'],
+                  'new_content_fraction',case['v3_79_new_median_bbox_fraction'],
+                  'old_small_text',case['old_text_groups_under24px'],
+                  'new_small_text',case['new_text_groups_under24px'])
+          PY
+      - name: Frozen V2 and protocol regression
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v379-native-Manim-pedagogical-hierarchy-A-B-H264-and-actual-pixel-witnesses
+          path: ${{ runner.temp }}/v379_native_composition/
+          retention-days: 7
+          if-no-files-found: warn

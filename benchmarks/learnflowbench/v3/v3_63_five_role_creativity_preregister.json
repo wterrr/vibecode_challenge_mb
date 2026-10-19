@@ -1,0 +1,97 @@
+{
+  "checkpoint": "V3-63",
+  "title": "Five-role evidence-bound storyboard proposal admission and native impact, NO MODEL API",
+  "registration": "FIRST_CHILD_COMMIT",
+  "parent_pr": 98,
+  "parent_sha": "66671cecf8c11779cf5f5041df9254726a3d2de6",
+  "origin": "RESEARCH_PROPOSAL_INTERFACE_NOT_PROVIDER_EXPERIMENT",
+  "date_utc": "2026-10-14",
+  "source_architecture": "research/v3_56_agent_prompt_architecture.json",
+  "reuse": [
+    "V3-56 five pedagogical roles",
+    "V3-62 three held-out source-ledger/native movie renderer",
+    "V3-54 fail-closed candidate wire diagnostics",
+    "V3-60/61 independent human reviewer packet remains 0 submitted"
+  ],
+  "allowed_cases": [
+    "probability_complement_3_of_8",
+    "constant_speed_distance",
+    "water_reaction_balance"
+  ],
+  "role_order": [
+    "cognitive_designer",
+    "narrative_designer",
+    "visual_thinker",
+    "motion_director",
+    "visual_critic"
+  ],
+  "five_role_decisions": [
+    "misconception/probe selected from host-approved alternatives",
+    "cognitive hook focus from host-backed IDs",
+    "visual persistent reference and diagrammatic witness target",
+    "quantized-vs-continuous transformation and intentional emphasis per scene",
+    "critic anticipated failure tied to observable native witness"
+  ],
+  "candidate_origin": "EXTERNALLY_SUPPLIED_UNKNOWN_UNVERIFIED; test fixtures explicitly HOST_TEST_ONLY",
+  "candidate_status_gate": "CANDIDATE_ADMITTED_ONLY_NOT_MODEL_AUTHORSHIP",
+  "max_candidate_bytes": 16384,
+  "max_decisions": 5,
+  "visual_frozen_contract": {
+    "five_acts_unchanged": true,
+    "exact_facts_from_host": true,
+    "claim_ids_from_host": true,
+    "stable_referents": true,
+    "question_hold_before_answer": true,
+    "unverified_native_speech_alignment": "UNMEASURED",
+    "native_styles": [
+      "focus_first",
+      "witness_first"
+    ],
+    "transformation_profiles": [
+      "continuous",
+      "stepwise"
+    ],
+    "focus_modes": [
+      "invariant",
+      "active_object"
+    ],
+    "critic_must_acknowledge_early_answer_control": true
+  },
+  "holdout_design": {
+    "mandatory_all_three_cases": true,
+    "positive_synthetic_variation_per_case": 2,
+    "negative_adversarial_mutation_types": [
+      "unknown_claim",
+      "invented_result",
+      "unsourced_misconception",
+      "forged_role",
+      "cross_role_mismatch",
+      "nonexistent_referent",
+      "early_answer",
+      "unknown_renderer_operation",
+      "bad_evidence_digest",
+      "model_python_injection",
+      "unsupported_word_alignment",
+      "publication_request",
+      "malformed_json",
+      "oversized_wire",
+      "not_full_five_role_chain"
+    ],
+    "native_witness": "one case, two distinguishable candidate decision policies on identical narration and frame budget; run from frozen original V3-62 source artifact if possible; if not available, require own H264/AAC render"
+  },
+  "acceptance": {
+    "strict_schema_and_negative_tests_pass": true,
+    "three_domain_accepted_candidates": true,
+    "actual_native_candidate_pair_with_SHA_and_decoded_motion": true,
+    "technical_only": true,
+    "no_llm_api": true,
+    "model_authorship": "NOT_TESTED_NO_PROVIDER_RESPONSE",
+    "independent_human_quality": "UNRATED",
+    "student_learning": "NOT_MEASURED",
+    "production": "BLOCKED",
+    "main_merge": false,
+    "v2_core_changed": false,
+    "production_prompts_changed": false
+  },
+  "decision_rule": "Only report ADMISSION_CONTRACT_TECHNICAL_PASS. Do not claim creative model generation, independent pedagogy gains or 3B1B parity without a separately approved live external model trial and human evaluation."
+}

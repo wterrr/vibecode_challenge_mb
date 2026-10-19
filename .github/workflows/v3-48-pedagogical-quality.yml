@@ -1,0 +1,116 @@
+name: V3-48 Pedagogical Quality and Semantic Transfer OFFLINE Evaluation
+
+on:
+  push:
+    branches: [chatgpt/v3-48-pedagogical-quality-transfer-audit]
+  pull_request:
+    paths:
+      - "learnflow_v3/semantic_scene_wire.py"
+      - "scripts/run_v3_48_pedagogical_quality.py"
+      - "tests/v3/test_v3_48_pedagogical_quality.py"
+      - "benchmarks/learnflowbench/v3/v3_48_quality_transfer_preregister.json"
+      - ".github/workflows/v3-48-pedagogical-quality.yml"
+      - "reports/v3_48_pedagogical_quality_transfer.md"
+      - "PLAN_V3.md"
+      - "LEARNFLOW_V3_RESEARCH_NOTES.md"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  frozen-paired-h264-pedagogy-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install native FFmpeg and offline dependencies
+        timeout-minutes: 11
+        run: |
+          bash scripts/bootstrap_v3_30_native.sh
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Download immutable V3-46 paired baseline MP4
+        uses: actions/download-artifact@v4
+        with:
+          name: v3-46-VISUAL-SYSTEM-MP4-and-UNRATED-QUALITY-BENCHMARK
+          run-id: 38200776147
+          repository: wterrr/vibecode_challenge_mb
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/v348_v346
+      - name: Download immutable V3-47 EXACT FINAL HEAD native MP4
+        uses: actions/download-artifact@v4
+        with:
+          name: v3-47-THREE-HOST-SEMANTIC-NATIVE-MP4-NO-AI
+          run-id: 38203160425
+          repository: wterrr/vibecode_challenge_mb
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/v348_v347
+      - name: Mutation regression of claim binding and frozen parents
+        timeout-minutes: 6
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_48_pedagogical_quality.py \
+            tests/v3/test_v3_47_pedagogical_grammar.py \
+            tests/v3/test_v3_46_visual_quality_system.py \
+            tests/v3/test_v3_45_semantic_scene_wire.py \
+            tests/v3/test_v3_41_compatible_scene_protocol.py \
+            tests/v3/test_v3_40_strict_schema_parity.py
+      - name: SHA-locked actual decoded H264/AAC event delta and blind A/B packet
+        timeout-minutes: 9
+        run: |
+          python scripts/run_v3_48_pedagogical_quality.py \
+            --baseline-dir "$RUNNER_TEMP/v348_v346" \
+            --current-dir "$RUNNER_TEMP/v348_v347" \
+            --output-dir "$RUNNER_TEMP/v348_quality"
+      - name: Confirm no invented human or semantic generalization claims
+        run: |
+          python - <<'PY'
+          import csv,json,os,pathlib
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v348_quality"
+          x=json.loads((root/"research_audit/v3_48_evaluation_receipt.json").read_text())
+          assert x["technical_status"]=="FROZEN_PAIR_OFFLINE_AUDIT_PASS_ONLY"
+          assert x["human_quality"]=="UNRATED" and x["learner_gain"]=="NOT_MEASURED"
+          assert x["generalization"]=="NOT_CERTIFIED_FIXED_CLAIM_BANK"
+          assert x["model_http_posts"]==x["model_authenticated_gets"]==0
+          assert x["production"]=="BLOCKED"
+          for key in ("fraction","process"):
+            assert x["cases"][key]["added_rendered_cue"]["inference"]=="VISUAL_CUE_ONLY_NOT_LEARNING_GAIN"
+            assert (root/f"rater_packet/{key}/A.mp4").is_file()
+            assert (root/f"rater_packet/{key}/B.mp4").is_file()
+          rows=list(csv.DictReader((root/"rater_packet/blind_quality_review_UNRATED.csv").open()))
+          assert len(rows)==12
+          assert all(not r["A_score_1to5"] and not r["B_score_1to5"] and
+                     not r["reviewer_id"] for r in rows)
+          assert not (root/"rater_packet/unblinding_key.json").exists()
+          print("V3_48=TECHNICAL_EVALUATION_PASS_HUMAN_UNRATED_TRANSFER_NOT_CERTIFIED")
+          PY
+      - name: Frozen V3/V2 benchmark and safety gates
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Publish blinded A/B reviewer packet only
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3_48_blinded_rater_packet
+          path: ${{ runner.temp }}/v348_quality/rater_packet/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Publish separate provenance and unblinding audit (not for raters)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3_48_private_research_audit
+          path: ${{ runner.temp }}/v348_quality/research_audit/
+          retention-days: 14
+          if-no-files-found: error
+
+  # No model API, no model secrets, no automatic GPT re-trial, no merge main.

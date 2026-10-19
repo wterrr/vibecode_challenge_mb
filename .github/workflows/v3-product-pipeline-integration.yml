@@ -1,0 +1,72 @@
+name: V3-18 Product Pipeline Binary Offline HTTP
+
+on:
+  push:
+    branches: [chatgpt/v3-18-product-pipeline-binary-preview]
+  pull_request:
+    paths:
+      - "app/**"
+      - "learnflow_v3/**"
+      - "tests/v3/**"
+      - "scripts/verify_v3_product_pipeline.py"
+      - ".github/workflows/v3-product-pipeline-integration.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  guarded-http-binary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install application dependencies, offline video stack and CMU fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fontconfig fonts-cmu
+          python -m pip install -r requirements.txt pytest-asyncio pyyaml
+      - name: Real FastAPI TestClient V3 preview, fail-closed mutation and all ancestor V3 regressions
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_product_pipeline_integration.py \
+            tests/v3/test_integration_closure.py \
+            tests/v3/test_release_gate.py tests/v3/test_evaluation_manifest.py \
+            tests/v3/test_pattern_coverage.py tests/v3/test_artifact_refine.py \
+            tests/v3/test_artifact_critic.py tests/v3/test_publish_gate.py \
+            tests/v3/test_temporal_geometry.py tests/v3/test_beat_grounding.py \
+            tests/v3/test_contracts.py tests/v3/test_signal_preservation.py \
+            tests/v3/test_pattern_router.py tests/v3/test_binary_search_trace.py \
+            tests/v3/test_pedagogy_planning.py tests/v3/test_stateful_sequence_renderer.py \
+            tests/v3/test_code_process_renderer.py tests/v3/test_math_patterns.py
+      - name: Legacy HTTP/job baseline, real pipeline, frozen V2/Hermes, prereg and Core Freeze
+        run: |
+          python -m pytest -q tests/test_api_crud.py tests/test_pipeline_fake.py \
+            tests/test_pipeline_real_smoke.py
+          python -m pytest -q --confcutdir=tests/v2 \
+            tests/v2/test_concept_registry.py tests/v2/test_scenegraph_validation.py \
+            tests/v2/test_repair_v2_13_contracts.py
+          python -m pytest -q --confcutdir=tests/hermes \
+            tests/hermes/test_visual_director.py tests/hermes/test_final_v2_semantic_consistency.py \
+            tests/hermes/test_pedagogy_agent.py tests/hermes/test_script_agent.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Independent real HTTP application request to real H264 and immutable receipt
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_18_evidence"
+          python scripts/verify_v3_product_pipeline.py --output-dir "$RUNNER_TEMP/v3_18_evidence"
+          ffprobe -v error -show_entries stream=codec_name,width,height,nb_frames \
+            -of default=noprint_wrappers=1 "$RUNNER_TEMP/v3_18_evidence/v3_18_binary_http_verified.mp4"
+      - name: Upload only bounded developer-run proof, never production or private DB
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-18-real-fastapi-binary-source-h264-and-manifest
+          path: ${{ runner.temp }}/v3_18_evidence/
+          if-no-files-found: error
+          retention-days: 30

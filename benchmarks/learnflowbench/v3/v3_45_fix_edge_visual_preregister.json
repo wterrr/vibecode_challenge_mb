@@ -1,0 +1,38 @@
+{
+  "checkpoint": "V3-45-FIX",
+  "name": "Process Edge Geometry & Decoded Pixel Visual QA",
+  "preregistered_before_fix": true,
+  "parent_pr": 79,
+  "parent_sha": "65499a93b733395f2b465df1894ad7a1b47556a1",
+  "user_report": "Screenshot: arrows run over Start, Verify, Finish labels/rectangles in the synthetic ordered_process example",
+  "root_cause": "_compile_process() makes Arrow(center, center, buff=0.75) with node half-width 0.90; arrow geometry enters node; cursor traverses centers too",
+  "frozen_failed": {
+    "pr": 79,
+    "artifact_run": 38196528217,
+    "artifact_id": 11723409076,
+    "synthetic_process_mp4_sha256": "f9f6c54647fad3797da445b1a8714c9fa967f1f0bf35a9bfa1fd629cc1172a48",
+    "expected_old_overlap_threshold": "at least 20 changed pixels in node inward edge ROI after first arrow fully reveals before traversal"
+  },
+  "method": "Host computes line ray-vs-AABB boundary from each node geometry + constant clearance and prevents crossing any unrelated node; use identical endpoints for cursor traversal and Manim arrow; graphic z-order behind node labels; object IDs verified prior to host compilation",
+  "acceptance": {
+    "max_allowed_arrow_to_node_intersection_world_units": 0,
+    "edge_to_node_min_clearance_world_units": 0.16,
+    "pixel_frame_comparison": "Decode original before-edge and after-edge frames with ffmpeg using four-beat physical WAV boundaries and event timings, compare original vs new actual MP4 in node interior strips; foreground difference >70 per RGB channel must be <=8 changed pixels after fix vs >=20 before fix; visible line must still appear in gap",
+    "end_to_end": "Re-render two native synthetic MP4s, H264/AAC 1280x720 15fps and exact voice budget; fail-closed visual QA in GitHub Actions, no static-card fallback",
+    "negatives": [
+      "diagonal edges against rectangles of unequal dimensions",
+      "vertical edges",
+      "nodes too close to leave a positive line",
+      "edge intersects third node",
+      "offscreen oversized geometry",
+      "caption collision",
+      "cursor path through block",
+      "pixel-mutation that reintroduces centre-to-centre mobject"
+    ],
+    "no_provider_requests": true,
+    "pr_stays_draft": true,
+    "main_merge": false,
+    "production": "BLOCKED",
+    "limits": "This addresses node/edge spatial overlap, not full aesthetic quality or real model authorship"
+  }
+}

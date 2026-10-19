@@ -1,0 +1,369 @@
+{
+  "checkpoint": "V3-81",
+  "kind": "FIRST_CHILD_PREREG_BEFORE_IMPLEMENTATION",
+  "parent": {
+    "pr": 117,
+    "sha": "63135f9e9986b606dfea7b8915b2ea99658066a6"
+  },
+  "goal": "One topic-independent host-attested typed operation DAG and finite native Manim compiler, tested on four preregistered topics, not an Attention-only ledger.",
+  "restrictions": {
+    "model_api_requests": 0,
+    "main_merge": false,
+    "production": "BLOCKED",
+    "legacy_defaults": "UNCHANGED",
+    "frozen_media_overwrite": false
+  },
+  "operator_scope": [
+    "SCALE",
+    "ADD",
+    "EQUIVALENT_PARTITION"
+  ],
+  "locked_case_ids": [
+    "attention_context",
+    "fraction_partition",
+    "physics_velocity",
+    "cs_running_sum"
+  ],
+  "locked_roles": {
+    "development": 3,
+    "heldout": 1
+  },
+  "acceptance": {
+    "negative_mutations": [
+      "unsupported operation",
+      "wrong arithmetic",
+      "forward reference",
+      "missing claim",
+      "claim mismatch",
+      "spoofed input/provenance",
+      "invalid denominator",
+      "zero fraction scaling",
+      "duplicate output",
+      "cycle/order violation",
+      "code injection",
+      "unknown domain id no special case"
+    ],
+    "native_cases": 4,
+    "video_codec": "H264/AAC",
+    "fps": 15,
+    "resolution": [
+      1280,
+      720
+    ],
+    "full_ffmpeg_decode": true,
+    "each_operator_visible_before_after": true,
+    "legacy_v380_regression": true,
+    "old_video_hashes_untouched": true,
+    "human_visual_quality": "NOT_PASS_UNTIL_REVIEW",
+    "learner_gain": "NOT_MEASURED",
+    "model_generated": "NOT_TESTED"
+  },
+  "cases": [
+    {
+      "id": "attention_context",
+      "domain": "attention",
+      "role": "development",
+      "title": "How Attention Builds a Context Vector",
+      "facts": {
+        "weight_a": {
+          "kind": "scalar",
+          "n": 3,
+          "d": 4
+        },
+        "weight_b": {
+          "kind": "scalar",
+          "n": 1,
+          "d": 4
+        },
+        "value_a": {
+          "kind": "vector",
+          "items": [
+            {
+              "kind": "scalar",
+              "n": 2,
+              "d": 1
+            },
+            {
+              "kind": "scalar",
+              "n": 4,
+              "d": 1
+            }
+          ]
+        },
+        "value_b": {
+          "kind": "vector",
+          "items": [
+            {
+              "kind": "scalar",
+              "n": 2,
+              "d": 1
+            },
+            {
+              "kind": "scalar",
+              "n": 0,
+              "d": 1
+            }
+          ]
+        }
+      },
+      "claims": {
+        "A1": "Multiplying each value vector by its attention weight gives its exact contribution.",
+        "A2": "Adding the two weighted contributions gives context vector [2,3]."
+      },
+      "operations": [
+        {
+          "id": "left_contribution",
+          "kind": "SCALE",
+          "inputs": [
+            "weight_a",
+            "value_a"
+          ],
+          "expected": {
+            "kind": "vector",
+            "items": [
+              {
+                "kind": "scalar",
+                "n": 3,
+                "d": 2
+              },
+              {
+                "kind": "scalar",
+                "n": 3,
+                "d": 1
+              }
+            ]
+          },
+          "claim_id": "A1",
+          "narration": "Start with the first value vector. Multiply both coordinates by its verified attention weight, three quarters, to obtain the first contribution."
+        },
+        {
+          "id": "right_contribution",
+          "kind": "SCALE",
+          "inputs": [
+            "weight_b",
+            "value_b"
+          ],
+          "expected": {
+            "kind": "vector",
+            "items": [
+              {
+                "kind": "scalar",
+                "n": 1,
+                "d": 2
+              },
+              {
+                "kind": "scalar",
+                "n": 0,
+                "d": 1
+              }
+            ]
+          },
+          "claim_id": "A1",
+          "narration": "Now multiply the second value vector by one quarter. Its first coordinate contributes one half and the second contributes zero."
+        },
+        {
+          "id": "context",
+          "kind": "ADD",
+          "inputs": [
+            "left_contribution",
+            "right_contribution"
+          ],
+          "expected": {
+            "kind": "vector",
+            "items": [
+              {
+                "kind": "scalar",
+                "n": 2,
+                "d": 1
+              },
+              {
+                "kind": "scalar",
+                "n": 3,
+                "d": 1
+              }
+            ]
+          },
+          "claim_id": "A2",
+          "narration": "Add the two weighted vectors coordinate by coordinate. The new context contains two and three, formed from both original values."
+        }
+      ]
+    },
+    {
+      "id": "fraction_partition",
+      "domain": "mathematics",
+      "role": "development",
+      "title": "Equivalent Fractions Through Equal Partitions",
+      "facts": {
+        "initial": {
+          "kind": "fraction",
+          "n": 2,
+          "d": 3
+        },
+        "two": {
+          "kind": "scalar",
+          "n": 2,
+          "d": 1
+        },
+        "three": {
+          "kind": "scalar",
+          "n": 3,
+          "d": 1
+        }
+      },
+      "claims": {
+        "F1": "Splitting each third into two equal pieces preserves 2/3 as 4/6.",
+        "F2": "Splitting each sixth into three equal pieces preserves 4/6 as 12/18."
+      },
+      "operations": [
+        {
+          "id": "sixths",
+          "kind": "EQUIVALENT_PARTITION",
+          "inputs": [
+            "initial",
+            "two"
+          ],
+          "expected": {
+            "kind": "fraction",
+            "n": 4,
+            "d": 6
+          },
+          "claim_id": "F1",
+          "narration": "Two of three equal parts are shaded. Divide every part into two smaller equal parts. Four of six are shaded, preserving the same area."
+        },
+        {
+          "id": "eighteenths",
+          "kind": "EQUIVALENT_PARTITION",
+          "inputs": [
+            "sixths",
+            "three"
+          ],
+          "expected": {
+            "kind": "fraction",
+            "n": 12,
+            "d": 18
+          },
+          "claim_id": "F2",
+          "narration": "Divide each of those six equal parts into three smaller pieces. Twelve of eighteen remain shaded. The proportion has not changed."
+        }
+      ]
+    },
+    {
+      "id": "physics_velocity",
+      "domain": "physics",
+      "role": "development",
+      "title": "Velocity Under Constant Acceleration",
+      "facts": {
+        "acceleration": {
+          "kind": "scalar",
+          "n": 3,
+          "d": 1
+        },
+        "elapsed": {
+          "kind": "scalar",
+          "n": 4,
+          "d": 1
+        },
+        "initial_velocity": {
+          "kind": "scalar",
+          "n": 2,
+          "d": 1
+        }
+      },
+      "claims": {
+        "P1": "An acceleration of 3 applied for 4 seconds yields a velocity change of 12 in consistent units.",
+        "P2": "An initial velocity of 2 plus change 12 yields final velocity 14."
+      },
+      "operations": [
+        {
+          "id": "velocity_change",
+          "kind": "SCALE",
+          "inputs": [
+            "acceleration",
+            "elapsed"
+          ],
+          "expected": {
+            "kind": "scalar",
+            "n": 12,
+            "d": 1
+          },
+          "claim_id": "P1",
+          "narration": "With constant acceleration, the change in velocity is acceleration multiplied by elapsed time. Three times four gives twelve."
+        },
+        {
+          "id": "final_velocity",
+          "kind": "ADD",
+          "inputs": [
+            "initial_velocity",
+            "velocity_change"
+          ],
+          "expected": {
+            "kind": "scalar",
+            "n": 14,
+            "d": 1
+          },
+          "claim_id": "P2",
+          "narration": "Start from an initial velocity of two. Add the twelve units gained during the interval. The final velocity is fourteen."
+        }
+      ]
+    },
+    {
+      "id": "cs_running_sum",
+      "domain": "computer_science",
+      "role": "heldout",
+      "title": "Trace a Running Sum Step by Step",
+      "facts": {
+        "start": {
+          "kind": "scalar",
+          "n": 1,
+          "d": 1
+        },
+        "item_a": {
+          "kind": "scalar",
+          "n": 2,
+          "d": 1
+        },
+        "item_b": {
+          "kind": "scalar",
+          "n": 4,
+          "d": 1
+        }
+      },
+      "claims": {
+        "C1": "Adding the next element 2 to running total 1 gives 3.",
+        "C2": "Adding the next element 4 to running total 3 gives 7."
+      },
+      "operations": [
+        {
+          "id": "sum_after_first",
+          "kind": "ADD",
+          "inputs": [
+            "start",
+            "item_a"
+          ],
+          "expected": {
+            "kind": "scalar",
+            "n": 3,
+            "d": 1
+          },
+          "claim_id": "C1",
+          "narration": "A running sum starts at one. Read the next element, two, and add it to the previous state. The updated total becomes three."
+        },
+        {
+          "id": "sum_after_second",
+          "kind": "ADD",
+          "inputs": [
+            "sum_after_first",
+            "item_b"
+          ],
+          "expected": {
+            "kind": "scalar",
+            "n": 7,
+            "d": 1
+          },
+          "claim_id": "C2",
+          "narration": "Keep the existing total instead of restarting. Adding the next value, four, changes the saved running sum from three to seven."
+        }
+      ]
+    }
+  ]
+}

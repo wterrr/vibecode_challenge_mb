@@ -1,0 +1,98 @@
+{
+  "checkpoint": "V3-67",
+  "title": "Corrected OpenRouter Provider Wire and Provider-Enforced Budget Deny-By-Default Preflight",
+  "registration": "FIRST_CHILD_COMMIT_BEFORE_IMPLEMENTATION",
+  "date": "2026-10-14",
+  "parent_pr": 102,
+  "parent_sha": "b637e8783560aad02d9d3353f981fb22731fc9a8",
+  "archived_trial": {
+    "pr": 100,
+    "run_id": 38502942783,
+    "post_attempt_count": 1,
+    "historical_status": "NOT_CAPTURED_CANNOT_RECOVER",
+    "historical_cause": "UNDETERMINED",
+    "original_request_immutability": true
+  },
+  "research_objective": "Static corrected request, strict provider-side spending cap evidence contract, no paid or free inference",
+  "method": {
+    "frozen_original_model": "openai/gpt-6-luna",
+    "frozen_original_data_source": "scripts/run_v3_64_one_shot_real_model.py:request_payload",
+    "correct_only_provider_option": "allow_fallback -> allow_fallbacks",
+    "provider_order": [
+      "OpenAI"
+    ],
+    "require_parameters": true,
+    "allow_fallbacks": false,
+    "model_fallbacks": [],
+    "max_completion_tokens": 2100,
+    "omitted_temperature": true,
+    "structured_json_schema_unchanged": true,
+    "request_body_sha_dual_original_corrected": true
+  },
+  "budget": {
+    "total_usd_cap": "0.02",
+    "must_be_enforced_by_provider": true,
+    "provider_key_limit_max_usd": "0.02",
+    "provider_key_limit_reset": "NONE_LIFETIME",
+    "requires_authenticated_current_key_snapshot": true,
+    "requires_non_management_inference_key": true,
+    "requires_include_byok_in_limit": true,
+    "requires_positive_limit_remaining": true,
+    "must_not_infer_credit_balance_from_key_limit": true,
+    "hard_cost_limit_via_max_tokens": false,
+    "price_quote_is_only_advisory": true,
+    "external_key_limit_set_or_changed": false,
+    "allow_without_provider_proof": false,
+    "allow_live_api_posts": 0
+  },
+  "future_approved_trial_separate_prereg_required": true,
+  "protocol_controls": {
+    "fail_closed_if_unknown_pricing": true,
+    "fail_closed_if_key_missing_or_uncapped": true,
+    "fail_closed_if_resetting_limit": true,
+    "fail_closed_if_key_remaining_zero": true,
+    "fail_closed_if_billing_currencies_or_metadata_malformed": true,
+    "deny_if_provider_cap_over_usd_0_02": true,
+    "deny_if_unknown_credential_provenance": true,
+    "deny_on_old_request_singular_fallback": true,
+    "deny_any_retry_or_fallback": true,
+    "no_network_reads": true,
+    "no_network_writes": true,
+    "no_model_api": true,
+    "no_management_key_operations": true,
+    "no_production_prompt_or_V2_edits": true,
+    "no_main_merge": true
+  },
+  "required_tests": [
+    "frozen V3-64 request SHA unchanged",
+    "corrected wire exact diff only provider key spelling",
+    "strict JSON schema preserved",
+    "no retries/fallbacks",
+    "key metadata missing -> DENY",
+    "existing key positive cap without cap limit -> DENY",
+    "key cap > $0.02 -> DENY",
+    "repeating reset -> DENY",
+    "BYOK unprotected -> DENY",
+    "management key -> DENY",
+    "insufficient remaining key cap -> DENY",
+    "synthetic provider snapshot under lifetime cap -> ELIGIBLE_IN_UNIT_TEST_ONLY",
+    "malformed/NaN/negative/boolean numeric -> DENY",
+    "secret fields never persisted",
+    "no live payment proof synthesized"
+  ],
+  "scientific_outcomes": {
+    "can_be_proven": "request compatibility local, deny-by-default safety and hypothetical guardrail readiness",
+    "cannot_be_proven": "actual OpenRouter model entitlement or real provider enforcement absent authenticated runtime validation",
+    "genuine_agent_creativity": "NOT_TESTED",
+    "human_pedagogy": "UNRATED",
+    "learning_gain": "NOT_MEASURED",
+    "three_blue_one_brown_parity": "NOT_DEMONSTRATED",
+    "production": "BLOCKED"
+  },
+  "references": [
+    "https://openrouter.ai/docs/client-sdks/python/api-reference/chat",
+    "https://openrouter.ai/docs/api/api-reference/api-keys/get-current-key",
+    "https://openrouter.ai/docs/guides/features/guardrails/overview",
+    "https://openrouter.ai/docs/api/api-reference/api-keys/update-keys"
+  ]
+}

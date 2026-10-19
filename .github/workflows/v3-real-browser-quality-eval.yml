@@ -1,0 +1,129 @@
+name: V3-26 Real Chromium and Independent Quality Instrument Offline
+
+on:
+  push:
+    branches: [chatgpt/v3-26-real-browser-independent-quality-eval]
+  pull_request:
+    paths:
+      - "learnflow_v3/**"
+      - "scripts/run_v3_26_browser_e2e.py"
+      - "tests/v3/**"
+      - ".github/workflows/v3-real-browser-quality-eval.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  real-chromium-audio-video-rubric-download-import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing local MP4/TTS and real Playwright Chromium runtime
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fontconfig fonts-cmu espeak-ng
+          python -m pip install -r requirements.txt pytest-asyncio pyyaml playwright==1.55.0
+          # Playwright bundled Chromium Headless Shell lacks reliable
+          # proprietary H264/AAC codec support. Use real Google Chrome stable
+          # for a production-representative MP4 playback test.
+          python -m playwright install chrome
+          google-chrome --version
+      - name: Render EXACT real source, V3-22 and corrected V3-24 MP4s
+        run: |
+          mkdir -p "$RUNNER_TEMP/v3_26_media" "$RUNNER_TEMP/v3_26_raters" "$RUNNER_TEMP/v3_26_browser"
+          python scripts/verify_v3_teaching_storyboard.py --output-dir "$RUNNER_TEMP/v3_26_media"
+      - name: Generate two balanced independent offline reviewer kits (zero human scores)
+        run: |
+          python scripts/verify_v3_independent_pilot.py \
+            --source-dir "$RUNNER_TEMP/v3_26_media" \
+            --output-dir "$RUNNER_TEMP/v3_26_raters"
+      - name: Real Chromium E2E, decoded unmuted AAC/H264 playback, form, JSON download and offline importer
+        run: |
+          python scripts/run_v3_26_browser_e2e.py \
+            --media-dir "$RUNNER_TEMP/v3_26_media" \
+            --reviewer-packets "$RUNNER_TEMP/v3_26_raters" \
+            --output-dir "$RUNNER_TEMP/v3_26_browser"
+          python - <<'PY'
+          import json,os,pathlib
+          p=pathlib.Path(os.environ['RUNNER_TEMP'])/'v3_26_browser/v3_26_browser_engineering_receipt.json'
+          x=json.loads(p.read_text())
+          assert len(x['browser_rater_packages'])==2
+          assert x['human_participants']==x['real_human_ratings']==0
+          assert x['synthetic_browser_response_json_retained']==0
+          assert x['production']=='BLOCKED'
+          assert not list(p.parent.glob('*.json')) or set(y.name for y in p.parent.glob('*.json'))=={p.name}
+          PY
+      - name: Negative category/rater provenance, frozen V3/V2/Hermes and locked protocol regression
+        env:
+          V3_25_MEDIA_DIR: ${{ runner.temp }}/v3_26_media
+          V3_24_MEDIA_DIR: ${{ runner.temp }}/v3_26_media
+          V3_22_OUTPUT_DIR: ${{ runner.temp }}/v3_26_media
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_independent_quality_pilot.py tests/v3/test_real_browser_quality_contracts.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_teaching_storyboard.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_native_hd_lesson.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_event_alignment_quality.py
+          python -m pytest -q --confcutdir=tests/v2 tests/v2/test_concept_registry.py tests/v2/test_scenegraph_validation.py tests/v2/test_repair_v2_13_contracts.py
+          python -m pytest -q --confcutdir=tests/hermes tests/hermes/test_visual_director.py tests/hermes/test_final_v2_semantic_consistency.py tests/hermes/test_pedagogy_agent.py tests/hermes/test_script_agent.py
+          python scripts/verify_v3_benchmark_protocol.py
+          python scripts/verify_learnflow_bench.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Retain genuine browser playback screenshots and safe machine-only QA receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-26-chromium-real-browser-E2E-NOT-human-ratings
+          path: |
+            ${{ runner.temp }}/v3_26_browser/*.png
+            ${{ runner.temp }}/v3_26_browser/v3_26_browser_engineering_receipt.json
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Reviewer R01 package only, never admin mapping
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-26-reviewer-R01-offline-real-media
+          path: |
+            ${{ runner.temp }}/v3_26_raters/REVIEWER_R01/*
+          retention-days: 30
+          if-no-files-found: error
+      - name: Reviewer R02 package only, never admin mapping
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-26-reviewer-R02-offline-real-media
+          path: |
+            ${{ runner.temp }}/v3_26_raters/REVIEWER_R02/*
+          retention-days: 30
+          if-no-files-found: error
+      - name: Admin mapping and only ZERO-human-outcome report
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-26-ADMIN-private-mapping-and-NOT-RUN
+          path: |
+            ${{ runner.temp }}/v3_26_raters/ADMIN_NOT_FOR_RATERS/*
+            ${{ runner.temp }}/v3_26_raters/engineering_receipt.json
+            ${{ runner.temp }}/v3_26_raters/zero_response_gate.json
+          retention-days: 30
+          if-no-files-found: error
+      - name: Source H264 AAC proof for reproduction
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-26-real-source-matched-V3-22-V3-24
+          path: |
+            ${{ runner.temp }}/v3_26_media/native_hd/*.mp4
+            ${{ runner.temp }}/v3_26_media/native_hd/*.json
+            ${{ runner.temp }}/v3_26_media/native_pedagogical/*.mp4
+            ${{ runner.temp }}/v3_26_media/native_pedagogical/*.json
+            ${{ runner.temp }}/v3_26_media/source_v3_20/*.srt
+            ${{ runner.temp }}/v3_26_media/source_v3_20/*.json
+          retention-days: 30
+          if-no-files-found: error

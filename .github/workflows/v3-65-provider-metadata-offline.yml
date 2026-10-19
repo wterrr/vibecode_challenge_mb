@@ -1,0 +1,52 @@
+name: V3-65 OpenRouter Provider Metadata Diagnostic Strict Offline (NO MODEL API)
+on:
+  push:
+    branches: [chatgpt/v3-65-provider-get-diagnostics]
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_65_provider_get_diagnostics_preregister.json"
+      - "scripts/run_v3_65_provider_get_diagnostics.py"
+      - "tests/v3/test_v3_65_provider_get_diagnostics.py"
+      - ".github/workflows/v3-65-provider-metadata-offline.yml"
+  pull_request:
+    paths:
+      - "benchmarks/learnflowbench/v3/v3_65_provider_get_diagnostics_preregister.json"
+      - "scripts/run_v3_65_provider_get_diagnostics.py"
+      - "tests/v3/test_v3_65_provider_get_diagnostics.py"
+      - ".github/workflows/v3-65-provider-metadata-offline.yml"
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  metadata_only_host_contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing V3 dependencies for strict GET-only contract tests
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -r requirements.txt "pytest>=8,<10" "jsonschema>=4,<5" \
+            "pillow>=11,<13" "numpy>=1.24,<3" pyyaml
+      - name: Reject GET redirects, sensitive data, repeated POST, forged HTTP cause
+        run: |
+          python -m compileall -q \
+            scripts/run_v3_65_provider_get_diagnostics.py \
+            tests/v3/test_v3_65_provider_get_diagnostics.py
+          python -m pytest -q --confcutdir=tests/v3 \
+            tests/v3/test_v3_65_provider_get_diagnostics.py
+      - name: Offline fake sender diagnostic — NEVER provider network or key
+        run: |
+          python - <<'PY'
+          from scripts.run_v3_65_provider_get_diagnostics import freeze_check
+          f=freeze_check()
+          assert f["max_network_gets"]==2
+          assert f["max_provider_inference_posts"]==0
+          print("V365_OFFLINE_NEGATIVE_TESTS_ONLY")
+          PY

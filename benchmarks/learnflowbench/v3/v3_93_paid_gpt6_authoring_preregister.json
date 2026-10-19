@@ -1,0 +1,91 @@
+{
+  "checkpoint": "V3-93",
+  "preregistered": "FIRST_CHILD_BEFORE_IMPLEMENTATION_AND_ANY_PAID_POST",
+  "date": "2026-10-19",
+  "parent": {
+    "pr": 129,
+    "head_sha": "2620270f7863efa43b3c0e21a58acda88655fdae"
+  },
+  "deadline": "2026-10-21",
+  "user_authorization": "2026-10-19 user explicitly directed to increase 2500 output limit and use a GPT paid model, not a free model",
+  "hypothesis": "One genuine paid GPT-6 Luna model can produce a complete, semantically admissible originally narrated and directed storyboard and a separately verified native MP4.",
+  "question": "Why does a 3-by-4 array have the same number of objects as a 4-by-3 array?",
+  "topic_is_new": false,
+  "reuses": "V3-92 compact host-grounded original storyboard and V3-64 native compiler",
+  "provider": {
+    "base_url": "https://openrouter.ai/api/v1/chat/completions",
+    "model": "openai/gpt-6-luna",
+    "provider_order": [
+      "OpenAI"
+    ],
+    "allow_fallbacks": false,
+    "require_parameters": true,
+    "strict_structured_outputs": true,
+    "max_completion_tokens": 16000,
+    "reasoning_effort": "low",
+    "temperature": "OMITTED",
+    "max_paid_http_posts": 1,
+    "no_retry": true,
+    "no_alternative_models": true,
+    "no_free_fallback": true,
+    "http_timeout_seconds": 220,
+    "source": "OpenRouter and official OpenAI model docs 2026-10-19",
+    "catalog_url": "https://openrouter.ai/api/v1/models",
+    "key_url": "https://openrouter.ai/api/v1/key",
+    "max_usd_price_prompt_per_million": "0.10",
+    "max_usd_price_completion_per_million": "0.50",
+    "cost_token_ceiling_usd": "0.01",
+    "observed_account_key_limit": "MUST_CHECK_READONLY_NO_MUTATION",
+    "bypass_previous_v368_byok_guard": "Not using BYOK; new user-approved paid experiment; preserve original frozen V3-68 finding",
+    "paid_post_gate": [
+      "model catalog exact slug and pricing confirmed <= frozen values",
+      "OpenAI provider endpoint advertises response_format, structured_outputs and max_completion_tokens or max_tokens",
+      "authenticated account key metadata read-only indicates positive allowance, non-management; credit/routing not guaranteed",
+      "request encoded length <= 7000 bytes to conservatively cap maximum input tokens",
+      "worst case price <= 0.01 USD from 16000 output and pessimistic 7000 input tokens",
+      "first-commit prereg and offline+native full PASS at exact parent",
+      "one-use live trigger no other prior live run"
+    ]
+  },
+  "one_use_trigger": {
+    "path": "research/V393_GPT6_LUNA_ONE_POST_TRIGGER.txt",
+    "exact_text": "V393_AUTHORIZED_ONE_GPT6_LUNA_16000_OUTPUT_2026_10_19",
+    "no_later_retry": true
+  },
+  "model_authored": [
+    "five original narration beats",
+    "narrative opening/closure",
+    "composition",
+    "semantic motion",
+    "object visual focus each beat"
+  ],
+  "host_owned": [
+    "correct 3x4=4x3=12",
+    "12 stable unit IDs",
+    "ledger SHA",
+    "start/end column count",
+    "reveal timing",
+    "all executable renderer logic"
+  ],
+  "evidence": [
+    "real provider response ID hash",
+    "exact provider model slug",
+    "finish reason and usage before host admission",
+    "model full valid JSON admitted without auto repair",
+    "two native MP4s model+host control independent H264/AAC full decode, SHA and frame-count",
+    "model visual creative directive actually differs from host",
+    "cost from provider if reported",
+    "no human grade fabricated"
+  ],
+  "qa": {
+    "offline_mock_not_real": true,
+    "strict_host_semantic_gate": true,
+    "production": "BLOCKED",
+    "human_pedagogy": "UNRATED",
+    "learning_effect": "NOT_MEASURED",
+    "genuine_3b1b_parity": "NOT_PROVEN"
+  },
+  "no_main_merge": true,
+  "no_v2_core_edit": true,
+  "no_prior_trial_replay": true
+}

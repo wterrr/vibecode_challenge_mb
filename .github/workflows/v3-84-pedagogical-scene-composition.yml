@@ -1,0 +1,104 @@
+name: V3-84 Pedagogical Scene Composition (OFFLINE NO MODEL)
+on:
+  push:
+    branches: [chatgpt/v3-84-pedagogical-scene-composition]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_84_scene_composition_preregister.json'
+      - 'learnflow_v3/v384_pedagogical_scene_composer.py'
+      - 'learnflow_v3/v383_semantic_unit_storytelling.py'
+      - 'learnflow_v3/v384_native_composition_gate.py'
+      - 'learnflow_v3/v381_finite_manim_compiler.py'
+      - 'scripts/run_v3_84_scene_composition.py'
+      - 'tests/v3/test_v3_84_scene_composition.py'
+      - '.github/workflows/v3-84-pedagogical-scene-composition.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_84_scene_composition_preregister.json'
+      - 'learnflow_v3/v384_pedagogical_scene_composer.py'
+      - 'learnflow_v3/v383_semantic_unit_storytelling.py'
+      - 'learnflow_v3/v384_native_composition_gate.py'
+      - 'learnflow_v3/v381_finite_manim_compiler.py'
+      - 'scripts/run_v3_84_scene_composition.py'
+      - 'tests/v3/test_v3_84_scene_composition.py'
+      - '.github/workflows/v3-84-pedagogical-scene-composition.yml'
+permissions:
+  contents: read
+concurrency:
+  group: v384-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  source-grounded-query-to-native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reuse pinned fonts ffmpeg espeak, zero provider requests
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Existing offline Python dependencies
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: Pre-registered negative cases, real Hermes gates and old renderer regressions
+        timeout-minutes: 7
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_84_scene_composition.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_83_semantic_storytelling.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_82_query_evidence_bridge.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_81_domain_agnostic_semantic.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_80_semantic_transformations.py
+      - name: Pull original network-isolated Manim pinned image
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Run all five frozen questions and render three native H264 AAC lessons
+        timeout-minutes: 29
+        run: python scripts/run_v3_84_scene_composition.py --output-dir "$RUNNER_TEMP/v384_native"
+      - name: Assert full source-to-native and fail-closed outcomes without substitution
+        timeout-minutes: 4
+        run: |
+          python - <<'PY'
+          import json,os,pathlib,hashlib
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v384_native"
+          final=json.loads((root/"v384_final_report.json").read_text())
+          assert final["checkpoint"]=="V3-84"
+          assert final["source_supported_native"]==3
+          assert final["abstained"]==2
+          assert final["locked_denominator"]==5
+          assert final["heldout_native"]==1
+          assert final["model_api_requests"]==0
+          assert final["production"]=="BLOCKED"
+          for c in final["cases"]:
+              if c["status"]=="ABSTAIN":
+                  assert c["video"] is None
+                  continue
+              path=root/c["id"]/"v384_composed_lesson_native.mp4"
+              assert path.is_file() and path.stat().st_size>40000
+              assert hashlib.sha256(path.read_bytes()).hexdigest()==c["mp4_sha256"]
+              assert c["full_native_decode"]=="PASS"
+              assert c["generated_operation_count"]==len(c["physical_before_after"])
+              assert len(c["semantic_unit_count_certificates"])==c["generated_operation_count"]
+              assert all(x["native_three_phase_frames"][-1]["pixel_counts"]["physical_total"]>=3000 for x in c["physical_before_after"])
+              assert c["v384_opt_in_scene_composition"] is True
+              assert len(c["semantic_scene_geometry"])==c["generated_operation_count"]
+              print("V384 COMPOSED_NATIVE",c["id"],c["mp4_frames"],c["mp4_sha256"])
+          PY
+      - name: Historical V2 and V3 benchmark frozen contracts
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v384-composed-native-3-mp4-2-abstain
+          path: ${{ runner.temp }}/v384_native/
+          retention-days: 7
+          if-no-files-found: warn
