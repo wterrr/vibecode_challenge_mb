@@ -94,8 +94,27 @@ jobs:
           prior=[r for r in runs if int(r["id"])!=int(os.environ["GITHUB_RUN_ID"])
                  and (r.get("head_commit") or {}).get("message")==
                      "V396_AUTHORIZED_ONE_PAID_BROWSER_TRIGGER"]
-          assert not prior,"V396_PRIOR_PAID_TRIGGER_FORBIDDEN"
-          print("V396_UNIQUE_SINGLE_PAID_BROWSER_TRIGGER_CHECKED",flush=True)
+          # The first unique trigger's OFFLINE job failed before entering any
+          # paid job. A second trigger is permitted ONLY if every previous
+          # trigger is independently confirmed to have skipped its paid job.
+          # Zero returned jobs or any unknown/in-progress result => DENY.
+          assert len(prior)==1 and prior[0]["id"]==39211384525, (
+              "V396_EXPECT_EXACTLY_ONE_EARLIER_TRIGGER_NO_MORE")
+          assert prior[0]["status"]=="completed", "V396_OLD_TRIGGER_NOT_COMPLETE"
+          for entry in prior:
+              job_url="https://api.github.com/repos/"+repo+"/actions/runs/"+str(entry["id"])+"/jobs?per_page=100"
+              job_req=urllib.request.Request(job_url,
+                  headers={"Accept":"application/vnd.github+json",
+                           "Authorization":"Bearer "+os.environ["GH_TOKEN"]})
+              with urllib.request.urlopen(job_req,timeout=30) as response:
+                  jobs=json.load(response)["jobs"]
+              paid=[j for j in jobs
+                    if j["name"]=="one_real_gpt_browser_click_paid_once"]
+              assert len(paid)==1 and paid[0]["status"]=="completed" and (
+                  paid[0]["conclusion"]=="skipped"), (
+                      "V396_PRIOR_PAID_TRIGGER_FORBIDDEN")
+          print("V396_PRIOR_TRIGGER_PAID_JOB_SKIPPED_ONE_GENUINE_POST_STILL_UNUSED",
+                flush=True)
           PY
       - name: Install actual Playwright browser, FastAPI server and audio-video tools
         run: |
