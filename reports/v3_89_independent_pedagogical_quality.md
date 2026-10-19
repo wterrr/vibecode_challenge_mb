@@ -1,0 +1,16 @@
+# V3-89 — Independent Pedagogical Quality Gate and Research Consolidation
+
+## Intent, preregistration and adversarial limits
+Parent: Draft PR #125 final V3-88 exact HEAD `f6f66334bf4a40fae95af97667d43bf5e18453b5`. First V3-89 child commit `cd228fe95667b275d318f57fb5adab9f9b6e4f17` preregistered the entire six-video selection and SHA/frame receipts **BEFORE code implementation**. No network model calls, no historical MP4 mutation, no `main` merge, no V2 Core/product prompt changes. If a historical 7-day retention artifact expires or is unavailable, technical gate must be **NOT RUN / BLOCKED**, never silently render replacements.
+
+## Six genuinely native, fixed-source clips
+Balance two clips each from previously distinct source-scoped semantic families: V3-87 AFFINE (Math linear output and Physics heldout); V3-88 FRACTION_EQUIVALENCE (2/3=4/6, 1/4=3/12); V3-88 ORDERED_SEARCH (leftmost search 8 and 7). Excludes V3-87 Physics dev to preserve exactly two per family. Archive artifacts #12020402722 and #12157931417, each file's original H264/AAC SHA256 and exact frames frozen. `scripts/run_v3_89_independent_review.py` independently validates native MP4 1280x720/15fps H264/AAC, complete FFmpeg decode, original full SHA256 equality and source receipt references. Six MP4s copied **unchanged** to reviewer-visible CLIP_* filenames, plus three real 15/50/85% frames each. Private reveal key and machine receipts are separate from the review packet; image content reveals subject, so checkpoint/dev labels are masked, **not** content-blind or double-blind.
+
+## Review protocol (no hallucinated human scores)
+Two distinct raters per film, five ordinal 1..5 axes: semantic correctness, causal continuity, readable layout, narration visual timing and pedagogical usefulness. Falsifiable acceptance requires complete integer scores, per-axis median >=3 for each film, film overall score mean >=4, no rater correctness<=2. Incomplete, unsupported, duplicate, malformed input must not become Human PASS. Machine acceptance is only media integrity. Human status **PENDING_HUMAN_REVIEW** until external genuine review CSV arrives; successful synthetic unit-test fixtures are NOT participant ratings, and pseudonymous IDs alone do not verify actual reviewer independence. Blank template CSV is exported, no fake responses. User research and learner gain NOT MEASURED, no comparison to independent 3B1B expert pedagogy yet.
+
+## Scientific limits
+V3-87/V3-88 established finite host-grounded native visual semantics using historical curated mathematics/algorithms and replayed traces. Even the cross-family visual improvement does NOT prove autonomous model-based new scene planning, new trusted source retrieval, animation quality equal to 3Blue1Brown or better student comprehension. Independent review here is an **instrument and process**, not a completed human assessment. Zero human review means Final Visual Quality **NOT PASS**; production BLOCKED. Draft PR only.
+
+## Native evidence and actions (pending)
+Dedicated GitHub job downloads *existing immutable artifact IDs* with read-only actions token, creates anonymized clips and reviewer templates, validates invalid-review and no-review gates, publishes separate reviewer packet and admin mapping. No new render by design. Exact HEAD CI and six real film revalidation must complete before engineering PASS.
