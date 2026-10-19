@@ -140,6 +140,8 @@ def create_page(
         context={
             "prefill_topic": topic,
             "pipeline_mode": pipeline_mode,
+            "v3_ai_enabled": (getattr(request.app.state.settings,"v3_gpt_array_preview_enabled",False)
+                              and request.app.state.settings.environment.lower() in ("development","test")),
             "active_nav": "create",
         },
     )
