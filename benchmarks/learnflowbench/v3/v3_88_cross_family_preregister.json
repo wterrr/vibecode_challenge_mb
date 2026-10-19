@@ -1,0 +1,134 @@
+{
+  "checkpoint": "V3-88",
+  "protocol": "FIRST_COMMIT_PREREG_BEFORE_STORYBOARD_RENDERER",
+  "parent": {
+    "pr": 124,
+    "sha": "94836da45b53499052bd3ccad7cf2a349cb1f2ff"
+  },
+  "objective": "Bona fide non-affine visual transfer: exact partition refinement and ordered search-state elimination in native narrated H264. Two development families with heldout numeric data each, four controls. No single affine topic repetition.",
+  "source_reuse": [
+    "learnflow_v3.grounded_fraction_claims FractionTopic/ground/verify/build",
+    "learnflow_v3.v381_generic_semantic_operators EQUIVALENT_PARTITION exact rational operator",
+    "learnflow_v3.binary_search_trace make_binary_search_trace/verify_binary_search_trace independent bisect_left",
+    "learnflow_v3.creative_manim_runner _audio/_docker_manim/_codec_and_pixel_gates",
+    "scripts.run_v3_44_semantic_counterfactual deterministic_mux",
+    "learnflow_v3.process_edge_visual_qa decoded H264 _frame"
+  ],
+  "fixed_case_ids": [
+    "fraction_refinement_development",
+    "fraction_refinement_heldout",
+    "binary_search_development",
+    "binary_search_heldout",
+    "chemistry_noble_gases_unsupported",
+    "history_industrial_revolution_unsupported",
+    "fraction_false_equivalence",
+    "binary_search_unsorted"
+  ],
+  "cases": [
+    {
+      "id": "fraction_refinement_development",
+      "family": "FRACTION_EQUIVALENCE",
+      "role": "development",
+      "question": "Can 2/3 and 4/6 show the same shaded amount?",
+      "source_kind": "CURATED_V349_FRACTION_HOST_FACT"
+    },
+    {
+      "id": "fraction_refinement_heldout",
+      "family": "FRACTION_EQUIVALENCE",
+      "role": "heldout",
+      "question": "Can 1/4 and 3/12 show the same shaded amount?",
+      "source_kind": "CURATED_V349_FRACTION_HOST_FACT"
+    },
+    {
+      "id": "binary_search_development",
+      "family": "ORDERED_SEARCH",
+      "role": "development",
+      "question": "Find the leftmost index of 8 in [1, 3, 5, 8, 8, 8, 11, 16].",
+      "source_kind": "VERIFIED_V305_BINARY_SEARCH_TRACE"
+    },
+    {
+      "id": "binary_search_heldout",
+      "family": "ORDERED_SEARCH",
+      "role": "heldout",
+      "question": "Find the leftmost index of 7 in [0, 2, 4, 7, 7, 9, 14, 19, 23].",
+      "source_kind": "VERIFIED_V305_BINARY_SEARCH_TRACE"
+    },
+    {
+      "id": "chemistry_noble_gases_unsupported",
+      "family": "UNSUPPORTED",
+      "role": "negative",
+      "question": "Why are noble gases chemically inert?",
+      "expected": "ABSTAIN"
+    },
+    {
+      "id": "history_industrial_revolution_unsupported",
+      "family": "UNSUPPORTED",
+      "role": "negative",
+      "question": "Why did the Industrial Revolution begin in Britain?",
+      "expected": "ABSTAIN"
+    },
+    {
+      "id": "fraction_false_equivalence",
+      "family": "FRACTION_EQUIVALENCE",
+      "role": "negative",
+      "question": "Can 2/3 and 3/5 show the same shaded amount?",
+      "expected": "ABSTAIN"
+    },
+    {
+      "id": "binary_search_unsorted",
+      "family": "ORDERED_SEARCH",
+      "role": "negative",
+      "question": "Find the leftmost index of 8 in [3, 8, 1, 8, 5].",
+      "expected": "ABSTAIN"
+    }
+  ],
+  "claims": {
+    "fraction": "Both bars represent one equal-sized whole. Subdivision retains shaded geometric length; original shaded n/d and refined shaded nk/dk are verified equal by Fraction equality and V3-49 claim hashes.",
+    "search": "Each comparison uses independently replayed V3-05 LEFTMOST trace; low/high/mid and discarded portion physically update on screen. Candidate tracking for duplicate target and terminal leftmost answer must match stdlib bisect_left.",
+    "not_claimed": [
+      "independent source retrieval",
+      "autonomous LLM authored planning",
+      "scientific multi-domain generalization",
+      "human learning gains",
+      "3Blue1Brown parity"
+    ]
+  },
+  "acceptance": {
+    "native_exact": 4,
+    "heldout_exact": 2,
+    "abstain_exact": 4,
+    "locked_denominator": 8,
+    "semantic_families": [
+      "FRACTION_EQUIVALENCE",
+      "ORDERED_SEARCH"
+    ],
+    "per_native": "Real eSpeak PCM audio, native pinned Docker Manim 1280x720 15fps H264/AAC, strict mux <=3 surplus frames, full decoded video, at least two distinct visible semantic states from actual frame witnesses.",
+    "negative": "Invalid source family, non-equivalent fraction, unsorted array, altered V3-05 trace/claim SHA, missing semantic animation, source model spoof, scene overflow or illegitimate unsupported renderer must fail closed.",
+    "comparators": [
+      "V3-87 existing affine baseline retained unchanged",
+      "V3-47 host fraction transformation grammar",
+      "V3-05 verified Binary Search state contract"
+    ],
+    "no_swap": true,
+    "revision_protocol": "If native QA fails, inspect actual failed MP4 and repair generator or phase-appropriate witness, never change prereg cases or loosen frame/audio integrity.",
+    "model_api": 0,
+    "merge_main": false,
+    "legacy_renderer_defaults_unchanged": true,
+    "final_visual_quality": "NOT_PASS",
+    "learner_gain": "NOT_MEASURED",
+    "production": "BLOCKED"
+  },
+  "independent_human_review": {
+    "method": "masked source-family clips, blinded prompt/user ratings",
+    "real_reviewer_count": 0,
+    "rubric_axes": [
+      "semantic correctness",
+      "continuity and causal meaning",
+      "readable spatial composition",
+      "narration visual timing",
+      "pedagogical usefulness"
+    ],
+    "scores": "UNMEASURED",
+    "claim": "Protocol only, never fabricated pass"
+  }
+}

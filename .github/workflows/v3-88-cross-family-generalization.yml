@@ -1,0 +1,117 @@
+name: V3-88 Cross-Family Semantic Generalization (OFFLINE NO MODEL)
+on:
+  push:
+    branches: [chatgpt/v3-88-cross-family-semantic-generalization]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_88_cross_family_preregister.json'
+      - 'learnflow_v3/v388_cross_family_planner.py'
+      - 'learnflow_v3/v388_cross_family_manim.py'
+      - 'learnflow_v3/v388_native_cross_family_gate.py'
+      - 'scripts/run_v3_88_cross_family_native.py'
+      - 'tests/v3/test_v3_88_cross_family_generalization.py'
+      - '.github/workflows/v3-88-cross-family-generalization.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_88_cross_family_preregister.json'
+      - 'learnflow_v3/v388_cross_family_planner.py'
+      - 'learnflow_v3/v388_cross_family_manim.py'
+      - 'learnflow_v3/v388_native_cross_family_gate.py'
+      - 'scripts/run_v3_88_cross_family_native.py'
+      - 'tests/v3/test_v3_88_cross_family_generalization.py'
+      - '.github/workflows/v3-88-cross-family-generalization.yml'
+permissions:
+  contents: read
+concurrency:
+  group: v388-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  source-grounded-query-to-native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reuse pinned fonts ffmpeg espeak, zero provider requests
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Existing offline Python dependencies
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow
+      - name: V3-88 cross-family host oracles and V3-87-to-V3-80 offline regressions
+        timeout-minutes: 7
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_88_cross_family_generalization.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_87_affine_readability.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_86_typed_narration_visual.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_85_affine_semantics.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_84_scene_composition.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_83_semantic_storytelling.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_82_query_evidence_bridge.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_81_domain_agnostic_semantic.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_80_semantic_transformations.py
+      - name: Pull original network-isolated Manim pinned image
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Render all four frozen non-affine lessons and prove four fail-closed abstentions
+        timeout-minutes: 29
+        run: python scripts/run_v3_88_cross_family_native.py --output-dir "$RUNNER_TEMP/v388_native"
+      - name: Assert all four native MP4 and truthful negative results
+        timeout-minutes: 4
+        run: |
+          python - <<'PY'
+          import json,os,pathlib,hashlib,csv
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v388_native"
+          report=json.loads((root/"v388_final_report.json").read_text())
+          assert report["checkpoint"]=="V3-88"
+          assert (report["native_pass"],report["negative_abstain"],report["heldout_pass"],report["case_count"])==(4,4,2,8)
+          assert report["model_api_requests"]==0
+          assert report["production"]=="BLOCKED"
+          assert set(report["verified_families"])=={"FRACTION_EQUIVALENCE","ORDERED_SEARCH"}
+          with (root/"independent_masked_quality_rubric_UNRATED.csv").open() as stream:
+              lines=list(csv.DictReader(stream))
+              assert len(lines)==4
+              assert all(x["reviewer_id"]=="" and x["pedagogical_usefulness_1to5"]=="" for x in lines)
+          for c in report["cases"]:
+              if c["status"]=="ABSTAIN":
+                  assert c["video"] is None
+                  continue
+              assert c["status"]=="BOUNDED_HOST_SEMANTIC_NATIVE_TECHNICAL_PASS_ONLY"
+              video=root/c["id"]/"v388_native_cross_family.mp4"
+              assert video.is_file() and video.stat().st_size>40000
+              assert hashlib.sha256(video.read_bytes()).hexdigest()==c["native_mp4_sha256"]
+              assert c["full_native_decode"]=="PASS"
+              assert c["codec"]=="H264/AAC"
+              assert c["native_mp4_frames"]==sum(x["frames"] for x in c["real_wav_derived_voice_segments"])
+              assert c["semantic_event_count"]==c["wav_utterance_count"]==len(c["physical_semantic_H264_witnesses"])
+              assert c["semantic_event_count"]>=3
+              assert c["native_audio_mux"]["raw_manim_frames"]-c["native_mp4_frames"] in (0,1,2,3)
+              assert c["source_scoped_host_verification"]=="PASS"
+              if c["family"]=="FRACTION_EQUIVALENCE":
+                  assert any(x["phase"]=="TRANSFORM" and x["relative_teal_change"]<=.18
+                             and x["native_changed_pixels"]>=180
+                             for x in c["physical_semantic_H264_witnesses"])
+              else:
+                  assert any(x["phase"]=="COMPARE" and x["native_changed_pixels"]>=140
+                             for x in c["physical_semantic_H264_witnesses"])
+              print("V388_REAL_NATIVE_CROSS_FAMILY",c["id"],c["native_mp4_frames"],c["native_mp4_sha256"])
+          PY
+      - name: Historical V2 and V3 benchmark frozen contracts
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v388-cross-family-4-native-4-abstain
+          path: ${{ runner.temp }}/v388_native/
+          retention-days: 7
+          if-no-files-found: warn
