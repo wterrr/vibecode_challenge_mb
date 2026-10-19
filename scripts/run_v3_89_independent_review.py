@@ -172,7 +172,7 @@ def evaluate_human_reviews(path,doc):
              "REVIEWER_OR_CLIP_IDENTIFIER_INVALID")
         nums=[]
         for key in SCORE_AXES:
-            raw=row[key].strip()
+            raw=row[key]  # strict exact integer strings; no silent whitespace correction
             need(raw in ("1","2","3","4","5"),"HUMAN_RATING_NOT_INTEGER_1_TO_5")
             nums.append(int(raw))
         need(who not in {x["reviewer_id"] for x in ratings[clip]},
