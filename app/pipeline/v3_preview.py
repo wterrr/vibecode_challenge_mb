@@ -256,8 +256,16 @@ class V3OfflinePreviewPipeline(LearningVideoPipeline):
                     "human_review":"UNRATED","production":"BLOCKED",
                 }
             except Exception:
-                # Fail closed; partial video and failed artifact are not
-                # available from a public route.
+                # Fail closed: remove any rejected media while retaining only
+                # the bounded, sanitized receipt for scientific/financial audit.
+                # This audit folder is NEVER authorized by get_gpt_preview_video.
+                source_receipt=base/"v395_preview_receipt.json"
+                if source_receipt.is_file() and not source_receipt.is_symlink():
+                    try:
+                        audit=self.artifacts.get_job_dir("v395safeaudit",create=True)
+                        shutil.copyfile(source_receipt,audit/(preview_id+".json"))
+                    except Exception:
+                        pass
                 shutil.rmtree(base,ignore_errors=True)
                 raise
 
