@@ -1,0 +1,31 @@
+name: V3-97 frontend bridge preflight (no model API)
+on:
+  push:
+    branches: [chatgpt/v3-97-react-frontend-backend-integration]
+  pull_request:
+    paths:
+      - 'app/main.py'
+      - 'app/web/react_landing.py'
+      - 'scripts/import_v3_97_frontend_zip.py'
+      - 'tests/test_v3_97_frontend_import.py'
+      - '.github/workflows/v3-97-frontend-integration.yml'
+      - 'frontend/**'
+jobs:
+  bridge-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      LEARNFLOW_PIPELINE_MODE: fake
+      LEARNFLOW_REACT_LANDING: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - run: python -m pytest -q tests/test_v3_97_frontend_import.py
+      - name: Never imply full-FE acceptance if binary assets are absent
+        run: |
+          if [ ! -f frontend/learnflow-landing/package.json ]; then
+            echo 'FE_ARCHIVE_NOT_IN_REPOSITORY: integration bridge only; full UI E2E NOT_RUN'
+          fi
