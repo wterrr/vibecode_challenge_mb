@@ -11,6 +11,7 @@ on:
       - 'app/pipeline/factory.py'
       - 'frontend/**'
       - 'tests/test_v3_98_auth_production.py'
+      - 'scripts/v399_private_browser_acceptance.py'
       - 'Dockerfile'
       - 'compose.production.yml'
       - '.github/workflows/v3-98-auth-postgres-paid.yml'
@@ -69,6 +70,40 @@ jobs:
           else:
               raise AssertionError('Production unexpectedly launched without auth')
           PY
+      - name: Install real Chromium for single-admin browser E2E
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+      - name: Serve actual React with real PostgreSQL and test-only authentication
+        env:
+          DATABASE_URL: postgresql://learnflow:ci-test-only@127.0.0.1:5432/learnflow_auth_ci
+          AUTH_ENABLED: 'true'
+          ADMIN_USERNAME: admin
+          ADMIN_PASSWORD: long-ci-admin-password-000
+          AUTH_SECRET_KEY: ci-only-48-characters-aaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          PUBLIC_ORIGIN: http://127.0.0.1:8855
+          LEARNFLOW_REACT_LANDING: '1'
+          LEARNFLOW_PIPELINE_MODE: fake
+        run: |
+          python scripts/import_v3_97_frontend_zip.py --install-dist
+          uvicorn app.main:app --host 127.0.0.1 --port 8855 > /tmp/v399-auth-browser.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl --silent --fail http://127.0.0.1:8855/healthz >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/v399-auth-browser.log
+          exit 1
+      - name: Verify browser login, private API, job creation, logout
+        env:
+          V399_TEST_ADMIN: admin
+          V399_TEST_PASSWORD: long-ci-admin-password-000
+        run: python scripts/v399_private_browser_acceptance.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v399-admin-browser-postgres-acceptance
+          path: artifacts/v399-private-browser/
+          if-no-files-found: warn
       - name: Build release image with original React source
         run: docker build -t learnflow-v398:ci .
       - name: Production Postgres bootstrap without paid API requests
