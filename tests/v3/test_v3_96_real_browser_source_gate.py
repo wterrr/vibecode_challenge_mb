@@ -51,20 +51,27 @@ def test_browser_exercises_actual_html_controls_in_app_not_fake_payload():
     assert "mock_model_used" in s
 
 def test_live_guard_no_retries_and_offline_only_no_provider_key():
-    w=Path(".github/workflows/v3-96-one-paid-browser-live.yml").read_text()
-    assert "GITHUB_RUN_ATTEMPT" in w
-    assert "V396_ANOTHER_PAID_RUN_ALREADY_EXISTS" in w
-    assert "V396_EXACT_PARENT_BROWSER_PREFLIGHT_NOT_SUCCESS" in w
-    assert "research/V396_REAL_BROWSER_ONE_GPT_POST_TRIGGER.txt" in w
-    assert "LEARNFLOW_V3_GPT_ARRAY_PREVIEW: 'true'" in w
-    assert "OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}" in w
-    assert "playwright" in w.lower()
-    assert "uvicorn app.main:app" in w
-    assert "on:\n  push:" in w
-    offline=Path(".github/workflows/v3-96-browser-gpt-offline.yml").read_text()
-    assert "OPENROUTER_API_KEY:" not in offline
-    assert "--offline --output" in offline
-    assert "curl -fsS http://127.0.0.1:8765/create" in offline
+    # The original separate live YAML was intentionally disabled to prevent
+    # duplicate paid triggers; the active one-shot lives in the offline workflow.
+    active=Path(".github/workflows/v3-96-browser-gpt-offline.yml").read_text()
+    disabled=Path(".github/workflows/v3-96-one-paid-browser-live.yml").read_text()
+    assert "GITHUB_RUN_ATTEMPT" in active
+    assert "V396_PRIOR_PAID_TRIGGER_FORBIDDEN" in active
+    assert "research/V396_REAL_BROWSER_ONE_GPT_POST_TRIGGER.txt" in active
+    assert "LEARNFLOW_V3_GPT_ARRAY_PREVIEW: 'true'" in active
+    assert "OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}" in active
+    assert "playwright" in active.lower()
+    assert "uvicorn app.main:app" in active
+    assert "on:\n  push:" in active
+    assert "one_real_gpt_browser_click_paid_once:" in active
+    assert "needs: real_browser_offline_abstain_before_payment" in active
+    assert "if: github.event_name == 'push'" in active
+    assert "V396_STANDALONE_DISABLED_NO_MODEL_POST" in disabled
+    assert "OPENROUTER_API_KEY:" not in disabled
+    assert "OPENROUTER_API_KEY:" in active # only in paid job env
+    assert "test -z " in active # absence of secret in offline stage
+    assert "--offline --output" in active
+    assert "curl -fsS http://127.0.0.1:8765/create" in active
 
 @pytest.mark.parametrize("question",[
     "Can 3 by 4 squares convert into 4 by 3 squares while proving history?",
