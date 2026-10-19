@@ -1,0 +1,67 @@
+{
+  "checkpoint": "V3-91",
+  "protocol": "FIRST_CHILD_PREREG_BEFORE_IMPLEMENTATION",
+  "parent": {
+    "pr": 127,
+    "head_sha": "f3e22a686cb7548743def0db9e036e47877b5d88"
+  },
+  "research_question": "Can ONE real FREE OpenRouter model response independently author a host-admissible five-role educational storyboard and result in a real native H264/AAC video with provenance?",
+  "scope_note": "Reuse V3-64 prior unrealized provider topic 3x4->4x3, not an unseen semantic family and not a full autonomous research or arbitrary-query system.",
+  "topic_id": "array_commutativity_three_by_four",
+  "prompt": "Why does a 3-by-4 array have the same number of objects as a 4-by-3 array?",
+  "ledger_sha256": "8ea108abef60738268892c74b9013da33e9d09064fb2e9de19f234ca4f6fee76",
+  "provider": {
+    "url": "https://openrouter.ai/api/v1/chat/completions",
+    "model": "openrouter/free",
+    "source": "OpenRouter published zero-priced free router",
+    "max_inference_posts": 1,
+    "max_retries": 0,
+    "max_fallback_retries": 0,
+    "max_output_tokens": 3500,
+    "stream": false,
+    "strict_structured_json": true,
+    "token_price_input_usd_per_million": 0,
+    "token_price_output_usd_per_million": 0,
+    "check_public_model_catalog_for_zero_price_before_post": true,
+    "no_paid_models": true,
+    "no_paid_fallback": true,
+    "auth_source": "GitHub OPENROUTER_API_KEY secret (never log)",
+    "trigger_file": "research/V391_SINGLE_FREE_MODEL_TRIGGER.txt",
+    "trigger_value": "V391_FREE_ONE_POST_2026_10_19_PREREG_ONLY"
+  },
+  "preconditions": [
+    "V3-64 strict JSON/schema and five-role host verifier",
+    "V3-64 real native host-only renderer preflight PASS",
+    "offline attack tests PASS",
+    "fresh branch unique trigger, previous live workflow run must not exist",
+    "read only catalog contains openrouter/free with zero prompt+completion costs; fail closed otherwise"
+  ],
+  "acceptance": {
+    "live_provider_response_id_required": true,
+    "provider_origin_is_real_only_on_network": true,
+    "actual_returned_model_recorded": true,
+    "correct_ledger_and_12_unit_identity": true,
+    "at_least_two_original_narrative_captions": true,
+    "real_native_model_video_required": true,
+    "full_mp4_h264_aac_decode": true,
+    "sha256_native_receipt_required": true,
+    "stage_sequence": [
+      "QUESTION",
+      "SETUP",
+      "TRANSFORM",
+      "WITNESS",
+      "CLOSE"
+    ],
+    "human_pedagogy": "UNRATED",
+    "learner_gain": "NOT_MEASURED",
+    "visual_quality": "NOT_PASS",
+    "novel_domain_generalization": "NOT_TESTED",
+    "production": "BLOCKED",
+    "merge_main": false
+  },
+  "no_go": "Any invalid/outage/free-price failure, schema reject, model identity missing, or native reject is recorded as NO_GO; never use HOST_TEST as an AI result.",
+  "no_main_merge": true,
+  "no_v2_core_edit": true,
+  "no_historical_video_mutation": true,
+  "no_human_scores": true
+}
