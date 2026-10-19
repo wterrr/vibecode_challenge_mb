@@ -126,3 +126,22 @@ def test_no_paid_api_endpoint_in_v394_runner():
     assert "urllib.request" not in s
     assert "common_timeline(" in s
     assert "audit_timeline(candidate,counts)" in s
+
+
+def test_detects_actual_upper_heading_to_center_annotation_collision(monkeypatch):
+    # Regression discovered by directly inspecting the first repaired MP4.
+    # No named squares or subtitles overlapped, but the two headings merged.
+    monkeypatch.setitem(g.LABELS,"before",
+        "BEFORE  /  3 ROWS x 4 COLUMNS / A VERY LONG PANEL HEADING")
+    with pytest.raises(g.Collision,match="TEXT_TEXT_COLLISION"):
+        g.audit_frame(candidate(),2,.5)
+
+def test_repaired_headings_are_separated_from_center_text_in_every_beat():
+    c=candidate()
+    from PIL import Image,ImageDraw
+    d=ImageDraw.Draw(Image.new("RGB",(1280,720)))
+    for beat in range(5):
+        t=g.fixed_label_boxes(c,beat,d)
+        assert not g.overlap(t["before_heading"],t["center_note"],margin=16)
+        assert not g.overlap(t["center_note"],t["after_heading"],margin=16)
+        assert not g.overlap(t["before_heading"],t["after_heading"],margin=16)
