@@ -259,6 +259,7 @@ class V3OfflinePreviewPipeline(LearningVideoPipeline):
                 # Fail closed: remove any rejected media while retaining only
                 # the bounded, sanitized receipt for scientific/financial audit.
                 # This audit folder is NEVER authorized by get_gpt_preview_video.
+                # V3-96: paid failure receipts remain private; only SUCCESS IDs can be streamed.
                 source_receipt=base/"v395_preview_receipt.json"
                 if source_receipt.is_file() and not source_receipt.is_symlink():
                     try:
