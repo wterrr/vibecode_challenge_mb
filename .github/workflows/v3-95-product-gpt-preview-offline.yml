@@ -108,6 +108,7 @@ jobs:
           retention-days: 5
           if-no-files-found: warn
 
+  # V3-96 cross-branch runner bridge: checkout exact pinned V3-96 source; model key NEVER on preflight.
   v396_actual_chromium_no_key_preflight:
     needs: new_prompt_api_and_host_integrity
     runs-on: ubuntu-latest
