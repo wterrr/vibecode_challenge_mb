@@ -1,0 +1,34 @@
+{
+  "beats": [
+    {
+      "narration": "Before we turn anything, predict whether 3 rows of 4 squares will match 4 rows of 3.",
+      "stage": "QUESTION",
+      "visual_focus": "all_twelve"
+    },
+    {
+      "narration": "Look across 3 rows of 4 squares, then predict what 4 rows of 3 will show.",
+      "stage": "SETUP",
+      "visual_focus": "highlight_first_row"
+    },
+    {
+      "narration": "Keep every square as the array turns from 3 rows of 4 into 4 rows of 3.",
+      "stage": "TRANSFORM",
+      "visual_focus": "track_corner"
+    },
+    {
+      "narration": "There are 12 squares in both views; turning the same squares changes rows, not the count.",
+      "stage": "WITNESS",
+      "visual_focus": "all_twelve"
+    },
+    {
+      "narration": "The count stays 12 because rearranging the squares changes their grouping, not the squares themselves.",
+      "stage": "CLOSE",
+      "visual_focus": "all_twelve"
+    }
+  ],
+  "closure_strategy": "counting_invariant",
+  "composition": "side_by_side",
+  "focus": "all_twelve",
+  "motion_method": "smooth_morph",
+  "opening_strategy": "predict_first"
+}
