@@ -168,7 +168,7 @@ def write_audio(pcms,par,counts,dest):
             target=int(count/FPS*frame_rate)
             need(len(pcm)//2<=target,"NARRATION_LONGER_THAN_VISUAL_SEGMENT")
             w.writeframes(pcm+b"\0\0"*(target-len(pcm)//2))
-def frame_stream(candidate,counts,silent):
+def frame_stream(candidate,counts,silent,frame_renderer=None):
     args=["ffmpeg","-nostdin","-y","-hide_banner","-loglevel","error",
           "-f","rawvideo","-pix_fmt","rgb24","-s",f"{W}x{H}","-r",str(FPS),
           "-i","-","-an","-c:v","libx264","-preset","ultrafast","-crf","28",
@@ -178,7 +178,7 @@ def frame_stream(candidate,counts,silent):
         for i,n in enumerate(counts):
             for j in range(n):
                 t=min(1.,j/max(1,int(n*.78)))
-                proc.stdin.write(render(candidate,i,t).tobytes())
+                proc.stdin.write((frame_renderer or render)(candidate,i,t).tobytes())
         proc.stdin.close();proc.stdin=None
         err=proc.stderr.read().decode(errors="replace")
         ret=proc.wait(timeout=300)
@@ -187,7 +187,7 @@ def frame_stream(candidate,counts,silent):
         proc.kill();proc.wait()
         raise
 
-def build_comparison(baseline,candidate,dest:Path):
+def build_comparison(baseline,candidate,dest:Path,frame_renderer=None):
     accept(baseline);accepted=accept(candidate)
     need(not dest.exists(),"OUTPUT_EXISTS")
     dest.mkdir(parents=True)
@@ -199,7 +199,7 @@ def build_comparison(baseline,candidate,dest:Path):
         output=dest/f"{label}.mp4"
         wav=dest/f"{label}.wav"
         write_audio(audio,par,counts,wav)
-        frame_stream(item,counts,raw)
+        frame_stream(item,counts,raw,frame_renderer=frame_renderer)
         subprocess.run(["ffmpeg","-nostdin","-y","-v","error","-i",str(raw),
           "-i",str(wav),"-map","0:v:0","-map","1:a:0","-c:v","copy",
           "-c:a","aac","-b:a","128k",str(output)],check=True,timeout=120)
