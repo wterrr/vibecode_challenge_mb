@@ -1,0 +1,96 @@
+name: V3-93 EXACT ONE Paid GPT-6 Luna 16K Authoring Trial
+# Only a UNIQUE trigger file can send the ONE user-authorized paid inference POST.
+on:
+  push:
+    branches: [chatgpt/v3-93-paid-gpt6-luna-authoring-one-shot]
+    paths: ['research/V393_GPT6_LUNA_ONE_POST_TRIGGER.txt']
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: V393_ONE_PAID_GPT6_LUNA_POST_GLOBAL
+  cancel-in-progress: false
+jobs:
+  one_paid_gpt6_response_and_native_storyboard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 34
+    env:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify unique paid trigger and require completed immutable parent native offline SUCCESS
+        run: |
+          set -euo pipefail
+          test "$(cat research/V393_GPT6_LUNA_ONE_POST_TRIGGER.txt)" = "V393_AUTHORIZED_ONE_GPT6_LUNA_16000_OUTPUT_2026_10_19"
+          python - <<'PY'
+          import json,os,subprocess,urllib.request
+          repo="wterrr/vibecode_challenge_mb"
+          def get(path):
+              req=urllib.request.Request(
+                  "https://api.github.com/repos/"+repo+path,
+                  headers={"Accept":"application/vnd.github+json",
+                           "Authorization":"Bearer "+os.environ["GH_TOKEN"]})
+              with urllib.request.urlopen(req,timeout=25) as response:
+                  return json.load(response)
+          live=get("/actions/workflows/v3-93-paid-gpt-one-shot.yml/runs?per_page=100")["workflow_runs"]
+          current=int(os.environ["GITHUB_RUN_ID"])
+          assert int(os.environ["GITHUB_RUN_ATTEMPT"])==1,"V393_NO_PAID_RERUN_ALLOWED"
+          assert not [x for x in live if x["id"]!=current],"V393_ANOTHER_PAID_LIVE_RUN_ALREADY_EXISTED"
+          frozen_parent=subprocess.check_output(["git","rev-parse","HEAD^"],text=True).strip()
+          assert frozen_parent!="","V393_PARENT_COMMIT_MISSING"
+          offline=get("/actions/workflows/v3-93-paid-gpt-offline.yml/runs?branch=chatgpt%2Fv3-93-paid-gpt6-luna-authoring-one-shot&per_page=100")["workflow_runs"]
+          qualifying=[r for r in offline if r["event"]=="push" and
+              r["head_sha"]==frozen_parent and r["status"]=="completed" and
+              r["conclusion"]=="success"]
+          assert qualifying,"V393_FULL_NATIVE_OFFLINE_PARENT_NOT_SUCCESS_NO_PAID_POST"
+          print("V393_ONE_AUTHORIZED_PAID_GPT_TRIGGER_AND_PARENT_NATIVE_PASS",flush=True)
+          PY
+      - name: Install exact host verification and native audio/video (no provider inference)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng fonts-dejavu-core
+          python -m pip install --disable-pip-version-check --retries 2 --timeout 30 -r requirements.txt 'Pillow>=11,<13' 'jsonschema>=4,<5' 'numpy>=1.24,<3' pytest pyyaml
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_93_paid_gpt6_authoring.py
+          python scripts/verify_v2_core_freeze.py
+      - name: ONE GPT6 Luna standard OpenAI-only model request <= 16K output, <= $0.01 estimated max
+        run: |
+          python scripts/run_v3_93_paid_gpt6_authoring.py --paid-gpt-one-shot --output "$RUNNER_TEMP/v393_AUTHENTIC_GPT"
+      - name: Validate exactly real model, host math, original storyboard and full native MP4 decode
+        run: |
+          python - <<'PY'
+          import json,os,pathlib
+          from learnflow_v3.v364_native_array_compiler import probe,file_sha
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v393_AUTHENTIC_GPT"
+          p=json.loads((root/"v393_attempt.json").read_text())
+          assert p["provider_post_attempts"]==1 and p["retry_count"]==0
+          assert p["router_requested"]=="openai/gpt-6-luna"
+          assert p["actual_model"]=="openai/gpt-6-luna"
+          assert p["finish_reason"]=="stop"
+          assert p["candidate_origin"]=="GENUINE_GPT6_LUNA_NETWORK"
+          assert p["model_storyboard"]=="HOST_ADMITTED_ORIGINAL"
+          assert p["result"]=="ONE_GENUINE_PAID_GPT_STORYBOARD_TO_NATIVE_TECHNICAL_PASS"
+          assert p["native_video"]=="FULL_DECODED_NATIVE_H264_AAC"
+          assert p["creative_witness"]["visual_directive_differs_from_host"]
+          assert p["human_review"]=="UNRATED" and p["quality_3b1b"]=="NOT_PROVEN"
+          assert p["production"]=="BLOCKED"
+          actual=json.loads((root/"native_pair/v364_native_receipt.json").read_text())
+          assert actual["matched_video_frame_counts"] and actual["candidate_vs_baseline_midpoint_MAD"]>0
+          for row in actual["native_mp4s"]:
+              f=root/"native_pair"/row["name"]
+              assert file_sha(f)==row["sha256"] and probe(f)==row["native_frames"]
+          print("V393_AUTHENTIC_GPT6_STORYBOARD_NATIVE_H264_PASS_HUMAN_QUALITY_UNRATED")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v393-ONE-PAID-GPT6-STORYBOARD-NATIVE-OR-BLOCKED-RECEIPT
+          path: ${{ runner.temp }}/v393_AUTHENTIC_GPT/
+          retention-days: 8
+          if-no-files-found: warn
