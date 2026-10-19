@@ -1,0 +1,82 @@
+name: V3-96 Real Chromium V3-95 UI Preflight — NO MODEL/NO PAYMENT
+on:
+  push:
+    branches: [chatgpt/v3-96-real-browser-gpt-ui-proof]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_96_one_real_browser_gpt_ui_preregister.json'
+      - 'scripts/run_v3_96_real_browser_ui_one_gpt.py'
+      - 'tests/v3/test_v3_96_real_browser_source_gate.py'
+      - '.github/workflows/v3-96-browser-gpt-offline.yml'
+      - '.github/workflows/v3-96-one-paid-browser-live.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_96_one_real_browser_gpt_ui_preregister.json'
+      - 'scripts/run_v3_96_real_browser_ui_one_gpt.py'
+      - 'tests/v3/test_v3_96_real_browser_source_gate.py'
+      - '.github/workflows/v3-96-browser-gpt-offline.yml'
+      - '.github/workflows/v3-96-one-paid-browser-live.yml'
+permissions:
+  contents: read
+jobs:
+  playwright_genuine_web_controls_offline_no_api_key:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ENVIRONMENT: development
+      LEARNFLOW_PIPELINE_MODE: demo
+      LEARNFLOW_V3_GPT_ARRAY_PREVIEW: 'true'
+      ARTIFACTS_DIR: ${{ runner.temp }}/v396_no_paid_artifacts
+      LEARNFLOW_DB_PATH: ${{ runner.temp }}/v396_no_paid.db
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install app/Playwright and host-test dependencies WITHOUT GPT KEY
+        run: |
+          python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt playwright pytest pytest-asyncio
+          python -m playwright install --with-deps chromium
+      - name: Test exact prereg and no silent second paid request
+        run: |
+          python -m compileall -q scripts/run_v3_96_real_browser_ui_one_gpt.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_96_real_browser_source_gate.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_95_live_gpt_prompt_bridge.py
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+          node --check app/static/js/app.js
+      - name: Launch actual FastAPI local dev server with ZERO OPENROUTER_API_KEY
+        run: |
+          test -z "$(printenv OPENROUTER_API_KEY || true)"
+          python -m uvicorn app.main:app --host 127.0.0.1 --port 8765 \
+            > "$RUNNER_TEMP/v396_offline_server.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/v396_server_pid"
+          for i in $(seq 1 70); do
+            curl -fsS http://127.0.0.1:8765/healthz && break || sleep 1
+          done
+          curl -fsS http://127.0.0.1:8765/create > /dev/null
+      - name: Chromium fills real UI form, off-topic ABSTAIN before provider and no video
+        run: |
+          python scripts/run_v3_96_real_browser_ui_one_gpt.py \
+            --offline --output "$RUNNER_TEMP/v396_BROWSER_OFFLINE"
+      - name: Verify real browser proof; no paid inference possible
+        run: |
+          python - <<'PY'
+          import json,os,pathlib
+          folder=pathlib.Path(os.environ["RUNNER_TEMP"])/"v396_BROWSER_OFFLINE"
+          r=json.loads((folder/"v396_browser_receipt.json").read_text())
+          assert r["result"]=="CHROMIUM_UI_OFFTOPIC_ABSTAIN_BEFORE_ANY_PROVIDER"
+          assert r["provider_posts"]==0 and r["ui_http_status"]==422
+          assert (folder/"v396_offline_abstain_ui.png").stat().st_size>5000
+          print("V396_REAL_CHROMIUM_LOCAL_APP_FORM_AND_ZERO_CREDIT_ABSTAIN_PASS")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: V396-OFFLINE-BROWSER-UI-EVIDENCE-NO-GPT-NO-PAYMENT
+          path: ${{ runner.temp }}/v396_BROWSER_OFFLINE/
+          retention-days: 5
+          if-no-files-found: warn

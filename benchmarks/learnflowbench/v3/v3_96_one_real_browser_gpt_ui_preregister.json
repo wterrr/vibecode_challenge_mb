@@ -1,0 +1,63 @@
+{
+  "checkpoint": "V3-96",
+  "goal": "Prove real GPT-6 Luna with one novel human prompt submitted through actual Playwright browser controls on existing V3-95 /create and returned H264/AAC video, no mock.",
+  "parent": {
+    "pr": 132,
+    "head_sha": "cd2f131e2310006078c06052be296256b5488a32"
+  },
+  "date": "2026-10-19",
+  "user_authorization": "User requested one genuine GPT model run through V3-95 actual UI",
+  "scope": "local developer preview ONLY, fresh 3x4 to 4x3 squares question, not full topic generalization",
+  "final_release": "BLOCKED",
+  "frozen_novel_prompt": "How can a 3 by 4 grid of squares turn into a 4 by 3 array and keep the same total?",
+  "require_prompt_not_equal_to_preceding_mock_prompts": true,
+  "model": {
+    "slug": "openai/gpt-6-luna",
+    "paid": true,
+    "model_output_max_tokens": 16000,
+    "reasoning_effort": "low",
+    "provider": "OpenAI",
+    "allow_fallback": false,
+    "retry": 0,
+    "one_paid_post_max": 1,
+    "estimated_token_cost_max_usd": "0.01"
+  },
+  "evidence": {
+    "playwright_browser_new_chromium": true,
+    "actual_user_form_typed": true,
+    "consent_checkbox_clicked": true,
+    "real_browser_http_post_to": "/api/v3/ai/array-preview",
+    "verify_post_body_sha_and_prompt_exact": true,
+    "exact_model_id": true,
+    "finish_reason_stop": true,
+    "source_host_ledger_sha": true,
+    "new_storyboard_original_content": true,
+    "native_video_real_h264_aac": true,
+    "full_441_or_actual_nframe_decoding": true,
+    "frame_sha": true,
+    "webpage_video_url_same_as_verified_mp4": true,
+    "capture_browser_screenshot": true,
+    "real_provider_response_id_hash": true,
+    "no_replay_of_v393_v394_json": true,
+    "zero_mock_network_senders": true,
+    "human_aesthetics": "UNRATED",
+    "production": "BLOCKED"
+  },
+  "safety": {
+    "first_commit_prereg_before_paid_request": true,
+    "one_use_trigger": "research/V396_REAL_BROWSER_ONE_GPT_POST_TRIGGER.txt",
+    "trigger_text": "V396_AUTH_ONE_REAL_BROWSER_NEW_PROMPT_ONE_GPT6_POST_2026_10_19",
+    "prior_successful_V395_CI_required": {
+      "run_id": 39201973801,
+      "head_sha": "cd2f131e2310006078c06052be296256b5488a32"
+    },
+    "offline_browser_preflight_success_required": true,
+    "off_default_other_environments": true,
+    "no_main_merge": true,
+    "no_restart_live_job": true,
+    "no_second_paid_request": true,
+    "separate_new_branch": true,
+    "no_v2_core_edit": true
+  },
+  "observations_are_not_guaranteed": "If provider fails or host rejects, maintain truthful NO_GO; never retry this authorization."
+}
