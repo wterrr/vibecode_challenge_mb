@@ -64,7 +64,7 @@ jobs:
         run: |
           set -euo pipefail
           docker rm -f learnflow-docker-smoke >/dev/null 2>&1 || true
-          docker run -d             --name learnflow-docker-smoke             --network host             -e ENVIRONMENT=production             -e LEARNFLOW_PIPELINE_MODE=demo             -e DATABASE_URL=postgresql://learnflow:learnflow@127.0.0.1:5432/learnflow_docker             -e PORT=8080             learnflow-ai:ci
+          docker run -d             --name learnflow-docker-smoke             --network host             -e ENVIRONMENT=production             -e LEARNFLOW_PIPELINE_MODE=real -e AUTH_ENABLED=true -e ADMIN_USERNAME=admin -e ADMIN_PASSWORD=ci-local-only-long-password -e AUTH_SECRET_KEY=ci-only-48-characters-aaaaaaaaaaaaaaaaaaaaaaaaaaaa -e PUBLIC_ORIGIN=https://learnflow-ci.example -e PLANNER_PROVIDER=gemini -e GEMINI_API_KEY=ci-unusable-fake-paid-provider-key             -e DATABASE_URL=postgresql://learnflow:learnflow@127.0.0.1:5432/learnflow_docker             -e PORT=8080             learnflow-ai:ci
 
       - name: Wait for health endpoint
         shell: bash

@@ -38,6 +38,6 @@ export default function LessonLibrary(){
       <div className="lf-card-actions"><button type="button" onClick={()=>open(job.id)}><ExternalLink size={15}/> Xem bài học</button>
       {!['queued','running'].includes(job.status)&&<button type="button" className="lf-delete" aria-label="Xóa bài học" onClick={()=>remove(job)}><Trash2 size={16}/></button>}</div>
     </article>)}</div>:<div className="lf-library-empty">{busy?<LoaderCircle className="spin" size={23}/>:<BookOpen size={27}/>}<p>{!loaded?'Đang tải thư viện…':filter==='all'?'Chưa có bài học nào. Hãy thử nhập một câu hỏi ở phía trên.':'Không có bài học ở trạng thái này.'}</p></div>}
-    <p className="lf-library-note">Trạng thái lấy trực tiếp từ /api/jobs; không hiển thị dữ liệu mẫu. API hiện tại chưa có tài khoản và phân quyền truy cập theo người dùng.</p>
+    <p className="lf-library-note">Trạng thái lấy trực tiếp từ /api/jobs; không hiển thị dữ liệu mẫu. Video được bảo vệ bằng phiên đăng nhập quản trị và API riêng tư khi chạy production.</p>
   </div></section>;
 }
