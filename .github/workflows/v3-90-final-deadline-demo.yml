@@ -1,0 +1,93 @@
+name: V3-90 Final Deadline Bounded Native Demo (NO MODEL)
+on:
+  push:
+    branches: [chatgpt/v3-90-deadline-demo-rc]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_90_deadline_demo_preregister.json'
+      - 'scripts/run_v3_90_deadline_demo.py'
+      - 'tests/v3/test_v3_90_deadline_demo.py'
+      - 'reports/v3_90_final_deadline_demo.md'
+      - '.github/workflows/v3-90-final-deadline-demo.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_90_deadline_demo_preregister.json'
+      - 'scripts/run_v3_90_deadline_demo.py'
+      - 'tests/v3/test_v3_90_deadline_demo.py'
+      - 'reports/v3_90_final_deadline_demo.md'
+      - '.github/workflows/v3-90-final-deadline-demo.yml'
+permissions:
+  contents: read
+jobs:
+  frozen-new-question-to-real-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reuse original pinned native FFmpeg fonts and eSpeak
+        timeout-minutes: 11
+        run: bash scripts/bootstrap_v3_30_native.sh
+      - name: Install existing offline dependencies only
+        timeout-minutes: 7
+        run: |
+          timeout -k 10s 360s python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt 'numpy>=1.24,<3' pyyaml Pillow pytest
+      - name: V3-90 hostile tests and V3-89/V3-88 regression
+        timeout-minutes: 8
+        run: |
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_90_deadline_demo.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_89_independent_review.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_88_cross_family_generalization.py
+      - name: Pull validated pinned Docker Manim image
+        timeout-minutes: 12
+        run: timeout -k 10s 680s docker pull manimcommunity/manim:v0.19.0
+      - name: Render two new input-only lessons and two honest negatives
+        timeout-minutes: 25
+        run: |
+          python scripts/run_v3_90_deadline_demo.py --locked-demo --output-dir /tmp/v390_demo
+      - name: Independently assert exact real MP4 evidence and no release promotion
+        timeout-minutes: 5
+        run: |
+          python - <<'PY'
+          import json,hashlib,pathlib
+          root=pathlib.Path('/tmp/v390_demo')
+          report=json.loads((root/'v390_report.json').read_text())
+          assert report['checkpoint']=='V3-90'
+          assert (report['native_verified'],report['abstained'],report['total'])==(2,2,4)
+          assert report['machine_native_evidence']=='PASS'
+          assert report['model_api_requests']==0
+          assert report['independent_human_quality']=='PENDING_HUMAN_REVIEW_ZERO_REAL_SCORES'
+          assert report['final_visual_quality']=='NOT_PASS'
+          assert report['production']=='BLOCKED' and report['main_merge'] is False
+          native=[x for x in report['cases'] if x['status']=='TECHNICAL_NATIVE_PASS_ONLY']
+          assert {x['family'] for x in native}=={'FRACTION_EQUIVALENCE','ORDERED_SEARCH'}
+          page=(root/'index.html').read_text()
+          assert page.count('<video ')==2 and page.count('ABSTAIN — no video')==2
+          for c in native:
+              mp4=root/c['video']
+              assert mp4.is_file() and mp4.stat().st_size>40000
+              assert hashlib.sha256(mp4.read_bytes()).hexdigest()==c['video_sha256']
+              assert c['codec']=='H264/AAC' and c['full_decode']=='PASS'
+              assert c['native_frames']==c['native_audio_mux']['output_h264_frames']
+              assert c['semantic_event_count']==c['real_pcm_phases']==len(c['native_visual_witnesses'])
+              assert c['source_verified'] is True and c['model_authorship'] is False
+              print('V390_NATIVE',c['question_sha256'],c['native_frames'],c['video_sha256'])
+          PY
+      - name: Frozen V2 Core and V3 benchmark invariants
+        timeout-minutes: 5
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v390-final-deadline-demo-new-native-mp4s
+          path: /tmp/v390_demo/
+          retention-days: 7
+          if-no-files-found: warn
