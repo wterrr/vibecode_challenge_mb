@@ -8,6 +8,7 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from app.api.routes import router as api_router
 from app.api.v3_offline import router as v3_offline_router
@@ -142,6 +143,9 @@ def create_app(
         app.include_router(react_landing_router)
     app.include_router(web_router)
 
+    if production:
+        app.add_middleware(TrustedHostMiddleware,
+            allowed_hosts=[urlsplit(app_settings.public_origin).hostname], www_redirect=False)
     if app_auth_store is not None:
         app.add_middleware(AdminGuard, key=app_settings.auth_secret_key,
             origin=app_settings.public_origin, store=app_auth_store,

@@ -129,3 +129,46 @@ def test_pg_admin_real_database_when_ci_service_available():
     assert store.reserve_paid_job(100)
     store.revoke(first)
     assert not store.verify(first)
+
+
+def test_paid_openrouter_wire_schema_and_fail_closed(monkeypatch):
+    """No network calls: capture one pinned OpenRouter request and reject fallback."""
+    import asyncio
+    import httpx
+    from app.providers.llm.openrouter_paid import OpenRouterPaidLessonPlanner
+    from app.domain.lesson import LessonPlan
+    from app.providers.llm.base import PlannerProviderError
+
+    seen = []
+    returned = {"model":"openai/gpt-6-luna","choices":[
+        {"finish_reason":"stop","message":{"content":"{}"}}]}
+    class MockResponse:
+        def raise_for_status(self):pass
+        def json(self):return returned
+    class FakeClient:
+        def __init__(self,**kwargs):pass
+        async def __aenter__(self):return self
+        async def __aexit__(self,*args):pass
+        async def post(self,url,headers,json):
+            seen.append((url,headers,json))
+            return MockResponse()
+    monkeypatch.setattr(httpx,"AsyncClient",FakeClient)
+    sentinel=object()
+    monkeypatch.setattr(LessonPlan,"model_validate_json",staticmethod(lambda raw:sentinel))
+    planner=OpenRouterPaidLessonPlanner(api_key="ci-fake-provider-key-012345",tokens=4000)
+    assert asyncio.run(planner._complete("A safe prompt")) is sentinel
+    assert len(seen)==1
+    url,headers,body=seen[0]
+    assert url=="https://openrouter.ai/api/v1/chat/completions"
+    assert body["model"]=="openai/gpt-6-luna"
+    assert body["provider"]["allow_fallbacks"] is False
+    assert body["provider"]["require_parameters"] is True
+    assert body["response_format"]["type"]=="json_schema"
+    assert body["max_tokens"]==4000
+    assert body["stream"] is False
+    returned["model"]="openrouter/free"
+    with pytest.raises(PlannerProviderError):
+        asyncio.run(planner._complete("A safe prompt"))
+    assert len(seen)==2   # exactly one POST per call, never hidden retries
+    with pytest.raises(ValueError):
+        OpenRouterPaidLessonPlanner(api_key="ci-fake-provider-key-012345",model="openrouter/free")

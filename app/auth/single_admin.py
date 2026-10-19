@@ -111,7 +111,7 @@ class PostgresSingleAdmin:
             return token
 
     def verify(self, token: str) -> bool:
-        if len(token) < 30 or len(token) > 128:
+        if len(token) < 30 or len(token) > 128 or not token.isascii():
             return False
         with self._connection() as conn:
             return conn.execute(
@@ -152,7 +152,11 @@ class AdminGuard(BaseHTTPMiddleware):
                 return JSONResponse({"detail": "Method not allowed"}, status_code=405)
             if path == "/api/auth/login" and method == "POST" and request.headers.get("origin") != self.origin:
                 return JSONResponse({"detail":"Origin denied"}, status_code=403)
-            return await call_next(request)
+            response = await call_next(request)
+            response.headers["X-Content-Type-Options"] = "nosniff"
+            response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+            response.headers["X-Frame-Options"] = "DENY"
+            return response
         raw = request.cookies.get(COOKIE, "")
         if not raw or not self.store.verify(raw):
             if method in ("GET", "HEAD") and not path.startswith("/api/") and "text/html" in request.headers.get("accept", ""):
@@ -171,6 +175,9 @@ class AdminGuard(BaseHTTPMiddleware):
         result = await call_next(request)
         if path.startswith("/api/") or path.startswith("/jobs/"):
             result.headers["Cache-Control"] = "private, no-store"
+        result.headers["X-Content-Type-Options"] = "nosniff"
+        result.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        result.headers["X-Frame-Options"] = "DENY"
         return result
 
 
