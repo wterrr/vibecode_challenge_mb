@@ -209,6 +209,13 @@ def run(out:Path,*,key:str,catalog_sender=None,key_sender=None,post_sender=None,
         need(type(result) is dict,"ENVELOPE_BAD_SHAPE")
         receipt["actual_model"]=safe_model(result.get("model"))
         receipt["usage"]=safe_usage(result.get("usage"))
+        # Report genuine PAID usage as a bounded amount, not a free-only flag.
+        if isinstance(result.get("usage"),dict) and "cost" in result["usage"]:
+            try:
+                receipt["usage"]["provider_reported_cost_usd"]=str(money(result["usage"]["cost"]))
+                receipt["usage"]["reported_cost"]="PAID_USD_VERIFIABLE_IN_RECEIPT"
+            except (Blocked,TypeError,ValueError):
+                receipt["usage"]["reported_cost"]="INVALID_PROVIDER_COST_FIELD"
         sid=result.get("id")
         if type(sid) is str and 6<=len(sid)<=200:
             receipt["response_id_sha256"]=sha256(sid.encode()).hexdigest()
