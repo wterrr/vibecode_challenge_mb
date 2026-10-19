@@ -87,6 +87,7 @@ def create_app(
     # Include route modules
     app.include_router(api_router)
     app.include_router(v3_offline_router)  # always 404 if default-OFF, no preview publication
+    app.include_router(v3_ai_router)  # dev-local only, OFF by default; no regular job publication
     app.include_router(web_router)
 
     return app
