@@ -36,7 +36,7 @@ def supported_query(raw:str)->str:
     """Narrow deterministic topic admission; no LLM call or cost for off-family."""
     if type(raw) is not str or not 35<=len(raw)<=300:
         raise PreviewRejected("ABSTAIN_QUERY_LENGTH_OR_LANGUAGE")
-    if any(ord(ch)>127 for ch in raw) and "×" not in raw:
+    if any(ord(ch)>127 and ch!="×" for ch in raw):
         raise PreviewRejected("ABSTAIN_ASCII_ENGLISH_ONLY")
     if any(ch in raw for ch in "\r\n<>\\{}"):
         raise PreviewRejected("ABSTAIN_UNSAFE_QUERY_CHARACTERS")
@@ -56,6 +56,28 @@ def supported_query(raw:str)->str:
         raise PreviewRejected("ABSTAIN_UNTRUSTED_META_INSTRUCTIONS")
     if re.search(r"\b(photosynthesis|chemistry|atom|binary search|tcp|vaccines|cancer|history|politics)\b",clean):
         raise PreviewRejected("ABSTAIN_MIXED_TOPIC_UNVERIFIABLE")
+    # A narrow *positive* vocabulary avoids spending money on off-domain
+    # questions that incidentally contain "3x4", "4x3" and "square".
+    # New wording within the math family may ABSTAIN, never silently fabricate.
+    residual=re.sub(r"\b(?:3\s*(?:x|by)\s*4|4\s*(?:x|by)\s*3)\b"," ",clean)
+    allowed=set((
+        "why do does can could is are will would did how what explain show "
+        "me us you we a an the this that their they it its into from to "
+        "with without of and or as be same equal equivalent number amount "
+        "count many much total square squares array arrays grid grids row "
+        "rows column columns rearrange rearranged rearranging rearrangement "
+        "rotation rotating rotate rotated turn turned turning holds hold "
+        "held have has still after before when pieces objects cells rectangles "
+        "measure measuring preserve preserves keep keeps keeping preserved "
+        "change changes changing shape orientation by in on at which both "
+        "every each remain remains than through times multiply multiplication "
+        "product grouping groups proof prove illustrate demonstrate different "
+        "make makes made where more less fewer versus vs even if identical "
+        "mathematical identical same all results result"
+    ).split())
+    unknown=set(re.findall(r"[a-z]+",residual))-allowed
+    if unknown:
+        raise PreviewRejected("ABSTAIN_OUTSIDE_SUPPORTED_ARRAY_VOCABULARY")
     return raw.strip()
 
 def paid_wire(query:str)->bytes:
