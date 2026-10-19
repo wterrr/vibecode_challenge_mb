@@ -57,12 +57,16 @@ def _attach_v3_preview(
         raise RuntimeError("V3-20 requires BOTH binary and narrated developer previews")
     if settings.v3_narrated_lesson_enabled and not settings.v3_binary_preview_enabled:
         raise RuntimeError("V3-19 requires explicit V3 binary preview enabled")
-    if not settings.v3_binary_preview_enabled:
-        return pipeline  # no imports or changes whatsoever for OFF flag
+    if not (settings.v3_binary_preview_enabled or settings.v3_gpt_array_preview_enabled):
+        return pipeline  # no imports or changes whatsoever for both OFF flags
     if settings.environment.strip().lower() not in ("development", "test"):
         raise RuntimeError("V3 preview forbidden outside development/test")
     from app.pipeline.v3_preview import V3OfflinePreviewPipeline
-    return V3OfflinePreviewPipeline(legacy=pipeline, artifacts=artifact_store)
+    return V3OfflinePreviewPipeline(
+        legacy=pipeline, artifacts=artifact_store,
+        gpt_array_enabled=settings.v3_gpt_array_preview_enabled,
+        openrouter_api_key=settings.openrouter_api_key,
+    )
 
 
 def create_pipeline(
@@ -74,7 +78,7 @@ def create_pipeline(
     mode = settings.pipeline_mode.lower().strip()
     logger.info("Initializing pipeline in mode: %s", mode)
     if ((settings.v3_binary_preview_enabled or settings.v3_narrated_lesson_enabled or
-         settings.v3_event_alignment_enabled) and
+         settings.v3_event_alignment_enabled or settings.v3_gpt_array_preview_enabled) and
         settings.environment.strip().lower() not in ("development", "test")):
         raise RuntimeError("V3 developer preview must not run in production")
 
