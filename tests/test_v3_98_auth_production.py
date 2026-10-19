@@ -116,6 +116,31 @@ def test_auth_login_middleware_cookie_csrf_video_and_quota():
     assert client.get("/api/jobs").status_code==401
 
 
+def test_anonymous_root_probe_is_healthy_without_exposing_private_app():
+    client, _ = build_client()
+    # Hosting probes generally send */* or omit Accept, unlike browser navigation.
+    for accept in ("*/*", "application/json", ""):
+        response = client.get("/", headers={"Accept": accept})
+        assert response.status_code == 200
+        assert response.json() == {"status": "ok"}
+        assert response.headers["cache-control"] == "no-store"
+        assert response.headers["x-content-type-options"] == "nosniff"
+        assert response.headers["vary"] == "Accept, Cookie"
+    assert client.head("/", headers={"Accept": "*/*"}).status_code == 200
+    # Real browser navigation still requires login.
+    browser = client.get("/", headers={"Accept": "text/html"}, follow_redirects=False)
+    assert browser.status_code == 303
+    assert browser.headers["location"] == "/login"
+    # The probe exception must not authorize private pages, API or media.
+    assert client.get("/api/jobs").status_code == 401
+    assert client.get("/api/jobs/private-id/video").status_code == 401
+    assert client.get("/create", headers={"Accept": "*/*"}).status_code == 401
+    authenticated = client.post("/api/auth/login", headers={"Origin": ORIGIN},
+                                json={"username": "admin", "password": "correct-secret"})
+    assert authenticated.status_code == 200
+    assert client.get("/", headers={"Accept": "text/html"}).json() == {"private": "yes"}
+
+
 def test_pg_admin_real_database_when_ci_service_available():
     import os
     url=os.getenv("V398_PG_TEST_URL")

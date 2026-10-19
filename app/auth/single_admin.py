@@ -14,7 +14,7 @@ from urllib.parse import urlsplit
 
 import psycopg
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from pydantic import BaseModel, Field
 from psycopg.rows import dict_row
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -159,6 +159,20 @@ class AdminGuard(BaseHTTPMiddleware):
             return response
         raw = request.cookies.get(COOKIE, "")
         if not raw or not self.store.verify(raw):
+            # Vibe Host probes GET / without an HTML Accept header. Keep browser
+            # navigation redirected to /login, but return a minimal 2xx health
+            # response for non-HTML root probes. Never expose the private UI.
+            if path == "/" and method in ("GET", "HEAD") and "text/html" not in request.headers.get("accept", "").lower():
+                headers = {
+                    "Cache-Control": "no-store",
+                    "X-Content-Type-Options": "nosniff",
+                    "X-Frame-Options": "DENY",
+                    "Referrer-Policy": "no-referrer",
+                    "Vary": "Accept, Cookie",
+                }
+                if method == "HEAD":
+                    return Response(status_code=200, headers=headers)
+                return JSONResponse({"status": "ok"}, status_code=200, headers=headers)
             if method in ("GET", "HEAD") and not path.startswith("/api/") and "text/html" in request.headers.get("accept", ""):
                 return RedirectResponse(url="/login", status_code=303)
             return JSONResponse({"detail":"Authentication required"}, status_code=401)
