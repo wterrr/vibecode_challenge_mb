@@ -85,6 +85,10 @@ def _search(plan,frames):
         lines.append(f"        cell_{j}=VGroup(square_{j},label_{j})")
         lines.append(f"        array.add(cell_{j})")
     lines.append("        self.add(array)")
+    # Preserve exactly ONE active best candidate across the entire trace.
+    # A later match at a smaller index supersedes the previously highlighted
+    # match, so the final frame cannot suggest two equally valid answers.
+    prior_candidate=None
     for i,(e,frames_i) in enumerate(zip(events,frames,strict=True)):
         if e["phase"]=="COMPARE":
             low,mid,high=e["low"],e["mid"],e["high"]
@@ -106,7 +110,12 @@ def _search(plan,frames):
             ])
             anim=[f"square_{j}.animate.set_fill({DARK!r},opacity=.14).set_stroke({MUTED!r},width=.7)" for j in e["discard"]]
             if e["action"]=="RECORD_CANDIDATE":
+                if prior_candidate is not None and prior_candidate!=mid:
+                    check(mid<prior_candidate,
+                          "LEFTMOST_CANDIDATE_DID_NOT_MOVE_TO_EARLIER_INDEX")
+                    anim.append(f"square_{prior_candidate}.animate.set_stroke({MUTED!r},width=1.5)")
                 anim.append(f"square_{mid}.animate.set_stroke({GOLD!r},width=5)")
+                prior_candidate=mid
             else:
                 anim.append(f"square_{mid}.animate.set_stroke({MUTED!r},width=1.5)")
             lines.append("        self.play("+",".join(anim)+",run_time=16/15)")

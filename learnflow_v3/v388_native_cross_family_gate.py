@@ -38,6 +38,29 @@ def _changed(a,b,roi):
     return int((np.max(np.abs(x-y),axis=2)>38).sum())
 
 
+def _physical_search_candidate_highlights(frame,values):
+    """Independently count candidate-colored outlines at the final real H264 frame.
+
+    This evaluates semantic uniqueness, not OCR of the integer glyph itself.
+    Geometry is derived from the exact same bounded input array length; color
+    is sampled from decoded image pixels, not trusted from the source compiler.
+    """
+    n=len(values)
+    pitch=min(1.11,11.4/n)
+    visible=[]
+    counts={}
+    for j in range(n):
+        cx=round(640+(j-(n-1)/2)*pitch*90)
+        part=frame[330:420,int(cx)-45:int(cx)+45].astype("int16")
+        r,g,b=part[:,:,0],part[:,:,1],part[:,:,2]
+        gold=(r>175)&(g>150)&(b<175)&((r-b)>50)
+        pixels=int(gold.sum())
+        counts[j]=pixels
+        if pixels>=150:
+            visible.append(j)
+    return visible,counts
+
+
 def verify_native(movie,beat_rows,plan):
     events=plan["scripted_semantic_events"]
     check(len(events)==len(beat_rows) and len(events)>=3,
@@ -101,6 +124,14 @@ def verify_native(movie,beat_rows,plan):
                       "NO_NATIVE_LEFTMOST_SEARCH_CONCLUSION")
                 check(ev["candidate"]==plan["result_index"],
                       "WRONG_SEARCH_TERMINAL_CANDIDATE")
+                shown,gold_counts=_physical_search_candidate_highlights(
+                    late,plan["values"])
+                expected=([plan["result_index"]]
+                          if plan["result_index"] is not None else [])
+                check(shown==expected,
+                      "MISLEADING_MULTIPLE_GOLD_FINAL_SEARCH_CANDIDATES")
+                data["physical_golden_candidate_indices"]=shown
+                data["physical_per_cell_gold_pixels"]=gold_counts
         witnesses.append(data)
     check(len(witnesses)==len(events),"MISSING_INDEPENDENT_RENDERED_STATES")
     return witnesses

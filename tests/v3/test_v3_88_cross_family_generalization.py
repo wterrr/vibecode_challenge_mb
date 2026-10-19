@@ -177,3 +177,19 @@ def test_no_human_ratings_fabricated():
         "semantic correctness","continuity and causal meaning",
         "readable spatial composition","narration visual timing",
         "pedagogical usefulness"]
+
+
+
+def test_heldout_source_clears_superseded_candidate_and_gold_gate_rejects_two():
+    r=rows()[3]
+    plan=compile_case(r)["plan"]
+    assert plan["result_index"]==3
+    candidates=[x["candidate"] for x in plan["scripted_semantic_events"]
+                if x["phase"]=="COMPARE" and x["action"]=="RECORD_CANDIDATE"]
+    assert candidates==[4,3]
+    code=finite_source(r,plan,[13.0]*len(plan["scripted_semantic_events"]))
+    assert "square_4.animate.set_stroke" in code
+    assert "square_3.animate.set_stroke" in code
+    native=(ROOT/"learnflow_v3/v388_native_cross_family_gate.py").read_text()
+    assert "MISLEADING_MULTIPLE_GOLD_FINAL_SEARCH_CANDIDATES" in native
+    assert "physical_golden_candidate_indices" in native
