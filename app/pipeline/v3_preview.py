@@ -31,11 +31,18 @@ class V3PreviewRejected(ValueError):
 class V3OfflinePreviewPipeline(LearningVideoPipeline):
     """Opt-in *wrapper*, not a new production render path or job processor."""
 
-    def __init__(self,*,legacy:LearningVideoPipeline,artifacts:ArtifactStore):
+    def __init__(
+        self, *, legacy: LearningVideoPipeline, artifacts: ArtifactStore,
+        gpt_array_enabled: bool = False, openrouter_api_key: str = "",
+    ):
         self.legacy=legacy
         self.artifacts=artifacts
         self.requires_published_artifact=legacy.requires_published_artifact
         self._preview_lock=asyncio.Lock()
+        self._gpt_array_enabled=gpt_array_enabled
+        self._gpt_key=openrouter_api_key
+        self._gpt_attempts_reserved=0
+        self._gpt_successful_previews:dict[str,str]={}
 
     async def process(self,job:Job,on_stage:StageCallback)->None:
         # Preserve the original JobRunner and pipeline lifecycle exactly.
@@ -192,3 +199,75 @@ class V3OfflinePreviewPipeline(LearningVideoPipeline):
             # Do not leave stale partially assembled clips or leaked receipts.
             shutil.rmtree(base,ignore_errors=True)
             raise
+
+    async def preview_gpt_array(self, *, query:str, paid_consent:bool)->dict:
+        """Local explicit-consent GPT developer video on the existing app pipeline.
+
+        One attempt per process, a conservative local-dev safety limit (NOT
+        global across replicas/restarts). Does not publish an ordinary job.
+        """
+        from learnflow_v3.v395_prompt_to_video import (
+            PreviewRejected as TopicRejected, supported_query, run_dev_preview,
+        )
+        if not self._gpt_array_enabled:
+            raise V3PreviewRejected("V395_FEATURE_DISABLED")
+        try:
+            clean=supported_query(query)   # reject before key/credit/attempt
+        except TopicRejected as exc:
+            raise V3PreviewRejected(str(exc)) from None
+        if paid_consent is not True:
+            raise V3PreviewRejected("V395_EXPLICIT_PAID_CONSENT_REQUIRED")
+        async with self._preview_lock:
+            if self._gpt_attempts_reserved:
+                raise V3PreviewRejected("V395_ONE_GPT_ATTEMPT_PER_PROCESS_ALREADY_USED")
+            if not self._gpt_key or len(self._gpt_key)<16:
+                raise V3PreviewRejected("V395_GPT_KEY_NOT_CONFIGURED")
+            # Reserve even for transport failures to forbid hidden duplicate
+            # paid POSTs. The existing V3 binary preview still works unchanged.
+            self._gpt_attempts_reserved=1
+            preview_id="v395gpt"+uuid.uuid4().hex
+            base=self.artifacts.get_job_dir(preview_id,create=False)
+            try:
+                report=await asyncio.to_thread(
+                    run_dev_preview,query=clean,output=base,
+                    key=self._gpt_key
+                )
+                if report["result"]!="NEW_GPT_TO_NATIVE_TECHNICAL_PASS":
+                    raise V3PreviewRejected(
+                        "V395_MODEL_OR_NATIVE_QA_NOT_ACCEPTED_"
+                        +str(report["result"])[:64]
+                    )
+                movie=base/"native_pair"/"model_unverified.mp4"
+                if (not movie.is_file() or movie.is_symlink() or
+                    hashlib.sha256(movie.read_bytes()).hexdigest()!=report["native_video_sha256"]):
+                    raise V3PreviewRejected("V395_NATIVE_FILE_SHA_MISMATCH")
+                self._gpt_successful_previews[preview_id]=report["native_video_sha256"]
+                return {
+                    "status":"REAL_GPT_NATIVE_TECHNICAL_PREVIEW_NOT_PRODUCTION",
+                    "preview_id":preview_id,
+                    "video_url":f"/api/v3/ai/array-preview/{preview_id}/video",
+                    "query_sha256":report["query_sha256"],
+                    "storyboard_sha256":report["storyboard_sha256"],
+                    "video_sha256":report["native_video_sha256"],
+                    "frame_count":report["native_video_frames"],
+                    "model":report["model_observed"],
+                    "provider_reported_cost_usd":report.get("provider_reported_cost_usd"),
+                    "semantic_scope":report["supported_domain"],
+                    "human_review":"UNRATED","production":"BLOCKED",
+                }
+            except Exception:
+                # Fail closed; partial video and failed artifact are not
+                # available from a public route.
+                shutil.rmtree(base,ignore_errors=True)
+                raise
+
+    def get_gpt_preview_video(self,preview_id:str)->Path|None:
+        """Expose only a previously verified private local developer clip."""
+        if not self._gpt_array_enabled or preview_id not in self._gpt_successful_previews:
+            return None
+        movie=self.artifacts.get_path(preview_id,"native_pair","model_unverified.mp4")
+        if not movie.is_file() or movie.is_symlink():
+            return None
+        if hashlib.sha256(movie.read_bytes()).hexdigest()!=self._gpt_successful_previews[preview_id]:
+            return None
+        return movie

@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.routes import router as api_router
 from app.api.v3_offline import router as v3_offline_router
+from app.api.v3_ai import router as v3_ai_router
 from app.config import Settings, get_settings
 from app.pipeline.base import LearningVideoPipeline
 from app.pipeline.factory import create_pipeline
@@ -86,6 +87,7 @@ def create_app(
     # Include route modules
     app.include_router(api_router)
     app.include_router(v3_offline_router)  # always 404 if default-OFF, no preview publication
+    app.include_router(v3_ai_router)  # dev-local only, OFF by default; no regular job publication
     app.include_router(web_router)
 
     return app

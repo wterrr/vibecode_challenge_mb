@@ -106,11 +106,24 @@ class Settings(BaseSettings):
             "LEARNFLOW_V3_BINARY_PREVIEW", "v3_binary_preview_enabled"
         ),
     )
+    # V3-95: isolated, explicitly consented local paid GPT preview; default OFF.
+    v3_gpt_array_preview_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices(
+            "LEARNFLOW_V3_GPT_ARRAY_PREVIEW", "v3_gpt_array_preview_enabled"
+        ),
+    )
+    openrouter_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("OPENROUTER_API_KEY", "openrouter_api_key"),
+    )
 
     def __repr__(self) -> str:
         data = self.model_dump()
         if data.get("gemini_api_key"):
             data["gemini_api_key"] = "***REDACTED***"
+        if data.get("openrouter_api_key"):
+            data["openrouter_api_key"] = "***REDACTED***"
         if data.get("database_url"):
             data["database_url"] = "***REDACTED***"
         return f"Settings({data})"
