@@ -1,0 +1,92 @@
+name: V3-92 ONE Genuine Free Model Pedagogical Authoring Trial
+# A unique trigger is REQUIRED. Source/PR changes never send an inference request.
+on:
+  push:
+    branches: [chatgpt/v3-92-free-ai-authoring-recovery]
+    paths: ['research/V392_SINGLE_FREE_MODEL_TRIGGER.txt']
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: V392_ONE_GENUINE_FREE_MODEL_POST_GLOBAL
+  cancel-in-progress: false
+jobs:
+  one_free_model_post_after_offline_pass:
+    runs-on: ubuntu-latest
+    timeout-minutes: 33
+    env:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Block rerun and require successful parent offline native workflow
+        run: |
+          set -euo pipefail
+          test "$(cat research/V392_SINGLE_FREE_MODEL_TRIGGER.txt)" = "V392_ONE_FREE_AUTHORING_POST_2026_10_19_FROZEN_PREREG"
+          python - <<'PY'
+          import json,os,subprocess,urllib.request
+          repo="wterrr/vibecode_challenge_mb"
+          def get(part):
+              req=urllib.request.Request(
+                  "https://api.github.com/repos/"+repo+part,
+                  headers={"Accept":"application/vnd.github+json",
+                           "Authorization":"Bearer "+os.environ["GH_TOKEN"]})
+              with urllib.request.urlopen(req,timeout=20) as r:return json.load(r)
+          runs=get("/actions/workflows/v3-92-one-shot-free-live.yml/runs?per_page=100")["workflow_runs"]
+          current=int(os.environ["GITHUB_RUN_ID"])
+          assert int(os.environ["GITHUB_RUN_ATTEMPT"])==1,"V392_LIVE_RERUN_FORBIDDEN"
+          assert not [r for r in runs if r["id"]!=current],"V392_LIVE_PRIOR_RUN_EXISTS"
+          parent=subprocess.check_output(["git","rev-parse","HEAD^"],text=True).strip()
+          q=get("/actions/workflows/v3-92-free-ai-offline.yml/runs?branch=chatgpt%2Fv3-92-free-ai-authoring-recovery&per_page=100")["workflow_runs"]
+          good=[r for r in q if r["event"]=="push" and r["head_sha"]==parent and
+                r["status"]=="completed" and r["conclusion"]=="success"]
+          assert good,"V392_OFFLINE_AND_NATIVE_PARENT_NOT_PASS"
+          print("V392_PREREG_AND_NATIVE_PARENT_OFFLINE_PASS_BEFORE_ONE_POST",flush=True)
+          PY
+      - name: Install old native host tooling and verify new hostile source gates
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng fonts-dejavu-core
+          python -m pip install --disable-pip-version-check --retries 2 --timeout 30 -r requirements.txt 'Pillow>=11,<13' 'jsonschema>=4,<5' 'numpy>=1.24,<3' pytest pyyaml
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_92_free_ai_authoring.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Single actual free model POST then host-ledger native render
+        run: |
+          python scripts/run_v3_92_free_ai_authoring.py --live-once --output "$RUNNER_TEMP/v392_REAL_PROVIDER"
+      - name: Check exact genuine provider attribution native frames and release boundary
+        run: |
+          python - <<'PY'
+          import json,os,pathlib
+          from learnflow_v3.v364_native_array_compiler import probe,file_sha
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"v392_REAL_PROVIDER"
+          r=json.loads((root/"v392_attempt.json").read_text())
+          assert r["provider_post_attempts"]==1 and r["retry_count"]==0
+          assert r["paid_fallbacks"]==0 and r["router"]=="openrouter/free"
+          assert r["finish_reason"]=="stop"
+          assert r["candidate_origin"]=="REAL_PROVIDER_RESPONSE"
+          assert r["model_storyboard"]=="COMPACT_GROUNDED_AUTHORING_ACCEPTED"
+          assert r["result"]=="REAL_FREE_AI_STORYBOARD_TO_NATIVE_TECHNICAL_PASS"
+          assert r["native_video"]=="COMPLETE_H264_AAC_DECODE_CONFIRMED"
+          assert r["storyboard_receipt"]["visual_directive_differs_from_host"] is True
+          assert r["learner_quality"]=="UNRATED" and r["production"]=="BLOCKED"
+          original=json.loads((root/"native_pair/v364_native_receipt.json").read_text())
+          assert original["matched_video_frame_counts"] is True
+          assert original["candidate_vs_baseline_midpoint_MAD"]>0
+          for c in original["native_mp4s"]:
+              m=root/"native_pair"/c["name"]
+              assert file_sha(m)==c["sha256"] and probe(m)==c["native_frames"]
+          print("V392_REAL_AI_NATIVE_TECHNICAL_PASS_ONLY_NO_HUMAN_QUALITY_CLAIMS")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v392-ONE-GENUINE-FREE-MODEL-OR-TRUTHFUL-BLOCKED-RECEIPT
+          path: ${{ runner.temp }}/v392_REAL_PROVIDER/
+          retention-days: 7
+          if-no-files-found: warn
