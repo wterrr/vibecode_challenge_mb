@@ -20,6 +20,11 @@ def fake_sender(payload):
         return Response(json.dumps(payload).encode("utf-8"))
     return send
 
+def supported_fixture():
+    p=pilot_case()
+    p["motion_method"]="smooth_morph"
+    return p
+
 def run(out):
     query="Can a grid of squares measuring 3x4 be rotated to 4x3 and preserve all 12 pieces?"
     model="openai/gpt-6-luna"
@@ -30,7 +35,7 @@ def run(out):
     fake={"id":"v395_offline_mocked_inference_this_is_not_gpt",
           "model":model,"usage":{"cost":"0.0004","prompt_tokens":600,"completion_tokens":450},
           "choices":[{"finish_reason":"stop",
-                      "message":{"content":json.dumps(pilot_case())}}]}
+                      "message":{"content":json.dumps(supported_fixture())}}]}
     r=run_dev_preview(query=query,output=out,key="testkey"+"x"*24,
         catalog_sender=fake_sender(catalog),
         key_sender=fake_sender(account),
