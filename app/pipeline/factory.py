@@ -30,12 +30,16 @@ logger = logging.getLogger(__name__)
 
 
 class UnconfiguredPlanner(LessonPlanner):
-    """Planner stub that raises a clear error if Gemini API key is missing."""
+    """Fail the job clearly when the configured planner lacks an API key."""
+
+    def __init__(self, provider: str = "gemini"):
+        self.provider = provider
 
     async def create_plan(self, request: LearningRequest) -> LessonPlan:
+        env_var = "OPENROUTER_API_KEY" if self.provider == "openrouter" else "GEMINI_API_KEY"
         raise PlannerProviderError(
             code="planner_not_configured",
-            message="Gemini API key is not configured. Set GEMINI_API_KEY or use LEARNFLOW_PIPELINE_MODE=demo.",
+            message=f"{self.provider} planner API key is not configured. Set {env_var}.",
             retryable=False,
         )
 
@@ -106,12 +110,18 @@ def create_pipeline(
     if mode == "demo":
         planner: LessonPlanner = DemoPlanner(strict=True)
     elif mode == "real" and settings.planner_provider == "openrouter":
-        from app.providers.llm.openrouter_paid import OpenRouterPaidLessonPlanner
-        planner = OpenRouterPaidLessonPlanner(
-            api_key=settings.openrouter_api_key,
-            model=settings.openrouter_planner_model,
-            tokens=settings.paid_planner_max_tokens,
-        )
+        if not settings.openrouter_api_key or len(settings.openrouter_api_key) < 16:
+            # Keep development/test bootable without paid secrets.
+            # Production rejects this configuration during startup validation.
+            logger.warning("OPENROUTER_API_KEY is not configured; using UnconfiguredPlanner.")
+            planner = UnconfiguredPlanner("openrouter")
+        else:
+            from app.providers.llm.openrouter_paid import OpenRouterPaidLessonPlanner
+            planner = OpenRouterPaidLessonPlanner(
+                api_key=settings.openrouter_api_key,
+                model=settings.openrouter_planner_model,
+                tokens=settings.paid_planner_max_tokens,
+            )
     elif mode == "real":
         if not is_real_gemini_key(settings.gemini_api_key):
             logger.warning("GEMINI_API_KEY is not configured with a valid key; using UnconfiguredPlanner.")
