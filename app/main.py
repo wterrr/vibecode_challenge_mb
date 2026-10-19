@@ -88,6 +88,13 @@ def create_app(
     app.include_router(api_router)
     app.include_router(v3_offline_router)  # always 404 if default-OFF, no preview publication
     app.include_router(v3_ai_router)  # dev-local only, OFF by default; no regular job publication
+    # V3-97: React UI only by explicit opt-in in a local dev/test environment.
+    # Existing /api/jobs, V2, V3 previews and Jinja homepage remain the default.
+    import os
+    if (app_settings.environment.strip().lower() in ("development", "test")
+            and os.getenv("LEARNFLOW_REACT_LANDING", "0") == "1"):
+        from app.web.react_landing import router as react_landing_router
+        app.include_router(react_landing_router)
     app.include_router(web_router)
 
     return app

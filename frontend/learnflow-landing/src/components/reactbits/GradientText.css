@@ -1,0 +1,5 @@
+/* Adapted from React Bits GradientText.css, MIT */
+.animated-gradient-text{position:relative;display:inline-flex;max-width:100%;align-items:center;justify-content:center;font-weight:inherit;overflow:visible}
+.animated-gradient-text.with-border{padding:.35rem .75rem;border-radius:1.25rem;overflow:hidden}
+.gradient-overlay{position:absolute;inset:0;border-radius:inherit;z-index:0;pointer-events:none}
+.text-content{display:inline-block;position:relative;z-index:2;background-clip:text;-webkit-background-clip:text;color:transparent}
