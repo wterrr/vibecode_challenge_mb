@@ -1,0 +1,95 @@
+{
+  "checkpoint": "V3-94",
+  "date": "2026-10-19",
+  "protocol": "FIRST_CHILD_BEFORE_REPAIR",
+  "parent": {
+    "pr": 130,
+    "sha": "3d342ca0f7d948415823e78984ca661c8b3a6650"
+  },
+  "deadline": "2026-10-21",
+  "objective": "Repair host renderer geometry for exact immutable genuine GPT-6 Luna V3-93 storyboard, no further model API.",
+  "frozen_evidence": {
+    "original_provider": "openai/gpt-6-luna",
+    "original_run": 39197145291,
+    "original_artifact": 12162327395,
+    "original_single_paid_post": 1,
+    "original_json_file": "accepted_GPT_storyboard_not_human_approved.json",
+    "original_json_raw_sha256": "107f9d9457ad95ce848e553612b4e6757742a733180a8f9ae38522f736c48f4f",
+    "original_semantic_candidate_sha256": "1060c980edf45213642606c04beb80d3f115ae7dafd920580a778c226238f96a",
+    "original_video_sha256": "fcc26242ce903e48c80ffb95015a7fe666bc9e894aa8f4b7d10caec63331a3a6",
+    "original_video_frames": 441,
+    "host_ledger_sha256": "8ea108abef60738268892c74b9013da33e9d09064fb2e9de19f234ca4f6fee76",
+    "original_NARRATION_must_remain_exact": true
+  },
+  "preregistered_defects": [
+    {
+      "time_seconds": 11.7,
+      "stage": "TRANSFORM",
+      "issue": "identity label overlaps moving source-identity squares; side_by_side did not show a true two-pane before/after representation"
+    },
+    {
+      "time_seconds": 22,
+      "stage": "WITNESS",
+      "issue": "identity label overlaps squares and fourth row invades the narration band"
+    }
+  ],
+  "proposed_layout": {
+    "canvas": [
+      1280,
+      720
+    ],
+    "fps": 15,
+    "top_content_boundary_y": 230,
+    "bottom_content_boundary_y": 565,
+    "narration_divider_y": 571,
+    "side_by_side_ghost_source": "Outlines only, no extra numbered/tangible squares; 12 persistent numbered squares fly from 3x4 source left to 4x3 destination right via rigid 90-degree rotation with center translation.",
+    "tiles_each": 12,
+    "grid_gap_px": 76,
+    "tile_size_px": 52,
+    "rotate_degrees": 90,
+    "source_center": [
+      320,
+      397
+    ],
+    "goal_center": [
+      952,
+      397
+    ],
+    "narration_caption_area_y": [
+      585,
+      676
+    ],
+    "source_identity_note_below_left_pane_only_when_safe": true,
+    "subtitle_max_lines": 3,
+    "frame_collision_margin_px": 1,
+    "single_stage": "Same rigid rotation around canvas center; no duplicate numbered objects",
+    "no_media_overlay_or_posthoc_image_patch": true
+  },
+  "acceptance": {
+    "reuse_immutable_provider_json_sha_and_host_source": true,
+    "exact_provider_object_ids_12": true,
+    "visual_intent_true_two_panes": true,
+    "full_timeline_441_frames_collision_audit": true,
+    "assert_label_vs_tile_no_intersection": true,
+    "assert_caption_band_no_tile_intersection": true,
+    "assert_tiles_mutually_nonoverlapping": true,
+    "assert_all_tiles_inside_stage_boundaries": true,
+    "assert_source_and_goal_geometry_numerically_matches_3x4_4x3": true,
+    "preserve_original_441_frames_and_narration": true,
+    "native_h264_aac_full_decode": true,
+    "re_rendered_mp4_sha_and_frame_count": true,
+    "frame_snapshots_at": [
+      11.7,
+      22
+    ],
+    "new_HUMAN_quality": "UNRATED",
+    "general_ai_topic_scope": "UNCHANGED_BOUND_TO_12_SQUARES",
+    "production": "BLOCKED"
+  },
+  "no_paid_model_api": true,
+  "no_model_API_get": true,
+  "no_new_TTS_model_API": true,
+  "no_main_merge": true,
+  "no_v2_core_change": true,
+  "output_artifact_retention_days": 6
+}
