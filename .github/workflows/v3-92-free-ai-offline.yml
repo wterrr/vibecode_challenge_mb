@@ -1,0 +1,65 @@
+name: V3-92 Compact Genuine AI Preflight (offline no inference)
+on:
+  push:
+    branches: [chatgpt/v3-92-free-ai-authoring-recovery]
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_92_one_free_ai_recovery_preregister.json'
+      - 'learnflow_v3/v392_compact_authoring.py'
+      - 'scripts/run_v3_92_free_ai_authoring.py'
+      - 'tests/v3/test_v3_92_free_ai_authoring.py'
+      - '.github/workflows/v3-92-free-ai-offline.yml'
+      - '.github/workflows/v3-92-one-shot-free-live.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/learnflowbench/v3/v3_92_one_free_ai_recovery_preregister.json'
+      - 'learnflow_v3/v392_compact_authoring.py'
+      - 'scripts/run_v3_92_free_ai_authoring.py'
+      - 'tests/v3/test_v3_92_free_ai_authoring.py'
+      - '.github/workflows/v3-92-free-ai-offline.yml'
+permissions:
+  contents: read
+jobs:
+  adversarial-wire-model-provenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install trusted host verification dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --retries 2 --timeout 30 -r requirements.txt 'Pillow>=11,<13' 'jsonschema>=4,<5' 'numpy>=1.24,<3' pytest pyyaml
+      - name: Host-data and external-origin hostile tests, NO MODEL API
+        run: |
+          python -m compileall -q learnflow_v3/v392_compact_authoring.py scripts/run_v3_92_free_ai_authoring.py tests/v3/test_v3_92_free_ai_authoring.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_92_free_ai_authoring.py
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_91_single_free_ai_pilot.py tests/v3/test_v3_64_one_shot_real_model.py
+      - name: Baseline V2 and benchmark freeze
+        run: |
+          python scripts/verify_v2_core_freeze.py
+          python scripts/verify_v3_benchmark_protocol.py
+  old-host-native-control-not-ai:
+    needs: adversarial-wire-model-provenance
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install native offline video dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng fonts-dejavu-core
+          python -m pip install --disable-pip-version-check --retries 2 --timeout 30 -r requirements.txt 'Pillow>=11,<13' 'jsonschema>=4,<5' 'numpy>=1.24,<3' pyyaml
+      - name: Run complete original host-only native decode smoke WITHOUT AI
+        run: |
+          python scripts/run_v3_64_native_preflight.py --output "$RUNNER_TEMP/V392_HOST_TEST_ONLY"
+          test -f "$RUNNER_TEMP/V392_HOST_TEST_ONLY/host_TEST_ONLY.mp4"
+          test -f "$RUNNER_TEMP/V392_HOST_TEST_ONLY/model_unverified.mp4"
+          ffprobe -v error -show_entries stream=codec_name -of compact "$RUNNER_TEMP/V392_HOST_TEST_ONLY/host_TEST_ONLY.mp4"
