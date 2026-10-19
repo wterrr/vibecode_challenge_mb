@@ -63,9 +63,9 @@ class NoRedirect(HTTPRedirectHandler):
     def redirect_request(self,*args,**kwargs):
         raise Denied("V391_REDIRECT_DENIED")
 
-def safe_get_catalog(send=None):
+def safe_get_catalog(sender=None):
     req=Request(CATALOG,headers={"Accept":"application/json"},method="GET")
-    with (send or build_opener(NoRedirect()).open)(req,timeout=18) as response:
+    with (sender or build_opener(NoRedirect()).open)(req,timeout=18) as response:
         need(getattr(response,"status",200)==200,"CATALOG_HTTP_NOT_200")
         data=response.read(9_000_001)
         need(0<len(data)<=9_000_000,"CATALOG_SIZE_INVALID")
@@ -131,7 +131,7 @@ def run(out,*,key,post_sender=None,catalog_sender=None,do_native=True):
         record["outcome"]="BLOCKED_MISSING_OPENROUTER_KEY"
         _save(out,record);return record
     try:
-        free=safe_get_catalog(send=catalog_sender)
+        free=safe_get_catalog(sender=catalog_sender)
         record["public_catalog"]=free
     except (Denied,KeyError,ValueError,TypeError,HTTPError,URLError,TimeoutError) as exc:
         record["outcome"]="BLOCKED_ZERO_PRICE_PUBLIC_CATALOG_NOT_VERIFIED"
