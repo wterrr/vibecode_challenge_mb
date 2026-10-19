@@ -1,4 +1,4 @@
-name: V3-96 Registered Offline Browser Runner Smoke
+name: V3-96 Real Chromium UI No-Key Preflight
 on:
   push:
     branches: [chatgpt/v3-96-real-browser-gpt-ui-proof]
@@ -6,14 +6,49 @@ on:
 permissions:
   contents: read
 jobs:
-  can_register:
+  real_browser_offline_abstain_before_payment:
     runs-on: ubuntu-latest
+    timeout-minutes: 28
+    env:
+      ENVIRONMENT: development
+      LEARNFLOW_PIPELINE_MODE: demo
+      LEARNFLOW_V3_GPT_ARRAY_PREVIEW: 'true'
+      ARTIFACTS_DIR: /tmp/v396_app_artifacts
+      LEARNFLOW_DB_PATH: /tmp/v396_app.db
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Pure offline source proof (no model, no key)
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install real Chromium browser and local LearnFlow app (no provider key)
         run: |
-          test -f scripts/run_v3_96_real_browser_ui_one_gpt.py
-          python -m compileall -q scripts/run_v3_96_real_browser_ui_one_gpt.py
-          echo V396_WORKFLOW_REGISTERED_OFFLINE_NO_INFERENCE
+          python -m pip install --disable-pip-version-check -r requirements.txt playwright pytest
+          python -m playwright install --with-deps chromium
+      - name: Source gate and inherited product HTTP regression, no model API
+        run: |
+          test -z "$(printenv OPENROUTER_API_KEY || true)"
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_96_real_browser_source_gate.py tests/v3/test_v3_95_live_gpt_prompt_bridge.py
+          python scripts/verify_v2_core_freeze.py
+          node --check app/static/js/app.js
+      - name: Run the actual FastAPI app and publicly exposed create HTML on localhost only
+        run: |
+          python -m uvicorn app.main:app --host 127.0.0.1 --port 8765 > /tmp/v396_offline_server.log 2>&1 &
+          for i in $(seq 1 75); do
+            curl -fsS http://127.0.0.1:8765/healthz && break || sleep 1
+          done
+          curl -fsS http://127.0.0.1:8765/create >/dev/null
+      - name: Chromium fills real user-facing form, confirms ABSTAIN and no provider POST
+        run: |
+          python scripts/run_v3_96_real_browser_ui_one_gpt.py --offline --output /tmp/v396_browser_offline
+      - name: Validate original Chromium/UI offline evidence
+        run: |
+          python -c "import json,pathlib; p=pathlib.Path('/tmp/v396_browser_offline'); r=json.loads((p/'v396_browser_receipt.json').read_text()); assert r['provider_posts']==0 and r['ui_http_status']==422 and r['result']=='CHROMIUM_UI_OFFTOPIC_ABSTAIN_BEFORE_ANY_PROVIDER'; assert (p/'v396_offline_abstain_ui.png').stat().st_size>5000; print('V396_REAL_CHROMIUM_OFFLINE_PREFLIGHT_PASS')"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: V396-REAL-CHROMIUM-OFFLINE-UI-NO-PAID-INFERENCE
+          path: /tmp/v396_browser_offline/
+          retention-days: 5
+          if-no-files-found: warn
