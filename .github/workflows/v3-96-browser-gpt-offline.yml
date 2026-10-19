@@ -5,6 +5,7 @@ on:
   pull_request:
 permissions:
   contents: read
+  actions: read
 jobs:
   real_browser_offline_abstain_before_payment:
     runs-on: ubuntu-latest
@@ -52,3 +53,101 @@ jobs:
           path: /tmp/v396_browser_offline/
           retention-days: 5
           if-no-files-found: warn
+
+  one_real_gpt_browser_click_paid_once:
+    if: github.event_name == 'push' && github.event.head_commit.message == 'V396_AUTHORIZED_ONE_PAID_BROWSER_TRIGGER'
+    needs: real_browser_offline_abstain_before_payment
+    runs-on: ubuntu-latest
+    timeout-minutes: 42
+    concurrency:
+      group: V396_EXACT_ONE_PAID_GPT6_BROWSER_CLICK
+      cancel-in-progress: false
+    env:
+      ENVIRONMENT: development
+      LEARNFLOW_PIPELINE_MODE: demo
+      LEARNFLOW_V3_GPT_ARRAY_PREVIEW: 'true'
+      ARTIFACTS_DIR: /tmp/v396_real_artifacts
+      LEARNFLOW_DB_PATH: /tmp/v396_real.db
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      GH_TOKEN: ${{ github.token }}
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Freeze protocol, verify one genuine browser trigger and forbid reruns
+        run: |
+          set -euo pipefail
+          test "$(cat research/V396_REAL_BROWSER_ONE_GPT_POST_TRIGGER.txt)" = "V396_AUTH_ONE_REAL_BROWSER_NEW_PROMPT_ONE_GPT6_POST_2026_10_19"
+          python - <<'PY'
+          import json,os,urllib.request
+          assert int(os.environ["GITHUB_RUN_ATTEMPT"])==1, "V396_LIVE_RERUN_BLOCKED"
+          repo="wterrr/vibecode_challenge_mb"
+          url="https://api.github.com/repos/"+repo+"/actions/workflows/v3-96-browser-gpt-offline.yml/runs?branch=chatgpt%2Fv3-96-real-browser-gpt-ui-proof&per_page=100"
+          req=urllib.request.Request(url,headers={"Accept":"application/vnd.github+json",
+              "Authorization":"Bearer "+os.environ["GH_TOKEN"]})
+          with urllib.request.urlopen(req,timeout=30) as response:
+              runs=json.load(response)["workflow_runs"]
+          prior=[r for r in runs if int(r["id"])!=int(os.environ["GITHUB_RUN_ID"])
+                 and (r.get("head_commit") or {}).get("message")==
+                     "V396_AUTHORIZED_ONE_PAID_BROWSER_TRIGGER"]
+          assert not prior,"V396_PRIOR_PAID_TRIGGER_FORBIDDEN"
+          print("V396_UNIQUE_SINGLE_PAID_BROWSER_TRIGGER_CHECKED",flush=True)
+          PY
+      - name: Install actual Playwright browser, FastAPI server and audio-video tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng fonts-dejavu-core
+          python -m pip install --disable-pip-version-check --retries 2 --timeout 30 \
+            -r requirements.txt playwright pytest pytest-asyncio
+          python -m playwright install --with-deps chromium
+          python -m pytest -q --confcutdir=tests/v3 tests/v3/test_v3_96_real_browser_source_gate.py
+          python scripts/verify_v2_core_freeze.py
+      - name: Launch real localhost product server; paid GPT secret never enters browser
+        run: |
+          test -n "$OPENROUTER_API_KEY"
+          python -m uvicorn app.main:app --host 127.0.0.1 --port 8765 > /tmp/v396_paid_server.log 2>&1 &
+          for i in $(seq 1 75); do
+            curl -fsS http://127.0.0.1:8765/healthz && break || sleep 1
+          done
+          curl -fsS http://127.0.0.1:8765/create > /dev/null
+      - name: Real Chromium types a NEW prompt and clicks paid consent → GPT-6 Luna → MP4
+        run: |
+          python scripts/run_v3_96_real_browser_ui_one_gpt.py \
+            --live-one-paid-post --server-url http://127.0.0.1:8765 \
+            --artifacts "$ARTIFACTS_DIR" --output /tmp/v396_real_browser
+      - name: Check genuine GPT response and identical video bytes from HTML player URL
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          from learnflow_v3.v364_native_array_compiler import decode_movie,file_sha,probe
+          p=pathlib.Path("/tmp/v396_real_browser")
+          r=json.loads((p/"v396_browser_receipt.json").read_text())
+          assert r["result"]=="GENUINE_GPT_NEW_PROMPT_BROWSER_UI_TO_NATIVE_MP4_TECHNICAL_PASS"
+          assert r["actual_model"]=="openai/gpt-6-luna" and r["finish_reason"]=="stop"
+          assert r["storyboard_origin"]=="GENUINE_NEW_GPT_POST" and r["provider_posts"]==1
+          assert r["browser_http_post_verified"] and r["private_video_http_get_sha_verified"]
+          assert r["production"]=="BLOCKED" and r["human_quality"]=="UNRATED"
+          m=p/"v396_REAL_NEW_GPT_UI_video.mp4"
+          assert file_sha(m)==r["video_sha256"]
+          assert probe(m)==r["frame_count"]
+          decode_movie(m)
+          print("V396_REAL_GPT_ONE_NEW_BROWSER_UI_PROMPT_FULL_MP4_PASS",flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: V396-REAL-PAID-GPT6-BROWSER-UI-MP4-OR-TRUTHFUL-NO-GO
+          path: /tmp/v396_real_browser/
+          retention-days: 8
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: V396-REAL-PAID-FAILED-MODEL-SAFE-RECEIPT
+          path: /tmp/v396_real_artifacts/v395safeaudit/*.json
+          retention-days: 8
+          if-no-files-found: ignore
