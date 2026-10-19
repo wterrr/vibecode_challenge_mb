@@ -106,6 +106,20 @@ def run(host,out,*,live=False,artifacts=None):
         if response.status!=200:
             receipt["result"]="GENUINE_BROWSER_HTTP_REJECTED_NO_RETRY"
             receipt["http_error_code"]=str(result.get("detail",""))[:130]
+            # V3-95 intentionally removes partial videos. V3-96 preserves only
+            # its sanitized provider proof outside preview-servable folders.
+            audits=list((artifacts/"v395safeaudit").glob("*.json"))
+            if len(audits)==1:
+                safe=json.loads(audits[0].read_text())
+                for src,dest in (
+                    ("provider_posts","provider_posts"),("model_observed","actual_model"),
+                    ("finish_reason","finish_reason"),
+                    ("provider_reported_cost_usd","provider_reported_cost_usd"),
+                    ("result","server_host_gate_result")):
+                    if src in safe:receipt[dest]=safe[src]
+                receipt["server_receipt_sha256"]=sha256(audits[0].read_bytes()).hexdigest()
+                (out/"v396_sanitized_failed_provider_receipt.json").write_text(
+                    json.dumps(safe,indent=2,sort_keys=True)+"\n")
             save()
             page.screenshot(path=str(out/"v396_failed_browser_ui.png"),full_page=True)
             browser.close()
