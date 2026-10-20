@@ -22,6 +22,7 @@ from app.rendering.comparison import ComparisonRenderer
 from app.rendering.concept_card import ConceptCardRenderer
 from app.rendering.illustration import IllustrationRenderer
 from app.rendering.function_graph import FunctionGraphRenderer
+from app.rendering.array_trace import ArrayTraceRenderer
 from app.rendering.process_diagram import ProcessDiagramRenderer
 from app.rendering.router import RendererRouter
 from app.repositories.base import JobRepository
@@ -135,7 +136,10 @@ def create_pipeline(
     else:
         raise ValueError(f"Unsupported pipeline mode '{mode}'. Choose 'real', 'demo', or 'fake'.")
 
-    planning_service = PlanningService(planner=planner)
+    planning_service = PlanningService(
+        planner=planner,
+        enforce_visual_teaching=(mode == 'real' and settings.environment.strip().lower() in ('production','prod')),
+    )
 
     # 2. Speech Provider & Timeline Builder
     speech_provider = EdgeSpeechProvider(
@@ -168,10 +172,12 @@ def create_pipeline(
     )
 
     graph_renderer = FunctionGraphRenderer(width=width, height=height, fps=fps)
+    array_renderer = ArrayTraceRenderer(width=width, height=height, fps=fps)
 
     renderer_router = RendererRouter(
         concept_renderer=concept_renderer,
         graph_renderer=graph_renderer,
+        array_renderer=array_renderer,
         process_renderer=process_renderer,
         comparison_renderer=comparison_renderer,
         illustration_renderer=illustration_renderer,

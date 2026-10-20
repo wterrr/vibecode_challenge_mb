@@ -22,6 +22,7 @@ RUN apt-get update \
         curl \
         ffmpeg \
         fonts-dejavu-core \
+        fonts-cmu \
         graphviz \
         nodejs \
         npm \
@@ -47,7 +48,8 @@ RUN if [ "$RUN_BUILD_MEDIA_SMOKE" = "1" ]; then \
         tests/test_v3_98_auth_production.py::test_paid_production_renderers_encode_all_four_visual_types \
         tests/test_v3_98_auth_production.py::test_scene_encode_errors_are_classified_and_redacted \
         tests/test_assembly_production_hotfix.py \
-        tests/test_v3_production_semantic_motion.py; \
+        tests/test_v3_production_semantic_motion.py \
+        tests/test_v3_production_visual_director.py; \
     elif [ "$RUN_BUILD_MEDIA_SMOKE" != "0" ]; then \
       echo "RUN_BUILD_MEDIA_SMOKE must be 0 or 1" >&2; exit 2; \
     fi

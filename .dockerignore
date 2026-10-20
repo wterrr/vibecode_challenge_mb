@@ -32,6 +32,7 @@ tests/*
 !tests/test_v3_98_auth_production.py
 !tests/test_assembly_production_hotfix.py
 !tests/test_v3_production_semantic_motion.py
+!tests/test_v3_production_visual_director.py
 benchmarks
 docs
 *.zip

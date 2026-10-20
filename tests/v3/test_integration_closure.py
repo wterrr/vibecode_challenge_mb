@@ -214,7 +214,23 @@ def test_reachability_inventory_separates_product_from_offline_and_names_api():
     assert by_name["learnflow_v3.evaluation_pilot"]["status"]=="INTENTIONALLY_OFFLINE_SAFETY_GATE"
     assert a["production_v3_imports_found"]>0
     all_callers={caller for row in a["rows"] for caller in row["production_callers"]}
-    assert all_callers=={"app/pipeline/v3_preview.py"}
+    # V3-Production motion integration: only the independently replayed
+    # *algorithm oracle* and source-owned *array frame geometry* may be used
+    # by the new production adapter. Research-only integration, evaluations,
+    # creative agent authoring and publication bypasses remain unreachable.
+    assert all_callers=={
+        "app/pipeline/v3_preview.py",
+        "app/rendering/array_trace.py",
+    }
+    assert "app/rendering/array_trace.py" in by_name[
+        "learnflow_v3.binary_search_trace"
+    ]["production_callers"]
+    assert "app/rendering/array_trace.py" in by_name[
+        "learnflow_v3.sequence_renderer"
+    ]["production_callers"]
+    assert by_name["learnflow_v3.integration_slice"]["production_callers"]==[
+        "app/pipeline/v3_preview.py"
+    ]
     assert any(x["name"]=="run_integrated_binary_clip" for x in
                by_name["learnflow_v3.integration_slice"]["public_api"])
     assert a["scope_files_scanned"]>200

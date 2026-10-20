@@ -34,7 +34,16 @@ def main(out:Path)->None:
     )
     assert inventory["module_count"]>=20
     callers={caller for row in inventory["rows"] for caller in row["production_callers"]}
-    assert callers=={"app/pipeline/v3_preview.py"}  # sole guarded app entrypoint
+    # Only the independently validated V3 oracle + stable-item frame renderer
+    # are now production-bound. The old offline integration_slice remains
+    # guarded and cannot publish via RealVideoPipeline.
+    assert callers=={"app/pipeline/v3_preview.py","app/rendering/array_trace.py"}
+    modules={row["module"]:row for row in inventory["rows"]}
+    assert modules["learnflow_v3.integration_slice"]["production_callers"]==[
+        "app/pipeline/v3_preview.py"
+    ]
+    for name in ("learnflow_v3.binary_search_trace","learnflow_v3.sequence_renderer"):
+        assert "app/rendering/array_trace.py" in modules[name]["production_callers"]
     assert receipt.publication=="PUBLISH_BLOCKED"
     assert receipt.web_pipeline_connected is False
     print("V3_INTEGRATION_ROUTE=PASS legacy_router=SELECTED_UNRENDERABLE "
@@ -48,7 +57,8 @@ def main(out:Path)->None:
           f"modules={inventory['module_count']} "
           f"production_imports={inventory['production_v3_imports_found']}")
     print("V3_INTEGRATION_CLOSURE=BOUNDED_OFFLINE_VERTICAL_SLICE_PASS "
-          "production_wiring=NOT_DONE human_quality=UNMEASURED")
+          "offline_integration_production_wiring=NOT_DONE "
+          "verified_trace_frame_adapter=CONNECTED human_quality=UNMEASURED")
 
 
 if __name__=="__main__":

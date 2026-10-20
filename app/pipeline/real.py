@@ -11,6 +11,7 @@ from app.domain.errors import PipelineExecutionError
 from app.domain.jobs import Job
 from app.domain.lesson import LearningRequest
 from app.pipeline.assembly import VideoAssembler
+from app.pipeline.motion_quality import SEMANTIC_MOTION_INTENTS, verify_semantic_scene
 from app.pipeline.base import LearningVideoPipeline, StageCallback
 from app.pipeline.quality_gate import QualityGate
 from app.pipeline.timeline import TimelineBuilder
@@ -103,7 +104,7 @@ class RealVideoPipeline(LearningVideoPipeline):
         await on_stage(JobStage.VALIDATING_PLAN, 25)
         logger.info("Stage 2/6: VALIDATING_PLAN for job=%s", job.id)
 
-        issues = validate_lesson_plan(request, plan)
+        issues = validate_lesson_plan(request, plan, enforce_visual_teaching=getattr(self.planning_service, 'enforce_visual_teaching', False))
         errors = [issue for issue in issues if issue.severity == "error"]
         if errors:
             logger.error("Final plan validation failed with %d errors for job=%s", len(errors), job.id)
@@ -215,6 +216,27 @@ class RealVideoPipeline(LearningVideoPipeline):
                     message="A scene could not be rendered.",
                     stage=JobStage.RENDERING,
                     retryable=False,
+                )
+
+            if scene.visual_intent in SEMANTIC_MOTION_INTENTS:
+                try:
+                    measured_delta = await verify_semantic_scene(
+                        scene_path, timing.render_duration_seconds,
+                    )
+                except Exception as exc:
+                    logger.error(
+                        "Motion visual QA rejected job=%s scene=%s type=%s",
+                        job.id, scene.scene_id, type(exc).__name__,
+                    )
+                    raise PipelineExecutionError(
+                        code="semantic_motion_qa_failed",
+                        message="Verified visual scene did not show required semantic motion.",
+                        stage=JobStage.RENDERING,
+                        retryable=False,
+                    ) from None
+                logger.info(
+                    "Motion visual QA passed job=%s scene=%s decoded_delta=%.3f",
+                    job.id, scene.scene_id, measured_delta,
                 )
 
             scene_paths.append(scene_path)

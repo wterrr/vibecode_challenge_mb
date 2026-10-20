@@ -4,6 +4,7 @@ import re
 from typing import Literal
 from pydantic import BaseModel
 from app.domain.enums import VisualIntent
+from app.planning.visual_director import visual_teaching_errors
 from app.domain.lesson import (
     ComparisonSpec,
     ConceptCardSpec,
@@ -85,6 +86,8 @@ class PlanIssue(BaseModel):
 def validate_lesson_plan(
     request: LearningRequest,
     plan: LessonPlan,
+    *,
+    enforce_visual_teaching: bool = False,
 ) -> list[PlanIssue]:
     """Perform semantic and pedagogical validation on a LessonPlan.
 
@@ -316,5 +319,9 @@ def validate_lesson_plan(
                     severity="warning",
                 )
             )
+
+    if enforce_visual_teaching:
+        for code, message in visual_teaching_errors(request.topic, plan):
+            issues.append(PlanIssue(code=code, message=message, severity="error"))
 
     return issues
