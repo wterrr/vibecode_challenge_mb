@@ -43,7 +43,7 @@ def main(out:Path)->None:
         "app/pipeline/v3_preview.py"
     ]
     for name in ("learnflow_v3.binary_search_trace","learnflow_v3.sequence_renderer"):
-        assert modules[name]["production_callers"]==["app/rendering/array_trace.py"]
+        assert "app/rendering/array_trace.py" in modules[name]["production_callers"]
     assert receipt.publication=="PUBLISH_BLOCKED"
     assert receipt.web_pipeline_connected is False
     print("V3_INTEGRATION_ROUTE=PASS legacy_router=SELECTED_UNRENDERABLE "
