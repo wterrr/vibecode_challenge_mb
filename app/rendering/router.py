@@ -6,6 +6,7 @@ from app.rendering.base import SceneRenderer
 from app.rendering.comparison import ComparisonRenderer
 from app.rendering.concept_card import ConceptCardRenderer
 from app.rendering.illustration import IllustrationRenderer
+from app.rendering.function_graph import FunctionGraphRenderer
 from app.rendering.process_diagram import ProcessDiagramRenderer
 
 
@@ -18,6 +19,7 @@ class RendererRouter:
         process_renderer: SceneRenderer | None = None,
         comparison_renderer: SceneRenderer | None = None,
         illustration_renderer: SceneRenderer | None = None,
+        graph_renderer: SceneRenderer | None = None,
         image_provider: ImageProvider | None = None,
         enable_image_generation: bool = False,
     ):
@@ -30,6 +32,7 @@ class RendererRouter:
             VisualIntent.PROCESS_DIAGRAM: process_renderer or ProcessDiagramRenderer(),
             VisualIntent.COMPARISON: comparison_renderer or ComparisonRenderer(),
             VisualIntent.ILLUSTRATION: default_illustration,
+            VisualIntent.FUNCTION_GRAPH: graph_renderer or FunctionGraphRenderer(),
         }
 
     def get_renderer(self, intent: VisualIntent) -> SceneRenderer:
