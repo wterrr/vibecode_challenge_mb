@@ -44,7 +44,8 @@ COPY --from=frontend /frontend/dist /app/app/static/landing
 RUN python -m pytest -q \
     tests/test_v3_98_auth_production.py::test_paid_production_renderers_encode_all_four_visual_types \
     tests/test_v3_98_auth_production.py::test_scene_encode_errors_are_classified_and_redacted \
-    tests/test_assembly_production_hotfix.py
+    tests/test_assembly_production_hotfix.py \
+    tests/test_v3_production_semantic_motion.py
 
 RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin learnflow \
     && mkdir -p /app/artifacts \

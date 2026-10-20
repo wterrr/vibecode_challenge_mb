@@ -62,6 +62,15 @@ You must select exactly ONE supported visual type for each scene:
 2. process_diagram: For step-by-step sequences, protocols, workflows, cycles, or state transitions. (Requires actors with valid IDs matching ^[a-z][a-z0-9_]{{0,30}}$ and contiguous order 1..N).
 3. comparison: For side-by-side trade-offs, A vs B comparisons, or category contrasts (2 to 3 columns).
 4. illustration: Only when a concrete physical scene or object materially aids conceptual understanding. MUST include fallback_heading and fallback_points.
+5. function_graph: For continuous mathematical change, slopes, rates of change, derivatives, motion along function graphs, and related *function-based* explanations. This is a REAL host-verified animated graph, NOT a slide.
+   - function must be one of polynomial / sine / cosine / exponential (no arbitrary expressions or code).
+   - polynomial coefficients are ordered [constant, x, x^2, ...], e.g. x^2 is [0, 0, 1]. Values and powers are computed and verified by the host, never put answers in the JSON.
+   - focus_x must be in [-2, 2].
+   - motion_kind = secant_to_tangent for a moving second point approaching a fixed first point; slope_scan for a point moving along the graph with its instantaneous tangent.
+   - Select this family for a mathematics concept whose understanding requires observing continuous graphical transformation. At least one visually explanatory, non-card scene should be chosen whenever an available typed representation is appropriate. Do NOT fabricate a function if none is relevant.
+
+VISUAL TEACHING REQUIREMENT:
+The goal is a visually demonstrated lesson, not narrated slides. Each scene must contain an observable mechanism, state transition, graph, comparison or material illustration relevant to the narration. Prefer a moving mathematical construction for math; avoid using concept_card for consecutive core explanatory scenes. Never claim that a card/diagram moves when it does not. A topic without a verified suitable motion family may remain non-animated rather than falsely depicting mathematical or physical facts.
 
 FACTUAL & QUALITY CAUTION:
 - Provide accurate, factual explanations.
