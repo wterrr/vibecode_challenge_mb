@@ -136,7 +136,10 @@ def create_pipeline(
     else:
         raise ValueError(f"Unsupported pipeline mode '{mode}'. Choose 'real', 'demo', or 'fake'.")
 
-    planning_service = PlanningService(\n        planner=planner,\n        enforce_visual_teaching=(mode == 'real' and settings.environment.strip().lower() in ('production','prod')),\n    )
+    planning_service = PlanningService(
+        planner=planner,
+        enforce_visual_teaching=(mode == 'real' and settings.environment.strip().lower() in ('production','prod')),
+    )
 
     # 2. Speech Provider & Timeline Builder
     speech_provider = EdgeSpeechProvider(
