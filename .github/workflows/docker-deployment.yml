@@ -48,23 +48,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build production image
-        run: docker build --pull -t learnflow-ai:ci .
+      - name: Build CI image and execute native H264 media smoke
+        run: docker build --pull --build-arg RUN_BUILD_MEDIA_SMOKE=1 -t learnflow-ai:ci .
+
+      - name: Build actual lightweight deployment image
+        run: docker build --build-arg RUN_BUILD_MEDIA_SMOKE=0 -t learnflow-ai:deploy .
 
       - name: Verify image runtime dependencies
         run: |
-          docker run --rm learnflow-ai:ci ffmpeg -version
-          docker run --rm learnflow-ai:ci ffprobe -version
-          docker run --rm learnflow-ai:ci dot -V
-          docker run --rm learnflow-ai:ci node -e "const p=require('elkjs/package.json'); if (p.version !== '0.12.0') process.exit(1); console.log(p.version)"
-          test "$(docker run --rm learnflow-ai:ci id -u)" = "10001"
+          docker run --rm learnflow-ai:deploy ffmpeg -version
+          docker run --rm learnflow-ai:deploy ffprobe -version
+          docker run --rm learnflow-ai:deploy dot -V
+          docker run --rm learnflow-ai:deploy node -e "const p=require('elkjs/package.json'); if (p.version !== '0.12.0') process.exit(1); console.log(p.version)"
+          test "$(docker run --rm learnflow-ai:deploy id -u)" = "10001"
 
       - name: Start production container with PostgreSQL
         shell: bash
         run: |
           set -euo pipefail
           docker rm -f learnflow-docker-smoke >/dev/null 2>&1 || true
-          docker run -d             --name learnflow-docker-smoke             --network host             -e ENVIRONMENT=production             -e LEARNFLOW_PIPELINE_MODE=real -e AUTH_ENABLED=true -e ADMIN_USERNAME=admin -e ADMIN_PASSWORD=ci-local-only-long-password -e AUTH_SECRET_KEY=ci-only-48-characters-aaaaaaaaaaaaaaaaaaaaaaaaaaaa -e PUBLIC_ORIGIN=https://learnflow-ci.example -e PLANNER_PROVIDER=gemini -e GEMINI_API_KEY=ci-unusable-fake-paid-provider-key             -e DATABASE_URL=postgresql://learnflow:learnflow@127.0.0.1:5432/learnflow_docker             -e PORT=8080             learnflow-ai:ci
+          docker run -d             --name learnflow-docker-smoke             --network host             -e ENVIRONMENT=production             -e LEARNFLOW_PIPELINE_MODE=real -e AUTH_ENABLED=true -e ADMIN_USERNAME=admin -e ADMIN_PASSWORD=ci-local-only-long-password -e AUTH_SECRET_KEY=ci-only-48-characters-aaaaaaaaaaaaaaaaaaaaaaaaaaaa -e PUBLIC_ORIGIN=https://learnflow-ci.example -e PLANNER_PROVIDER=gemini -e GEMINI_API_KEY=ci-unusable-fake-paid-provider-key             -e DATABASE_URL=postgresql://learnflow:learnflow@127.0.0.1:5432/learnflow_docker             -e PORT=8080             learnflow-ai:deploy
 
       - name: Wait for health endpoint
         shell: bash
