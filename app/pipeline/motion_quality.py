@@ -25,7 +25,7 @@ def _decoded_luma_at(video: Path, seconds: float) -> bytes:
         "ffmpeg", "-nostdin", "-v", "error",
         "-ss", f"{seconds:.3f}", "-i", str(video),
         "-frames:v", "1",
-        "-vf", "crop=iw*0.90:ih*0.70:iw*0.05:ih*0.12,scale=160:90",
+        "-vf", "crop=iw*0.90:ih*0.32:iw*0.05:ih*0.22,scale=160:90",
         "-f", "rawvideo", "-pix_fmt", "gray", "pipe:1",
     ], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
        timeout=25, check=False)
@@ -36,7 +36,7 @@ def _decoded_luma_at(video: Path, seconds: float) -> bytes:
 
 
 def decoded_motion_delta(video: Path, duration: float) -> float:
-    """Three widely spaced decoded temporal samples; no subtitle-pixel cheating."""
+    """Three decoded samples from pointer/array/curve viewport, excluding status and subtitle text."""
     if duration < 1.0 or not video.is_file():
         raise ValueError("Semantic video missing or too short")
     snapshots = [_decoded_luma_at(video, duration*t) for t in (.15,.50,.85)]
