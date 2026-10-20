@@ -15,6 +15,7 @@ from pydantic import ValidationError
 
 from app.domain.lesson import LearningRequest, LessonPlan
 from app.planning.prompts import build_lesson_plan_prompt, build_repair_prompt
+from app.planning.scene_ids import canonicalize_scene_ids
 from app.providers.llm.base import LessonPlanner, PlannerProviderError, PlannerOutputValidationError
 
 log = logging.getLogger(__name__)
@@ -146,6 +147,13 @@ class OpenRouterPaidLessonPlanner(LessonPlanner):
                     "OpenRouter returned no usable lesson plan.",
                     retryable=False,
                 )
+            # Strict provider schemas cannot constrain scene_id regex. These
+            # IDs are generated artifact metadata, so canonicalize invalid
+            # strings locally instead of spending another paid model request.
+            # All educational and visual fields remain strictly Pydantic-checked.
+            body, renamed = canonicalize_scene_ids(body)
+            if renamed:
+                log.info("Canonicalized %d invalid scene identifiers model=%s", renamed, self.model)
             return LessonPlan.model_validate_json(body)
         except httpx.HTTPStatusError as exc:
             status = exc.response.status_code
