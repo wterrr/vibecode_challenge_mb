@@ -21,6 +21,7 @@ from app.providers.speech.edge import EdgeSpeechProvider
 from app.rendering.comparison import ComparisonRenderer
 from app.rendering.concept_card import ConceptCardRenderer
 from app.rendering.illustration import IllustrationRenderer
+from app.rendering.function_graph import FunctionGraphRenderer
 from app.rendering.process_diagram import ProcessDiagramRenderer
 from app.rendering.router import RendererRouter
 from app.repositories.base import JobRepository
@@ -166,8 +167,11 @@ def create_pipeline(
         enable_image_generation=settings.enable_image_generation,
     )
 
+    graph_renderer = FunctionGraphRenderer(width=width, height=height, fps=fps)
+
     renderer_router = RendererRouter(
         concept_renderer=concept_renderer,
+        graph_renderer=graph_renderer,
         process_renderer=process_renderer,
         comparison_renderer=comparison_renderer,
         illustration_renderer=illustration_renderer,
