@@ -234,7 +234,7 @@ def test_paid_planner_repairs_invalid_schema_once_no_provider_fallback(monkeypat
 
     good = DEMO_PHOTOSYNTHESIS_PLAN.model_dump(mode="json")
     bad = copy.deepcopy(good)
-    bad["scenes"][0]["scene_id"] = "invalid-scene-id"
+    bad["scenes"][0]["narration"] = ""  # True semantic content error, NOT repairable metadata.
 
     def exercise(repaired, expected_error=None):
         seen = []
@@ -278,8 +278,8 @@ def test_paid_planner_repairs_invalid_schema_once_no_provider_fallback(monkeypat
 
         # One initial request and at most one schema repair, never a third paid POST.
         assert len(seen) == 2
-        assert "invalid-scene-id" in seen[1]["messages"][0]["content"]
-        assert "scenes.0.scene_id" in seen[1]["messages"][0]["content"]
+        assert "validation_errors" in seen[1]["messages"][0]["content"]
+        assert "scenes.0.narration" in seen[1]["messages"][0]["content"]
 
     exercise(good)
 
@@ -304,6 +304,7 @@ def test_paid_planner_validation_error_reports_safe_paths(monkeypatch):
 
     bad = DEMO_PHOTOSYNTHESIS_PLAN.model_dump(mode="json")
     bad["scenes"][0]["scene_id"] = "SECRET_INVALID_PROVIDER_CONTENT"
+    bad["scenes"][0]["narration"] = ""  # Still fail after safe ID normalization
     class FakeClient:
         def __init__(self, **kwargs): pass
         async def __aenter__(self): return self
@@ -322,7 +323,7 @@ def test_paid_planner_validation_error_reports_safe_paths(monkeypatch):
             api_key="ci-fake-provider-key-012345",
         )._complete("test"))
     assert ex.value.code == "paid_planner_invalid_plan"
-    assert "scenes.0.scene_id" in ex.value.message
+    assert "scenes.0.narration" in ex.value.message
     assert "SECRET_INVALID_PROVIDER_CONTENT" not in ex.value.message
 
 
@@ -443,3 +444,78 @@ def test_scene_encode_errors_are_classified_and_redacted(tmp_path, monkeypatch, 
     assert "-preset" in args and args[args.index("-preset") + 1] == "veryfast"
     assert "-threads" in args and args[args.index("-threads") + 1] == "2"
     assert "-framerate" in args and args[args.index("-framerate") + 1] == "24"
+
+
+def test_openrouter_canonicalizes_internal_scene_ids_without_paid_retry(monkeypatch):
+    """Actual paid planner response path: ID metadata fixed with only one POST."""
+    import asyncio
+    import copy
+    import httpx
+    import json
+    from app.demo.lesson_plans import DEMO_PHOTOSYNTHESIS_PLAN
+    from app.providers.llm.openrouter_paid import OpenRouterPaidLessonPlanner
+    from app.planning.service import PlanningService
+    from app.domain.lesson import LearningRequest
+
+    data = DEMO_PHOTOSYNTHESIS_PLAN.model_dump(mode="json")
+    incoming = copy.deepcopy(data)
+    incoming["scenes"][0]["scene_id"] = "Scene 1: Giới thiệu"
+    incoming["scenes"][1]["scene_id"] = "2 - Khái niệm"
+    incoming["scenes"][2]["scene_id"] = "s03_wrong-ID"
+    calls = []
+    class FakeClient:
+        def __init__(self, **kwargs): pass
+        async def __aenter__(self): return self
+        async def __aexit__(self, *args): pass
+        async def post(self, url, headers, json):
+            calls.append(json)
+            return httpx.Response(200, json={
+                "model": "openai/gpt-6-luna",
+                "choices": [{
+                    "finish_reason": "stop",
+                    "message": {"content": __import__("json").dumps(incoming, ensure_ascii=False)},
+                }],
+            }, request=httpx.Request("POST", url))
+    monkeypatch.setattr(httpx, "AsyncClient", FakeClient)
+    planner = OpenRouterPaidLessonPlanner(api_key="ci-fake-provider-key-012345")
+    req = LearningRequest(topic=data["topic"], audience=data["audience"],
+                          language=data["language"], target_duration_seconds=90)
+    plan = asyncio.run(PlanningService(planner).build_valid_plan(req))
+    assert len(calls) == 1, "Never spend a second paid request fixing IDs"
+    assert [x.scene_id for x in plan.scenes[:3]] == [
+        "s01_scene", "s02_scene", "s03_scene",
+    ]
+    assert [x.scene_id for x in plan.scenes[3:]] == [
+        x["scene_id"] for x in incoming["scenes"][3:]
+    ]
+    assert [x.narration for x in plan.scenes] == [x["narration"] for x in incoming["scenes"]]
+
+
+def test_scene_id_canonicalization_is_narrow_safe_and_collision_free():
+    """Invalid/duplicate ID normalization does not alter lesson semantics."""
+    import copy
+    import json
+    from app.demo.lesson_plans import DEMO_PHOTOSYNTHESIS_PLAN
+    from app.planning.scene_ids import canonicalize_scene_ids
+    from app.domain.lesson import LessonPlan
+    original = DEMO_PHOTOSYNTHESIS_PLAN.model_dump(mode="json")
+    plan = copy.deepcopy(original)
+    for i, s in enumerate(plan["scenes"]):
+        s["scene_id"] = ["s02_scene", "s02_scene", "🚫 malformed"][i % 3]
+    normalized, fixes = canonicalize_scene_ids(json.dumps(plan, ensure_ascii=False))
+    repaired = LessonPlan.model_validate_json(normalized)
+    assert fixes >= 2
+    ids = [s.scene_id for s in repaired.scenes]
+    assert len(ids) == len(set(ids))
+    assert ids[0] == "s02_scene"  # First valid ID remains untouched.
+    assert set(ids).isdisjoint({"🚫 malformed"})
+    for idx, scene in enumerate(repaired.scenes):
+        assert scene.narration == plan["scenes"][idx]["narration"]
+        assert scene.visual_spec.model_dump() == DEMO_PHOTOSYNTHESIS_PLAN.scenes[idx].visual_spec.model_dump()
+    unchanged, count = canonicalize_scene_ids(original_json := DEMO_PHOTOSYNTHESIS_PLAN.model_dump_json())
+    assert count == 0 and unchanged == original_json
+    invalid_types = copy.deepcopy(original)
+    invalid_types["scenes"][0]["scene_id"] = {"key": "untrusted"}
+    raw = json.dumps(invalid_types)
+    assert canonicalize_scene_ids(raw) == (raw, 0)
+    assert canonicalize_scene_ids("{bad json") == ("{bad json", 0)
