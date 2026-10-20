@@ -243,11 +243,36 @@ class IllustrationSpec(BaseModel):
         return value
 
 
+class FunctionGraphSpec(BaseModel):
+    """Host-verifiable continuous mathematical graph animation contract.
+
+    No scripts, arbitrary expressions, pixel coordinates, or model-produced
+    derivative values. This represents a generic family of functions.
+    """
+    type: Literal["function_graph"] = "function_graph"
+    function: Literal["polynomial", "sine", "cosine", "exponential"]
+    coefficients: list[float] = Field(default_factory=list, max_length=5)
+    focus_x: float = Field(default=0.0, ge=-2, le=2)
+    motion_kind: Literal["secant_to_tangent", "slope_scan"]
+
+    @model_validator(mode="after")
+    def validate_graph(self) -> "FunctionGraphSpec":
+        import math
+        if not math.isfinite(self.focus_x):
+            raise ValueError("Nonfinite graph focus")
+        if self.function == "polynomial" and not self.coefficients:
+            raise ValueError("Polynomial graph requires coefficients")
+        if any(not math.isfinite(c) or abs(c) > 5.0 for c in self.coefficients):
+            raise ValueError("Graph coefficients must be finite and bounded")
+        return self
+
+
 VisualSpec = Annotated[
     ConceptCardSpec
     | ProcessDiagramSpec
     | ComparisonSpec
-    | IllustrationSpec,
+    | IllustrationSpec
+    | FunctionGraphSpec,
     Field(discriminator="type"),
 ]
 
