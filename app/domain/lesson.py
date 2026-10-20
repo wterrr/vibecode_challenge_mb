@@ -2,7 +2,7 @@
 
 import re
 from typing import Annotated, Literal
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, StrictInt, field_validator, model_validator
 from app.domain.enums import VisualIntent
 
 ACTOR_ID_REGEX = re.compile(r"^[a-z][a-z0-9_]{0,30}$")
@@ -276,8 +276,8 @@ class ArrayTraceSpec(BaseModel):
     """
     type: Literal["array_trace"] = "array_trace"
     algorithm: Literal["binary_search"]
-    values: list[int] = Field(min_length=5, max_length=12)
-    target: int = Field(ge=-999, le=999)
+    values: list[StrictInt] = Field(min_length=5, max_length=12)
+    target: StrictInt = Field(ge=-999, le=999)
 
     @model_validator(mode="after")
     def validate_trace_source(self) -> "ArrayTraceSpec":
