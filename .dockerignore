@@ -30,6 +30,7 @@ artifacts
 # Include only the production rendering smoke tests used during image build.
 tests/*
 !tests/test_v3_98_auth_production.py
+!tests/test_assembly_production_hotfix.py
 benchmarks
 docs
 *.zip

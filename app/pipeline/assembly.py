@@ -13,6 +13,17 @@ from app.domain.timeline import ResolvedTimeline, SubtitleCue
 logger = logging.getLogger(__name__)
 
 
+def assembly_timeout_budget(duration_seconds: float) -> float:
+    """Bound costly 720p subtitle burn-in on a shared production CPU.
+
+    The previous hard-coded 180s is insufficient for 90s+ 720p videos,
+    especially when libass subtitles require a second H264 encoding pass.
+    """
+    if not math.isfinite(duration_seconds) or duration_seconds <= 0:
+        raise ValueError("Invalid total video duration")
+    return float(max(180, min(900, int(duration_seconds * 7 + 90))))
+
+
 def format_srt_timestamp(seconds: float) -> str:
     """Format float seconds to SRT time format: HH:MM:SS,mmm."""
     clamped = max(0.0, float(seconds))
@@ -64,11 +75,13 @@ class VideoAssembler:
         self,
         fps: int = 24,
         font_path: str = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        timeout_seconds: float = 180.0,
+        timeout_seconds: float | None = None,
         subtitle_force_style: str | None = None,
     ):
         self.fps = fps
         self.font_path = font_path
+        # An explicit timeout is respected for tests or deployment tuning.
+        # None means a bounded budget based on actual narration length.
         self.timeout_seconds = timeout_seconds
         # V3-19 opt-in override; None preserves the existing V2 font/size EXACTLY.
         self.subtitle_force_style = subtitle_force_style
@@ -128,6 +141,9 @@ class VideoAssembler:
         audio_lines = [f"file '{p}'" for p in audio_paths]
         audio_concat_list.write_text("\n".join(audio_lines) + "\n", encoding="utf-8")
 
+        timeout_budget = (self.timeout_seconds if self.timeout_seconds is not None
+                          else assembly_timeout_budget(timeline.total_duration_seconds))
+
         # 3. Build FFmpeg command
         # Subtitle filter escaping for FFmpeg: escape colons and backslashes
         escaped_srt_path = str(srt_file.resolve()).replace("\\", "/").replace(":", "\\:")
@@ -151,18 +167,24 @@ class VideoAssembler:
 
         cmd = [
             "ffmpeg",
-            "-y",
+            "-nostdin", "-hide_banner", "-loglevel", "error", "-y",
             "-f", "concat",
             "-safe", "0",
             "-i", str(visual_concat_list.resolve()),
             "-f", "concat",
             "-safe", "0",
             "-i", str(audio_concat_list.resolve()),
+            # Single bounded filter graph and encoder; the previous implicit
+            # x264 "medium" preset could exceed 180 seconds on small hosts.
+            "-filter_threads", "2",
             "-vf", video_filters,
             "-c:v", "libx264",
+            "-preset", "ultrafast", "-crf", "23",
+            "-threads", "2",
             "-pix_fmt", "yuv420p",
             "-r", str(self.fps),
             "-c:a", "aac",
+            "-b:a", "128k",
             "-ar", "48000",
             "-ac", "2",
             "-movflags", "+faststart",
@@ -173,63 +195,70 @@ class VideoAssembler:
         def _run_ffmpeg() -> subprocess.CompletedProcess[str]:
             return subprocess.run(
                 cmd,
-                stdout=subprocess.PIPE,
+                stdout=subprocess.DEVNULL,
                 stderr=subprocess.PIPE,
                 text=True,
                 check=False,
-                timeout=self.timeout_seconds,
+                timeout=timeout_budget,
             )
 
         try:
-            proc = await asyncio.to_thread(_run_ffmpeg)
-        except subprocess.TimeoutExpired as exc:
-            logger.error(
-                "Assembly timed out after %.1fs job_id=%s timeout=%s",
-                self.timeout_seconds,
-                job_id,
-                exc,
+            logger.info(
+                "Starting bounded FFmpeg assembly job=%s duration=%.2fs "
+                "scenes=%d subtitles=%s budget=%.0fs",
+                job_id, timeline.total_duration_seconds, len(scene_video_paths),
+                has_subtitles, timeout_budget,
             )
+            proc = await asyncio.to_thread(_run_ffmpeg)
+        except subprocess.TimeoutExpired:
+            output_path.unlink(missing_ok=True)
+            logger.error("FFmpeg assembly timed out job=%s budget=%.0fs duration=%.2fs",
+                         job_id, timeout_budget, timeline.total_duration_seconds)
             raise PipelineExecutionError(
-                code="assembly_failed",
-                message="Video assembly timed out.",
+                code="assembly_timeout",
+                message="Video assembly exceeded its bounded time budget.",
                 stage=JobStage.ASSEMBLING,
                 retryable=False,
-            ) from exc
+            ) from None
+        except FileNotFoundError:
+            output_path.unlink(missing_ok=True)
+            logger.error("FFmpeg assembly executable missing job=%s", job_id)
+            raise PipelineExecutionError(
+                code="assembly_ffmpeg_missing",
+                message="Video assembly requires FFmpeg.",
+                stage=JobStage.ASSEMBLING,
+                retryable=False,
+            ) from None
         except Exception as exc:
-            logger.error(
-                "Assembly process error job_id=%s exc_type=%s",
-                job_id,
-                type(exc).__name__,
-            )
+            output_path.unlink(missing_ok=True)
+            logger.error("Assembly subprocess exception job=%s type=%s",
+                         job_id, type(exc).__name__)
             raise PipelineExecutionError(
                 code="assembly_failed",
                 message="The final video could not be assembled.",
                 stage=JobStage.ASSEMBLING,
                 retryable=False,
-            ) from exc
+            ) from None
 
         if proc.returncode != 0:
-            logger.error(
-                "FFmpeg assembly failed for job_id=%s returncode=%d",
-                job_id,
-                proc.returncode,
-            )
+            output_path.unlink(missing_ok=True)
+            # Never include stderr, file paths, narration, or private data in
+            # a user-visible error or public logs.
+            logger.error("FFmpeg assembly failed job=%s returncode=%d", job_id, proc.returncode)
             raise PipelineExecutionError(
-                code="assembly_failed",
-                message="The final video could not be assembled.",
+                code="assembly_ffmpeg_failed",
+                message="FFmpeg could not combine the rendered scenes and audio.",
                 stage=JobStage.ASSEMBLING,
                 retryable=False,
             )
 
         # Validate candidate output file
-        if not output_path.exists() or not output_path.is_file() or output_path.stat().st_size == 0:
-            logger.error(
-                "Assembly finished but output file is missing or empty: %s",
-                output_path,
-            )
+        if not output_path.is_file() or output_path.stat().st_size == 0:
+            output_path.unlink(missing_ok=True)
+            logger.error("Assembly produced missing/empty final candidate job=%s", job_id)
             raise PipelineExecutionError(
-                code="assembly_failed",
-                message="The final video could not be assembled.",
+                code="assembly_empty_output",
+                message="FFmpeg produced an empty final video.",
                 stage=JobStage.ASSEMBLING,
                 retryable=False,
             )
