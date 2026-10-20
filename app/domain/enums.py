@@ -41,3 +41,4 @@ class VisualIntent(str, Enum):
     COMPARISON = "comparison"
     ILLUSTRATION = "illustration"
     FUNCTION_GRAPH = "function_graph"
+    ARRAY_TRACE = "array_trace"
