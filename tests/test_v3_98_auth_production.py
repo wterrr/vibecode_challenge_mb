@@ -219,3 +219,108 @@ def test_openrouter_default_strict_schema_contract():
         if item.get("type") == "object":
             assert item["additionalProperties"] is False
             assert set(item["required"]) == set(item["properties"])
+
+
+def test_paid_planner_repairs_invalid_schema_once_no_provider_fallback(monkeypatch):
+    """End-to-end planning service with real Pydantic and offline fake OpenRouter."""
+    import asyncio
+    import copy
+    import json
+    import httpx
+    from app.demo.lesson_plans import DEMO_PHOTOSYNTHESIS_PLAN
+    from app.domain.lesson import LearningRequest
+    from app.planning.service import PlanningService
+    from app.providers.llm.openrouter_paid import OpenRouterPaidLessonPlanner
+
+    good = DEMO_PHOTOSYNTHESIS_PLAN.model_dump(mode="json")
+    bad = copy.deepcopy(good)
+    bad["scenes"][0]["scene_id"] = "invalid-scene-id"
+
+    def exercise(repaired, expected_error=None):
+        seen = []
+        outputs = [bad, repaired]
+
+        class FakeClient:
+            def __init__(self, **kwargs): pass
+            async def __aenter__(self): return self
+            async def __aexit__(self, *args): pass
+
+            async def post(self, url, headers, json):
+                assert url == "https://openrouter.ai/api/v1/chat/completions"
+                assert json["model"] == "openai/gpt-6-luna"
+                assert json["provider"]["allow_fallbacks"] is False
+                assert json["provider"]["require_parameters"] is True
+                seen.append(json)
+                data = {
+                    "model": "openai/gpt-6-luna",
+                    "choices": [{
+                        "finish_reason": "stop",
+                        "message": {"content": __import__("json").dumps(
+                            outputs.pop(0), ensure_ascii=False,
+                        )},
+                    }],
+                }
+                return httpx.Response(200, json=data, request=httpx.Request("POST", url))
+
+        monkeypatch.setattr(httpx, "AsyncClient", FakeClient)
+        planner = OpenRouterPaidLessonPlanner(api_key="ci-fake-provider-key-012345")
+        req = LearningRequest(
+            topic=good["topic"], audience=good["audience"],
+            language=good["language"], target_duration_seconds=90,
+        )
+        if expected_error:
+            with pytest.raises(expected_error) as ex:
+                asyncio.run(PlanningService(planner).build_valid_plan(req))
+            assert ex.value.code == "plan_validation_failed" if expected_error.__name__ == "PipelineExecutionError" else ex.value.code == "paid_planner_invalid_plan"
+        else:
+            plan = asyncio.run(PlanningService(planner).build_valid_plan(req))
+            assert plan.scenes[0].scene_id == good["scenes"][0]["scene_id"]
+
+        # One initial request and at most one schema repair, never a third paid POST.
+        assert len(seen) == 2
+        assert "invalid-scene-id" in seen[1]["messages"][0]["content"]
+        assert "scenes.0.scene_id" in seen[1]["messages"][0]["content"]
+
+    exercise(good)
+
+    # A second Pydantic-invalid response must fail closed; no more paid calls.
+    from app.providers.llm.base import PlannerProviderError
+    exercise(bad, PlannerProviderError)
+
+    # A Pydantic-valid but wrong-language repair must fail semantic QA with no third call.
+    from app.domain.errors import PipelineExecutionError
+    semantically_bad = copy.deepcopy(good)
+    semantically_bad["language"] = "en" if good["language"] == "vi" else "vi"
+    exercise(semantically_bad, PipelineExecutionError)
+
+
+def test_paid_planner_validation_error_reports_safe_paths(monkeypatch):
+    import asyncio
+    import json
+    import httpx
+    from app.demo.lesson_plans import DEMO_PHOTOSYNTHESIS_PLAN
+    from app.providers.llm.base import PlannerOutputValidationError
+    from app.providers.llm.openrouter_paid import OpenRouterPaidLessonPlanner
+
+    bad = DEMO_PHOTOSYNTHESIS_PLAN.model_dump(mode="json")
+    bad["scenes"][0]["scene_id"] = "SECRET_INVALID_PROVIDER_CONTENT"
+    class FakeClient:
+        def __init__(self, **kwargs): pass
+        async def __aenter__(self): return self
+        async def __aexit__(self, *args): pass
+        async def post(self, url, headers, json):
+            return httpx.Response(200, json={
+                "model": "openai/gpt-6-luna",
+                "choices": [{"finish_reason": "stop", "message": {
+                    "content": __import__("json").dumps(bad),
+                }}],
+            }, request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(httpx, "AsyncClient", FakeClient)
+    with pytest.raises(PlannerOutputValidationError) as ex:
+        asyncio.run(OpenRouterPaidLessonPlanner(
+            api_key="ci-fake-provider-key-012345",
+        )._complete("test"))
+    assert ex.value.code == "paid_planner_invalid_plan"
+    assert "scenes.0.scene_id" in ex.value.message
+    assert "SECRET_INVALID_PROVIDER_CONTENT" not in ex.value.message
