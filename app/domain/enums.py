@@ -40,3 +40,4 @@ class VisualIntent(str, Enum):
     PROCESS_DIAGRAM = "process_diagram"
     COMPARISON = "comparison"
     ILLUSTRATION = "illustration"
+    FUNCTION_GRAPH = "function_graph"
