@@ -482,11 +482,11 @@ def test_openrouter_canonicalizes_internal_scene_ids_without_paid_retry(monkeypa
                           language=data["language"], target_duration_seconds=90)
     plan = asyncio.run(PlanningService(planner).build_valid_plan(req))
     assert len(calls) == 1, "Never spend a second paid request fixing IDs"
-    assert [x.scene_id for x in plan.scenes] == [
+    assert [x.scene_id for x in plan.scenes[:3]] == [
         "s01_scene", "s02_scene", "s03_scene",
-        "s04_scene",
-    ][:len(plan.scenes)] if len(plan.scenes) == 4 else [
-        "s01_scene", "s02_scene", "s03_scene",
+    ]
+    assert [x.scene_id for x in plan.scenes[3:]] == [
+        x["scene_id"] for x in incoming["scenes"][3:]
     ]
     assert [x.narration for x in plan.scenes] == [x["narration"] for x in incoming["scenes"]]
 
