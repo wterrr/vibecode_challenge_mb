@@ -38,6 +38,13 @@ RUN npm ci --omit=dev --ignore-scripts \
 COPY . .
 COPY --from=frontend /frontend/dist /app/app/static/landing
 
+# Exercise actual production dependencies, native font rendering and 720p
+# FFmpeg H.264 for all four scene types while building the release image.
+# This preflight uses deterministic local scenes and no paid API requests.
+RUN python -m pytest -q \
+    tests/test_v3_98_auth_production.py::test_paid_production_renderers_encode_all_four_visual_types \
+    tests/test_v3_98_auth_production.py::test_scene_encode_errors_are_classified_and_redacted
+
 RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin learnflow \
     && mkdir -p /app/artifacts \
     && chown -R learnflow:learnflow /app
