@@ -104,7 +104,7 @@ class RealVideoPipeline(LearningVideoPipeline):
         await on_stage(JobStage.VALIDATING_PLAN, 25)
         logger.info("Stage 2/6: VALIDATING_PLAN for job=%s", job.id)
 
-        issues = validate_lesson_plan(request, plan, enforce_visual_teaching=self.planning_service.enforce_visual_teaching)
+        issues = validate_lesson_plan(request, plan, enforce_visual_teaching=getattr(self.planning_service, 'enforce_visual_teaching', False))
         errors = [issue for issue in issues if issue.severity == "error"]
         if errors:
             logger.error("Final plan validation failed with %d errors for job=%s", len(errors), job.id)
