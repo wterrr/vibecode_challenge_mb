@@ -43,7 +43,8 @@ COPY --from=frontend /frontend/dist /app/app/static/landing
 # This preflight uses deterministic local scenes and no paid API requests.
 RUN python -m pytest -q \
     tests/test_v3_98_auth_production.py::test_paid_production_renderers_encode_all_four_visual_types \
-    tests/test_v3_98_auth_production.py::test_scene_encode_errors_are_classified_and_redacted
+    tests/test_v3_98_auth_production.py::test_scene_encode_errors_are_classified_and_redacted \
+    tests/test_assembly_production_hotfix.py
 
 RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin learnflow \
     && mkdir -p /app/artifacts \
