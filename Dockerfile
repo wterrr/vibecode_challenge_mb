@@ -22,6 +22,7 @@ RUN apt-get update \
         curl \
         ffmpeg \
         fonts-dejavu-core \
+        fonts-cmu \
         graphviz \
         nodejs \
         npm \
