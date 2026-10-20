@@ -324,3 +324,118 @@ def test_paid_planner_validation_error_reports_safe_paths(monkeypatch):
     assert ex.value.code == "paid_planner_invalid_plan"
     assert "scenes.0.scene_id" in ex.value.message
     assert "SECRET_INVALID_PROVIDER_CONTENT" not in ex.value.message
+
+
+@pytest.mark.asyncio
+async def test_paid_production_renderers_encode_all_four_visual_types(tmp_path):
+    """Production-sized H264 from four scene types without model or speech APIs."""
+    import asyncio
+    import subprocess
+    from pathlib import Path
+    from app.domain.enums import VisualIntent
+    from app.domain.lesson import (
+        ScenePlan, ConceptCardSpec, ProcessDiagramSpec, ProcessActor,
+        ProcessStep, ComparisonSpec, ComparisonColumn, IllustrationSpec,
+    )
+    from app.domain.timeline import ResolvedSceneTiming
+    from app.rendering.concept_card import ConceptCardRenderer
+    from app.rendering.process_diagram import ProcessDiagramRenderer
+    from app.rendering.comparison import ComparisonRenderer
+    from app.rendering.illustration import IllustrationRenderer
+
+    cases = [
+        (VisualIntent.CONCEPT_CARD, ConceptCardSpec(
+            heading="Tốc độ thay đổi tức thời",
+            points=["Đạo hàm đo tốc độ biến thiên", "Độ dốc của tiếp tuyến"],
+            emphasis=["f'(x)", "Giới hạn"],
+        ), ConceptCardRenderer),
+        (VisualIntent.PROCESS_DIAGRAM, ProcessDiagramSpec(
+            title="Các bước tìm đạo hàm",
+            actors=[ProcessActor(id="student", label="Học sinh")],
+            steps=[
+                ProcessStep(order=1, label="Tính độ dốc trung bình"),
+                ProcessStep(order=2, label="Cho khoảng cách tiến về không"),
+            ],
+        ), ProcessDiagramRenderer),
+        (VisualIntent.COMPARISON, ComparisonSpec(
+            title="Trung bình và tức thời",
+            columns=[
+                ComparisonColumn(title="Trung bình", points=["Trên một khoảng"]),
+                ComparisonColumn(title="Tức thời", points=["Tại một điểm"]),
+            ],
+        ), ComparisonRenderer),
+        (VisualIntent.ILLUSTRATION, IllustrationSpec(
+            prompt="Tangent line meeting a curve at one point",
+            fallback_heading="Tiếp tuyến với đường cong",
+            fallback_points=["Tiếp tuyến biểu diễn tốc độ biến thiên"],
+        ), IllustrationRenderer),
+    ]
+    for index, (intent, spec, renderer_type) in enumerate(cases, 1):
+        scene_id = f"s0{index}_derivative"
+        scene = ScenePlan(
+            scene_id=scene_id,
+            title="Đạo hàm là gì?",
+            concept="Khái niệm đạo hàm",
+            narration="Đạo hàm là tốc độ biến thiên.",
+            key_points=["Tốc độ biến thiên"],
+            visual_intent=intent,
+            visual_spec=spec,
+        )
+        timing = ResolvedSceneTiming(
+            scene_id=scene_id, raw_audio_path="/no-api/raw.mp3",
+            padded_audio_path="/no-api/padded.wav",
+            audio_duration_seconds=1.2, render_duration_seconds=1.5,
+            start_seconds=0.0, end_seconds=1.5,
+        )
+        path = tmp_path / f"derivative_{index}.mp4"
+        result = await renderer_type(width=1280, height=720, fps=24).render(
+            scene, timing, path,
+        )
+        assert path.is_file() and path.stat().st_size > 0
+        assert result.width == 1280 and result.height == 720
+        probe = await asyncio.to_thread(subprocess.run, [
+            "ffprobe", "-v", "error", "-select_streams", "v:0",
+            "-show_entries", "stream=codec_name,pix_fmt,width,height",
+            "-of", "default=noprint_wrappers=1", str(path),
+        ], capture_output=True, text=True, timeout=15)
+        assert probe.returncode == 0
+        assert "codec_name=h264" in probe.stdout
+        assert "pix_fmt=yuv420p" in probe.stdout
+        assert "width=1280" in probe.stdout and "height=720" in probe.stdout
+
+
+@pytest.mark.parametrize("mode,expected_code", [
+    ("timeout", "render_ffmpeg_timeout"),
+    ("failed", "render_ffmpeg_encode_failed"),
+    ("empty", "render_ffmpeg_empty_output"),
+])
+def test_scene_encode_errors_are_classified_and_redacted(tmp_path, monkeypatch, mode, expected_code):
+    import subprocess
+    from app.rendering import ffmpeg as render_ffmpeg
+
+    out = tmp_path / "partial.mp4"
+    out.write_bytes(b"partial")
+    seen = []
+
+    def fake_run(cmd, **kwargs):
+        seen.append((cmd, kwargs))
+        if mode == "timeout":
+            raise subprocess.TimeoutExpired(cmd, 1)
+        if mode == "failed":
+            return subprocess.CompletedProcess(cmd, 1, stderr="PRIVATE FULL PATH TOKEN")
+        return subprocess.CompletedProcess(cmd, 0, stderr="")
+
+    monkeypatch.setattr(render_ffmpeg.subprocess, "run", fake_run)
+    with pytest.raises(render_ffmpeg.SceneEncodeError) as result:
+        render_ffmpeg._run_ffmpeg_compile(
+            image_paths=[tmp_path / "image.png"], durations=[1.5],
+            total_duration=1.5, output_path=out, fps=24,
+        )
+    assert result.value.code == expected_code
+    assert "PRIVATE FULL PATH TOKEN" not in str(result.value)
+    assert not out.exists()
+    assert len(seen) == 1
+    args = seen[0][0]
+    assert "-preset" in args and args[args.index("-preset") + 1] == "veryfast"
+    assert "-threads" in args and args[args.index("-threads") + 1] == "2"
+    assert "-framerate" in args and args[args.index("-framerate") + 1] == "24"
