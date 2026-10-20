@@ -278,7 +278,7 @@ def test_paid_planner_repairs_invalid_schema_once_no_provider_fallback(monkeypat
 
         # One initial request and at most one schema repair, never a third paid POST.
         assert len(seen) == 2
-        assert "\"narration\": \"\"" in seen[1]["messages"][0]["content"]
+        assert "validation_errors" in seen[1]["messages"][0]["content"]
         assert "scenes.0.narration" in seen[1]["messages"][0]["content"]
 
     exercise(good)
