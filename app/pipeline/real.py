@@ -18,6 +18,7 @@ from app.planning.service import PlanningService
 from app.planning.validator import validate_lesson_plan
 from app.providers.llm.base import PlannerProviderError
 from app.rendering.router import RendererRouter
+from app.rendering.ffmpeg import SceneEncodeError
 from app.repositories.base import JobRepository
 from app.storage.base import ArtifactStore
 
@@ -172,16 +173,29 @@ class RealVideoPipeline(LearningVideoPipeline):
                     timing=timing,
                     output_path=scene_path,
                 )
-            except Exception as exc:
+            except SceneEncodeError as exc:
                 logger.error(
-                    "Scene rendering exception scene=%s intent=%s type=%s",
-                    scene.scene_id,
-                    scene.visual_intent.value,
+                    "Scene encode failure job=%s scene=%s intent=%s code=%s",
+                    job.id, scene.scene_id, scene.visual_intent.value, exc.code,
+                )
+                raise PipelineExecutionError(
+                    code=exc.code,
+                    message=f"Scene {scene.scene_id} ({scene.visual_intent.value}): {exc}",
+                    stage=JobStage.RENDERING,
+                    retryable=False,
+                ) from None
+            except Exception as exc:
+                logger.exception(
+                    "Scene renderer exception job=%s scene=%s intent=%s type=%s",
+                    job.id, scene.scene_id, scene.visual_intent.value,
                     type(exc).__name__,
                 )
                 raise PipelineExecutionError(
                     code="render_failed",
-                    message="A scene could not be rendered.",
+                    message=(
+                        f"Scene {scene.scene_id} ({scene.visual_intent.value}) "
+                        "failed during image rendering. See private server logs."
+                    ),
                     stage=JobStage.RENDERING,
                     retryable=False,
                 ) from exc
