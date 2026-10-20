@@ -27,7 +27,9 @@ artifacts
 *.sqlite
 *.sqlite3
 
-tests
+# Include only the production rendering smoke tests used during image build.
+tests/*
+!tests/test_v3_98_auth_production.py
 benchmarks
 docs
 *.zip
