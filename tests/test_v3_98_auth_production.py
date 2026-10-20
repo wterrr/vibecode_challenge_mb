@@ -331,7 +331,10 @@ async def test_paid_production_renderers_encode_all_four_visual_types(tmp_path):
     """Production-sized H264 from four scene types without model or speech APIs."""
     import asyncio
     import subprocess
+    import shutil
     from pathlib import Path
+    if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+        pytest.skip("Real scene smoke runs inside the production Docker image with FFmpeg")
     from app.domain.enums import VisualIntent
     from app.domain.lesson import (
         ScenePlan, ConceptCardSpec, ProcessDiagramSpec, ProcessActor,
@@ -423,6 +426,7 @@ def test_scene_encode_errors_are_classified_and_redacted(tmp_path, monkeypatch, 
             raise subprocess.TimeoutExpired(cmd, 1)
         if mode == "failed":
             return subprocess.CompletedProcess(cmd, 1, stderr="PRIVATE FULL PATH TOKEN")
+        out.unlink(missing_ok=True)  # Emulate successful exit with missing/empty video.
         return subprocess.CompletedProcess(cmd, 0, stderr="")
 
     monkeypatch.setattr(render_ffmpeg.subprocess, "run", fake_run)
