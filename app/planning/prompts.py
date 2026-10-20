@@ -2,12 +2,23 @@
 
 from app.domain.lesson import LearningRequest, LessonPlan
 from app.planning.validator import PlanIssue
+from app.planning.visual_director import required_capability
 
 
 def build_lesson_plan_prompt(request: LearningRequest) -> str:
     """Build the structured generation prompt for the LLM lesson planner."""
     lang_name = "Vietnamese (Tiếng Việt)" if request.language == "vi" else "English"
     duration = request.target_duration_seconds
+    capability = required_capability(request.topic)
+    motion_requirement = (
+        f"REQUIRED VERIFIED MOTION: For this topic the supported capability is {capability.name}. "
+        f"At least half the scenes (minimum two) MUST use {capability.intent.value}. "
+        "Other scenes may provide concise context, not replace the actual demonstration. "
+        "Treat this as an acceptance requirement, not a styling suggestion."
+        if capability else
+        "No verified renderer has been certified for this particular mechanism. "
+        "Do not invent unsupported motion or substitute decorative animation."
+    )
 
     if duration == 60:
         duration_guidance = (
@@ -68,6 +79,20 @@ You must select exactly ONE supported visual type for each scene:
    - focus_x must be in [-2, 2].
    - motion_kind = secant_to_tangent for a moving second point approaching a fixed first point; slope_scan for a point moving along the graph with its instantaneous tangent.
    - Select this family for a mathematics concept whose understanding requires observing continuous graphical transformation. At least one visually explanatory, non-card scene should be chosen whenever an available typed representation is appropriate. Do NOT fabricate a function if none is relevant.
+
+
+6. array_trace: For algorithmic search over a sorted numeric sequence, especially binary search.
+   - algorithm must be "binary_search". The JSON supplies ONLY the example input: values (5-12 sorted integers in -999..999) and target (-999..999).
+   - NEVER give mid/low/high, claimed result, search action, executable code, or frame positions: the host replays every comparison using its independently verified V3 algorithm oracle.
+   - Two trace scenes should use different valid input examples, ideally one found and one missing.
+   - Each trace scene shows stable numbered array cells with movable LOW, MID, HIGH markers, eliminated regions, state transitions, and a verified result. This is not the static process_diagram renderer.
+
+PRODUCTION VISUAL DIRECTOR:
+{motion_requirement}
+For continuous math, demonstrate BOTH moving secant_to_tangent AND moving slope_scan across the lesson.
+For binary search, show at least two different valid sorted input arrays and target values.
+Write narration that explains what viewers observe happening on the canvas. Avoid transitions
+that merely rephrase the same slide. A visual family must not claim a capability it cannot draw.
 
 VISUAL TEACHING REQUIREMENT:
 The goal is a visually demonstrated lesson, not narrated slides. Each scene must contain an observable mechanism, state transition, graph, comparison or material illustration relevant to the narration. Prefer a moving mathematical construction for math; avoid using concept_card for consecutive core explanatory scenes. Never claim that a card/diagram moves when it does not. A topic without a verified suitable motion family may remain non-animated rather than falsely depicting mathematical or physical facts.
