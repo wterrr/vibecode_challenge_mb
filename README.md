@@ -122,6 +122,28 @@ curl http://127.0.0.1:8000/healthz
 # Response: {"status":"ok"}
 ```
 
+## Physics visual teaching: Newtonian central force (production)
+
+The production `central_force_motion` visual mechanism now covers a reusable
+**idealized inverse-square Newtonian two-body trajectory** (not real planetary
+ephemerides). A signed/typed model plan may select only one of three teaching
+modes (`inertia_only`, `gravity_deflection`, `bound_orbit`) and a finite
+eccentricity in `[0, 0.45]`. The host owns state integration, energy and angular
+momentum checks, positions, vectors, graphics, and MP4 encoding.
+
+For supported orbit-mechanism topics in Vietnamese and English, the production
+Visual Teaching Director requires at least half the lesson to use actual
+`central_force_motion` scenes **and all three causal modes**; a slideshow plan
+fails visual planning acceptance, with only the existing single paid repair
+budget. `inertia_only` is a clearly labeled counterfactual without gravity.
+
+The optional tool-aware agent may call `probe_central_force_motion` to verify a
+proposed physical input and receive a bounded host-computed evidence receipt.
+The tool does not execute LLM code. The feature does **not** imply generalized
+3Blue1Brown-quality creative scene composition or agent-driven preview critique.
+Visual quality requires reviewing the resulting MP4, beyond passing schema and
+temporal movement checks. No paid OpenRouter live check is performed in CI.
+
 ## Agentic Visual Tools (bounded, paid opt-in)
 
 Enable `LEARNFLOW_AGENTIC_VISUAL_TOOLS=true` only when using the paid
