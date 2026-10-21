@@ -14,9 +14,10 @@ from typing import Any
 from pydantic import ValidationError
 
 from app.domain.enums import VisualIntent
-from app.domain.lesson import ArrayTraceSpec, FunctionGraphSpec
+from app.domain.lesson import ArrayTraceSpec, FunctionGraphSpec, CentralForceMotionSpec
 from app.rendering.array_trace import verified_array_trace
 from app.rendering.function_graph import value_and_slope
+from app.rendering.central_force_motion import orbital_states, energy, angular_momentum
 
 MAX_TOOL_CALLS = 3
 MAX_ARGUMENT_BYTES = 4096
@@ -72,6 +73,27 @@ VISUAL_TOOLS: tuple[dict[str, Any], ...] = (
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "probe_central_force_motion",
+            "description": (
+                "Verify an inverse-square gravitational trajectory using a bounded "
+                "eccentricity and teaching mode. Returns host-computed conserved "
+                "energy, angular momentum and orbit-closure proof."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "motion_kind": {
+                        "type": "string", "enum": ["inertia_only","gravity_deflection","bound_orbit"],
+                    },
+                    "eccentricity": {"type": "number", "minimum": 0, "maximum": .45},
+                },
+                "required": ["motion_kind","eccentricity"],"additionalProperties": False,
+            },
+        },
+    },
 )
 
 
@@ -92,6 +114,9 @@ def tool_catalog() -> dict[str, Any]:
              "probe": "probe_function_graph", "families": ["polynomial", "sine", "cosine", "exponential"]},
             {"intent": VisualIntent.ARRAY_TRACE.value, "motion": "stateful_verified",
              "probe": "probe_array_trace", "algorithms": ["binary_search"]},
+            {"intent": VisualIntent.CENTRAL_FORCE_MOTION.value, "motion": "continuous_verified",
+             "probe": "probe_central_force_motion",
+             "physics": "idealized_newtonian_inverse_square_two_body"},
         ],
         "safety": "No model-provided code, math results, pixel coordinates or shell commands.",
     }
@@ -141,6 +166,25 @@ def execute_visual_tool(name: str, raw_arguments: str) -> dict[str, Any]:
                  "observed": s.observed, "action": s.action}
                 for s in trace.steps
             ],
+        }
+
+    if name == "probe_central_force_motion":
+        if set(args) != {"motion_kind","eccentricity"}:
+            raise ValueError("visual_tool_unexpected_arguments")
+        try:
+            spec = CentralForceMotionSpec.model_validate({
+                "type": "central_force_motion", **args,
+            })
+            states = orbital_states(spec)
+        except (ValidationError, ValueError, OverflowError) as exc:
+            raise ValueError("visual_tool_physics_not_verified") from exc
+        return {
+            "intent": "central_force_motion", "verified": True,
+            "motion_kind": spec.motion_kind, "eccentricity": spec.eccentricity,
+            "host_energy": round(energy(states[0]),6),
+            "host_angular_momentum": round(angular_momentum(states[0]),6),
+            "host_orbit_closed": True,
+            "model": "idealized_inverse_square_mu_1",
         }
 
     if set(args) != {"function", "coefficients", "focus_x", "motion_kind"}:
