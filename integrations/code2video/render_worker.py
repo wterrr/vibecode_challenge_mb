@@ -83,6 +83,16 @@ def render(code:str)->bytes:
 
 
 class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path != "/healthz":
+            return self.fail(404)
+        data=b"ok"
+        self.send_response(200)
+        self.send_header("Content-Type","text/plain")
+        self.send_header("Content-Length",str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
     def do_POST(self):
         if self.path!="/render":return self.fail(404)
         try:
