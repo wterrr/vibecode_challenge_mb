@@ -110,6 +110,17 @@ def create_pipeline(
         fps = 24
         min_size_bytes = 50_000
 
+    if settings.code2video_enabled:
+        from app.rendering.code2video_scene import validate_worker_endpoint
+        # No silent opt-in without a separate authenticated worker. Do not
+        # degrade to local Python/Manim execution if it is missing.
+        validate_worker_endpoint(
+            settings.code2video_worker_url,
+            settings.code2video_worker_token,
+        )
+        if mode != "real":
+            raise ValueError("Code2Video scene worker requires real pipeline mode")
+
     # 1. Lesson Planner
     if mode == "demo":
         planner: LessonPlanner = DemoPlanner(strict=True)
