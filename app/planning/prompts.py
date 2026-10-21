@@ -5,7 +5,7 @@ from app.planning.validator import PlanIssue
 from app.planning.visual_director import required_capability
 
 
-def build_lesson_plan_prompt(request: LearningRequest) -> str:
+def build_lesson_plan_prompt(request: LearningRequest, *, code2video_enabled: bool = False) -> str:
     """Build the structured generation prompt for the LLM lesson planner."""
     lang_name = "Vietnamese (Tiếng Việt)" if request.language == "vi" else "English"
     duration = request.target_duration_seconds
@@ -18,6 +18,21 @@ def build_lesson_plan_prompt(request: LearningRequest) -> str:
         if capability else
         "No verified renderer has been certified for this particular mechanism. "
         "Do not invent unsupported motion or substitute decorative animation."
+    )
+
+    code2video_rules = (
+        "8. code2video_scene: AVAILABLE only through a dedicated isolated worker. "
+        "Use for visual mechanisms unsupported by deterministic families, "
+        "never to replace an existing physics/math/algorithm oracle. "
+        "Provide only visual_spec.type, title (3..110 chars) and visual_goal "
+        "(12..500 chars), NOT Python, Manim code, URLs or filenames. "
+        "The worker generates one bounded Code2Video Manim scene via its Coder "
+        "prompt and evaluates the MP4 in a separate secretless sandbox. "
+        "Keep its use sparing (no more than one scene per lesson)."
+        if code2video_enabled else
+        "8. code2video_scene: UNAVAILABLE (external worker not configured). "
+        "Do not select this visual_intent or visual_spec; use only available "
+        "host-verified renderer families."
     )
 
     if duration == 60:
@@ -100,6 +115,8 @@ You must select exactly ONE supported visual type for each scene:
      scenes so viewers can observe the causal difference, NOT three text cards.
    - Explain that inertia_only is a counterfactual without gravity, not the
      actual behavior of planets.
+
+{code2video_rules}
 
 PRODUCTION VISUAL DIRECTOR:
 {motion_requirement}
