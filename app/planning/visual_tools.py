@@ -94,10 +94,30 @@ VISUAL_TOOLS: tuple[dict[str, Any], ...] = (
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "probe_code2video_scene",
+            "description": (
+                "Validate a semantic request for one Code2Video scene. Does NOT "
+                "run generated Python; an isolated worker renders after the "
+                "full LessonPlan is accepted. Use only for concepts that "
+                "existing verified renderer families cannot visualize."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "title": {"type":"string","minLength":3,"maxLength":110},
+                    "visual_goal": {"type":"string","minLength":12,"maxLength":500},
+                },
+                "required":["title","visual_goal"],"additionalProperties":False,
+            },
+        },
+    },
 )
 
 
-def tool_catalog() -> dict[str, Any]:
+def tool_catalog(*, code2video_enabled: bool = False) -> dict[str, Any]:
     """Source of truth for available motion and static renderers.
 
     The static families have scene-spec contracts but no mathematical probe;
@@ -114,6 +134,11 @@ def tool_catalog() -> dict[str, Any]:
              "probe": "probe_function_graph", "families": ["polynomial", "sine", "cosine", "exponential"]},
             {"intent": VisualIntent.ARRAY_TRACE.value, "motion": "stateful_verified",
              "probe": "probe_array_trace", "algorithms": ["binary_search"]},
+            {"intent": VisualIntent.CODE2VIDEO_SCENE.value,
+             "motion": "generated_manim_worker",
+             "available": code2video_enabled,
+             "probe": "probe_code2video_scene" if code2video_enabled else None,
+             "security": "separate_secretless_renderer"},
             {"intent": VisualIntent.CENTRAL_FORCE_MOTION.value, "motion": "continuous_verified",
              "probe": "probe_central_force_motion",
              "physics": "idealized_newtonian_inverse_square_two_body"},
@@ -122,18 +147,20 @@ def tool_catalog() -> dict[str, Any]:
     }
 
 
-def visual_tool_definitions() -> list[dict[str, Any]]:
+def visual_tool_definitions(*, code2video_enabled: bool = False) -> list[dict[str, Any]]:
     """Return independent JSON-compatible tool definitions for OpenRouter."""
-    return json.loads(json.dumps(VISUAL_TOOLS))
+    allowed = VISUAL_TOOLS if code2video_enabled else VISUAL_TOOLS[:-1]
+    return json.loads(json.dumps(allowed))
 
 
-def execute_visual_tool(name: str, raw_arguments: str) -> dict[str, Any]:
+def execute_visual_tool(name: str, raw_arguments: str, *,
+                        code2video_enabled: bool = False) -> dict[str, Any]:
     """Fail closed on every unsupported or unverified request.
 
     Results are deterministic and safe to feed back to the model as evidence,
     but the resulting LessonPlan must still pass the full rendering contracts.
     """
-    if name not in {t["function"]["name"] for t in VISUAL_TOOLS}:
+    if name not in {t["function"]["name"] for t in visual_tool_definitions(code2video_enabled=code2video_enabled)}:
         raise ValueError("visual_tool_not_registered")
     if not isinstance(raw_arguments, str) or len(raw_arguments.encode("utf-8")) > MAX_ARGUMENT_BYTES:
         raise ValueError("visual_tool_arguments_too_large")
@@ -147,7 +174,24 @@ def execute_visual_tool(name: str, raw_arguments: str) -> dict[str, Any]:
     if name == "describe_visual_tools":
         if args:
             raise ValueError("visual_tool_unexpected_arguments")
-        return tool_catalog()
+        return tool_catalog(code2video_enabled=code2video_enabled)
+
+    if name == "probe_code2video_scene":
+        from app.domain.lesson import Code2VideoSceneSpec
+        if not code2video_enabled:
+            raise ValueError("code2video_worker_disabled")
+        if set(args) != {"title","visual_goal"}:
+            raise ValueError("visual_tool_unexpected_arguments")
+        try:
+            spec=Code2VideoSceneSpec.model_validate({"type":"code2video_scene",**args})
+        except ValidationError as exc:
+            raise ValueError("code2video_scene_invalid") from exc
+        return {
+            "intent":"code2video_scene", "accepted":True,
+            "title":spec.title, "visual_goal":spec.visual_goal,
+            "execution":"deferred_to_secretless_manim_worker",
+            "guarantees":"typed_request_only_not_yet_rendered",
+        }
 
     if name == "probe_array_trace":
         if set(args) != {"values", "target"}:
