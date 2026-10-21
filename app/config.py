@@ -157,6 +157,8 @@ class Settings(BaseSettings):
             data["gemini_api_key"] = "***REDACTED***"
         if data.get("openrouter_api_key"):
             data["openrouter_api_key"] = "***REDACTED***"
+        if data.get("code2video_worker_token"):
+            data["code2video_worker_token"] = "***REDACTED***"
         if data.get("database_url"):
             data["database_url"] = "***REDACTED***"
         return f"Settings({data})"
