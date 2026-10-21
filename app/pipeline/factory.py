@@ -23,6 +23,7 @@ from app.rendering.concept_card import ConceptCardRenderer
 from app.rendering.illustration import IllustrationRenderer
 from app.rendering.function_graph import FunctionGraphRenderer
 from app.rendering.array_trace import ArrayTraceRenderer
+from app.rendering.code2video_scene import Code2VideoSceneRenderer
 from app.rendering.central_force_motion import CentralForceMotionRenderer
 from app.rendering.process_diagram import ProcessDiagramRenderer
 from app.rendering.router import RendererRouter
@@ -125,6 +126,7 @@ def create_pipeline(
                 model=settings.openrouter_planner_model,
                 tokens=settings.paid_planner_max_tokens,
                 agentic_visual_tools=settings.agentic_visual_tools,
+                code2video_enabled=settings.code2video_enabled,
             )
     elif mode == "real":
         if not is_real_gemini_key(settings.gemini_api_key):
@@ -141,6 +143,7 @@ def create_pipeline(
     planning_service = PlanningService(
         planner=planner,
         enforce_visual_teaching=(mode == 'real' and settings.environment.strip().lower() in ('production','prod')),
+        code2video_enabled=settings.code2video_enabled,
     )
 
     # 2. Speech Provider & Timeline Builder
@@ -176,12 +179,18 @@ def create_pipeline(
     graph_renderer = FunctionGraphRenderer(width=width, height=height, fps=fps)
     array_renderer = ArrayTraceRenderer(width=width, height=height, fps=fps)
     central_force_renderer = CentralForceMotionRenderer(width=width, height=height, fps=fps)
+    code2video_renderer = Code2VideoSceneRenderer(
+        worker_url=settings.code2video_worker_url if settings.code2video_enabled else '',
+        token=settings.code2video_worker_token if settings.code2video_enabled else '',
+        width=width, height=height, fps=fps,
+    )
 
     renderer_router = RendererRouter(
         concept_renderer=concept_renderer,
         graph_renderer=graph_renderer,
         array_renderer=array_renderer,
         central_force_renderer=central_force_renderer,
+        code2video_renderer=code2video_renderer,
         process_renderer=process_renderer,
         comparison_renderer=comparison_renderer,
         illustration_renderer=illustration_renderer,
