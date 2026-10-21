@@ -102,7 +102,7 @@ class Handler(BaseHTTPRequestHandler):
                 os.environ.get("CODE2VIDEO_RENDERER_URL","http://code2video-renderer:8788")+"/render",
                 {"code":code},timeout=185,
             )
-            if len(data)>MAX_OUTPUT or not data.startswith(b"\\x00\\x00"):
+            if len(data)>MAX_OUTPUT or b"ftyp" not in data[:64]:
                 return self.fail(502)
             self.send_response(200)
             self.send_header("Content-Type","video/mp4")
