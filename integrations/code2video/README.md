@@ -27,7 +27,7 @@ LearnFlow ────────────────> FFmpeg timing/codec 
                      └────> motion QA + TTS + final MP4
 ```
 
-The planner worker does NOT execute generated Python. The renderer worker has
+The planner uses short verified lesson key points as Code2Video lecture beats;\nthe full TTS narration is context, not one oversized text label.\nThe planner worker does NOT execute generated Python. The renderer worker has
 NO OpenRouter keys, application credentials, database connection, shared host
 Docker socket, internet-facing ports or general public egress. The renderer
 uses an AST preflight **only as defense in depth**: untrusted Python execution
