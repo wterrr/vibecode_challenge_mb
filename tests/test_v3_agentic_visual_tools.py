@@ -184,6 +184,7 @@ def test_when_disabled_exactly_one_paid_json_post(monkeypatch):
     ([function_call("describe_visual_tools",{})]*4,"tool_calls","openai/gpt-6-luna"),
     ([],"stop","openai/gpt-6-luna"),
     ([function_call("describe_visual_tools",{})],"tool_calls","provider/untrusted-model"),
+    ([function_call("describe_visual_tools",{})],"tool_calls","openai/gpt-6-luna"),
 ])
 def test_agent_fail_closed_without_extra_paid_request(monkeypatch,call_data,finish,model):
     server=ProviderReplay([response(call_data,finish,model)])
