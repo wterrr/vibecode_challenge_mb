@@ -308,6 +308,25 @@ class CentralForceMotionSpec(BaseModel):
         return self
 
 
+
+class Code2VideoSceneSpec(BaseModel):
+    """Bounded semantic request to a separate Code2Video worker.
+
+    No LLM-authored Python, filenames, networking destination or pixel layout.
+    The worker writes/runs generated Manim *only in an isolated renderer*.
+    """
+    type: Literal["code2video_scene"] = "code2video_scene"
+    title: str = Field(min_length=3, max_length=110)
+    visual_goal: str = Field(min_length=12, max_length=500)
+    # Worker has a per-scene one-LLM-call budget; narration is supplied by
+    # trusted ScenePlan, not re-generated in a hidden code2video call.
+    @field_validator("title", "visual_goal", mode="before")
+    @classmethod
+    def collapse(cls, value: object) -> object:
+        return _collapse_whitespace(value) if isinstance(value, str) else value
+
+
+
 VisualSpec = Annotated[
     ConceptCardSpec
     | ProcessDiagramSpec
@@ -315,7 +334,8 @@ VisualSpec = Annotated[
     | IllustrationSpec
     | FunctionGraphSpec
     | ArrayTraceSpec
-    | CentralForceMotionSpec,
+    | CentralForceMotionSpec
+    | Code2VideoSceneSpec,
     Field(discriminator="type"),
 ]
 
