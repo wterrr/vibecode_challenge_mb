@@ -1,0 +1,37 @@
+name: Code2Video Pinned Upstream Worker (no API)
+
+on:
+  pull_request:
+    paths:
+      - "integrations/code2video/**"
+      - "app/rendering/code2video_scene.py"
+      - "app/planning/visual_tools.py"
+      - ".github/workflows/code2video-upstream.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-code2video-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build optional source-pinned Code2Video Coder worker
+        run: |
+          docker build --pull --target planner \
+            -f integrations/code2video/Dockerfile \
+            -t learnflow-code2video-planner:ci .
+      - name: Verify downloaded upstream prompt and MIT license
+        run: |
+          docker run --rm --entrypoint python \
+            learnflow-code2video-planner:ci \
+            -c 'from prompts import get_prompt3_code,base_class; from types import SimpleNamespace; s=SimpleNamespace(id="learnflow",title="Example",lecture_lines=["A line"],animations=["A changing vector"]); prompt=get_prompt3_code("",s,base_class); assert "LearnflowScene" in prompt and "TeachingScene" in prompt; print("CODE2VIDEO_PINNED_PROMPT_IMPORT_PASS")'
+          docker run --rm --entrypoint python \
+            learnflow-code2video-planner:ci \
+            -c 'from pathlib import Path; p=Path("/opt/c2v/LICENSE"); assert p.exists() and "MIT License" in p.read_text(); print("CODE2VIDEO_MIT_LICENSE_PASS")'
+      - name: Verify Python syntax for both worker entrypoints
+        run: |
+          python -m py_compile integrations/code2video/planner_worker.py
+          python -m py_compile integrations/code2video/render_worker.py
