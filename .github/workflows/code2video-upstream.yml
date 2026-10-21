@@ -89,9 +89,12 @@ jobs:
               subprocess.run(["docker","logs","c2v-renderer-ci"],check=False)
               raise
           PY
-          ffprobe -v error -select_streams v:0 \
+          docker run --rm --read-only --network none \
+            -v /tmp/c2v-worker-real.mp4:/tmp/clip.mp4:ro \
+            --entrypoint ffprobe learnflow-code2video-renderer:ci \
+            -v error -select_streams v:0 \
             -show_entries stream=codec_name,width,height,duration \
-            -of default=nokey=0 /tmp/c2v-worker-real.mp4
+            -of default=nokey=0 /tmp/clip.mp4
       - name: Save actual sandbox-rendered proof
         uses: actions/upload-artifact@v4
         with:
