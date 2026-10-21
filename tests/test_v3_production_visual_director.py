@@ -88,7 +88,7 @@ def test_route_and_strict_paid_schema_have_verified_array():
     schema=build_strict_lesson_plan_schema()
     union=schema["$defs"]["ScenePlan"]["properties"]["visual_spec"]["anyOf"]
     assert any(u.get("$ref","").endswith("/ArrayTraceSpec") for u in union)
-    assert len(union)==6
+    assert len(union)==7
     req=LearningRequest(topic="Tìm kiếm nhị phân hoạt động thế nào?")
     prompt=build_lesson_plan_prompt(req)
     assert "array_trace" in prompt and "At least half" in prompt
