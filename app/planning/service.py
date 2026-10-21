@@ -87,7 +87,8 @@ class PlanningService:
             errors,
         )
 
-        issues2 = validate_lesson_plan(request, repaired, enforce_visual_teaching=self.enforce_visual_teaching)
+        issues2 = validate_lesson_plan(request, repaired, enforce_visual_teaching=self.enforce_visual_teaching,
+                                      code2video_enabled=self.code2video_enabled)
         errors2 = [x for x in issues2 if x.severity == "error"]
 
         if errors2:
