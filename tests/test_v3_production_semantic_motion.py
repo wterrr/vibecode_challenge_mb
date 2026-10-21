@@ -77,7 +77,7 @@ def test_model_route_and_openrouter_strict_schema():
         ScenePlan.model_validate({**scene.model_dump(), "visual_intent":"comparison"})
     schema=build_strict_lesson_plan_schema()
     branch=schema["$defs"]["ScenePlan"]["properties"]["visual_spec"]["anyOf"]
-    assert len(branch)==6
+    assert len(branch)==7
     assert any(x.get("$ref","").endswith("/FunctionGraphSpec") for x in branch)
     prompt=build_lesson_plan_prompt(LearningRequest(topic="Tốc độ thay đổi là gì?"))
     assert "function_graph" in prompt and "secant_to_tangent" in prompt
