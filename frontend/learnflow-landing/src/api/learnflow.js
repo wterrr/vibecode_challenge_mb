@@ -12,7 +12,7 @@ function resolveApiRoot(configured) {
     const origin = window.location.origin;
     const parsed = new URL(base, origin);
     if (parsed.origin !== origin || parsed.search || parsed.hash) return '';
-    return parsed.pathname === '/' ? '' : parsed.pathname.replace(/\\/$/, '');
+    return parsed.pathname === '/' ? '' : (parsed.pathname.endsWith('/') ? parsed.pathname.slice(0, -1) : parsed.pathname);
   } catch {
     return '';
   }
