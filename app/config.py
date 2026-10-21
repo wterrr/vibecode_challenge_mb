@@ -81,6 +81,11 @@ class Settings(BaseSettings):
     planner_provider: Literal["gemini", "openrouter"] = "openrouter"
     openrouter_planner_model: str = "openai/gpt-6-luna"
     paid_planner_max_tokens: int = Field(default=12000, ge=3000, le=16000)
+    # Opt-in: adds one paid function-calling POST per requested lesson.
+    agentic_visual_tools: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("LEARNFLOW_AGENTIC_VISUAL_TOOLS", "agentic_visual_tools"),
+    )
     auth_enabled: bool = False
     admin_username: str = "admin"
     admin_password: str = Field(default="", repr=False)
