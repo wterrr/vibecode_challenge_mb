@@ -189,7 +189,7 @@ class OpenRouterPaidLessonPlanner(LessonPlanner):
         prompt = (
             "You are LearnFlow's visual teaching director. Before planning a video, "
             "inspect the available host-owned visual capabilities by CALLING TOOLS. "
-            "You MUST probe the relevant mechanism when one is available; for binary search probe a sorted "
+            "You MUST probe the relevant mechanism when one is available; for gravitational orbital motion probe the Newtonian central force; for binary search probe a sorted "
             "array and target; for derivatives probe a function and its slope. "
             "You may also call describe_visual_tools for the full registry. "
             "Do not send an explanation or LessonPlan yet. "
@@ -264,6 +264,7 @@ class OpenRouterPaidLessonPlanner(LessonPlanner):
                 needed_tool = {
                     "array_trace": "probe_array_trace",
                     "function_graph": "probe_function_graph",
+                    "central_force_motion": "probe_central_force_motion",
                 }.get(capability.intent.value)
                 if needed_tool and not any(r["tool"] == needed_tool for r in receipts):
                     raise ValueError("required visual capability was not probed")

@@ -30,9 +30,9 @@ def test_host_catalog_lists_actual_six_renderer_families_without_fake_tools():
     catalog=tool_catalog()
     names={t["intent"] for t in catalog["scene_tools"]}
     assert names=={x.value for x in RendererRouter()._registry}
-    assert len(visual_tool_definitions())==3
+    assert len(visual_tool_definitions())==4
     registered={x["function"]["name"] for x in visual_tool_definitions()}
-    assert registered=={"describe_visual_tools","probe_array_trace","probe_function_graph"}
+    assert registered=={"describe_visual_tools","probe_array_trace","probe_function_graph","probe_central_force_motion"}
     assert MAX_TOOL_CALLS==3
     assert execute_visual_tool("describe_visual_tools","{}")==catalog
 
@@ -153,7 +153,7 @@ def test_agentic_openrouter_executes_tools_then_strict_json(monkeypatch):
     assert len(server.requests)==2
     discovery,final=server.requests
     assert discovery["tool_choice"]=="required"
-    assert len(discovery["tools"])==3
+    assert len(discovery["tools"])==4
     assert "response_format" not in discovery
     assert discovery["model"]==final["model"]=="openai/gpt-6-luna"
     assert "tools" not in final

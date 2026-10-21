@@ -23,6 +23,7 @@ from app.rendering.concept_card import ConceptCardRenderer
 from app.rendering.illustration import IllustrationRenderer
 from app.rendering.function_graph import FunctionGraphRenderer
 from app.rendering.array_trace import ArrayTraceRenderer
+from app.rendering.central_force_motion import CentralForceMotionRenderer
 from app.rendering.process_diagram import ProcessDiagramRenderer
 from app.rendering.router import RendererRouter
 from app.repositories.base import JobRepository
@@ -174,11 +175,13 @@ def create_pipeline(
 
     graph_renderer = FunctionGraphRenderer(width=width, height=height, fps=fps)
     array_renderer = ArrayTraceRenderer(width=width, height=height, fps=fps)
+    central_force_renderer = CentralForceMotionRenderer(width=width, height=height, fps=fps)
 
     renderer_router = RendererRouter(
         concept_renderer=concept_renderer,
         graph_renderer=graph_renderer,
         array_renderer=array_renderer,
+        central_force_renderer=central_force_renderer,
         process_renderer=process_renderer,
         comparison_renderer=comparison_renderer,
         illustration_renderer=illustration_renderer,
