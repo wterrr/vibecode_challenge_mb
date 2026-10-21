@@ -94,7 +94,7 @@ class Handler(BaseHTTPRequestHandler):
             body=json.loads(self.rfile.read(length))
             if not isinstance(body,dict) or set(body)!={"title","narration","visual_goal","duration_seconds","language"}:
                 return self.fail(400)
-            if body["language"] not in ("vi","en") or not 1<=body["duration_seconds"]<=40:
+            if body["language"] not in ("vi","en","auto") or not 1<=body["duration_seconds"]<=40:
                 return self.fail(400)
             code=create_manim_code(body)
             # This renderer has no OpenRouter token or app auth secrets.
