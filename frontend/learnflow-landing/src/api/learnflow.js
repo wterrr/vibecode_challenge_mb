@@ -2,20 +2,67 @@
  * All requests are same-origin; Vite proxies /api and /healthz in development.
  * Never put provider keys in browser code. Never retry paid requests automatically.
  */
-const ROOT = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+// Authentication and private media are same-origin by design. A mistakenly
+// injected cross-origin VITE_API_BASE_URL must not drop the session cookie.
+// Empty API base is the canonical production deployment arrangement.
+function resolveApiRoot(configured) {
+  const base = String(configured || '').trim();
+  if (!base) return '';
+  try {
+    const origin = window.location.origin;
+    const parsed = new URL(base, origin);
+    if (parsed.origin !== origin || parsed.search || parsed.hash) return '';
+    return parsed.pathname === '/' ? '' : parsed.pathname.replace(/\\/$/, '');
+  } catch {
+    return '';
+  }
+}
+const ROOT = resolveApiRoot(import.meta.env.VITE_API_BASE_URL);
 
 let authCsrf = '';
 export async function getAuthSession() {
-  const response = await fetch(`${ROOT}/api/auth/session`, {
-    method:'GET', credentials:'same-origin', cache:'no-store', headers:{'Accept':'application/json'}
-  });
-  if (response.status===401) {
-    window.location.replace('/login');
-    throw new ApiError('Vui lòng đăng nhập trước khi sử dụng LearnFlow.',401);
+  let response;
+  try {
+    response = await fetch(`${ROOT}/api/auth/session`, {
+      method:'GET', credentials:'same-origin', cache:'no-store',
+      headers:{'Accept':'application/json'},
+    });
+  } catch {
+    throw new ApiError(
+      'Không kết nối được API đăng nhập. Kiểm tra /healthz, reverse proxy và cấu hình website.',
+      0
+    );
   }
-  if (!response.ok) throw new ApiError('Không thể xác minh phiên đăng nhập.',response.status);
-  const data=await response.json();
-  authCsrf=data?.csrf_token||'';
+  if (response.status === 401) {
+    // A 401 is expected for a new/expired session. The React bootstrap owns
+    // the navigation, avoiding a render race with window.location.replace().
+    throw new ApiError('Bạn chưa đăng nhập hoặc phiên đã hết hạn.', 401);
+  }
+  if (!response.ok) {
+    const status = response.status;
+    const explanation =
+      status === 404 ? 'Không tìm thấy /api/auth/session. Kiểm tra backend FastAPI và định tuyến /api.' :
+      status === 403 ? 'Backend từ chối yêu cầu kiểm tra phiên (HTTP 403).' :
+      status >= 500 ? 'Backend hoặc reverse proxy gặp lỗi khi kiểm tra phiên.' :
+      'Không thể xác minh phiên đăng nhập.';
+    throw new ApiError(`${explanation} (HTTP ${status})`, status);
+  }
+  const contentType = response.headers?.get?.('content-type') || '';
+  if (!contentType.toLowerCase().includes('application/json')) {
+    throw new ApiError(
+      'API kiểm tra phiên trả về HTML/thành phần không phải JSON. Kiểm tra reverse proxy /api.',
+      0
+    );
+  }
+  const data = await response.json().catch(() => {
+    throw new ApiError('Dữ liệu phiên đăng nhập từ backend không phải JSON hợp lệ.', 0);
+  });
+  if (!data || typeof data !== 'object' ||
+      typeof data.auth_required !== 'boolean' ||
+      (data.auth_required && (!data.authenticated || !data.csrf_token))) {
+    throw new ApiError('Backend trả về thông tin phiên không đúng định dạng.', 0);
+  }
+  authCsrf = data?.csrf_token || '';
   return data;
 }
 export async function logoutAdmin() {
