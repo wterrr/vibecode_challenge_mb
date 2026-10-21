@@ -142,12 +142,12 @@ def test_reject_exact_user_slide_only_plan_and_require_causal_demonstration():
         scene("inertia_only","s01_inertia"),
         scene("gravity_deflection","s02_deflect"),
         scene("bound_orbit","s03_orbit"),
-        demo.scenes[3].model_copy(update={"scene_id":"s04_recap"}),
-        demo.scenes[4].model_copy(update={"scene_id":"s05_summary"}),
+        demo.scenes[0].model_copy(update={"scene_id":"s04_recap"}),
+        demo.scenes[1].model_copy(update={"scene_id":"s05_summary"}),
     ]
     plan=demo.model_copy(update={"topic":topic,"scenes":scenes})
     assert not visual_teaching_errors(topic,plan)
-    plan_missing=demo.model_copy(update={"topic":topic,"scenes":scenes[:-1]})
+    plan_missing=plan.model_copy(deep=True)
     plan_missing.scenes[2].visual_spec.motion_kind="inertia_only"
     assert "missing_physical_causal_sequence" in {
         code for code,_ in visual_teaching_errors(topic,plan_missing)
