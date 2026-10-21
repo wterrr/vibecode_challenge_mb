@@ -42,3 +42,4 @@ class VisualIntent(str, Enum):
     ILLUSTRATION = "illustration"
     FUNCTION_GRAPH = "function_graph"
     ARRAY_TRACE = "array_trace"
+    CENTRAL_FORCE_MOTION = "central_force_motion"
