@@ -221,6 +221,15 @@ def validate_lesson_plan(
                 scene_id=scene.scene_id, severity='error',
             ))
 
+    code2video_scenes=[s for s in plan.scenes
+                       if s.visual_intent == VisualIntent.CODE2VIDEO_SCENE]
+    if len(code2video_scenes)>1:
+        issues.append(PlanIssue(
+            code='code2video_budget_exceeded',
+            message='At most one Code2Video generated scene per lesson (paid worker budget).',
+            severity='error',
+        ))
+
     # 5. Topic relevance heuristic
     raw_topic_tokens = re.findall(r"[\w]+", request.topic.lower())
     meaningful_topic_keywords = [
