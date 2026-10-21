@@ -49,16 +49,18 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build CI image and execute native H264 media smoke
-        run: docker build --pull --build-arg RUN_BUILD_MEDIA_SMOKE=1 -t learnflow-ai:ci .
+        run: docker build --pull --build-arg RUN_BUILD_MEDIA_SMOKE=1 --build-arg PUBLIC_ORIGIN=https://learnflow-ci.example --build-arg VITE_API_BASE_URL=https://learnflow-ci.example -t learnflow-ai:ci .
 
       - name: Build actual lightweight deployment image
-        run: docker build --build-arg RUN_BUILD_MEDIA_SMOKE=0 -t learnflow-ai:deploy .
+        run: docker build --build-arg RUN_BUILD_MEDIA_SMOKE=0 --build-arg PUBLIC_ORIGIN=https://learnflow-ci.example --build-arg VITE_API_BASE_URL=https://learnflow-ci.example -t learnflow-ai:deploy .
 
       - name: Verify image runtime dependencies
         run: |
           docker run --rm learnflow-ai:deploy ffmpeg -version
           docker run --rm learnflow-ai:deploy ffprobe -version
           docker run --rm learnflow-ai:deploy dot -V
+          docker run --rm learnflow-ai:deploy sh -c 'test "$PUBLIC_ORIGIN" = "https://learnflow-ci.example"'
+          docker run --rm learnflow-ai:deploy sh -c 'grep -R -F -q "https://learnflow-ci.example" /app/app/static/landing/assets'
           docker run --rm learnflow-ai:deploy sh -c 'fc-match -f "%{family}" "CMU Serif" | grep -q "CMU Serif"'
           docker run --rm learnflow-ai:deploy node -e "const p=require('elkjs/package.json'); if (p.version !== '0.12.0') process.exit(1); console.log(p.version)"
           test "$(docker run --rm learnflow-ai:deploy id -u)" = "10001"

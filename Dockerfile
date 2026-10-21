@@ -3,10 +3,20 @@ WORKDIR /frontend
 COPY frontend/learnflow-landing/package*.json ./
 RUN npm install --no-audit --no-fund
 COPY frontend/learnflow-landing/ ./
+# Vite variables must exist at the frontend build step, not the Python stage.
+# Empty = same-origin /api requests, preserving session-cookie auth.
+ARG VITE_API_BASE_URL=""
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 ENV VITE_ENABLE_LOCAL_GPT_PREVIEW=false
 RUN npm run build && test -f dist/index.html
 
 FROM python:3.12-slim-bookworm
+
+# VibeHost also passes the public site origin as a build argument.
+# Keep it in the Python runtime stage; deployment environment overrides it.
+# This value is a public URL, never an API token, password, or database URL.
+ARG PUBLIC_ORIGIN=""
+ENV PUBLIC_ORIGIN=${PUBLIC_ORIGIN}
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
