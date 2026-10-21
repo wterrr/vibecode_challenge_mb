@@ -43,3 +43,4 @@ class VisualIntent(str, Enum):
     FUNCTION_GRAPH = "function_graph"
     ARRAY_TRACE = "array_trace"
     CENTRAL_FORCE_MOTION = "central_force_motion"
+    CODE2VIDEO_SCENE = "code2video_scene"
