@@ -46,14 +46,20 @@ def create_manim_code(scene:dict) -> str:
     title=scene["title"]
     narration=scene["narration"]
     goal=scene["visual_goal"]
+    lecture_lines=scene["lecture_lines"]
     if not all(isinstance(x,str) for x in [title,narration,goal]):
         raise ValueError("invalid scene text")
     if not 3<=len(title)<=110 or not 10<=len(narration)<=1200 or not 12<=len(goal)<=500:
         raise ValueError("scene text outside budget")
-    s=Section(id="learnflow",title=title,lecture_lines=[narration],
+    if not isinstance(lecture_lines,list) or not 1<=len(lecture_lines)<=3 or any(
+        not isinstance(line,str) or not 3<=len(line)<=120 for line in lecture_lines
+    ):
+        raise ValueError("invalid bounded teaching beats")
+    s=Section(id="learnflow",title=title,lecture_lines=lecture_lines,
               animations=[goal])
     prompt=get_prompt3_code("",s,base_class)
-    prompt+=("\\nLearnFlow constraint: One brief narrated section; emphasize "
+    prompt+=(f"\\nFull spoken narration for context only (do NOT render as text): {narration} "
+             "LearnFlow constraint: One brief narrated section; emphasize "
              "continuous animated visual changes, not a static table. "
              "Use the exact class name LearnflowScene and only Manim APIs. "
              "Return Python code only.")
@@ -92,7 +98,7 @@ class Handler(BaseHTTPRequestHandler):
             length=int(self.headers.get("Content-Length","0"))
             if not 1<=length<=MAX_REQUEST:return self.fail(413)
             body=json.loads(self.rfile.read(length))
-            if not isinstance(body,dict) or set(body)!={"title","narration","visual_goal","duration_seconds","language"}:
+            if not isinstance(body,dict) or set(body)!={"title","narration","lecture_lines","visual_goal","duration_seconds","language"}:
                 return self.fail(400)
             if body["language"] not in ("vi","en","auto") or not 1<=body["duration_seconds"]<=40:
                 return self.fail(400)
