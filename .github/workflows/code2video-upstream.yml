@@ -56,7 +56,7 @@ jobs:
             --tmpfs /tmp:rw,nosuid,size=768m,mode=1777 \
             learnflow-code2video-renderer:ci
           python - <<'PY'
-          import json, time, urllib.request, urllib.error
+          import json, time, urllib.request, urllib.error, subprocess
           source = """from manim import *
           class LearnflowScene(Scene):
               def construct(self):
@@ -65,20 +65,29 @@ jobs:
                   self.play(circle.animate.shift(RIGHT*1.3),run_time=1)
           """
           payload=json.dumps({"code":source}).encode()
-          for i in range(20):
-              try:
-                  request=urllib.request.Request(
-                      "http://127.0.0.1:8788/render",
-                      payload,headers={"Content-Type":"application/json"},method="POST")
-                  with urllib.request.urlopen(request,timeout=180) as response:
-                      data=response.read()
-                  assert len(data)>1000 and b"ftyp" in data[:64]
-                  with open("/tmp/c2v-worker-real.mp4","wb") as f: f.write(data)
-                  print("CODE2VIDEO_SECRETLESS_NATIVE_MP4_PASS",len(data))
-                  break
-              except urllib.error.URLError as e:
-                  if i==19: raise
-                  time.sleep(1)
+          try:
+              ready=False
+              for i in range(35):
+                  try:
+                      with urllib.request.urlopen("http://127.0.0.1:8788/healthz",timeout=3) as health:
+                          ready=health.status==200 and health.read()==b"ok"
+                      if ready: break
+                  except (OSError,urllib.error.URLError):
+                      time.sleep(1)
+              if not ready: raise RuntimeError("Manim worker never became healthy")
+              # Submit exactly once: renderer execution is bounded, not retried.
+              request=urllib.request.Request(
+                  "http://127.0.0.1:8788/render",
+                  payload,headers={"Content-Type":"application/json"},method="POST")
+              with urllib.request.urlopen(request,timeout=180) as response:
+                  data=response.read()
+              assert len(data)>1000 and b"ftyp" in data[:64]
+              with open("/tmp/c2v-worker-real.mp4","wb") as f: f.write(data)
+              print("CODE2VIDEO_SECRETLESS_NATIVE_MP4_PASS",len(data))
+          except Exception:
+              subprocess.run(["docker","ps","-a"],check=False)
+              subprocess.run(["docker","logs","c2v-renderer-ci"],check=False)
+              raise
           PY
           ffprobe -v error -select_streams v:0 \
             -show_entries stream=codec_name,width,height,duration \
