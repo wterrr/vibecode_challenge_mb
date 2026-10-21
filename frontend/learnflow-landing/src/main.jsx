@@ -20,8 +20,22 @@ async function bootstrap() {
       <App />
     </></React.StrictMode>);
   } catch (error) {
-    root.render(<main role="alert" style={{fontFamily:'system-ui',padding:'6rem 2rem',textAlign:'center'}}>
-      Không thể xác minh phiên đăng nhập. <a href="/login">Đăng nhập</a>
+    // This is the normal unauthenticated path. Never render an alarming
+    // generic "session verification failed" page over a pending redirect.
+    if (error?.status === 401) {
+      window.location.replace('/login');
+      return;
+    }
+    const safeStatus = Number.isInteger(error?.status) && error.status >= 400
+      ? `HTTP ${error.status}` : 'Lỗi kết nối/API';
+    const detail = error?.message || 'Không thể kết nối tới backend LearnFlow.';
+    root.render(<main role="alert" style={{fontFamily:'system-ui',padding:'6rem 2rem',textAlign:'center',maxWidth:650,margin:'0 auto'}}>
+      <h1>Không thể kiểm tra trạng thái đăng nhập</h1>
+      <p>{detail}</p>
+      <p style={{fontSize:13,color:'#686478'}}>Chi tiết: {safeStatus}. Backend: /api/auth/session</p>
+      <button type="button" style={{padding:'10px 16px',borderRadius:8,cursor:'pointer'}}
+        onClick={() => window.location.reload()}>Thử lại</button>
+      <p><a href="/login">Đi đến trang đăng nhập</a></p>
     </main>);
   }
 }
