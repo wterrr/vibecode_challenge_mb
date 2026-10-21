@@ -210,3 +210,78 @@ def test_agentic_repair_is_one_json_request_no_recursive_discovery(monkeypatch):
     assert isinstance(plan,LessonPlan)
     assert len(server.requests)==1
     assert "tools" not in server.requests[0]
+
+
+@pytest.mark.parametrize("status,expected_code",[
+    (404,"paid_planner_no_compatible_endpoint"),
+    (408,"paid_planner_upstream_timeout"),
+    (409,"paid_planner_conflict"),
+    (413,"paid_planner_payload_too_large"),
+    (429,"paid_planner_rate_limited"),
+    (451,"paid_planner_http_451"),
+    (503,"paid_planner_upstream"),
+])
+@pytest.mark.parametrize("phase",["structured_plan","visual_discovery"])
+def test_openrouter_http_status_diagnosed_exactly_without_leaking_body(
+    monkeypatch, caplog, status, expected_code, phase
+):
+    import httpx
+    calls=[]
+    class HTTPFailureClient:
+        def __init__(self, **kwargs): pass
+        async def __aenter__(self): return self
+        async def __aexit__(self,*args): pass
+        async def post(self,url,headers,json):
+            calls.append(json)
+            return httpx.Response(
+                status,
+                request=httpx.Request("POST",url),
+                json={"error":{"code":status,"message":"secret-upstream-user-prompt",
+                               "metadata":{"error_type":"not_found" if status==404 else "invalid_request"}}},
+            )
+    monkeypatch.setattr(httpx,"AsyncClient",HTTPFailureClient)
+    planner=OpenRouterPaidLessonPlanner(
+        api_key="ci-fake-valid-provider-key-1234",
+        agentic_visual_tools=(phase=="visual_discovery"),
+    )
+    with pytest.raises(PlannerProviderError) as exc:
+        asyncio.run(planner.create_plan(LearningRequest(topic="Vì sao các hành tinh có quỹ đạo?")))
+    assert exc.value.code==expected_code
+    assert f"HTTP {status}" in exc.value.message
+    assert len(calls)==1
+    assert "secret-upstream-user-prompt" not in caplog.text
+    assert "secret-upstream-user-prompt" not in exc.value.message
+    assert f"phase={phase}" in caplog.text
+    assert f"status={status}" in caplog.text
+
+
+@pytest.mark.parametrize("status,expected_code",[
+    (404,"paid_planner_no_compatible_endpoint"),
+    (429,"paid_planner_rate_limited"),
+    (503,"paid_planner_upstream"),
+])
+def test_nonstreaming_http_200_error_body_is_classified_not_model_mismatch(
+    monkeypatch,caplog,status,expected_code
+):
+    import httpx
+    called=[]
+    class ResponseWithErrorClient:
+        def __init__(self, **kwargs): pass
+        async def __aenter__(self): return self
+        async def __aexit__(self,*args): pass
+        async def post(self,url,headers,json):
+            called.append(json)
+            return httpx.Response(
+                200,request=httpx.Request("POST",url),
+                json={"error":{"code":status,"message":"private-provider-prompt",
+                               "metadata":{"error_type":"provider_unavailable"}}},
+            )
+    monkeypatch.setattr(httpx,"AsyncClient",ResponseWithErrorClient)
+    planner=OpenRouterPaidLessonPlanner(api_key="ci-fake-valid-provider-key-1234")
+    with pytest.raises(PlannerProviderError) as exc:
+        asyncio.run(planner.create_plan(LearningRequest(topic="Vì sao các hành tinh có quỹ đạo?")))
+    assert exc.value.code==expected_code
+    assert f"HTTP {status}" in exc.value.message
+    assert len(called)==1
+    assert "private-provider-prompt" not in caplog.text
+    assert "private-provider-prompt" not in exc.value.message
