@@ -87,6 +87,20 @@ You must select exactly ONE supported visual type for each scene:
    - Two trace scenes should use different valid input examples, ideally one found and one missing.
    - Each trace scene shows stable numbered array cells with movable LOW, MID, HIGH markers, eliminated regions, state transitions, and a verified result. This is not the static process_diagram renderer.
 
+7. central_force_motion: For gravity-driven trajectories, orbital motion,
+   bound orbits, planetary motion, artificial satellites and comets.
+   - motion_kind = inertia_only / gravity_deflection / bound_orbit.
+   - eccentricity = 0..0.45. The host independently integrates Newtonian
+     inverse-square central attraction and verifies energy and angular momentum.
+   - The renderer shows a moving body, a persistent trail, tangential velocity
+     and the radial inward gravity force. It is not a static diagram.
+   - DO NOT supply calculations, animation code, arbitrary pixel coordinates
+     or ephemerides. It is an idealized two-body teaching illustration.
+   - For orbital mechanism lessons, demonstrate ALL THREE modes in separate
+     scenes so viewers can observe the causal difference, NOT three text cards.
+   - Explain that inertia_only is a counterfactual without gravity, not the
+     actual behavior of planets.
+
 PRODUCTION VISUAL DIRECTOR:
 {motion_requirement}
 For continuous math, demonstrate BOTH moving secant_to_tangent AND moving slope_scan across the lesson.
