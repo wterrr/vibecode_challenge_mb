@@ -123,6 +123,7 @@ def create_pipeline(
                 api_key=settings.openrouter_api_key,
                 model=settings.openrouter_planner_model,
                 tokens=settings.paid_planner_max_tokens,
+                agentic_visual_tools=settings.agentic_visual_tools,
             )
     elif mode == "real":
         if not is_real_gemini_key(settings.gemini_api_key):
