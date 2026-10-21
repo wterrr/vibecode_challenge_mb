@@ -169,6 +169,7 @@ class OpenRouterPaidLessonPlanner(LessonPlanner):
     def __init__(
         self, *, api_key: str, model: str = "openai/gpt-6-luna",
         tokens: int = 12000, agentic_visual_tools: bool = False,
+        code2video_enabled: bool = False,
     ):
         if not api_key or len(api_key) < 16:
             raise ValueError("OPENROUTER_API_KEY is required")
@@ -178,6 +179,7 @@ class OpenRouterPaidLessonPlanner(LessonPlanner):
         self.model = model
         self.tokens = tokens
         self.agentic_visual_tools = agentic_visual_tools
+        self.code2video_enabled = code2video_enabled
 
     async def _discover_visual_tools(self, request: LearningRequest) -> str:
         """One bounded paid function-call turn, all requested tools executed by host.
@@ -204,7 +206,7 @@ class OpenRouterPaidLessonPlanner(LessonPlanner):
             "messages": [{"role": "user", "content": prompt}],
             "max_tokens": min(self.tokens, 1400),
             "provider": {"allow_fallbacks": False, "require_parameters": True},
-            "tools": visual_tool_definitions(),
+            "tools": visual_tool_definitions(code2video_enabled=self.code2video_enabled),
             "tool_choice": "required",
             "parallel_tool_calls": True,
             "stream": False,
@@ -257,7 +259,7 @@ class OpenRouterPaidLessonPlanner(LessonPlanner):
                     raise ValueError("invalid tool-call structure")
                 name = call["function"]["name"]
                 raw = call["function"]["arguments"]
-                verified = execute_visual_tool(name, raw)
+                verified = execute_visual_tool(name, raw, code2video_enabled=self.code2video_enabled)
                 receipts.append({"tool": name, "result": verified})
             capability = required_capability(request.topic)
             if capability is not None:
@@ -366,7 +368,7 @@ class OpenRouterPaidLessonPlanner(LessonPlanner):
             ) from None
 
     async def create_plan(self, request: LearningRequest) -> LessonPlan:
-        prompt = build_lesson_plan_prompt(request)
+        prompt = build_lesson_plan_prompt(request, code2video_enabled=self.code2video_enabled)
         if self.agentic_visual_tools:
             evidence = await self._discover_visual_tools(request)
             # Tool outputs are local verified evidence, not user instructions.

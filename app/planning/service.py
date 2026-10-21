@@ -19,9 +19,11 @@ class PlanningService:
         planner: LessonPlanner,
         repairer: PlanRepairer | None = None,
         enforce_visual_teaching: bool = False,
+        code2video_enabled: bool = False,
     ):
         self.planner = planner
         self.enforce_visual_teaching = enforce_visual_teaching
+        self.code2video_enabled = code2video_enabled
         self.repairer = repairer or PlanRepairer(planner)
 
     async def build_valid_plan(
@@ -57,7 +59,8 @@ class PlanningService:
                 ) from None
             schema_repaired = True
 
-        issues = validate_lesson_plan(request, plan, enforce_visual_teaching=self.enforce_visual_teaching)
+        issues = validate_lesson_plan(request, plan, enforce_visual_teaching=self.enforce_visual_teaching,
+                                      code2video_enabled=self.code2video_enabled)
         errors = [x for x in issues if x.severity == "error"]
 
         if not errors:
@@ -84,7 +87,8 @@ class PlanningService:
             errors,
         )
 
-        issues2 = validate_lesson_plan(request, repaired, enforce_visual_teaching=self.enforce_visual_teaching)
+        issues2 = validate_lesson_plan(request, repaired, enforce_visual_teaching=self.enforce_visual_teaching,
+                                      code2video_enabled=self.code2video_enabled)
         errors2 = [x for x in issues2 if x.severity == "error"]
 
         if errors2:

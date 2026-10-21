@@ -1,0 +1,103 @@
+name: Code2Video Pinned Upstream Worker (no API)
+
+on:
+  pull_request:
+    paths:
+      - "integrations/code2video/**"
+      - "app/rendering/code2video_scene.py"
+      - "app/planning/visual_tools.py"
+      - ".github/workflows/code2video-upstream.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-code2video-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build optional source-pinned Code2Video Coder worker
+        run: |
+          docker build --pull --target planner \
+            -f integrations/code2video/Dockerfile \
+            -t learnflow-code2video-planner:ci .
+      - name: Verify downloaded upstream prompt and MIT license
+        run: |
+          docker run --rm --entrypoint python \
+            learnflow-code2video-planner:ci \
+            -c 'from prompts import get_prompt3_code,base_class; from types import SimpleNamespace; s=SimpleNamespace(id="learnflow",title="Example",lecture_lines=["A line"],animations=["A changing vector"]); prompt=get_prompt3_code("",s,base_class); assert "LearnflowScene" in prompt and "TeachingScene" in prompt; print("CODE2VIDEO_PINNED_PROMPT_IMPORT_PASS")'
+          docker run --rm --entrypoint python \
+            learnflow-code2video-planner:ci \
+            -c 'from pathlib import Path; p=Path("/opt/c2v/LICENSE"); assert p.exists() and "MIT License" in p.read_text(); print("CODE2VIDEO_MIT_LICENSE_PASS")'
+      - name: Verify Python syntax for both worker entrypoints
+        run: |
+          python -m py_compile integrations/code2video/planner_worker.py
+          python -m py_compile integrations/code2video/render_worker.py
+
+  verify-secretless-manim:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build isolated Manim 0.19 renderer image
+        run: |
+          docker build --pull --target renderer \
+            -f integrations/code2video/Dockerfile \
+            -t learnflow-code2video-renderer:ci .
+      - name: Render a real moving shape through the secretless HTTP worker
+        run: |
+          docker run -d --name c2v-renderer-ci \
+            -p 127.0.0.1:8788:8788 \
+            --read-only --cap-drop ALL \
+            --security-opt no-new-privileges \
+            --memory 2g --cpus 2 --pids-limit 128 \
+            --tmpfs /tmp:rw,nosuid,size=768m,mode=1777 \
+            learnflow-code2video-renderer:ci
+          python - <<'PY'
+          import json, time, urllib.request, urllib.error, subprocess
+          source = """from manim import *
+          class LearnflowScene(Scene):
+              def construct(self):
+                  circle=Circle(color=BLUE)
+                  self.play(Create(circle),run_time=1)
+                  self.play(circle.animate.shift(RIGHT*1.3),run_time=1)
+          """
+          payload=json.dumps({"code":source}).encode()
+          try:
+              ready=False
+              for i in range(35):
+                  try:
+                      with urllib.request.urlopen("http://127.0.0.1:8788/healthz",timeout=3) as health:
+                          ready=health.status==200 and health.read()==b"ok"
+                      if ready: break
+                  except (OSError,urllib.error.URLError):
+                      time.sleep(1)
+              if not ready: raise RuntimeError("Manim worker never became healthy")
+              # Submit exactly once: renderer execution is bounded, not retried.
+              request=urllib.request.Request(
+                  "http://127.0.0.1:8788/render",
+                  payload,headers={"Content-Type":"application/json"},method="POST")
+              with urllib.request.urlopen(request,timeout=180) as response:
+                  data=response.read()
+              assert len(data)>1000 and b"ftyp" in data[:64]
+              with open("/tmp/c2v-worker-real.mp4","wb") as f: f.write(data)
+              print("CODE2VIDEO_SECRETLESS_NATIVE_MP4_PASS",len(data))
+          except Exception:
+              subprocess.run(["docker","ps","-a"],check=False)
+              subprocess.run(["docker","logs","c2v-renderer-ci"],check=False)
+              raise
+          PY
+          docker run --rm --read-only --network none \
+            -v /tmp/c2v-worker-real.mp4:/tmp/clip.mp4:ro \
+            --entrypoint ffprobe learnflow-code2video-renderer:ci \
+            -v error -select_streams v:0 \
+            -show_entries stream=codec_name,width,height,duration \
+            -of default=nokey=0 /tmp/clip.mp4
+      - name: Save actual sandbox-rendered proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: code2video-sandbox-native-mp4
+          path: /tmp/c2v-worker-real.mp4
+          retention-days: 3

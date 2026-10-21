@@ -88,6 +88,7 @@ def validate_lesson_plan(
     plan: LessonPlan,
     *,
     enforce_visual_teaching: bool = False,
+    code2video_enabled: bool = False,
 ) -> list[PlanIssue]:
     """Perform semantic and pedagogical validation on a LessonPlan.
 
@@ -210,6 +211,24 @@ def validate_lesson_plan(
                         severity="error",
                     )
                 )
+
+    # Reject invalid off-by-default worker requests before expensive audio/render.
+    for scene in plan.scenes:
+        if scene.visual_intent == VisualIntent.CODE2VIDEO_SCENE and not code2video_enabled:
+            issues.append(PlanIssue(
+                code='code2video_worker_disabled',
+                message='Code2Video worker is not enabled for this job.',
+                scene_id=scene.scene_id, severity='error',
+            ))
+
+    code2video_scenes=[s for s in plan.scenes
+                       if s.visual_intent == VisualIntent.CODE2VIDEO_SCENE]
+    if len(code2video_scenes)>1:
+        issues.append(PlanIssue(
+            code='code2video_budget_exceeded',
+            message='At most one Code2Video generated scene per lesson (paid worker budget).',
+            severity='error',
+        ))
 
     # 5. Topic relevance heuristic
     raw_topic_tokens = re.findall(r"[\w]+", request.topic.lower())

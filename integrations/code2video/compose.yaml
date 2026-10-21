@@ -1,0 +1,59 @@
+# Optional Code2Video research worker, separate from VibeHost's FastAPI image.
+# Usage: docker compose -f integrations/code2video/compose.yaml --env-file
+#        integrations/code2video/worker.env up --build
+# Build context must be repository root to COPY the worker entrypoints.
+services:
+  code2video-planner:
+    build:
+      context: ../..
+      dockerfile: integrations/code2video/Dockerfile
+      target: planner
+    environment:
+      OPENROUTER_API_KEY: ${CODE2VIDEO_OPENROUTER_API_KEY:?Dedicated limited-scope API key required}
+      CODE2VIDEO_MODEL: ${CODE2VIDEO_MODEL:?Set paid OpenRouter model}
+      CODE2VIDEO_WORKER_TOKEN: ${CODE2VIDEO_WORKER_TOKEN:?Generate a long random worker token}
+      CODE2VIDEO_RENDERER_URL: http://code2video-renderer:8788
+    # The planner contains a key and NEVER executes generated Python.
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    user: "10002:10002"
+    cpus: 1.0
+    mem_limit: 700m
+    pids_limit: 64
+    tmpfs:
+      - /tmp:rw,nosuid,size=64m,mode=1777
+    ports:
+      - "127.0.0.1:8765:8765"
+    networks:
+      - internet
+      - sandbox
+    restart: "no"
+
+  code2video-renderer:
+    build:
+      context: ../..
+      dockerfile: integrations/code2video/Dockerfile
+      target: renderer
+    # The renderer has NO secrets, no public ports and no internet route.
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    user: "10001:10001"
+    cpus: 2.0
+    mem_limit: 2048m
+    pids_limit: 128
+    tmpfs:
+      - /tmp:rw,nosuid,size=768m,mode=1777
+    networks:
+      - sandbox
+    restart: "no"
+
+networks:
+  internet: {}
+  sandbox:
+    internal: true

@@ -82,6 +82,19 @@ class Settings(BaseSettings):
     openrouter_planner_model: str = "openai/gpt-6-luna"
     paid_planner_max_tokens: int = Field(default=12000, ge=3000, le=16000)
     # Opt-in: adds one paid function-calling POST per requested lesson.
+    # Disabled unless an isolated Code2Video worker is explicitly configured.
+    code2video_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("LEARNFLOW_CODE2VIDEO_ENABLED", "code2video_enabled"),
+    )
+    code2video_worker_url: str = Field(
+        default="",
+        validation_alias=AliasChoices("LEARNFLOW_CODE2VIDEO_WORKER_URL","code2video_worker_url"),
+    )
+    code2video_worker_token: str = Field(
+        default="",
+        validation_alias=AliasChoices("LEARNFLOW_CODE2VIDEO_WORKER_TOKEN","code2video_worker_token"),
+    )
     agentic_visual_tools: bool = Field(
         default=False,
         validation_alias=AliasChoices("LEARNFLOW_AGENTIC_VISUAL_TOOLS", "agentic_visual_tools"),
@@ -144,6 +157,8 @@ class Settings(BaseSettings):
             data["gemini_api_key"] = "***REDACTED***"
         if data.get("openrouter_api_key"):
             data["openrouter_api_key"] = "***REDACTED***"
+        if data.get("code2video_worker_token"):
+            data["code2video_worker_token"] = "***REDACTED***"
         if data.get("database_url"):
             data["database_url"] = "***REDACTED***"
         return f"Settings({data})"
