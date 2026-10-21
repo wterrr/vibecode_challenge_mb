@@ -75,6 +75,7 @@ class Code2VideoSceneRenderer(SceneRenderer):
         body={
             "title":scene.visual_spec.title,
             "narration":scene.narration[:1200],
+            "lecture_lines":scene.key_points[:3],
             "visual_goal":scene.visual_spec.visual_goal,
             "duration_seconds":timing.render_duration_seconds,
             "language":"auto",
