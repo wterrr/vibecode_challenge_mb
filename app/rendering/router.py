@@ -8,6 +8,7 @@ from app.rendering.concept_card import ConceptCardRenderer
 from app.rendering.illustration import IllustrationRenderer
 from app.rendering.function_graph import FunctionGraphRenderer
 from app.rendering.array_trace import ArrayTraceRenderer
+from app.rendering.code2video_scene import Code2VideoSceneRenderer
 from app.rendering.central_force_motion import CentralForceMotionRenderer
 from app.rendering.process_diagram import ProcessDiagramRenderer
 
@@ -24,6 +25,7 @@ class RendererRouter:
         graph_renderer: SceneRenderer | None = None,
         array_renderer: SceneRenderer | None = None,
         central_force_renderer: SceneRenderer | None = None,
+        code2video_renderer: SceneRenderer | None = None,
         image_provider: ImageProvider | None = None,
         enable_image_generation: bool = False,
     ):
@@ -39,6 +41,7 @@ class RendererRouter:
             VisualIntent.FUNCTION_GRAPH: graph_renderer or FunctionGraphRenderer(),
             VisualIntent.ARRAY_TRACE: array_renderer or ArrayTraceRenderer(),
             VisualIntent.CENTRAL_FORCE_MOTION: central_force_renderer or CentralForceMotionRenderer(),
+            VisualIntent.CODE2VIDEO_SCENE: code2video_renderer or Code2VideoSceneRenderer(),
         }
 
     def get_renderer(self, intent: VisualIntent) -> SceneRenderer:
