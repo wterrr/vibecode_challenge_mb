@@ -15,6 +15,7 @@ from app.domain.enums import VisualIntent
 SEMANTIC_MOTION_INTENTS = frozenset({
     VisualIntent.ARRAY_TRACE,
     VisualIntent.FUNCTION_GRAPH,
+    VisualIntent.CENTRAL_FORCE_MOTION,
 })
 SAMPLE_WIDTH, SAMPLE_HEIGHT = 160, 90
 MIN_MEAN_DELTA = 0.70
