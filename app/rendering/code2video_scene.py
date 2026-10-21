@@ -77,7 +77,7 @@ class Code2VideoSceneRenderer(SceneRenderer):
             "narration":scene.narration[:1200],
             "visual_goal":scene.visual_spec.visual_goal,
             "duration_seconds":timing.render_duration_seconds,
-            "language":"vi",
+            "language":"auto",
         }
         output_path=Path(output_path)
         output_path.parent.mkdir(parents=True,exist_ok=True)
