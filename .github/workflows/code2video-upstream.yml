@@ -35,3 +35,57 @@ jobs:
         run: |
           python -m py_compile integrations/code2video/planner_worker.py
           python -m py_compile integrations/code2video/render_worker.py
+
+  verify-secretless-manim:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build isolated Manim 0.19 renderer image
+        run: |
+          docker build --pull --target renderer \
+            -f integrations/code2video/Dockerfile \
+            -t learnflow-code2video-renderer:ci .
+      - name: Render a real moving shape through the secretless HTTP worker
+        run: |
+          docker run -d --name c2v-renderer-ci \
+            -p 127.0.0.1:8788:8788 \
+            --read-only --cap-drop ALL \
+            --security-opt no-new-privileges \
+            --memory 2g --cpus 2 --pids-limit 128 \
+            --tmpfs /tmp:rw,nosuid,size=768m,mode=1777 \
+            learnflow-code2video-renderer:ci
+          python - <<'PY'
+          import json, time, urllib.request, urllib.error
+          source = """from manim import *
+          class LearnflowScene(Scene):
+              def construct(self):
+                  circle=Circle(color=BLUE)
+                  self.play(Create(circle),run_time=1)
+                  self.play(circle.animate.shift(RIGHT*1.3),run_time=1)
+          """
+          payload=json.dumps({"code":source}).encode()
+          for i in range(20):
+              try:
+                  request=urllib.request.Request(
+                      "http://127.0.0.1:8788/render",
+                      payload,headers={"Content-Type":"application/json"},method="POST")
+                  with urllib.request.urlopen(request,timeout=180) as response:
+                      data=response.read()
+                  assert len(data)>1000 and b"ftyp" in data[:64]
+                  with open("/tmp/c2v-worker-real.mp4","wb") as f: f.write(data)
+                  print("CODE2VIDEO_SECRETLESS_NATIVE_MP4_PASS",len(data))
+                  break
+              except urllib.error.URLError as e:
+                  if i==19: raise
+                  time.sleep(1)
+          PY
+          ffprobe -v error -select_streams v:0 \
+            -show_entries stream=codec_name,width,height,duration \
+            -of default=nokey=0 /tmp/c2v-worker-real.mp4
+      - name: Save actual sandbox-rendered proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: code2video-sandbox-native-mp4
+          path: /tmp/c2v-worker-real.mp4
+          retention-days: 3
