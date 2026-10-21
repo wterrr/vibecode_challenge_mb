@@ -122,6 +122,37 @@ curl http://127.0.0.1:8000/healthz
 # Response: {"status":"ok"}
 ```
 
+## Agentic Visual Tools (bounded, paid opt-in)
+
+Enable `LEARNFLOW_AGENTIC_VISUAL_TOOLS=true` only when using the paid
+OpenRouter real planner. This adds **one extra paid OpenRouter request per
+lesson** to run an actual `tools` / `tool_calls` discovery turn before the
+existing strict LessonPlan JSON request. A separate repair request may still
+occur for invalid plans. No hidden transport retries or fallback models.
+
+The host-owned registry in `app/planning/visual_tools.py` exposes:
+`describe_visual_tools` (enumerates six render families and limitations),
+`probe_array_trace` (binary search verified by host and V3 oracle),
+and `probe_function_graph` (host-computed function values and slopes).
+A single discovery turn accepts **1–3 bounded tool calls**; all returned
+results are locally validated before entering the final prompt. Unknown
+tool names, invalid arguments, malformed model responses, and unsupported
+API tool calling fail closed. The AI cannot run shell commands, Python,
+network fetches, or arbitrary Manim code through this interface.
+
+The renderer dispatch, frame timing, FFmpeg assembly, quality gates and
+production access controls remain host-controlled. Tool probes validate
+mathematical/algorithmic inputs, **not visual quality**; the existing decoded
+frame QA remains responsible for detecting frozen motion. This is an
+initial bounded tool-aware planning harness, **not** a general autonomous
+tool chaining / preview-video critique agent.
+
+The opt-in remains `false` by default to avoid unexpected paid costs or
+provider-specific tool-call incompatibilities. If enabled but OpenRouter
+rejects tool calling, disable the flag to restore the existing JSON-only
+planner. CI uses mocked OpenRouter responses; real paid provider
+compatibility and subjective visual quality require explicit live review.
+
 ## Docker production image
 
 The repository includes a production `Dockerfile` with the runtime dependencies required by LearnFlow: Python 3.12, FFmpeg/ffprobe with H.264 support, DejaVu fonts, Graphviz, Node.js, and the pinned `elkjs` package. The application runs as a non-root user and exposes a Docker healthcheck on `/healthz`.
