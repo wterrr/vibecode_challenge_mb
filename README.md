@@ -179,6 +179,26 @@ Production containers never fall back to SQLite. `ENVIRONMENT=production` withou
 
 Vibe Host v2 can deploy directly from GitHub and manages its own container lifecycle. Configure the website environment with `ENVIRONMENT=production`, the managed PostgreSQL connection string as `DATABASE_URL`, and the normal LearnFlow provider variables. The committed Docker image also provides a reproducible CI/deployment contract for all native media dependencies.
 
+### VibeHost Docker build arguments and Docker Hub timeouts
+
+The multi-stage Dockerfile accepts `VITE_API_BASE_URL` in the **Node/Vite**
+build stage and `PUBLIC_ORIGIN` in the **Python runtime** stage. The latter
+must be a public site origin, not a secret. With an empty Vite API base,
+the browser uses same-origin `/api` requests (recommended for session auth).
+If VibeHost passes a Vite API base, ensure it points to the **same origin** as
+the frontend; a different origin may break cookie-based auth.
+
+The VibeHost `PUBLIC_ORIGIN` runtime environment variable should remain set
+in website configuration. Do not pass DB credentials or provider keys as
+Docker build arguments. CI builds a real image with both non-secret arguments
+and validates the embedded frontend base URL plus backend origin.
+
+A timeout obtaining `python:3.12-slim-bookworm` metadata from
+`registry-1.docker.io` occurs **before application build**. Declaring
+these arguments does not fix the Docker Hub network failure. Retry after
+registry connectivity is restored or ask VibeHost to verify its builder's
+outbound access to Docker Hub; do not delete the site or PostgreSQL.
+
 ## Environment Variables
 
 | Variable | Default | Description |
