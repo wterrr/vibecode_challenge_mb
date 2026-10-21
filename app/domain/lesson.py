@@ -289,13 +289,33 @@ class ArrayTraceSpec(BaseModel):
         return self
 
 
+class CentralForceMotionSpec(BaseModel):
+    """Bounded inverse-square central-force teaching model.
+
+    The LLM selects an illustration mode and eccentricity only; host derives
+    trajectory, forces, velocity vectors, energy and angular momentum.
+    This is an idealized Newtonian two-body model, not an ephemeris.
+    """
+    type: Literal["central_force_motion"] = "central_force_motion"
+    motion_kind: Literal["inertia_only", "gravity_deflection", "bound_orbit"]
+    eccentricity: float = Field(default=0.25, ge=0.0, le=0.45)
+
+    @model_validator(mode="after")
+    def validate_physical_input(self) -> "CentralForceMotionSpec":
+        import math
+        if not math.isfinite(self.eccentricity):
+            raise ValueError("Nonfinite eccentricity")
+        return self
+
+
 VisualSpec = Annotated[
     ConceptCardSpec
     | ProcessDiagramSpec
     | ComparisonSpec
     | IllustrationSpec
     | FunctionGraphSpec
-    | ArrayTraceSpec,
+    | ArrayTraceSpec
+    | CentralForceMotionSpec,
     Field(discriminator="type"),
 ]
 
