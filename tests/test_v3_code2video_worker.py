@@ -179,9 +179,10 @@ async def test_end_to_end_worker_mp4_to_native_learnflow_h264_no_paid_api(tmp_pa
     assert outbound[0][1]=="http://code2video-planner:8765/render"
     assert outbound[0][2]["Authorization"]=="Bearer "+"a"*32
     assert set(outbound[0][3])=={
-        "title","narration","visual_goal","duration_seconds","language"
+        "title","narration","lecture_lines","visual_goal","duration_seconds","language"
     }
     assert "code" not in outbound[0][3]
+    assert outbound[0][3]["lecture_lines"]==scene().key_points[:3]
     assert outbound[0][3]["language"]=="auto"
     assert decoded_motion_delta(dest,2)>=.7
     probe=subprocess.run([
