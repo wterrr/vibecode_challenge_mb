@@ -113,7 +113,7 @@ def test_strict_schema_dispatch_and_topic_capability():
     from app.providers.llm.openrouter_paid import build_strict_lesson_plan_schema
     schema=build_strict_lesson_plan_schema()
     branches=schema["$defs"]["ScenePlan"]["properties"]["visual_spec"]["anyOf"]
-    assert len(branches)==7
+    assert len(branches)==8
     assert any(x.get("$ref","").endswith("/CentralForceMotionSpec") for x in branches)
     assert isinstance(RendererRouter().get_renderer(VisualIntent.CENTRAL_FORCE_MOTION),
                       CentralForceMotionRenderer)
