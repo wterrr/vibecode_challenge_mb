@@ -14,7 +14,7 @@ from math import ceil
 import re
 import unicodedata
 
-from app.domain.lesson import ArrayTraceSpec, FunctionGraphSpec, LessonPlan
+from app.domain.lesson import ArrayTraceSpec, FunctionGraphSpec, CentralForceMotionSpec, LessonPlan
 from app.domain.enums import VisualIntent
 
 
@@ -30,6 +30,14 @@ CAPABILITIES = (
         token_patterns=(r"\bbinary search\b",r"\btim kiem nhi phan\b"),
         intent=VisualIntent.ARRAY_TRACE,
         name="verified_array_search",
+    ),
+    MotionCapability(
+        token_patterns=(
+            r"\bquy dao\b", r"\borbit(s|al|ing)?\b",
+            r"\bchuyen dong quanh\b", r"\bgravitational trajectory\b",
+        ),
+        intent=VisualIntent.CENTRAL_FORCE_MOTION,
+        name="verified_inverse_square_motion",
     ),
     MotionCapability(
         token_patterns=(r"\bderivatives?\b",r"\bdao ham\b",r"\bdifferentiation\b"),
@@ -67,6 +75,19 @@ def visual_teaching_errors(topic: str, plan: LessonPlan) -> list[tuple[str,str]]
             f"{cap.name} requires at least {minimum} of {len(plan.scenes)} "
             f"scenes using visual_intent='{cap.intent.value}', not narrated cards.",
         ))
+    if cap.intent == VisualIntent.CENTRAL_FORCE_MOTION:
+        modes = {
+            scene.visual_spec.motion_kind for scene in motion_scenes
+            if isinstance(scene.visual_spec, CentralForceMotionSpec)
+        }
+        missing = {"inertia_only", "gravity_deflection", "bound_orbit"} - modes
+        if missing:
+            failures.append((
+                "missing_physical_causal_sequence",
+                "Use inertia_only, gravity_deflection and bound_orbit scenes to "
+                "show the causal transition from a straight tangent to a bound orbit; "
+                "no static diagram substitutes for a demonstrated trajectory.",
+            ))
     if cap.intent == VisualIntent.ARRAY_TRACE and len(motion_scenes) >= 2:
         sources = {
             (tuple(s.visual_spec.values), s.visual_spec.target)
