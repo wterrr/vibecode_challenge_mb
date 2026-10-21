@@ -60,18 +60,93 @@ def build_strict_lesson_plan_schema() -> dict[str, Any]:
 
 
 def _http_error(status: int) -> tuple[str, str]:
-    """Report useful but non-sensitive provider failures."""
+    """Classify status without copying upstream provider text or private data.
+
+    404 can mean either a missing model ID *or* no compatible provider
+    endpoint after data-policy/strict-schema/tool-call routing. The model
+    catalog alone cannot distinguish these possibilities.
+    """
     if status in (401, 403):
-        return "paid_planner_auth_failed", "OpenRouter rejected the API key or access (HTTP 401/403)."
+        return "paid_planner_auth_failed", f"OpenRouter HTTP {status}: API key, permissions, or account policy rejected the request."
     if status == 402:
-        return "paid_planner_credits", "OpenRouter reports insufficient credits (HTTP 402)."
+        return "paid_planner_credits", "OpenRouter HTTP 402: insufficient credits or spending budget."
+    if status == 404:
+        return "paid_planner_no_compatible_endpoint", (
+            "OpenRouter HTTP 404: model or matching provider endpoint unavailable. "
+            "Check OPENROUTER_PLANNER_MODEL and endpoint support for strict JSON schema / tools / routing policy."
+        )
+    if status == 408:
+        return "paid_planner_upstream_timeout", "OpenRouter HTTP 408: upstream request timed out."
+    if status == 409:
+        return "paid_planner_conflict", "OpenRouter HTTP 409: request conflict or provider routing constraint."
+    if status == 413:
+        return "paid_planner_payload_too_large", "OpenRouter HTTP 413: request body exceeds the provider limit."
     if status == 429:
-        return "paid_planner_rate_limited", "OpenRouter rate limit or quota was reached (HTTP 429)."
+        return "paid_planner_rate_limited", "OpenRouter HTTP 429: rate limit or quota reached."
     if status in (400, 422):
-        return "paid_planner_bad_request", "OpenRouter rejected the planner request or JSON schema (HTTP 400/422)."
+        return "paid_planner_bad_request", (
+            f"OpenRouter HTTP {status}: invalid or unsupported request parameters "
+            "(JSON schema, tool calling, or provider configuration)."
+        )
     if status >= 500:
-        return "paid_planner_upstream", "OpenRouter/provider failed during planning (HTTP 5xx)."
-    return "paid_planner_http_error", "OpenRouter rejected the planner request."
+        return "paid_planner_upstream", f"OpenRouter HTTP {status}: provider or gateway error."
+    # Never mask the status under paid_planner_http_error.
+    return f"paid_planner_http_{status}", f"OpenRouter rejected the planner request (HTTP {status})."
+
+
+def _error_type_from_provider(obj: Any) -> str:
+    """Safely extract only a bounded canonical OpenRouter error_type."""
+    if not isinstance(obj, dict):
+        return "unknown"
+    err = obj.get("error")
+    if not isinstance(err, dict):
+        return "unknown"
+    metadata = err.get("metadata")
+    value = metadata.get("error_type") if isinstance(metadata, dict) else None
+    if isinstance(value, str) and re.fullmatch(r"[a-z0-9_]{1,64}", value):
+        return value
+    return "unknown"
+
+
+def _error_status_from_provider(obj: Any) -> int:
+    """Errors may arrive in a 200 non-streaming response after inference begins."""
+    if not isinstance(obj, dict):
+        return 0
+    err = obj.get("error")
+    if not isinstance(err, dict):
+        return 0
+    code = err.get("code")
+    return code if type(code) is int and 400 <= code <= 599 else 0
+
+
+def _provider_http_failure(response: httpx.Response, phase: str) -> PlannerProviderError:
+    status = response.status_code
+    code, message = _http_error(status)
+    try:
+        error_type = _error_type_from_provider(response.json())
+    except (ValueError, TypeError):
+        error_type = "unknown"
+    log.warning(
+        "OpenRouter HTTP failure phase=%s status=%d error_type=%s",
+        phase, status, error_type,
+    )
+    return PlannerProviderError(code, message, retryable=False)
+
+
+def _raise_if_provider_error_body(obj: Any, phase: str) -> None:
+    """Handle OpenRouter's documented HTTP 200 + error-only body."""
+    if isinstance(obj, dict) and isinstance(obj.get("error"), dict):
+        status = _error_status_from_provider(obj)
+        if status:
+            code, message = _http_error(status)
+        else:
+            code, message = ("paid_planner_provider_error_body",
+                             "OpenRouter returned an error rather than a model result (HTTP 200).")
+        log.warning(
+            "OpenRouter response error phase=%s status=%d error_type=%s",
+            phase, status or 200, _error_type_from_provider(obj),
+        )
+        raise PlannerProviderError(code, message, retryable=False)
 
 
 def _safe_validation_issues(exc: ValidationError) -> list[dict[str, str]]:
@@ -148,8 +223,7 @@ class OpenRouterPaidLessonPlanner(LessonPlanner):
                 response.raise_for_status()
                 obj = response.json()
         except httpx.HTTPStatusError as exc:
-            code, message = _http_error(exc.response.status_code)
-            raise PlannerProviderError(code, message, retryable=False) from None
+            raise _provider_http_failure(exc.response, "visual_discovery") from None
         except httpx.TimeoutException:
             raise PlannerProviderError(
                 "visual_tools_timeout", "Visual tool discovery timed out; no paid retry.",
@@ -161,6 +235,7 @@ class OpenRouterPaidLessonPlanner(LessonPlanner):
                 retryable=False,
             ) from None
 
+        _raise_if_provider_error_body(obj, "visual_discovery")
         if not isinstance(obj, dict) or obj.get("model") != self.model:
             raise PlannerProviderError(
                 "visual_tools_unverified_model", "Unverified model returned visual tool calls.",
@@ -232,6 +307,7 @@ class OpenRouterPaidLessonPlanner(LessonPlanner):
                 )
                 response.raise_for_status()
                 obj = response.json()
+            _raise_if_provider_error_body(obj, "structured_plan")
             if not isinstance(obj, dict) or obj.get("model") != self.model:
                 raise PlannerProviderError(
                     "paid_planner_model_mismatch",
@@ -261,10 +337,7 @@ class OpenRouterPaidLessonPlanner(LessonPlanner):
                 log.info("Canonicalized %d invalid scene identifiers model=%s", renamed, self.model)
             return LessonPlan.model_validate_json(body)
         except httpx.HTTPStatusError as exc:
-            status = exc.response.status_code
-            code, message = _http_error(status)
-            log.warning("Paid planner HTTP rejection model=%s status=%d code=%s", self.model, status, code)
-            raise PlannerProviderError(code, message, retryable=False) from None
+            raise _provider_http_failure(exc.response, "structured_plan") from None
         except httpx.TimeoutException:
             log.warning("Paid planner timed out model=%s", self.model)
             raise PlannerProviderError(
