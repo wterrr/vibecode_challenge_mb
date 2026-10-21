@@ -71,7 +71,8 @@ def render(code:str)->bytes:
                            },
                            preexec_fn=_limits,check=False)
         if run.returncode!=0: raise ValueError("manim_render_rejected")
-        outputs=list((root/"out").rglob("*.mp4"))
+        outputs=[x for x in (root/"out").rglob("*.mp4")
+                 if "partial_movie_files" not in x.parts and x.name=="LearnflowScene.mp4"]
         if len(outputs)!=1: raise ValueError("expected exactly one MP4")
         path=outputs[0]
         if not 1024<=path.stat().st_size<=MAX_VIDEO:
