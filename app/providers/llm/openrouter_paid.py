@@ -16,6 +16,7 @@ from pydantic import ValidationError
 from app.domain.lesson import LearningRequest, LessonPlan
 from app.planning.prompts import build_lesson_plan_prompt, build_repair_prompt
 from app.planning.scene_ids import canonicalize_scene_ids
+from app.planning.visual_director import required_capability
 from app.planning.visual_tools import MAX_TOOL_CALLS, visual_tool_definitions, execute_visual_tool, render_tool_receipts
 from app.providers.llm.base import LessonPlanner, PlannerProviderError, PlannerOutputValidationError
 
@@ -113,7 +114,7 @@ class OpenRouterPaidLessonPlanner(LessonPlanner):
         prompt = (
             "You are LearnFlow's visual teaching director. Before planning a video, "
             "inspect the available host-owned visual capabilities by CALLING TOOLS. "
-            "Choose relevant probes if available; for binary search probe a sorted "
+            "You MUST probe the relevant mechanism when one is available; for binary search probe a sorted "
             "array and target; for derivatives probe a function and its slope. "
             "You may also call describe_visual_tools for the full registry. "
             "Do not send an explanation or LessonPlan yet. "
@@ -183,6 +184,14 @@ class OpenRouterPaidLessonPlanner(LessonPlanner):
                 raw = call["function"]["arguments"]
                 verified = execute_visual_tool(name, raw)
                 receipts.append({"tool": name, "result": verified})
+            capability = required_capability(request.topic)
+            if capability is not None:
+                needed_tool = {
+                    "array_trace": "probe_array_trace",
+                    "function_graph": "probe_function_graph",
+                }.get(capability.intent.value)
+                if needed_tool and not any(r["tool"] == needed_tool for r in receipts):
+                    raise ValueError("required visual capability was not probed")
             serialized = render_tool_receipts(receipts)
         except (ValueError, TypeError, KeyError, IndexError, AttributeError):
             log.warning("Model visual tool call rejected model=%s (invalid or unsafe arguments)", self.model)
